@@ -1,0 +1,12 @@
+NOTICE
+
+This project (snote) vendors source code from Automattic's Simplenote Electron
+client (https://github.com/Automattic/simplenote-electron), copyright
+Automattic, Inc., used under the terms of the GNU General Public License,
+version 2 (GPLv2).
+
+The vendored files live under vendor/simplenote/.
+
+Some of the vendored files have been modified for this project. Each modified
+file carries its own notice stating that it was changed, as required by GPLv2
+section 2(a); changed lines are marked with `// OMARCHY:` comments.

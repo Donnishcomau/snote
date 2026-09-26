@@ -1,0 +1,28 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Markdown preview > 5: snapshot test at 80x24 > markdown-rendered-80x24 1`] = `
+"Notes                           │Preview: Plain text note
+>Plain text note                │g add tag
+  No markdown here              │No markdown here
+                                │
+ Title                          │
+  Some bold text                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+? Help  n New  e Edit  g Add tag  / Search  q Quit
+[offline] 2 notes
+"
+`;

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=snote
+Comment=Simplenote notes in the terminal
+Exec=xdg-terminal-exec --app-id=TUI.float -e snote
+Terminal=false
+Type=Application
+Icon=snote
+StartupNotify=true

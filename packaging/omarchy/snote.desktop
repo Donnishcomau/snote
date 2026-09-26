@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Simplenote
+Comment=Simplenote notes in the terminal
+Exec=omarchy-launch-tui --app-id=TUI.float snote
+Terminal=false
+Type=Application
+Icon=accessories-text-editor
+StartupNotify=true

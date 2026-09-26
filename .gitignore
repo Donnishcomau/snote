@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.loop/
+*.tgz
+.env
+.env.*
+!.env.example
