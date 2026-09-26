@@ -1,0 +1,28 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      # `make check` includes a startup-time bench (scripts/bench.mjs) with a
+      # ~150-200ms ceiling. That budget is tuned against a quiet dev machine;
+      # shared/throttled CI runners can miss it under noisy-neighbour load
+      # even when nothing regressed, which would make this workflow flaky
+      # through no fault of the change under test. `make check-ci` is
+      # identical to `make check` except it skips only that one gate;
+      # typecheck, lint, the full test suite, the keymap gate, and the ANSI
+      # gate all still run here and must pass. Perf regressions are still
+      # caught locally, where `make check` runs the bench unskipped.
+      - run: make check-ci

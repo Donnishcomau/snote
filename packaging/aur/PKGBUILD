@@ -1,0 +1,32 @@
+# Maintainer: qteamdon <201689496+qteamdon@users.noreply.github.com>
+pkgname=snote
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Simplenote client for Omarchy (terminal UI)"
+arch=('any')
+url="https://github.com/donnishcomau/snote"
+license=('GPL-2.0-only')
+depends=('nodejs>=22')
+makedepends=('npm' 'git')
+optdepends=('wl-clipboard: copy the public link')
+source=("https://github.com/donnishcomau/snote/archive/refs/tags/v$pkgver.tar.gz")
+# sha256 stays SKIP until the release checksum is pinned for the AUR upload
+sha256sums=('SKIP')
+
+build() {
+  cd "$srcdir/snote-$pkgver"
+  npm ci
+  npm run build
+}
+
+package() {
+  cd "$srcdir/snote-$pkgver"
+  install -Dm 755 dist/cli.js "$pkgdir/usr/lib/snote/cli.js"
+  install -Dm 644 dist/snote-main.js "$pkgdir/usr/lib/snote/snote-main.js"
+  install -d "$pkgdir/usr/bin"
+  ln -s /usr/lib/snote/cli.js "$pkgdir/usr/bin/snote"
+  install -Dm 644 packaging/snote.desktop "$pkgdir/usr/share/applications/snote.desktop"
+  install -Dm 644 LICENSE "$pkgdir/usr/share/licenses/snote/LICENSE"
+  install -Dm 644 packaging/icons/snote-256.png "$pkgdir/usr/share/icons/hicolor/256x256/apps/snote.png"
+  install -Dm 644 packaging/icons/snote.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/snote.svg"
+}

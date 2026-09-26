@@ -1,0 +1,61 @@
+import { parseArgs } from 'node:util';
+
+export interface CliOptions {
+  check: boolean;
+  logout: boolean;
+  help: boolean;
+  dataDir?: string;
+  appId?: string;
+  server?: string;
+}
+
+export function parseCli(argv: string[]): CliOptions {
+  const result = parseArgs({
+    args: argv,
+    options: {
+      check: { type: 'boolean' },
+      logout: { type: 'boolean' },
+      help: { type: 'boolean', short: 'h' },
+      'data-dir': { type: 'string' },
+      'app-id': { type: 'string' },
+      server: { type: 'string' },
+    },
+  });
+
+  const values = result.values;
+
+  return {
+    check: values.check ?? false,
+    logout: values.logout ?? false,
+    help: values.help ?? false,
+    dataDir: values['data-dir'] ?? undefined,
+    appId: values['app-id'] ?? undefined,
+    server: values.server ?? undefined,
+  };
+}
+
+export function checkReport(info: {
+  editor: string;
+  dataDir: string;
+  columns: number;
+  rows: number;
+}): string {
+  return [
+    `editor: ${info.editor}`,
+    `data dir: ${info.dataDir}`,
+    `terminal: ${info.columns}x${info.rows}`,
+  ].join('\n');
+}
+
+export const USAGE: string = [
+  'usage: snote [options]',
+  '',
+  'Options:',
+  '  --check          Check configuration and exit',
+  '  --logout         Logout current account',
+  '  --help, -h       Show this help message',
+  '  --data-dir <value>   Data directory path',
+  '  --app-id <value>     Simperium app ID',
+  '  --server <value>     Simperium server URL',
+  '  --report        Write a bundle for your coding agent',
+].join('\n');

@@ -1,0 +1,50 @@
+{
+  "name": "snote",
+  "version": "0.1.0",
+  "description": "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
+  "license": "GPL-2.0",
+  "type": "module",
+  "bin": {
+    "snote": "dist/cli.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src test vendor",
+    "test": "vitest run",
+    "test:keymap": "vitest run test/keymap.test.ts",
+    "lint:ansi": "node scripts/lint-ansi.mjs",
+    "build": "node scripts/build.mjs",
+    "pack": "node scripts/pack.mjs",
+    "size": "vitest run test/packaging/size.test.ts",
+    "smoke:real": "node scripts/smoke-real.mjs",
+    "dev": "tsx src/cli/index.ts"
+  },
+  "dependencies": {
+    "debug": "^4.4.0",
+    "ink": "^7.1.1",
+    "lodash": "^4.17.21",
+    "react": "^19.0.0",
+    "redux": "^4.2.1",
+    "remove-markdown": "^0.6.0",
+    "simperium": "1.1.4"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.12",
+    "@types/lodash": "^4.17.13",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/ws": "^8.5.13",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "ink-testing-library": "^4.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0",
+    "esbuild": "^0.24.0",
+    "ws": "^8.18.0"
+  }
+}

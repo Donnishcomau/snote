@@ -1,0 +1,168 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Golden frames > 1: WHEN at 80x24 h is written and the two versions are loaded THEN the frame contains History, >v2  2001-09-09 01:48,  v1  2001-09-09 01:46 and second text, not loading... and not Other note; snapshot history-80x24 > history-80x24 1`] = `
+"History                         │Preview: Pinned note
+>v2  2001-09-09 01:48  Pinned.. │g add tag
+ v1  2001-09-09 01:46  Pinned.. │second text
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+? Help  n New  e Edit  g Add tag  / Search  q Quit
+[offline] 2 notes
+"
+`;
+
+exports[`Golden frames > 2: WHEN the same is done at 120x40 THEN the frame contains History, >v2  2001-09-09 01:48  Pinned note and second text; snapshot history-120x40 > history-120x40 1`] = `
+"History                                 │Preview: Pinned note
+>v2  2001-09-09 01:48  Pinned note      │g add tag
+ v1  2001-09-09 01:46  Pinned note      │second text
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+                                        │
+? Help  n New  e Edit  g Add tag  / Search  q Quit
+[offline] 2 notes
+"
+`;
+
+exports[`Golden frames > 3: WHEN <Login width={80} height={24} ... /> is rendered THEN the frame contains Simplenote login, Email: and Tab: log in with a password, not Code: and not Password:; snapshot login-80x24 > login-80x24 1`] = `
+"  Simplenote login
+  Email:
+  Tab: log in with a password
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"
+`;
+
+exports[`Golden frames > 4: WHEN <Login width={120} height={40} ... /> is rendered, and a@b.co then \\r are written THEN the frame contains Code sent to a@b.co and Code:, and requestCode was called 1 time; snapshot login-code-120x40 > login-code-120x40 1`] = `
+"  Simplenote login
+  Code sent to a@b.co
+  Code:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"
+`;
+
+exports[`Golden frames > 5: WHEN at 80x24 a@b.co, \\t, s3cret are written THEN the frame contains Password login for a@b.co and Password: ******, not s3cret, and requestCode was not called; snapshot login-password-80x24 > login-password-80x24 1`] = `
+"  Simplenote login
+  Password login for a@b.co
+  Password: ******
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"
+`;

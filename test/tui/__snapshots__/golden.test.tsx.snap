@@ -1,0 +1,211 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Golden frames: search, tags, help > 1: WHEN at 80x24 / then normal are written THEN the frame contains search: normal, >Second normal note, First normal note and 2 notes, not Third thing and not Pinned note; snapshot search-80x24 > search-80x24 1`] = `
+"Notes                           │Preview: Second normal note
+>Second normal note             │#home
+  gamma                         │g add tag
+                                │gamma
+ First normal note              │
+  beta                          │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+                                │
+search: normal
+? Help  n New  e Edit  g Add tag  / Search  q Quit
+[offline] 2 notes"
+`;
+
+exports[`Golden frames: search, tags, help > 2: WHEN at 120x40 / then normal are written THEN the frame contains search: normal, 2 notes and All notes (tags pane open by itself at this width), not Third thing; snapshot search-120x40 > search-120x40 1`] = `
+"Tags       │Notes                              │Preview: Second normal note
+>All notes │>Second normal note                │#home
+ home      │  gamma                            │g add tag
+ work      │                                   │gamma
+·Untagged  │ First normal note                 │
+·Trash     │  beta                             │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+search: normal
+? Help  n New  e Edit  g Add tag  / Search  q Quit
+[offline] 2 notes
+"
+`;
+
+exports[`Golden frames: search, tags, help > 3: WHEN at 80x24 t then j are written THEN the frame contains Tags, All notes, >home, work, Untagged and still 4 notes (no filter chosen yet); snapshot tags-80x24 > tags-80x24 1`] = `
+"Tags         │Notes                     │Preview: Pinned note
+·All notes   │>Pinned note *            │g add tag
+>home        │  alpha                   │alpha
+ work        │                          │
+·Untagged    │ Third thing              │
+·Trash       │  delta                   │
+             │                          │
+             │ Second normal note       │
+             │  gamma                   │
+             │                          │
+             │ First normal note        │
+             │  beta                    │
+             │                          │
+             │                          │
+             │                          │
+             │                          │
+             │                          │
+             │                          │
+             │                          │
+             │                          │
+focus: tags
+j/k Move  Enter Select  R Rename  x Delete  Escape Back
+[offline] 4 notes
+"
+`;
+
+exports[`Golden frames: search, tags, help > 4: WHEN at 120x40 t then j are written THEN the frame contains >home, Notes, Preview and 4 notes; snapshot tags-120x40 > tags-120x40 1`] = `
+"Tags       │Notes                              │Preview: Pinned note
+·All notes │>Pinned note *                     │g add tag
+>home      │  alpha                            │alpha
+ work      │                                   │
+·Untagged  │ Third thing                       │
+·Trash     │  delta                            │
+           │                                   │
+           │ Second normal note                │
+           │  gamma                            │
+           │                                   │
+           │ First normal note                 │
+           │  beta                             │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
+focus: tags
+j/k Move  Enter Select  R Rename  x Delete  Escape Back
+[offline] 4 notes
+"
+`;
+
+exports[`Golden frames: search, tags, help > 5: WHEN at 80x24 ? is written THEN the frame contains Help - Keyboard Shortcuts, Move down, Search notes and Show / focus the tags pane, not Pinned note, and has at most 24 lines; snapshot help-80x24 > help-80x24 1`] = `
+"┌──────────────────────────────────────────────────────────────────────────────┐
+│  Help - Keyboard Shortcuts                                                   │
+│  j       Move down                    E       Empty the trash (trash view)   │
+│  k       Move up                      p       Pin / unpin                    │
+│  Enter   Open note                    m       Markdown on / off              │
+│  Tab     Next pane                    s       Sort: modified, created, a-z   │
+│  q       Quit                         S       Reverse the sort order         │
+│  v       Toggle rendered markdown pre /       Search notes                   │
+│  ?       Show this help               t       Show / focus the tags pane     │
+│  Escape  Close overlay / back         J       Move tag down (tags pane)      │
+│  e       Edit in $EDITOR              K       Move tag up (tags pane)        │
+│  n       New note                     R       Rename tag (tags pane)         │
+│  g       Edit tags of the selected no x       Delete tag (tags pane)         │
+│  w       Export note to .md           r       Sync now                       │
+│  L       Log out (asks first)         P       Publish / unpublish            │
+│  d       Move to trash                y       Copy the public link           │
+│  u       Restore from trash (trash vi h       Note history (Enter restores   │
+│  D       Delete forever (trash view)  c       Tick / untick item (note)      │
+│  T       Show trash / all notes       a       Add checklist item (note)      │
+│  Found a bug? Run snote --report to save a report bundle.                    │
+│  Editing: save with Ctrl+S and close the window to return                    │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘"
+`;
+
+exports[`Golden frames: search, tags, help > 6: WHEN at 120x40 ? is written THEN the frame contains Help - Keyboard Shortcuts and Search notes and has at most 40 lines; snapshot help-120x40 > help-120x40 1`] = `
+"┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│Help - Keyboard Shortcuts                                                                          │
+│Navigate                                                  Trash                                    │
+│j         Move down                                       d         Move to trash                  │
+│k         Move up                                         u         Restore from trash (trash view)│
+│Enter     Open note                                       D         Delete forever (trash view)    │
+│Tab       Next pane                                       T         Show trash / all notes         │
+│v         Toggle rendered markdown preview                E         Empty the trash (trash view)   │
+│?         Show this help                                  Sync & Sort                              │
+│Escape    Close overlay / back                            s         Sort: modified, created, a-z   │
+│/         Search notes                                    S         Reverse the sort order         │
+│Notes                                                     r         Sync now                       │
+│e         Edit in $EDITOR                                 P         Publish / unpublish            │
+│n         New note                                        y         Copy the public link           │
+│w         Export note to .md                              App                                      │
+│p         Pin / unpin                                     q         Quit                           │
+│m         Markdown on / off                               L         Log out (asks first)           │
+│h         Note history (Enter restores)                                                            │
+│c         Tick / untick item (note)                                                                │
+│a         Add checklist item (note)                                                                │
+│Tags                                                                                               │
+│g         Edit tags of the selected note                                                           │
+│t         Show / focus the tags pane                                                               │
+│J         Move tag down (tags pane)                                                                │
+│K         Move tag up (tags pane)                                                                  │
+│R         Rename tag (tags pane)                                                                   │
+│x         Delete tag (tags pane)                                                                   │
+│Found a bug? Run snote --report to save a report bundle.                                           │
+│Editing: save with Ctrl+S and close the window to return                                           │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+
+
+
+
+
+
+
+"
+`;
