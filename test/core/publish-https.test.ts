@@ -1,6 +1,6 @@
 /**
  * Published links use https (T310).
- * One `it()` per numbered Acceptance line in TASKS.md T310.
+ * One `it()` per numbered acceptance line of T310.
  */
 
 import { describe, it, expect } from 'vitest';

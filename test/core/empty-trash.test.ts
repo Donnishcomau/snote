@@ -1,6 +1,6 @@
 /**
  * emptyTrashActions + E key acceptance tests (T74).
- * One `it()` per numbered Acceptance line in TASKS.md T74.
+ * One `it()` per numbered acceptance line of T74.
  */
 
 import { describe, it, expect } from 'vitest';

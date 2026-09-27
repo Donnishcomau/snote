@@ -1,7 +1,7 @@
 /**
  * Tests for src/core/auth.ts — email-code and password login flows.
  *
- * Each test maps one acceptance line from TASKS.md T05 (line 1-6) and
+ * Each test maps one acceptance line of T05 (line 1-6) and
  * uses the FakeSimperiumServer to avoid real network calls.
  *
  * Accepted literals that gate strength_ok checks for: body.username,

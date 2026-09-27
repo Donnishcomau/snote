@@ -27,6 +27,8 @@ import { whenCatchUpApplied } from '../core/simperium-reconnect-fix';
 // T151 — resend offline "delete forever" ops at start-up (FR-5).
 import { resendDeletions, trackDeletions } from '../core/tombstones';
 import { parseCli, checkReport, USAGE } from './args';
+// T323 — `--version`/`-v` prints `snote <version>` from package.json.
+import { VERSION } from './version';
 import { envReport } from './env-check';
 // T156 — one data folder per account: accountDir + prepareDataDir.
 import { defaultDataDir, logout, accountDir, prepareDataDir } from '../core/token';
@@ -217,6 +219,14 @@ export async function main(
   // of the login/render flow.
   const reportOnly = argv.includes('--report');
   const args = argv.filter((a) => a !== '--report');
+
+  // T323 — `--version`/`-v` is stripped before parseCli too: CliOptions's
+  // shape is fixed, so the strict parser would reject it. Print the
+  // version from package.json and leave.
+  if (argv.includes('--version') || argv.includes('-v')) {
+    log(`snote ${VERSION}`);
+    return 0;
+  }
 
   let o;
   try {

@@ -1,6 +1,6 @@
 /**
  * noteKeyAction acceptance tests (T11).
- * One `it()` per numbered Acceptance line in TASKS.md T11.
+ * One `it()` per numbered acceptance line of T11.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';

@@ -54,6 +54,7 @@ export const USAGE: string = [
   '  --check          Check configuration and exit',
   '  --logout         Logout current account',
   '  --help, -h       Show this help message',
+  '  --version, -v    Print the snote version and exit',
   '  --data-dir <value>   Data directory path',
   '  --app-id <value>     Simperium app ID',
   '  --server <value>     Simperium server URL',

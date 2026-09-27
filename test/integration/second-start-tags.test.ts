@@ -2,7 +2,7 @@
  * T199: CRASH source — after a restart with saved data no tag without a
  * name may enter `data.tags`, and saved named tags come back.
  *
- * The director's rig crashed on every second start because the simperium
+ * A development setup crashed on every second start because the simperium
  * `tag` bucket answered `data: undefined` for a tag hash the local state did
  * not know (a tag only attached to a locally created note, never created as
  * a tag-bucket object). The sync library's `touch` then fed that `undefined`

@@ -1,6 +1,6 @@
 /**
  * Tests for the fake Simperium server.
- * Acceptance criteria from TASKS.md T02:
+ * Acceptance criteria for T02:
  * 1. Real client authenticates and receives auth
  * 2. Server seeded with 3 notes → client indexes all 3
  * 3. Server seeded with 25 notes → client indexes all 25 across 3 pages
