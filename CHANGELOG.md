@@ -3,6 +3,13 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.1.1
+
+### Fixed
+
+- `snote --version` (or `-v`) now prints `snote 0.1.1`, so the version the
+  bug-report template asks for is easy to get.
+
 ## 0.1.0 — initial public release
 
 First public release of snote, a keyboard-driven terminal client for

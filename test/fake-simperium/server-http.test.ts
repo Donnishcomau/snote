@@ -1,6 +1,6 @@
 /**
  * Tests for the fake server's HTTP login routes and httpRequests tracking.
- * Acceptance criteria from TASKS.md T100:
+ * Acceptance criteria for T100:
  * 1. request-login JSON body returns 200 and records the request
  * 2. complete-login with valid code returns sync_token
  * 3. complete-login with wrong code returns 401; form text returns 400 with body null

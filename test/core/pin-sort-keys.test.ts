@@ -1,6 +1,6 @@
 /**
  * Pin, markdown, sort keys as pure functions (T22).
- * One `it()` per numbered Acceptance line in TASKS.md T22.
+ * One `it()` per numbered acceptance line of T22.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';

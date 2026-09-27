@@ -1,6 +1,6 @@
 /**
  * Publish key (`P`) and the public link as pure functions (T13).
- * One `it()` per numbered Acceptance line in TASKS.md T13.
+ * One `it()` per numbered acceptance line of T13.
  */
 
 import { describe, it, expect } from 'vitest';
