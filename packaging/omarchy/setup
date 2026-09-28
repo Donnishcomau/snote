@@ -1,0 +1,113 @@
+#!/bin/bash
+# Build and install snote for the Omarchy bar-button plugin's first-click
+# setup. Runs in a visible terminal (see BarWidget.qml / omarchy-launch-
+# floating-terminal-with-presentation). No sudo; nothing is written outside
+# $HOME/.local.
+#
+# Everything this plugin ships is plain, scannable source — no pre-built or
+# chunked artifacts. The build (`npm ci && npm run build`) runs here, on the
+# user's own machine, from the plugin's own clone.
+#
+# Why build outside the plugin's own clone (~/.config/omarchy/plugins/<id>):
+# `npm ci && npm run build` produces a full node_modules tree, and `omarchy
+# plugin update`/`remove` manage that clone directory directly — mixing a
+# large, mutable build output into it risks the plugin manager clobbering
+# it (or vice versa) and is not what that directory is for. XDG_DATA_HOME
+# is exactly the right place for an application's own installed payload.
+#
+# Why NOT ~/.local/share/snote: snote itself already uses that directory
+# for its own runtime data (see src/core/token.ts's XDG_DATA_HOME lookup),
+# so an existing install may have real user data sitting there. This
+# script's own directory must be a sibling that setup/uninstall can freely
+# create and remove without ever touching that data.
+set -eu
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+src_dir="$(cd "$here/../.." && pwd)"
+
+app_dir="${XDG_DATA_HOME:-$HOME/.local/share}/omarchy-snote-plugin/app"
+bin_dir="$HOME/.local/bin"
+shim="$bin_dir/snote"
+node_spec="node@22"
+
+log() { printf '==> %s\n' "$1"; }
+fail() { printf 'snote setup: %s\n' "$1" >&2; exit 1; }
+
+# The clone's own version, read without invoking node — a plain grep/sed on
+# package.json's "version" field. Used both for the idempotent fast path and
+# to stamp $app_dir/VERSION after a build, so later checks (here and in
+# BarWidget.qml) never need to invoke node either.
+package_version() {
+  sed -n 's/^[[:space:]]*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$1/package.json" | head -n1
+}
+
+source_version="$(package_version "$src_dir")"
+[ -n "$source_version" ] || fail "could not read \"version\" from $src_dir/package.json"
+
+# --check: used by BarWidget.qml to decide, without opening a terminal,
+# whether a click can launch straight away or needs to route through this
+# script's visible install path first. Exits 0 when the installed app's
+# VERSION already matches this clone's package.json version, 1 otherwise
+# (including "nothing installed yet"). No node call, no side effects.
+if [ "${1:-}" = "--check" ]; then
+  [ -f "$app_dir/VERSION" ] && [ "$(cat "$app_dir/VERSION")" = "$source_version" ]
+  exit $?
+fi
+
+command -v mise >/dev/null 2>&1 || fail "mise is required but was not found on PATH (Omarchy ships it at /usr/bin/mise)"
+
+log "Checking for Node 22 via mise (installed on demand, no global mise config changed)..."
+mise exec "$node_spec" -- node --version >/dev/null 2>&1 \
+  || fail "could not provision $node_spec through mise"
+
+# Idempotent fast path: skip the rebuild if the installed app's VERSION file
+# already matches the clone's package.json version. Plain text compare, no
+# node call needed to decide this.
+if [ -x "$shim" ] && [ -f "$app_dir/VERSION" ] && [ -f "$app_dir/dist/cli.js" ] \
+   && [ "$(cat "$app_dir/VERSION")" = "$source_version" ]; then
+  log "snote $source_version is already installed at $app_dir — nothing to do."
+  exit 0
+fi
+
+log "Copying snote source ($src_dir) into $app_dir..."
+mkdir -p "$app_dir"
+# rsync keeps this idempotent and skips VCS/build clutter; fall back to cp
+# if rsync isn't available.
+if command -v rsync >/dev/null 2>&1; then
+  rsync -a --delete --exclude .git --exclude node_modules --exclude dist "$src_dir"/ "$app_dir"/
+else
+  rm -rf "$app_dir"
+  mkdir -p "$app_dir"
+  cp -a "$src_dir"/. "$app_dir"/
+  rm -rf "$app_dir/.git" "$app_dir/node_modules" "$app_dir/dist"
+fi
+
+log "Running npm ci (this can take a minute on a cold cache)..."
+( cd "$app_dir" && mise exec "$node_spec" -- npm ci ) \
+  || fail "npm ci failed in $app_dir"
+
+log "Running npm run build..."
+( cd "$app_dir" && mise exec "$node_spec" -- npm run build ) \
+  || fail "npm run build failed in $app_dir"
+
+[ -f "$app_dir/dist/cli.js" ] || fail "build finished but $app_dir/dist/cli.js is missing"
+
+printf '%s' "$source_version" > "$app_dir/VERSION"
+
+log "Installing the snote shim at $shim..."
+mkdir -p "$bin_dir"
+cat > "$shim" <<EOF
+#!/bin/sh
+exec mise exec $node_spec -- node "$app_dir/dist/cli.js" "\$@"
+EOF
+chmod +x "$shim"
+
+case ":$PATH:" in
+  *":$bin_dir:"*) ;;
+  *)
+    log "Warning: $bin_dir is not on PATH in this shell."
+    log "Add it in your shell's own rc file, e.g.: export PATH=\"$bin_dir:\$PATH\""
+    ;;
+esac
+
+log "snote is installed. Launching it now..."
