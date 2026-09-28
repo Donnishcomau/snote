@@ -3,6 +3,26 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.1.2
+
+### Added
+
+- An Omarchy bar-button plugin now lives in this repo (`manifest.json`,
+  `BarWidget.qml`, `preview.png`, `snote-icon.png`,
+  `packaging/omarchy/setup` and `uninstall`). Install it with one command:
+  `omarchy plugin add https://github.com/donnishcomau/snote --enable`. If
+  snote isn't installed yet, the first click builds and installs it through
+  `mise` (Node 22, `npm ci`, then the build), with no `sudo`; it installs a
+  `~/.local/bin/snote` shim and rebuilds automatically after a plugin
+  update.
+- `docs/INSTALL.md` now holds the manual pacman/makepkg install steps,
+  linked from the README.
+
+### Changed
+
+- The bundle is 8.5% smaller: Ink's unused devtools code (and the `ws`
+  package it pulled in) is stripped from the build.
+
 ## 0.1.1
 
 ### Fixed

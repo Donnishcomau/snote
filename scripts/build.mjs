@@ -26,6 +26,13 @@ function noDevtools() {
         path: 'devtools',
         namespace: 'stub',
       }));
+      // T324: devtools is a dev-only path in Ink that esbuild would otherwise
+      // inline along with the whole ws package; stub it to drop them.
+      pluginBuild.onResolve({ filter: /devtools\.js$/ }, (args) =>
+        args.importer.endsWith(path.join('ink', 'build', 'reconciler.js'))
+          ? { path: 'devtools', namespace: 'stub' }
+          : undefined
+      );
       pluginBuild.onLoad({ filter: /.*/, namespace: 'stub' }, () => ({
         contents: 'export default {}',
       }));

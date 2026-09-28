@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.donnishcomau.snote",
+  "name": "snote",
+  "version": "0.1.2",
+  "author": "qteamdon",
+  "license": "GPL-2.0-only",
+  "homepage": "https://github.com/donnishcomau/snote",
+  "description": "One-click bar button for snote, a fast, keyboard-driven Simplenote client that lives in your terminal. The first click builds and installs snote if it isn't on PATH yet.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "snote",
+    "description": "Open or focus snote, a terminal Simplenote client, from the bar. Installs snote first if it's missing.",
+    "category": "Productivity",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}

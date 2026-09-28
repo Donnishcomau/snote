@@ -36,23 +36,24 @@ without leaving the terminal, and without shipping a browser to render a text bo
 
 ## Install on Omarchy
 
-Build and install it as a regular pacman package from `packaging/aur/PKGBUILD` (needs `base-devel`):
+A one-click bar button is available through the Omarchy plugin marketplace:
 
 ```
-git clone https://github.com/donnishcomau/snote
-cd snote/packaging/aur && makepkg -si
+omarchy plugin add https://github.com/donnishcomau/snote --enable
 ```
 
-Remove it with `sudo pacman -R snote`. (The same PKGBUILD will go to the AUR once AUR account
-registration reopens.)
-
-Or run it from a source checkout without packaging:
+The first click builds snote from this plugin's own clone if it isn't on `PATH` yet, and adds a
+`~/.local/bin/snote` shim; later clicks launch or focus it, and rebuild after a plugin update.
+Remove it with:
 
 ```
-npm install
-npm run build
-sh packaging/omarchy/install.sh
+~/.config/omarchy/plugins/io.github.donnishcomau.snote/packaging/omarchy/uninstall
+omarchy plugin remove io.github.donnishcomau.snote
 ```
+
+A pacman package recipe lives at `packaging/aur/PKGBUILD`, and building from a source checkout
+(`npm ci`, then `npm run build`, then `sh packaging/omarchy/install.sh` for the desktop launcher)
+is documented in `docs/INSTALL.md`.
 
 Run `snote --check` to print the editor, data dir, terminal size and whether `wl-copy` and `omarchy-launch-tui` were found.
 
@@ -146,7 +147,7 @@ version 2 (GPLv2). See the `NOTICE` file for full attribution details and the
 
 ## Develop
 ```
-npm install
+npm ci
 make check            # the only definition of done
 npm run dev           # run from source
 ```
