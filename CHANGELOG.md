@@ -3,6 +3,42 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.1.3
+
+### Added
+
+- Send the open note to your blog as a draft with `b`. Skryf
+  (https://skryf.art) is the ready-to-go default: the first `b` asks
+  only for a Skryf token, with a pointer to where to create one
+  (https://skryf.art/settings/keys). Set `SNOTE_BLOG_ORIGIN` to point
+  snote at another `https` blog that speaks the same API instead; then
+  the first `b` asks for that blog's token. The origin and token are
+  stored locally in `blog.json` (mode `0600`), next to the Simplenote
+  login. snote posts `{ title, markdown, draft: true }` to
+  `<origin>/api/agent/posts`. A note that was already sent asks before
+  creating another draft. The preview shows `Sent as draft`, the date,
+  and the editor URL. That line stays on this machine; it is not written
+  into the note. Tags are not sent. Checklist lines are rewritten to
+  `☐` and `☑` before the post. Publishing the draft live stays on the
+  blog.
+- A new demo GIF in the README and the plugin listing shows the blog
+  send flow.
+
+### Fixed
+
+- A second blog send's `y` answer could be dropped right after the
+  first send.
+- The saved blog token and send records were lost on restart.
+
+### Changed
+
+- The direct `esbuild` dependency is `0.28.2`.
+- `vitest` and `@vitest/mocker` are `4.1.11`.
+- The Omarchy plugin marketplace listing moved to a new plugin id,
+  `io.github.donnishcomau.snote-simplenote`, because the marketplace
+  can't move a listing between repos. Remove any old listing under
+  the previous id and add the plugin again to pick up the new one.
+
 ## 0.1.2
 
 ### Added

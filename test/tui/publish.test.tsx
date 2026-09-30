@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { render } from 'ink-testing-library';
 import React from 'react';
 
@@ -47,7 +47,7 @@ function seededStore() {
 
 describe('Publish link display and copy (y)', () => {
   let store: ReturnType<typeof makeStore>;
-  let spy: ReturnType<typeof vi.fn>;
+  let spy: Mock;
 
   beforeEach(() => {
     store = seededStore();

@@ -65,8 +65,8 @@ describe('Help report line (T248)', () => {
     unmount();
   });
 
-  it('4: (source, negative space) WHEN src/core/keymap.ts is imported THEN keymap.length is 34 (unchanged) and no entry.description equals Found a bug? Run snote --report to save a report bundle..', () => {
-    expect(keymap.length).toBe(34);
+  it('4: (source, negative space) WHEN src/core/keymap.ts is imported THEN keymap.length is 35 (unchanged) and no entry.description equals Found a bug? Run snote --report to save a report bundle..', () => {
+    expect(keymap.length).toBe(35);
     for (const entry of keymap) {
       expect(entry.description).not.toBe(REPORT_LINE);
     }

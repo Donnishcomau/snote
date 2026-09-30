@@ -1,8 +1,19 @@
 // Vitest setup file for Node environment
 // Provides window shim for vendored Simplenote code
 
+import { Console } from 'node:console';
 import { vi } from 'vitest';
 import path from 'node:path';
+
+// Vitest 4's console intercept replaces `console` and drops Node's Console
+// constructor. Ink's real render (`patch-console`) does `new console.Console`.
+if (typeof console.Console !== 'function') {
+  Object.defineProperty(console, 'Console', {
+    value: Console,
+    writable: true,
+    configurable: true,
+  });
+}
 
 // Prevent any test from ever launching a real editor window: point SNOTE_EDITOR at a no-op stand-in named "omawrite" so editor-dependent text stays unchanged.
 process.env.SNOTE_EDITOR = path.resolve('test/fixtures/bin/omawrite');

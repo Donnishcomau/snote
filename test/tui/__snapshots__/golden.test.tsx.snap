@@ -155,14 +155,14 @@ exports[`Golden frames: search, tags, help > 5: WHEN at 80x24 ? is written THEN 
 │  n       New note                     R       Rename tag (tags pane)         │
 │  g       Edit tags of the selected no x       Delete tag (tags pane)         │
 │  w       Export note to .md           r       Sync now                       │
-│  L       Log out (asks first)         P       Publish / unpublish            │
-│  d       Move to trash                y       Copy the public link           │
-│  u       Restore from trash (trash vi h       Note history (Enter restores   │
-│  D       Delete forever (trash view)  c       Tick / untick item (note)      │
-│  T       Show trash / all notes       a       Add checklist item (note)      │
+│  b       Send to blog as draft        P       Publish / unpublish            │
+│  L       Log out (asks first)         y       Copy the public link           │
+│  d       Move to trash                h       Note history (Enter restores   │
+│  u       Restore from trash (trash vi c       Tick / untick item (note)      │
+│  D       Delete forever (trash view)  a       Add checklist item (note)      │
+│  T       Show trash / all notes                                              │
 │  Found a bug? Run snote --report to save a report bundle.                    │
 │  Editing: save with Ctrl+S and close the window to return                    │
-│                                                                              │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘"
 `;
@@ -183,8 +183,9 @@ exports[`Golden frames: search, tags, help > 6: WHEN at 120x40 ? is written THEN
 │e         Edit in $EDITOR                                 P         Publish / unpublish            │
 │n         New note                                        y         Copy the public link           │
 │w         Export note to .md                              App                                      │
-│p         Pin / unpin                                     q         Quit                           │
-│m         Markdown on / off                               L         Log out (asks first)           │
+│b         Send to blog as draft                           q         Quit                           │
+│p         Pin / unpin                                     L         Log out (asks first)           │
+│m         Markdown on / off                                                                        │
 │h         Note history (Enter restores)                                                            │
 │c         Tick / untick item (note)                                                                │
 │a         Add checklist item (note)                                                                │
@@ -198,7 +199,6 @@ exports[`Golden frames: search, tags, help > 6: WHEN at 120x40 ? is written THEN
 │Found a bug? Run snote --report to save a report bundle.                                           │
 │Editing: save with Ctrl+S and close the window to return                                           │
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
 
 
 

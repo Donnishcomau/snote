@@ -6,7 +6,7 @@ import type { State } from '../core/store';
 import { keyNameFromEvent } from '../core/keymap';
 import { Help } from './Help';
 import { selectEditor } from '../core/editor-select';
-import { BottomArea, useItemAsk, useExportAsk } from './BottomArea';
+import { BottomArea, useItemAsk, useExportAsk } from './BottomArea'; import { useBlogSendAsk } from './blog-send-ask';
 import { MainPanes } from './MainPanes';
 import { shouldAutoOpenTags } from '../core/layout';
 import { noteKeyAction, emptyTrashActions } from '../core/note-keys';
@@ -55,9 +55,8 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   const [historyIndex, setHistoryIndex] = useState(0);
   const [reading, setReading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const { itemAsk, setItemAsk } = useItemAsk();
-  // T298: the export prompt state, same trick as useItemAsk above
-  const { exportAsk, setExportAsk } = useExportAsk();
+  // T293/T298/T338: prompts whose state lives in BottomArea, read via cells
+  const { itemAsk, setItemAsk } = useItemAsk(); const { exportAsk, setExportAsk } = useExportAsk(); const { setBlogSendAsk } = useBlogSendAsk();
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
   const syncedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tagsAutoOpenedRef = useRef(false);
@@ -67,7 +66,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   // Handle keyboard input
   const handleKey = (input: string, key: import('ink').Key) => {
     // T291: with a text prompt open the ring stores '<text>', never the typed char
-    recordKeyEvent(input, key, Boolean(searchOpen || tagEditorOpen || tagDialog?.kind === 'rename' || emptyAsk || logoutAsk || itemAsk || exportAsk));
+    recordKeyEvent(input, key, Boolean(searchOpen || tagEditorOpen || tagDialog?.kind === 'rename' || emptyAsk || logoutAsk || itemAsk || exportAsk || useBlogSendAsk().blogOpen));
     if (notice) setNotice(null);
     const keyName = keyNameFromEvent(key);
 
@@ -87,7 +86,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
     }
 
     // Ignore other keys while a prompt is open
-    if (emptyAsk || tagEditorOpen || logoutAsk || tagDialog || itemAsk || exportAsk) return;
+    if (emptyAsk || tagEditorOpen || logoutAsk || tagDialog || itemAsk || exportAsk || useBlogSendAsk().blogOpen) return;
 
     // Narrow terminal reading mode: Escape or Enter switches back to the list
     if (reading && !tagsFocused && !searchOpen && (keyName === 'Escape' || keyName === 'Enter')) {
@@ -135,7 +134,8 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
         setNoteFocused(false);
         return;
       }
-      if (handleNoteKey(input, keyName, { store, selectedEntry, itemIndex, setItemIndex, setItemAsk, setNotice, setExportAsk })) return;
+      const noteKeyCtx = { store, selectedEntry, itemIndex, setItemIndex, setItemAsk, setNotice, setExportAsk, setBlogSendAsk };
+      if (handleNoteKey(input, keyName, noteKeyCtx)) return;
     }
 
     const action = noteKeyAction(input, selectedEntry?.id ?? null, store.getState());

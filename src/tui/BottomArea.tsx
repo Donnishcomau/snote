@@ -13,6 +13,10 @@ import { pendingCount } from '../core/simperium-reducer';
 import { insertCheckItem, exportSelectedNote } from './app-actions';
 import { logoutHandlers, emptyTrashHandlers, renameHandlers, deleteTagHandlers } from './dialog-actions';
 import { documentsDir, exportFileName } from '../core/export-note';
+import { defaultDataDir } from '../core/token';
+import { useBlogSendAskState } from './blog-send-ask';
+import { BlogSendDialog } from './blog-send-dialog';
+import { loadBlogSend, blogStatusLine } from '../core/blog-sent';
 import isEmailTag from '@vendor/utils/is-email-tag';
 import type { useAppState } from './useAppState';
 import { KeyHints } from './KeyHints';
@@ -91,6 +95,7 @@ export function BottomArea({
   setNotice,
 }: BottomAreaProps): React.JSX.Element {
   const { allTagNames, connected, noteEntries, inTrash, sortLabelStr, pending } = view;
+  const blogLine = selectedEntry ? blogStatusLine(loadBlogSend(defaultDataDir(), String(selectedEntry.id))) : null;
   // T293: the checklist-item prompt state is owned here and published to the
   // module cell App.tsx reads via useItemAsk() (see itemAskRef above).
   const [itemAsk, setItemAsk] = useState(false);
@@ -101,6 +106,12 @@ export function BottomArea({
   const [exportAsk, setExportAsk] = useState(false);
   exportAskRef.current = { exportAsk, setExportAsk };
   const exportPathRef = useRef<string | null>(null);
+  // T338: open when the actions object is present; `n`/Escape close it.
+  const { phase, request } = useBlogSendAskState(
+    selectedEntry ? String(selectedEntry.id) : null,
+    selectedEntry?.note.content ?? '',
+    (message) => setNotice?.(message),
+  );
 
   // Dialog prompt handlers extracted to dialog-actions.ts (T298) to keep
   // this file under the 300-line structural cap.
@@ -209,6 +220,12 @@ export function BottomArea({
           />
           <KeyHints context="editing" width={width} />
         </>
+      ) : phase ? (
+        <BlogSendDialog
+          phase={phase}
+          setNotice={(message) => setNotice?.(message)}
+          request={request}
+        />
       ) : logoutAsk ? (
         pendingCount(store.getState().simperium) > 0
           ? (() => {
@@ -239,6 +256,7 @@ export function BottomArea({
         />
       ) : (
         <>
+          {blogLine ? <Text>{blogLine}</Text> : null}
           {selectedEntry && (() => {
             const sl = sharedLine(selectedEntry.note);
             return sl ? <Text>{sl}</Text> : null;

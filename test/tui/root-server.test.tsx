@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import { render } from 'ink-testing-library';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
@@ -25,9 +25,9 @@ const makeStoreForSpy = () =>
 
 describe('T289 saved sync token is only sent to the server it was issued for', () => {
   let dir: string;
-  let requestCode: ReturnType<typeof vi.fn>;
-  let completeLogin: ReturnType<typeof vi.fn>;
-  let passwordLogin: ReturnType<typeof vi.fn>;
+  let requestCode: Mock;
+  let completeLogin: Mock;
+  let passwordLogin: Mock;
 
   beforeEach(() => {
     dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snote-root-server-'));

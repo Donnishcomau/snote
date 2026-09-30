@@ -10,7 +10,7 @@ import qs.Ui
 // snote from this clone's own source, then launches it.
 BarWidget {
   id: root
-  moduleName: "io.github.donnishcomau.snote"
+  moduleName: "io.github.donnishcomau.snote-simplenote"
 
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight

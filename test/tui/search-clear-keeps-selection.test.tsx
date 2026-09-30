@@ -4,7 +4,7 @@
  * query applied after Enter) reselect the remembered note by id.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { render } from 'ink-testing-library';
 import React from 'react';
 import { readFileSync } from 'node:fs';
@@ -28,7 +28,7 @@ const tick = (ms = 50) => new Promise((r) => setTimeout(r, ms));
 
 describe('Search clear keeps selection', () => {
   let store: ReturnType<typeof makeStore>;
-  let runEditor: ReturnType<typeof vi.fn>;
+  let runEditor: Mock;
 
   beforeEach(() => {
     store = makeStore({ stubClient: {} });

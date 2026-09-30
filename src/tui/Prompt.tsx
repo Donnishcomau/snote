@@ -74,7 +74,9 @@ export function Prompt({ label, initial, onSubmit, onCancel }: PromptProps): Rea
     if (chars) {
       for (const ch of chars) {
         const stop =
-          ch === '\r' ? handle('', { ...key, return: true }) : handle(ch, key);
+          ch === '\r'
+            ? handle('', { ...key, return: true, escape: false })
+            : handle(ch, { ...key, return: false, escape: false });
         if (stop) return;
       }
       return;

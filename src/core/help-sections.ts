@@ -28,6 +28,7 @@ export const SECTIONS = [
       'toggle_check',
       'add_check_item',
       'export_note',
+      'send_blog',
     ],
   },
   {

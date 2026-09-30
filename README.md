@@ -4,6 +4,9 @@ A keyboard-driven terminal client for Simplenote that reuses the official open-s
 (`simperium` + the Redux sync layer from `simplenote-electron`) and adds an Omarchy-native TUI.
 GPL-2.0.
 
+snote is an unofficial, community-built Simplenote client. It is not affiliated with, endorsed
+by, or supported by Automattic.
+
 ![snote demo](docs/screenshots/demo.gif)
 
 ## Screenshots
@@ -47,8 +50,8 @@ The first click builds snote from this plugin's own clone if it isn't on `PATH` 
 Remove it with:
 
 ```
-~/.config/omarchy/plugins/io.github.donnishcomau.snote/packaging/omarchy/uninstall
-omarchy plugin remove io.github.donnishcomau.snote
+~/.config/omarchy/plugins/io.github.donnishcomau.snote-simplenote/packaging/omarchy/uninstall
+omarchy plugin remove io.github.donnishcomau.snote-simplenote
 ```
 
 A pacman package recipe lives at `packaging/aur/PKGBUILD`, and building from a source checkout
@@ -107,6 +110,7 @@ Editor selection priority: `SNOTE_EDITOR`, then the Omarchy default-editor setti
 | `n` | New note |
 | `g` | Edit tags of the selected note |
 | `w` | Export note to .md |
+| `b` | Send to blog as draft |
 | `L` | Log out (asks first) |
 | `d` | Move to trash |
 | `u` | Restore from trash (trash view) |
