@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import { render } from 'ink-testing-library';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
@@ -19,12 +19,12 @@ const waitFor = async (fn: () => boolean, ms = 1500) => {
 
 describe('T72 Root screen: password login and in-app logout', () => {
   let dir: string;
-  let makeStoreFor: ReturnType<typeof vi.fn>;
-  let requestCode: ReturnType<typeof vi.fn>;
-  let completeLogin: ReturnType<typeof vi.fn>;
-  let passwordLogin: ReturnType<typeof vi.fn>;
+  let makeStoreFor: Mock;
+  let requestCode: Mock;
+  let completeLogin: Mock;
+  let passwordLogin: Mock;
 
-  function createMakeStoreFor(): ReturnType<typeof vi.fn> {
+  function createMakeStoreFor(): Mock {
     const seedStore = makeStore({ stubClient: {} });
     seedStore.dispatch({
       type: 'CREATE_NOTE_WITH_ID',

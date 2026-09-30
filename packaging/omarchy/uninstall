@@ -3,7 +3,7 @@
 # and the omarchy-snote-plugin build directory. Does not touch snote's own
 # data directory (~/.local/share/snote — notes cache, auth token) or the
 # plugin clone itself (remove that with
-# `omarchy plugin remove io.github.donnishcomau.snote`).
+# `omarchy plugin remove io.github.donnishcomau.snote-simplenote`).
 set -eu
 
 app_dir="${XDG_DATA_HOME:-$HOME/.local/share}/omarchy-snote-plugin"

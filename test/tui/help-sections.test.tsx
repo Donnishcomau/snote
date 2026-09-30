@@ -96,8 +96,8 @@ describe('help sections layout', () => {
 });
 
 describe('SECTIONS completeness', () => {
-  it('6: WHEN src/core/help-sections.ts\'s SECTIONS is flattened to its actions arrays and compared against keymap.map(e => e.action) from src/core/keymap.ts THEN every keymap action appears in exactly one section, the six sections\' lengths are [8, 8, 6, 5, 5, 2], and the flattened total length is 34', () => {
-    const expectedLengths = [8, 8, 6, 5, 5, 2];
+  it('6: WHEN src/core/help-sections.ts\'s SECTIONS is flattened to its actions arrays and compared against keymap.map(e => e.action) from src/core/keymap.ts THEN every keymap action appears in exactly one section, the six sections\' lengths are [8, 9, 6, 5, 5, 2], and the flattened total length is 35', () => {
+    const expectedLengths = [8, 9, 6, 5, 5, 2];
     expect(SECTIONS.length).toBe(6);
     expect(SECTIONS.map((s) => s.actions.length)).toEqual(expectedLengths);
 
@@ -107,7 +107,7 @@ describe('SECTIONS completeness', () => {
         flattened.push(action);
       }
     }
-    expect(flattened.length).toBe(34);
+    expect(flattened.length).toBe(35);
 
     const keymapActions = keymap.map((e) => e.action);
     keymapActions.forEach((action) => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { render } from 'ink-testing-library';
 import React from 'react';
 
@@ -34,7 +34,7 @@ function buildStore(): ReturnType<typeof makeStore> {
 describe('force-sync key', () => {
   describe('1: onForceSync prop called once', () => {
     let store: ReturnType<typeof makeStore>;
-    let spy: ReturnType<typeof vi.fn>;
+    let spy: Mock;
 
     beforeEach(() => {
       store = buildStore();
@@ -62,12 +62,12 @@ describe('force-sync key', () => {
 
   describe('2: store forceSync called twice', () => {
     let store: ReturnType<typeof makeStore>;
-    let spy: ReturnType<typeof vi.fn>;
+    let spy: Mock;
 
     beforeEach(() => {
       store = buildStore();
       (store as { forceSync?: () => void }).forceSync = vi.fn();
-      spy = store.forceSync as ReturnType<typeof vi.fn>;
+      spy = store.forceSync as Mock;
     });
 
     it('WHEN no prop is given, the store has a forceSync spy and r is written twice THEN that spy was called exactly twice', async () => {
@@ -87,8 +87,8 @@ describe('force-sync key', () => {
 
   describe('3: prop wins over store forceSync', () => {
     let store: ReturnType<typeof makeStore>;
-    let spy: ReturnType<typeof vi.fn>;
-    let storeSpy: ReturnType<typeof vi.fn>;
+    let spy: Mock;
+    let storeSpy: Mock;
 
     beforeEach(() => {
       store = buildStore();
@@ -141,7 +141,7 @@ describe('force-sync key', () => {
 
   describe('5: help overlay blocks r', () => {
     let store: ReturnType<typeof makeStore>;
-    let spy: ReturnType<typeof vi.fn>;
+    let spy: Mock;
 
     beforeEach(() => {
       store = buildStore();

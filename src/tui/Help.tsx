@@ -107,6 +107,11 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
 
   const editorHint = editorFinishHint(editor ?? 'nvim');
 
+  // Wide path (cols>=100): pure two-column text output. The box hugs its
+  // content so the title is never scrolled off a short terminal.
+  const wide = entries === undefined && width >= 100;
+  const wideLines = wide ? layoutHelp(width, height, editor ?? 'nvim') : [];
+
   // Legacy flat-path content (preserved from original Help implementation)
   const flatContent = (
     <Box flexDirection="column" width={width} height={height}>
@@ -142,10 +147,6 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
     </Box>
   );
 
-  // Wide path (cols>=100): pure two-column text layout, box height hugs content.
-  const wide = entries === undefined && width >= 100;
-  const wideLines = wide ? layoutHelp(width, height, editor ?? 'nvim') : [];
-
   // Narrow path (T298): when the screen is too short for the sectioned
   // layout (80x24), switch to a two-column flat list that fits every
   // entry without truncating descriptions below what fits in a column.
@@ -157,7 +158,7 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
     <Box
       flexDirection="column"
       width={width}
-      height={wide ? Math.min(height, wideLines.length + 2) : height}
+      height={wide ? wideLines.length + 2 : height}
       borderStyle="single"
     >
       {wide

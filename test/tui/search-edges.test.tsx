@@ -4,7 +4,7 @@
  * after the input was closed, and note keys act on the filtered list.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { render } from 'ink-testing-library';
 import React from 'react';
 
@@ -18,8 +18,8 @@ const eid = (id: string): EntityId => id as unknown as EntityId;
 
 describe('Search edges', () => {
   let store: ReturnType<typeof makeStore>;
-  let onQuit: ReturnType<typeof vi.fn>;
-  let runEditor: ReturnType<typeof vi.fn>;
+  let onQuit: Mock;
+  let runEditor: Mock;
 
   beforeEach(() => {
     store = makeStore({ stubClient: {} });

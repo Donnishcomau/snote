@@ -100,23 +100,47 @@ export function accountDir(root: string, email: string): string {
   return path.join(root, safe);
 }
 
+// Files that stay at the data-dir root, never swept into the account
+// sub-folder: `auth.json` (T156), and the blog integration's own files
+// (blog.json, blog-sent.json) — every blog read/write in src/tui goes
+// through defaultDataDir() (the root), not the account folder, so there is
+// no per-account blog scoping to preserve here.
+const ROOT_ONLY_FILES = ['auth.json', 'blog.json', 'blog-sent.json'];
+
 /**
  * Move plain files from `root` into the account sub-folder (one-time migration
- * from a single-folder install).  `auth.json` is never moved.  Folders are
- * never touched.  Files whose target already exists in the account folder are
- * left in place.  Returns the sorted list of filenames that were moved.
+ * from a single-folder install).  `auth.json` is never moved, and neither are
+ * the blog files (see ROOT_ONLY_FILES above).  Folders are never touched.
+ * Files whose target already exists in the account folder are left in place.
+ * Returns the sorted list of filenames that were moved into the account
+ * folder (blog files moved back out to the root are not included).
+ *
+ * blog-restart-fix: an earlier build of this migration had no such
+ * exclusion and swept blog.json/blog-sent.json into the account folder on
+ * the very next start, where nothing ever read them again — the saved blog
+ * token and send records silently vanished. Any install a buggy run already
+ * affected is repaired here too: a blog file found in the account folder is
+ * moved back to the root, once, before the root is scanned.
  */
 export function migrateLegacyData(root: string, email: string): string[] {
   if (!fs.existsSync(root)) {
     return [];
   }
+  const acctPath = accountDir(root, email);
+  for (const name of ['blog.json', 'blog-sent.json']) {
+    const from = path.join(acctPath, name);
+    const to = path.join(root, name);
+    if (fs.existsSync(from) && !fs.existsSync(to)) {
+      fs.renameSync(from, to);
+    }
+  }
+
   const entries = fs.readdirSync(root, { withFileTypes: true });
   const files = entries.filter(e => e.isFile());
-  const filesToMove = files.filter(e => e.name !== 'auth.json');
+  const filesToMove = files.filter(e => !ROOT_ONLY_FILES.includes(e.name));
   if (filesToMove.length === 0) {
     return [];
   }
-  const acctPath = accountDir(root, email);
   secureMkdir(acctPath);
   const moved: string[] = [];
   for (const entry of filesToMove) {

@@ -4,7 +4,7 @@
  * is truncated at width boundaries, and sits above the status line.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { render } from 'ink-testing-library';
 import React from 'react';
 import { createRequire } from 'module';
@@ -33,8 +33,8 @@ async function forceInkChalk(): Promise<{ level: number; restore: () => void }> 
 
 describe('Search visibility: focus marker and truncation', () => {
   let store: ReturnType<typeof makeStore>;
-  let onQuit: ReturnType<typeof vi.fn>;
-  let runEditor: ReturnType<typeof vi.fn>;
+  let onQuit: Mock;
+  let runEditor: Mock;
 
   beforeEach(() => {
     store = makeStore({ stubClient: {} });

@@ -22,6 +22,7 @@ export const keymap: KeymapEntry[] = [
   { key: 'n', action: 'new_note', description: 'New note' },
   { key: 'g', action: 'edit_tags', description: 'Edit tags of the selected note' },
   { key: 'w', action: 'export_note', description: 'Export note to .md' },
+  { key: 'b', action: 'send_blog', description: 'Send to blog as draft' },
   { key: 'L', action: 'logout', description: 'Log out (asks first)' },
   { key: 'd', action: 'trash_note', description: 'Move to trash' },
   { key: 'u', action: 'restore_note', description: 'Restore from trash (trash view)' },

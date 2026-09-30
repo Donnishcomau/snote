@@ -1,6 +1,6 @@
 # Maintainer: qteamdon <201689496+qteamdon@users.noreply.github.com>
 pkgname=snote
-pkgver=0.1.2
+pkgver=0.1.3
 pkgrel=1
 pkgdesc="Simplenote client for Omarchy (terminal UI)"
 arch=('any')

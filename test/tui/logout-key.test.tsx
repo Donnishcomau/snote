@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { render } from 'ink-testing-library';
 import React from 'react';
 
@@ -13,9 +13,9 @@ const eid = (id: string): EntityId => id as unknown as EntityId;
 
 describe('Logout key (T71)', () => {
   let store: ReturnType<typeof makeStore>;
-  let onLogout: ReturnType<typeof vi.fn>;
-  let onQuit: ReturnType<typeof vi.fn>;
-  let runEditor: ReturnType<typeof vi.fn>;
+  let onLogout: Mock;
+  let onQuit: Mock;
+  let runEditor: Mock;
 
   beforeEach(() => {
     store = makeStore({ stubClient: {} });

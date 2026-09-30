@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { render } from 'ink-testing-library';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -17,7 +17,7 @@ const waitFor = async (fn: () => boolean, ms = 1500) => {
 };
 
 // Helper to create a mock store factory that returns a stub store seeded with 2 notes
-function createMakeStoreFor(): ReturnType<typeof vi.fn> {
+function createMakeStoreFor(): Mock {
   const seedStore = makeStore({ stubClient: {} });
   seedStore.dispatch({
     type: 'CREATE_NOTE_WITH_ID',
