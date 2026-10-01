@@ -11,11 +11,11 @@ const RESEND_QUESTION = 'Already sent as a draft. Send again as a new draft?';
 
 export function BlogSendDialog({
   phase,
-  setNotice,
+  setNoticeError,
   request,
 }: {
   phase: BlogPhase;
-  setNotice: (message: string) => void;
+  setNoticeError: (message: string) => void;
   request: (next: BlogPhase | 'close') => void;
 }): React.JSX.Element {
   if (phase.kind === 'origin') {
@@ -47,7 +47,7 @@ export function BlogSendDialog({
             () => request({ kind: 'send' }),
             (error: unknown) => {
               const msg = error instanceof Error ? error.message : 'blog setup failed';
-              setNotice(msg);
+              setNoticeError(msg);
               request('close');
             },
           );

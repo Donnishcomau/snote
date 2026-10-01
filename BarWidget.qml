@@ -50,6 +50,17 @@ BarWidget {
 
   readonly property string setupScript: root.localPath("packaging/omarchy/setup")
 
+  // setupScript is a plain filesystem path built from this plugin clone's
+  // own on-disk location (via Qt.resolvedUrl, not from any environment
+  // variable), so in practice it never contains a single quote. Still,
+  // launchOrHint() below embeds it inside a single-quoted shell string, so
+  // escape defensively rather than assume: a literal single quote in the
+  // path would otherwise close that quote early and let whatever follows
+  // it run as a second, unintended shell command.
+  function shellEscapeSingleQuoted(path) {
+    return String(path).replace(/'/g, "'\\''")
+  }
+
   function launchOrHint() {
     if (root.snoteAvailable && !root.snoteStale) {
       if (root.bar) root.bar.run("omarchy-launch-or-focus-tui snote")
@@ -58,7 +69,7 @@ BarWidget {
     if (root.bar) {
       root.bar.run(
         "omarchy-launch-floating-terminal-with-presentation '"
-        + root.setupScript + " && omarchy-launch-or-focus-tui snote'"
+        + root.shellEscapeSingleQuoted(root.setupScript) + " && omarchy-launch-or-focus-tui snote'"
       )
     }
   }

@@ -11,7 +11,7 @@ import { MainPanes } from './MainPanes';
 import { shouldAutoOpenTags } from '../core/layout';
 import { noteKeyAction, emptyTrashActions } from '../core/note-keys';
 import { checklistItems } from '../core/checklist';
-import { useAppState } from './useAppState';
+import { useAppState } from './useAppState'; import { useNotice, noticeColor } from './notice';
 import { handleSearchKey, handleSearchClearKey, handleTagsKey, handleHistoryKey, handleIdleKey, useAppEffects, recordKeyEvent, openHistory } from './app-keys';
 import { handleNoteKey } from './note-focus';
 import { useReselect } from './use-reselect';
@@ -54,9 +54,9 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [reading, setReading] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
   // T293/T298/T338: prompts whose state lives in BottomArea, read via cells
   const { itemAsk, setItemAsk } = useItemAsk(); const { exportAsk, setExportAsk } = useExportAsk(); const { setBlogSendAsk } = useBlogSendAsk();
+  const { notice, setNotice, setNoticeError, clearNotice } = useNotice();
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
   const syncedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tagsAutoOpenedRef = useRef(false);
@@ -67,7 +67,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   const handleKey = (input: string, key: import('ink').Key) => {
     // T291: with a text prompt open the ring stores '<text>', never the typed char
     recordKeyEvent(input, key, Boolean(searchOpen || tagEditorOpen || tagDialog?.kind === 'rename' || emptyAsk || logoutAsk || itemAsk || exportAsk || useBlogSendAsk().blogOpen));
-    if (notice) setNotice(null);
+    if (notice) clearNotice();
     const keyName = keyNameFromEvent(key);
 
     // If help is open, only handle Escape and ?
@@ -160,9 +160,9 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
     if (input === 'h') {
       openHistory({ store, selectedEntry, setHistoryOpen, setHistoryIndex });
     } else if (input === 'e') {
-      editSelectedNote({ store, selectedEntry, setRawMode, runEditor, onEditorError: setNotice, suspend: suspendTerminal });
+      editSelectedNote({ store, selectedEntry, setRawMode, runEditor, onEditorError: setNoticeError, suspend: suspendTerminal });
     } else if (input === 'n') {
-      createNote({ store, topNote: noteEntries[0]?.note, setRawMode, runEditor, setSelectedIndex, onEditorError: setNotice, onNoteCreated: () => setNotice('New note saved — press g to add tags'), suspend: suspendTerminal });
+      createNote({ store, topNote: noteEntries[0]?.note, setRawMode, runEditor, setSelectedIndex, onEditorError: setNoticeError, onNoteCreated: () => setNotice('New note saved — press g to add tags'), suspend: suspendTerminal });
     } else if (input === 'j' || keyName === 'downArrow') {
       setSelectedIndex((i) => Math.min(i + 1, noteEntries.length - 1));
     } else if (input === 'k' || keyName === 'upArrow') {
@@ -224,7 +224,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
             tagIndex={tagIndex} rendered={rendered} searchOpen={searchOpen} selectedNote={selectedNote}
             historyOpen={historyOpen} historyIndex={historyIndex} reading={reading}
             noteFocused={noteFocused} cursorLine={cursorLine} />
-          {notice ? <Text color="red">{notice}</Text> : null}
+          {notice ? <Text color={noticeColor(notice)}>{notice.message}</Text> : null}
           <BottomArea
             store={store}
             view={{
@@ -237,7 +237,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
             onLogout={onLogout}
             tagEditorOpen={tagEditorOpen} setTagEditorOpen={setTagEditorOpen} tagDialog={tagDialog} setTagDialog={setTagDialog}
             logoutAsk={logoutAsk} setLogoutAsk={setLogoutAsk} emptyAsk={emptyAsk} setEmptyAsk={setEmptyAsk} copyResult={copyResult}
-            tagsFocused={tagsFocused} searchOpen={searchOpen} itemIndex={itemIndex} setNotice={setNotice} />
+            tagsFocused={tagsFocused} searchOpen={searchOpen} itemIndex={itemIndex} setNotice={setNotice} setNoticeError={setNoticeError} />
         </>
       )}
     </Box>

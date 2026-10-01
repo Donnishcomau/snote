@@ -3,6 +3,30 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.1.4
+
+### Security
+
+- `packaging/omarchy/setup` no longer uses `rsync --delete` into an
+  existing directory. It refuses when the plugin data directory or
+  the build directory is a symlink, builds into a fresh directory it
+  creates itself and swaps it in, writes the `~/.local/bin/snote` shim
+  through a temp file and only ever over its own shim (marker line, or
+  the recognised pre-0.1.4 shim), and `uninstall` removes only what the
+  installer created. `install.sh` got the same treatment. Reported by
+  the Omarchy plugin marketplace maintainers
+  (omacom/omarchy-plugin-marketplace#9458).
+- `XDG_DATA_HOME` and `~/.local/bin` are resolved with `realpath -m`
+  rather than refused outright for being symlinks (common for dotfile
+  managers and second disks); the hard refusal is scoped to the
+  directories this installer actually owns.
+
+### Fixed
+
+- Error notices still render red; success and info notices (`draft
+  sent to your blog`, `New note saved`) now render green instead of
+  looking like failures.
+
 ## 0.1.3
 
 ### Added

@@ -6,19 +6,54 @@
 # `omarchy plugin remove io.github.donnishcomau.snote-simplenote`).
 set -eu
 
-app_dir="${XDG_DATA_HOME:-$HOME/.local/share}/omarchy-snote-plugin"
+data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
+app_dir="$data_home/omarchy-snote-plugin"
 shim="$HOME/.local/bin/snote"
+# Must match packaging/omarchy/setup's shim_marker exactly: it's how we
+# tell "a shim this installer wrote" apart from some other file a user or
+# another tool happens to have at the same path.
+shim_marker="# snote-omarchy-shim v1 (packaging/omarchy/setup) — safe to remove"
+
+# Must match packaging/omarchy/setup's is_legacy_shim exactly: a shim
+# written before the marker line existed (0.1.2/0.1.3) has no marker to
+# check, but is still ours — recognise it by its exec line instead so it
+# gets cleaned up too, not left behind as an unrecognised file forever.
+is_legacy_shim() {
+  local path="$1" size
+  [ -f "$path" ] && [ ! -L "$path" ] || return 1
+  size="$(wc -c < "$path" 2>/dev/null || echo 0)"
+  [ "$size" -le 1024 ] || return 1
+  grep -qF 'omarchy-snote-plugin/app/dist/cli.js' "$path" 2>/dev/null
+}
 
 log() { printf '==> %s\n' "$1"; }
 
-if [ -e "$shim" ]; then
-  rm -f "$shim"
-  log "removed $shim"
+# Only remove what we created, and never follow a symlink into deleting
+# something else. `rm`/`rm -rf` already only ever unlink the path they're
+# given — they don't recurse through a *destination* symlink the way
+# `rsync --delete` would — but blindly removing a symlink (or a plain file)
+# at $shim/$app_dir that this installer never wrote is still removing
+# something that isn't ours: it could be a user's own symlink, or an
+# unrelated file/directory another tool left at the same path. So each
+# check below confirms "ours" first (the marker line, or the legacy
+# exec-line pattern, for the shim; "is a real directory, not a symlink"
+# for the build dir) and otherwise leaves the path untouched.
+if [ -L "$shim" ]; then
+  log "$shim is a symlink, which this installer never creates — leaving it in place"
+elif [ -e "$shim" ]; then
+  if grep -qF "$shim_marker" "$shim" 2>/dev/null || is_legacy_shim "$shim"; then
+    rm -f "$shim"
+    log "removed $shim"
+  else
+    log "$shim exists but doesn't look like snote's shim (no marker found) — leaving it in place"
+  fi
 else
   log "$shim was not present"
 fi
 
-if [ -d "$app_dir" ]; then
+if [ -L "$app_dir" ]; then
+  log "$app_dir is a symlink, which this installer never creates — leaving it in place"
+elif [ -d "$app_dir" ]; then
   rm -rf "$app_dir"
   log "removed $app_dir"
 else

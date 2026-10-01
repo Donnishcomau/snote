@@ -25,13 +25,106 @@ set -eu
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 src_dir="$(cd "$here/../.." && pwd)"
 
-app_dir="${XDG_DATA_HOME:-$HOME/.local/share}/omarchy-snote-plugin/app"
-bin_dir="$HOME/.local/bin"
-shim="$bin_dir/snote"
-node_spec="node@22"
-
 log() { printf '==> %s\n' "$1"; }
 fail() { printf 'snote setup: %s\n' "$1" >&2; exit 1; }
+
+command -v realpath >/dev/null 2>&1 || fail "realpath is required but was not found on PATH"
+
+# --- Base directories: resolve through symlinks, never refuse them -----
+# XDG_DATA_HOME and ~/.local/bin are routinely symlinks in the wild —
+# dotfile managers, a second disk, a bind mount — and that's normal, not
+# a sign of anything wrong. Refusing to run because one of *those* is a
+# symlink would lock real users out for no security benefit, and it's not
+# what the reported finding was about ("that destination or its parent").
+# So these two are resolved with `realpath -m` (follows symlinks, and
+# tolerates a tail that doesn't exist yet on a first-ever install) and
+# every path below is built from the resolved result, not the raw one.
+data_home="$(realpath -m "${XDG_DATA_HOME:-$HOME/.local/share}")"
+bin_dir="$(realpath -m "$HOME/.local/bin")"
+
+plugin_dir="$data_home/omarchy-snote-plugin"
+app_dir="$plugin_dir/app"
+shim="$bin_dir/snote"
+node_spec="node@22"
+# First line written into the shim so uninstall (and a future setup re-run)
+# can tell "ours" apart from some other file/symlink a user or another tool
+# left at the same path, without guessing from content shape.
+shim_marker="# snote-omarchy-shim v1 (packaging/omarchy/setup) — safe to remove"
+
+# A shim written by setup before this marker existed (0.1.2/0.1.3): a
+# plain, small, regular file whose exec line names this plugin's own
+# build path. Existing users who installed through the plugin before the
+# marker was added have exactly this file at $shim with nothing else to
+# identify it by — recognise it by that exec line so their next update
+# replaces it (and gets the marker) instead of refusing to touch it.
+is_legacy_shim() {
+  local path="$1" size
+  [ -f "$path" ] && [ ! -L "$path" ] || return 1
+  size="$(wc -c < "$path" 2>/dev/null || echo 0)"
+  [ "$size" -le 1024 ] || return 1
+  grep -qF 'omarchy-snote-plugin/app/dist/cli.js' "$path" 2>/dev/null
+}
+
+# --- Symlink/ownership guard --------------------------------------------
+# Everything below this point either (a) writes a fresh build into a
+# directory under $plugin_dir and swaps it into place, or (b) writes the
+# ~/.local/bin/snote shim. Both are destructive-adjacent: the original
+# version of this script ran `rsync -a --delete` straight into the
+# existing $app_dir, and `rsync --delete`, unlike plain rm, *follows* a
+# destination symlink and then deletes, inside whatever real directory
+# that symlink points to, anything not present in the source tree.
+#
+# Unlike the base directories above, $plugin_dir and $app_dir ARE this
+# installer's own: nothing else should legitimately replace either with a
+# symlink, since they're exactly the paths setup itself creates and
+# writes into. If either had been swapped for a symlink — by an attacker,
+# a leftover from another tool, or just a stale mount — first-click setup
+# would silently rsync into, and prune files from, an unrelated directory.
+# So these two get a hard refusal rather than realpath's "resolve through
+# it" treatment.
+#
+# The fix is two-fold:
+#   1. Refuse outright, before doing anything else (no mise check, no
+#      network, nothing), if plugin_dir or app_dir already exists and is
+#      a symlink. This is deliberately one of the first things the script
+#      does after computing paths, so it is cheap to test and can't be
+#      skipped by any later early-exit (including `--check`).
+#   2. Never again use `rsync --delete` (or `rm -rf`) against a path that
+#      could have been swapped for a symlink between this check and the
+#      write. Instead, build into a brand-new directory this script
+#      creates itself with `mktemp -d` *inside* the now-verified
+#      $plugin_dir, and only ever `mv` (an atomic rename within the same
+#      filesystem, not a recursive copy/delete) the finished build into
+#      $app_dir's place. A plain `mv` replaces the destination directory
+#      entry itself — it does not dereference a destination symlink the
+#      way `rsync --delete` or a shell `>` redirect does — so even a
+#      last-instant symlink swap can't redirect that step.
+assert_not_symlink() {
+  # $1 = human label for the message, $2 = path to check
+  if [ -L "$2" ]; then
+    fail "$1 ($2) is a symlink; refusing to build or write there. Remove the symlink (or point $1 at a real directory) and re-run."
+  fi
+}
+assert_not_symlink "the plugin data directory" "$plugin_dir"
+assert_not_symlink "the build directory" "$app_dir"
+
+# Same reasoning for the shim path: the original script wrote it with a
+# plain `cat > "$shim"` redirect, which — just like `rsync --delete` above —
+# follows a destination symlink and writes through it. And even when
+# $shim is an ordinary file rather than a symlink, overwriting it is only
+# safe if this installer is the one that wrote it (or it's a pre-marker
+# legacy shim, see is_legacy_shim above); otherwise it's someone else's
+# file at that path. Check all of this up front, for the same reasons as
+# above: cheap, first, no mise/network needed to find out. $bin_dir
+# itself is a base/resolved directory (see above) and is never refused
+# for being a symlink; only the shim file it contains is.
+mkdir -p "$bin_dir"
+if [ -L "$shim" ]; then
+  fail "$shim is a symlink; refusing to write through it. Remove it manually and re-run."
+fi
+if [ -e "$shim" ] && ! grep -qF "$shim_marker" "$shim" 2>/dev/null && ! is_legacy_shim "$shim"; then
+  fail "$shim already exists and was not created by this installer (no snote marker found in it); refusing to overwrite it. Move it aside and re-run."
+fi
 
 # The clone's own version, read without invoking node — a plain grep/sed on
 # package.json's "version" field. Used both for the idempotent fast path and
@@ -48,7 +141,8 @@ source_version="$(package_version "$src_dir")"
 # whether a click can launch straight away or needs to route through this
 # script's visible install path first. Exits 0 when the installed app's
 # VERSION already matches this clone's package.json version, 1 otherwise
-# (including "nothing installed yet"). No node call, no side effects.
+# (including "nothing installed yet" and "the symlink guard above fired").
+# No node call, no side effects.
 if [ "${1:-}" = "--check" ]; then
   [ -f "$app_dir/VERSION" ] && [ "$(cat "$app_dir/VERSION")" = "$source_version" ]
   exit $?
@@ -69,38 +163,82 @@ if [ -x "$shim" ] && [ -f "$app_dir/VERSION" ] && [ -f "$app_dir/dist/cli.js" ] 
   exit 0
 fi
 
-log "Copying snote source ($src_dir) into $app_dir..."
-mkdir -p "$app_dir"
-# rsync keeps this idempotent and skips VCS/build clutter; fall back to cp
-# if rsync isn't available.
+log "Building snote from $src_dir into a fresh directory under $plugin_dir..."
+mkdir -p "$plugin_dir"
+# Re-check right before creating anything: mkdir -p above is a no-op if
+# plugin_dir already existed, but if it was swapped for a symlink in the
+# instant between the guard above and here, this still catches it before
+# mktemp would create a directory inside an attacker-chosen location.
+assert_not_symlink "the plugin data directory" "$plugin_dir"
+
+build_tmp="$(mktemp -d "$plugin_dir/app.XXXXXX")"
+# Clean up the scratch directory on any failure path; cleared right before
+# the final swap below once build_tmp has successfully become app_dir.
+trap 'rm -rf "$build_tmp"' EXIT
+
+# rsync (no --delete needed: build_tmp is always empty) keeps this close to
+# the previous behaviour and skips VCS/build clutter; fall back to cp if
+# rsync isn't available. Either way this writes into build_tmp, never into
+# the existing $app_dir.
 if command -v rsync >/dev/null 2>&1; then
-  rsync -a --delete --exclude .git --exclude node_modules --exclude dist "$src_dir"/ "$app_dir"/
+  rsync -a --exclude .git --exclude node_modules --exclude dist "$src_dir"/ "$build_tmp"/
 else
-  rm -rf "$app_dir"
-  mkdir -p "$app_dir"
-  cp -a "$src_dir"/. "$app_dir"/
-  rm -rf "$app_dir/.git" "$app_dir/node_modules" "$app_dir/dist"
+  cp -a "$src_dir"/. "$build_tmp"/
+  rm -rf "$build_tmp/.git" "$build_tmp/node_modules" "$build_tmp/dist"
 fi
 
 log "Running npm ci (this can take a minute on a cold cache)..."
-( cd "$app_dir" && mise exec "$node_spec" -- npm ci ) \
-  || fail "npm ci failed in $app_dir"
+( cd "$build_tmp" && mise exec "$node_spec" -- npm ci ) \
+  || fail "npm ci failed in $build_tmp"
 
 log "Running npm run build..."
-( cd "$app_dir" && mise exec "$node_spec" -- npm run build ) \
-  || fail "npm run build failed in $app_dir"
+( cd "$build_tmp" && mise exec "$node_spec" -- npm run build ) \
+  || fail "npm run build failed in $build_tmp"
 
-[ -f "$app_dir/dist/cli.js" ] || fail "build finished but $app_dir/dist/cli.js is missing"
+[ -f "$build_tmp/dist/cli.js" ] || fail "build finished but $build_tmp/dist/cli.js is missing"
 
-printf '%s' "$source_version" > "$app_dir/VERSION"
+printf '%s' "$source_version" > "$build_tmp/VERSION"
+
+# Swap the finished build into place. app_dir was already confirmed above
+# not to be a symlink; re-check here too (cheap, same TOCTOU reasoning as
+# above) before the swap. `mv` within $plugin_dir is a same-filesystem
+# rename, so this is atomic — there is no window where $app_dir is
+# half-written — and `mv` replaces the destination directory entry itself
+# rather than following it, so it can't be redirected by a destination
+# symlink the way `rsync --delete` could.
+if [ -e "$app_dir" ]; then
+  assert_not_symlink "the build directory" "$app_dir"
+  old_app_dir="${app_dir}.old.$$"
+  mv "$app_dir" "$old_app_dir"
+  mv "$build_tmp" "$app_dir"
+  rm -rf "$old_app_dir"
+else
+  mv "$build_tmp" "$app_dir"
+fi
+trap - EXIT
 
 log "Installing the snote shim at $shim..."
-mkdir -p "$bin_dir"
-cat > "$shim" <<EOF
+# Re-check right before writing (same TOCTOU reasoning as the app_dir
+# re-checks above): the real guard already ran, before mise/network, up
+# top; this just covers the instant between that check and this write.
+if [ -L "$shim" ]; then
+  fail "$shim is a symlink; refusing to write through it. Remove it manually and re-run."
+fi
+# Write to a scratch file next to the shim and `mv` it into place: mv
+# replaces the destination entry directly, so even if something recreated
+# $shim as a symlink in the instant after the checks above, the swap still
+# can't write through it the way a direct `cat > "$shim"` redirect would.
+# This also cleanly replaces a legacy (pre-marker) shim that passed the
+# guard above: it's simply overwritten with the marked version, same as
+# any other rebuild.
+shim_tmp="$(mktemp "$bin_dir/.snote-shim.XXXXXX")"
+cat > "$shim_tmp" <<EOF
 #!/bin/sh
+$shim_marker
 exec mise exec $node_spec -- node "$app_dir/dist/cli.js" "\$@"
 EOF
-chmod +x "$shim"
+chmod +x "$shim_tmp"
+mv "$shim_tmp" "$shim"
 
 case ":$PATH:" in
   *":$bin_dir:"*) ;;

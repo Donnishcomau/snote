@@ -71,7 +71,8 @@ interface BottomAreaProps {
   tagsFocused: boolean;
   searchOpen: boolean;
   itemIndex?: number;
-  setNotice?: (v: string | null) => void;
+  setNotice?: (v: string) => void;
+  setNoticeError?: (v: string) => void;
 }
 
 export function BottomArea({
@@ -93,6 +94,7 @@ export function BottomArea({
   searchOpen,
   itemIndex = 0,
   setNotice,
+  setNoticeError,
 }: BottomAreaProps): React.JSX.Element {
   const { allTagNames, connected, noteEntries, inTrash, sortLabelStr, pending } = view;
   const blogLine = selectedEntry ? blogStatusLine(loadBlogSend(defaultDataDir(), String(selectedEntry.id))) : null;
@@ -111,6 +113,7 @@ export function BottomArea({
     selectedEntry ? String(selectedEntry.id) : null,
     selectedEntry?.note.content ?? '',
     (message) => setNotice?.(message),
+    (message) => setNoticeError?.(message),
   );
 
   // Dialog prompt handlers extracted to dialog-actions.ts (T298) to keep
@@ -142,7 +145,7 @@ export function BottomArea({
   };
 
   const handleExportSubmit = (value: string) => {
-    exportSelectedNote({ selectedEntry, value, setNotice: (v) => setNotice?.(v) });
+    exportSelectedNote({ selectedEntry, value, setNotice: (v) => setNotice?.(v), setNoticeError: (v) => setNoticeError?.(v) });
     exportPathRef.current = null;
     setExportAsk(false);
   };
@@ -223,7 +226,7 @@ export function BottomArea({
       ) : phase ? (
         <BlogSendDialog
           phase={phase}
-          setNotice={(message) => setNotice?.(message)}
+          setNoticeError={(message) => setNoticeError?.(message)}
           request={request}
         />
       ) : logoutAsk ? (

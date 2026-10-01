@@ -61,6 +61,7 @@ export function useBlogSendAskState(
   noteId: string | null,
   content: string,
   setNotice: (message: string) => void,
+  setNoticeError: (message: string) => void,
 ): {
   phase: BlogPhase | null;
   request: (next: BlogPhase | 'close') => void;
@@ -113,7 +114,7 @@ export function useBlogSendAskState(
         () => setNotice('draft sent to your blog'),
         (error: unknown) => {
           const msg = error instanceof Error ? error.message.trim().toLowerCase() : '';
-          setNotice(msg !== '' ? msg : 'send to blog failed');
+          setNoticeError(msg !== '' ? msg : 'send to blog failed');
         },
       );
     }
