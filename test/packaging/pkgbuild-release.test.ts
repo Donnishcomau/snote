@@ -8,9 +8,9 @@ const PKG_PATH = join(process.cwd(), 'package.json');
 const pkgbuild = () => readFileSync(PKGBUILD_PATH, 'utf8');
 
 describe('pkgbuild release', () => {
-  it('1: WHEN packaging/aur/PKGBUILD is read THEN it contains pkgver=0.1.3 and pkgrel=1', () => {
+  it('1: WHEN packaging/aur/PKGBUILD is read THEN it contains pkgver=0.1.4 and pkgrel=1', () => {
     const content = pkgbuild();
-    expect(content).toContain('pkgver=0.1.3');
+    expect(content).toContain('pkgver=0.1.4');
     expect(content).toContain('pkgrel=1');
   });
 
@@ -43,8 +43,8 @@ describe('pkgbuild release', () => {
     expect(content).toContain('cd "$srcdir/snote-$pkgver"');
   });
 
-  it('6: WHEN package.json is read THEN its version field is 0.1.3', () => {
+  it('6: WHEN package.json is read THEN its version field is 0.1.4', () => {
     const pkg = JSON.parse(readFileSync(PKG_PATH, 'utf8'));
-    expect(pkg.version).toBe('0.1.3');
+    expect(pkg.version).toBe('0.1.4');
   });
 });

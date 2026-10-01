@@ -233,7 +233,8 @@ export interface ExportSelectedNoteCtx {
   // the path typed into the prompt; only its directory part is used, the
   // file name is always regenerated so a collision picks a free one
   value: string;
-  setNotice: (v: string | null) => void;
+  setNotice: (v: string) => void;
+  setNoticeError: (v: string) => void;
 }
 
 /**
@@ -244,7 +245,7 @@ export interface ExportSelectedNoteCtx {
  * a notice line.
  */
 export function exportSelectedNote(ctx: ExportSelectedNoteCtx): void {
-  const { selectedEntry, value, setNotice } = ctx;
+  const { selectedEntry, value, setNotice, setNoticeError } = ctx;
   if (!selectedEntry) return;
   const base = exportFileName(selectedEntry.note.content ?? '');
   const target = value.trim() !== '' ? value : join(documentsDir(), `${base}.md`);
@@ -252,6 +253,6 @@ export function exportSelectedNote(ctx: ExportSelectedNoteCtx): void {
   exportNote(selectedEntry.note, dir)
     .then((path) => setNotice(`exported: ${path}`))
     .catch((err: unknown) =>
-      setNotice(`export failed: ${err instanceof Error ? err.message : String(err)}`),
+      setNoticeError(`export failed: ${err instanceof Error ? err.message : String(err)}`),
     );
 }
