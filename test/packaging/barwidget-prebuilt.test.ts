@@ -4,7 +4,8 @@
 // names npm, node@22 or a build, and the check-then-setup flow that
 // shows the missing-Node fix command in the visible terminal is intact.
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -37,12 +38,27 @@ describe('BarWidget.qml + manifest.json: pre-built install wording', () => {
     expect(text).toContain('--check');
   });
 
-  it.skipIf(hasOmarchy)('4: WHEN `omarchy plugin validate` is available THEN it exits 0 on this plugin directory; otherwise this assertion is skipped', () => {
-    const result = spawnSync('omarchy', ['plugin', 'validate', process.cwd()], {
-      encoding: 'utf8',
-      timeout: 2500,
-      killSignal: 'SIGKILL',
-    });
-    expect(result.status).toBe(0);
+  it.skipIf(!hasOmarchy)('4: WHEN `omarchy plugin validate` is available THEN it exits 0 on this plugin directory; otherwise this assertion is skipped', () => {
+    // Validate a clean copy of the plugin files only: the repo root holds
+    // node_modules/.bin symlinks, which the validator rejects.
+    const dir = mkdtempSync(join(tmpdir(), 'snote-plugin-'));
+    try {
+      const files = [
+        'manifest.json', 'BarWidget.qml', 'preview.png', 'snote-icon.png',
+        'README.md', 'LICENSE', 'packaging/omarchy', 'plugin-dist',
+      ];
+      for (const f of files) {
+        const src = join(process.cwd(), f);
+        if (existsSync(src)) cpSync(src, join(dir, f), { recursive: true });
+      }
+      const result = spawnSync('omarchy', ['plugin', 'validate', dir], {
+        encoding: 'utf8',
+        timeout: 2500,
+        killSignal: 'SIGKILL',
+      });
+      expect(result.status).toBe(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
