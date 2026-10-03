@@ -183,4 +183,4 @@ if (
   writeLauncher('dist/cli.js', 'snote-main.js');
 }
 
-export { bundle, writeLauncher };
+export { bundle, writeLauncher, noDevtools, simperiumInterop, lazyIcu, BANNER };

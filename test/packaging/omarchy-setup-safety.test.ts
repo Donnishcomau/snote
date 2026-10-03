@@ -12,18 +12,15 @@
 //
 // A few scenarios need to prove the *opposite*: that the guard lets a
 // legitimate case (a symlinked XDG_DATA_HOME, a pre-marker legacy shim)
-// PAST it, without actually running a real mise/npm build (too slow for a
-// 3s test, and network is not allowed here). Those use runRestricted(),
-// which invokes the script directly (relying on its own `#!/bin/bash`
-// shebang, which the kernel resolves independently of PATH) with a PATH
-// that only contains the handful of coreutils the guard itself needs —
-// deliberately excluding mise. If the guard had rejected the symlink or
-// the legacy shim, the script would fail there with a message naming the
-// symlinked/foreign path. Instead it gets past the guard and fails for an
-// entirely different, unambiguous reason ("mise is required... not found
-// on PATH") — proof the guard let it through, without needing a real
-// multi-second build.
-import { describe, it, expect, afterEach, beforeAll } from 'vitest';
+// PAST it. Since the setup script stopped building (T342: it copies the
+// plugin's shipped plugin-dist/ instead of running npm), those cases run
+// setup against a clone with no plugin-dist and SNOTE_NODE set to this
+// very process's node. If the guard had rejected the symlink or the
+// legacy shim, the script would fail there with a message naming the
+// symlinked/foreign path. Instead it gets past the guard and fails for
+// an entirely different, unambiguous reason (the missing pre-built
+// payload) — proof the guard let it through.
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   mkdtempSync,
   rmSync,
@@ -35,6 +32,7 @@ import {
   readlinkSync,
   existsSync,
   chmodSync,
+  copyFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -54,33 +52,34 @@ function run(script: string, home: string, xdgDataHome: string, args: string[] =
   });
 }
 
-// Resolve a coreutil's absolute path via the shell, so the fake PATH
-// below works regardless of exactly where this machine keeps its binaries.
-function resolveTool(name: string): string {
-  const result = spawnSync('/bin/sh', ['-c', `command -v ${name}`], { encoding: 'utf8' });
-  const resolved = result.stdout.trim();
-  if (!resolved) throw new Error(`could not resolve "${name}" to build the restricted test PATH`);
-  return resolved;
-}
-
-// A PATH containing only what the symlink/legacy-shim guard itself needs
-// (dirname, realpath, wc, grep, mkdir, sed, head) and nothing else — in
-// particular, no mise. Built once and reused by every runRestricted() call.
-let fakeBinDir: string;
-beforeAll(() => {
-  fakeBinDir = mkdtempSync(join(tmpdir(), 'snote-fakebin-'));
-  for (const tool of ['dirname', 'realpath', 'wc', 'grep', 'mkdir', 'sed', 'head']) {
-    symlinkSync(resolveTool(tool), join(fakeBinDir, tool));
-  }
-});
-
-function runRestricted(script: string, home: string, xdgDataHome: string) {
-  return spawnSync(script, [], {
+// Run setup with SNOTE_NODE pointed at this process's own node, so it
+// gets past the Node lookup and the symlink/legacy-shim guards and only
+// then fails for the (intentionally) missing plugin-dist payload.
+function runWithNode(script: string, home: string, xdgDataHome: string) {
+  return spawnSync('bash', [script], {
     encoding: 'utf8',
-    env: { PATH: fakeBinDir, HOME: home, XDG_DATA_HOME: xdgDataHome },
+    env: {
+      PATH: process.env.PATH ?? '',
+      HOME: home,
+      XDG_DATA_HOME: xdgDataHome,
+      SNOTE_NODE: process.execPath,
+    },
     timeout: SPAWN_TIMEOUT_MS,
     killSignal: 'SIGKILL',
   });
+}
+
+// A self-contained clone holding only the setup script and deliberately NO
+// plugin-dist/, so the result is identical in the private tree and in the
+// public export (which ships a real plugin-dist/). setup derives its source
+// directory from its own location, so the copy sees the temp clone.
+function setupInCloneWithoutDist(root: string): string {
+  const dir = join(root, 'clone', 'packaging', 'omarchy');
+  mkdirSync(dir, { recursive: true });
+  const copy = join(dir, 'setup');
+  copyFileSync(SETUP, copy);
+  chmodSync(copy, 0o755);
+  return copy;
 }
 
 describe('packaging/omarchy/setup and uninstall: symlink-redirect safety', () => {
@@ -138,7 +137,7 @@ describe('packaging/omarchy/setup and uninstall: symlink-redirect safety', () =>
     expect(result.stderr).toContain(pluginDir);
   });
 
-  it('3: WHEN XDG_DATA_HOME is a symlink to a real, empty directory THEN setup gets past the guard (fails later only because mise is not on PATH, not because of a symlink message)', () => {
+  it('3: WHEN XDG_DATA_HOME is a symlink to a real, empty directory THEN setup gets past the guard (fails later only because the clone ships no plugin-dist payload, not because of a symlink message)', () => {
     tmpDir = mkdtempSync(join(tmpdir(), 'snote-setup-safety-'));
     const home = join(tmpDir, 'home');
     mkdirSync(home, { recursive: true });
@@ -148,10 +147,10 @@ describe('packaging/omarchy/setup and uninstall: symlink-redirect safety', () =>
     const xdgDataHome = join(tmpDir, 'data-symlink');
     symlinkSync(realDataHome, xdgDataHome);
 
-    const result = runRestricted(SETUP, home, xdgDataHome);
+    const result = runWithNode(setupInCloneWithoutDist(tmpDir), home, xdgDataHome);
 
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('mise is required');
+    expect(result.stderr).toContain('plugin-dist');
     expect(result.stderr).not.toContain('symlink');
   });
 
@@ -225,7 +224,7 @@ describe('packaging/omarchy/setup and uninstall: symlink-redirect safety', () =>
     expect(result.stderr).toContain(shim);
   });
 
-  it('7: WHEN ~/.local/bin/snote is a legacy pre-marker shim (small, plain file, exec line names omarchy-snote-plugin/app/dist/cli.js) THEN setup gets past the guard (fails later only because mise is not on PATH, not because the shim is foreign)', () => {
+  it('7: WHEN ~/.local/bin/snote is a legacy pre-marker shim (small, plain file, exec line names omarchy-snote-plugin/app/dist/cli.js) THEN setup gets past the guard (fails later only because the clone ships no plugin-dist payload, not because the shim is foreign)', () => {
     tmpDir = mkdtempSync(join(tmpdir(), 'snote-setup-safety-'));
     const home = join(tmpDir, 'home');
     const xdgDataHome = join(tmpDir, 'data');
@@ -242,10 +241,10 @@ describe('packaging/omarchy/setup and uninstall: symlink-redirect safety', () =>
     );
     chmodSync(shim, 0o755);
 
-    const result = runRestricted(SETUP, home, xdgDataHome);
+    const result = runWithNode(setupInCloneWithoutDist(tmpDir), home, xdgDataHome);
 
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('mise is required');
+    expect(result.stderr).toContain('plugin-dist');
     expect(result.stderr).not.toContain('not created by this installer');
   });
 

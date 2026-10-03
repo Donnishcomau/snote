@@ -6,8 +6,13 @@ import qs.Ui
 // Bar widget for snote: a bar button that launches (or focuses) snote, a
 // Simplenote client, in a terminal. There is no panel — a left click either
 // runs the launcher (snote already on PATH, and up to date) or opens a
-// visible setup terminal that builds (or rebuilds, after a plugin update)
-// snote from this clone's own source, then launches it.
+// visible setup terminal that installs snote by copying this plugin clone's
+// own pre-built files into place (or refreshes them, after a plugin
+// update), then launches it. Nothing is compiled; the install is a copy.
+// When the machine is missing a new-enough Node.js, this same terminal
+// shows the one command that fixes it (setup checks for Node before it
+// copies anything, and exits non-zero with that command before the
+// launcher line can run).
 BarWidget {
   id: root
   moduleName: "io.github.donnishcomau.snote-simplenote"
@@ -23,16 +28,17 @@ BarWidget {
 
   // "unknown" until the version-compare probe below finishes, then
   // "current" or "stale". A plugin update (`omarchy plugin update`)
-  // refreshes this clone's own package.json version but not the already
-  // built install under ~/.local/share/omarchy-snote-plugin/app — this
-  // probe is what notices that and routes the next click back through
-  // setup instead of straight to launch, even though `which snote` still
-  // succeeds (pointing at the old build).
+  // refreshes this clone's own pre-built payload under plugin-dist/ but
+  // not the already installed copy under
+  // ~/.local/share/omarchy-snote-plugin/app — this probe is what notices
+  // that and routes the next click back through setup, so the copy is
+  // refreshed, even though `which snote` still succeeds (pointing at the
+  // previously installed copy).
   property string versionStatus: "unknown"
   readonly property bool snoteStale: versionStatus === "stale"
 
   readonly property string defaultTooltip: "snote — Simplenote in your terminal"
-  readonly property string installTooltip: "snote — click to install and launch"
+  readonly property string installTooltip: "Click to install snote (copies the pre-built app, no build)"
   readonly property string updateTooltip: "snote — update available, click to install and launch"
   readonly property string tooltipMessage: snoteStatus === "missing" ? root.installTooltip
     : root.snoteStale ? root.updateTooltip
@@ -84,7 +90,7 @@ BarWidget {
 
   // `packaging/omarchy/setup --check` does the same plain-text VERSION
   // compare setup itself uses for its idempotent fast path (this clone's
-  // package.json "version" vs. the installed app's VERSION file, both read
+  // plugin-dist/VERSION vs. the installed app's VERSION file, both read
   // without invoking node) and exits 0/1 accordingly — reusing that single
   // definition here instead of duplicating the comparison in QML.
   Process {

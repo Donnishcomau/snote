@@ -33,8 +33,13 @@ describe('T324 strip Ink devtools and ws from the bundle', () => {
     }
   });
 
-  it('1: WHEN the bundle is built into a temp outfile with `bundle` from `scripts/build.mjs` THEN its size from `fs.statSync` is below `1450000` bytes', () => {
-    expect(size).toBeLessThan(1450000);
+  // T315.2 (2026-10-01): cap raised from 1,450,000 to 1,500,000 for the
+  // built-in editor library (react-ink-textarea, ~59 KB unminified, now
+  // actually imported by src/tui/InlineEditor.tsx). Case 2 below (`ws/lib`
+  // absent) is the direct guard this cap exists for; a regression there
+  // (Ink devtools/`ws` coming back, ~129 KB) would still exceed this cap.
+  it('1: WHEN the bundle is built into a temp outfile with `bundle` from `scripts/build.mjs` THEN its size from `fs.statSync` is below `1500000` bytes', () => {
+    expect(size).toBeLessThan(1500000);
   });
 
   it('2: WHEN that built bundle is read as text THEN it does not contain `ws/lib`', () => {

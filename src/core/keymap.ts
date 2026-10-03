@@ -45,6 +45,7 @@ export const keymap: KeymapEntry[] = [
   { key: 'h', action: 'history', description: 'Note history (Enter restores)' },
   { key: 'c', action: 'toggle_check', description: 'Tick / untick item (note)' },
   { key: 'a', action: 'add_check_item', description: 'Add checklist item (note)' },
+  { key: 'i', action: 'edit_note_inline', description: 'Edit inline (built-in editor)' },
 ];
 
 /**

@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "id": "io.github.donnishcomau.snote-simplenote",
   "name": "snote: Simplenote in your terminal",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "author": "qteamdon",
   "license": "GPL-2.0-only",
   "homepage": "https://github.com/donnishcomau/snote",
-  "description": "Unofficial Simplenote client for your terminal. Browse, search and write your Simplenote notes from the keyboard, with a one-click bar button, and send a note to your Skryf blog as a draft. The first click installs snote automatically.",
+  "description": "Unofficial Simplenote client for your terminal. Browse, search and write your Simplenote notes from the keyboard, with a one-click bar button, and send a note to your Skryf blog as a draft. The first click installs snote; no build step.",
   "kinds": [
     "bar-widget"
   ],
@@ -15,7 +15,7 @@
   },
   "barWidget": {
     "displayName": "snote",
-    "description": "Open or focus snote, an unofficial Simplenote client, from the bar. Installs snote the first time.",
+    "description": "Open or focus snote, an unofficial Simplenote client, from the bar. Installs the pre-built app the first time.",
     "category": "Productivity",
     "allowMultiple": false,
     "defaultSection": "right"

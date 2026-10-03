@@ -160,7 +160,7 @@ exports[`Golden frames: search, tags, help > 5: WHEN at 80x24 ? is written THEN 
 │  d       Move to trash                h       Note history (Enter restores   │
 │  u       Restore from trash (trash vi c       Tick / untick item (note)      │
 │  D       Delete forever (trash view)  a       Add checklist item (note)      │
-│  T       Show trash / all notes                                              │
+│  T       Show trash / all notes       i       Edit inline (built-in editor   │
 │  Found a bug? Run snote --report to save a report bundle.                    │
 │  Editing: save with Ctrl+S and close the window to return                    │
 │                                                                              │
@@ -189,6 +189,7 @@ exports[`Golden frames: search, tags, help > 6: WHEN at 120x40 ? is written THEN
 │h         Note history (Enter restores)                                                            │
 │c         Tick / untick item (note)                                                                │
 │a         Add checklist item (note)                                                                │
+│i         Edit inline (built-in editor)                                                            │
 │Tags                                                                                               │
 │g         Edit tags of the selected note                                                           │
 │t         Show / focus the tags pane                                                               │
@@ -199,7 +200,6 @@ exports[`Golden frames: search, tags, help > 6: WHEN at 120x40 ? is written THEN
 │Found a bug? Run snote --report to save a report bundle.                                           │
 │Editing: save with Ctrl+S and close the window to return                                           │
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-
 
 
 

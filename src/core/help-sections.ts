@@ -22,6 +22,7 @@ export const SECTIONS = [
     actions: [
       'new_note',
       'edit_note',
+      'edit_note_inline',
       'toggle_pin',
       'toggle_markdown',
       'history',

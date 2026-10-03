@@ -26,3 +26,9 @@ jobs:
       # gate all still run here and must pass. Perf regressions are still
       # caught locally, where `make check` runs the bench unskipped.
       - run: make check-ci
+
+      # In the public repo the pre-built plugin files are committed under
+      # plugin-dist/; prove they still match a fresh build of the source.
+      - name: Check plugin-dist matches the source
+        if: hashFiles('plugin-dist/**') != ''
+        run: node scripts/build-plugin-dist.mjs --check plugin-dist
