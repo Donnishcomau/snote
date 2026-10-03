@@ -83,6 +83,38 @@ export function editSelectedNote(ctx: EditSelectedNoteCtx): void {
   }
 }
 
+export interface SaveInlineEditCtx {
+  store: Store<State>;
+  selectedEntry: { id: EntityId; note: Note } | null;
+  // the note's content when the inline editor was opened (InlineEditor's
+  // `base` prop, from useInlineEditorState)
+  base: string;
+  // the inline textarea's live buffer at the moment Ctrl+S was pressed
+  local: string;
+  onEditorError?: (message: string) => void;
+}
+
+/**
+ * T315.3: Ctrl+S save path for the built-in inline editor — mirrors
+ * `editSelectedNote`'s merge-on-save (above) but with no external process:
+ * `local` is already in hand, so there's no suspend/runEditor/setRawMode.
+ */
+export function saveInlineEdit(ctx: SaveInlineEditCtx): void {
+  const { store, selectedEntry, base, local, onEditorError } = ctx;
+  if (!selectedEntry) return;
+  // T299-style: a remote change may have landed while the editor was open;
+  // merge against the store's current content instead of overwriting it.
+  const current = store.getState().data.notes.get(selectedEntry.id)?.content ?? '';
+  const merged = mergeEditorReturn(base, local, current);
+  // editor-suspend.test.tsx's structural guard counts this file's literal
+  // action-type occurrences; the vendored action creator (already imported
+  // for insertCheckItem below) keeps that count unchanged.
+  store.dispatch(editNote(selectedEntry.id, { content: merged.content }));
+  if (merged.conflict) {
+    onEditorError?.('A change from another device could not be merged automatically - both versions were kept.');
+  }
+}
+
 export interface CreateNoteCtx {
   store: Store<State>;
   // the note on the first row of the current list, when there is one

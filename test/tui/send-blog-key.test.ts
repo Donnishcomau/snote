@@ -12,23 +12,25 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..', '..');
 
 describe('send to blog key (T336)', () => {
-  it('1: WHEN src/core/keymap.ts is read THEN it contains key b, action send_blog, description Send to blog as draft, and keymap.length is 35', () => {
+  it('1: WHEN src/core/keymap.ts is read THEN it contains key b, action send_blog, description Send to blog as draft, and keymap.length is 36', () => {
     const source = readFileSync(join(repoRoot, 'src/core/keymap.ts'), 'utf8');
     expect(source).toContain(`key: 'b'`);
     expect(source).toContain(`action: 'send_blog'`);
     expect(source).toContain('Send to blog as draft');
-    expect(keymap.length).toBe(35);
+    // T315.2: keymap grew from 35 to 36 with `i` / edit_note_inline.
+    expect(keymap.length).toBe(36);
   });
 
-  it('2: WHEN layoutHelp(118, 34, "omawrite") is called THEN it returns 29 lines and line 0 is "Help - Keyboard Shortcuts"', () => {
+  it('2: WHEN layoutHelp(118, 34, "omawrite") is called THEN it returns 30 lines and line 0 is "Help - Keyboard Shortcuts"', () => {
     const lines = layoutHelp(118, 34, 'omawrite');
-    expect(lines).toHaveLength(29);
+    // T315.2: one more entry row (edit_note_inline, in Notes) than before.
+    expect(lines).toHaveLength(30);
     expect(lines[0]).toBe('Help - Keyboard Shortcuts');
   });
 
-  it('3: WHEN layoutHelp(100, 30, "omawrite") is called THEN it returns 29 lines and some line contains "Send to blog as draft"', () => {
+  it('3: WHEN layoutHelp(100, 30, "omawrite") is called THEN it returns 30 lines and some line contains "Send to blog as draft"', () => {
     const lines = layoutHelp(100, 30, 'omawrite');
-    expect(lines).toHaveLength(29);
+    expect(lines).toHaveLength(30);
     expect(lines.some((l) => l.includes('Send to blog as draft'))).toBe(true);
   });
 

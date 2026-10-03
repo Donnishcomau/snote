@@ -3,6 +3,28 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.2.0
+
+### Added
+
+- Built-in editor. Press `i` to edit the selected note inside the preview
+  pane. Ctrl+S saves through the same sync and merge path as the external
+  editor; Esc cancels and asks before discarding unsaved changes. `e` still
+  opens your own editor.
+
+### Changed
+
+- The Omarchy bar-button plugin now installs pre-built files, so the first
+  click no longer runs an npm build. It needs Node.js 22 or newer, which
+  Omarchy installs through mise; if it is missing, run
+  `omarchy-install-dev-env node`. `plugin-dist/` is shipped in the public
+  repository and CI verifies it matches the source.
+
+### Fixed
+
+- The `snote` launcher tries every Node candidate, and its version check
+  ignores `NODE_OPTIONS`.
+
 ## 0.1.4
 
 ### Security

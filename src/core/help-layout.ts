@@ -6,7 +6,7 @@ import { editorFinishHint } from './editor-select';
  * Build the plain-text lines for the Help overlay's wide (cols>=100) layout:
  * a fixed left/right section split, merged row-by-row into two columns.
  *
- * The wide output is always 29 lines (fixed by the keymap's 35 entries).
+ * The wide output is always 30 lines (fixed by the keymap's 36 entries).
  * `rows` only matters below cols<100, where it bounds how many entry rows
  * each section gets, exactly like the overlay's own row budget.
  */

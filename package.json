@@ -1,6 +1,6 @@
 {
   "name": "snote",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
   "license": "GPL-2.0",
   "type": "module",
@@ -17,6 +17,7 @@
     "test:keymap": "vitest run test/keymap.test.ts",
     "lint:ansi": "node scripts/lint-ansi.mjs",
     "build": "node scripts/build.mjs",
+    "build:plugin": "node scripts/build-plugin-dist.mjs",
     "pack": "node scripts/pack.mjs",
     "size": "vitest run test/packaging/size.test.ts",
     "smoke:real": "node scripts/smoke-real.mjs",
@@ -27,6 +28,7 @@
     "ink": "^7.1.1",
     "lodash": "^4.17.21",
     "react": "^19.0.0",
+    "react-ink-textarea": "0.4.0",
     "redux": "^4.2.1",
     "remove-markdown": "^0.6.0",
     "simperium": "1.1.4"

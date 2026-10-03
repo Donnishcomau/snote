@@ -11,6 +11,7 @@ import { TagPane } from './TagPane';
 import { NoteList } from './NoteList';
 import { History } from './History';
 import { Preview } from './Preview';
+import { InlineEditor } from './InlineEditor';
 
 export interface MainPanesProps {
   store: Store<State>;
@@ -28,6 +29,10 @@ export interface MainPanesProps {
   reading?: boolean;
   noteFocused?: boolean;
   cursorLine?: number | null;
+  inlineEditOpen?: boolean;
+  onCloseEdit?: () => void;
+  inlineEditBase?: string;
+  onSaveEdit?: (value: string) => void;
 }
 
 /**
@@ -51,6 +56,10 @@ export function MainPanes({
   reading = false,
   noteFocused = false,
   cursorLine = null,
+  inlineEditOpen = false,
+  onCloseEdit = () => {},
+  inlineEditBase = '',
+  onSaveEdit = () => {},
 }: MainPanesProps): React.JSX.Element {
   const { noteEntries, selectedIndex, tagNames, query, collection } = view;
   const selectedId = noteEntries[selectedIndex]?.id ?? null;
@@ -93,7 +102,11 @@ export function MainPanes({
           )
         ) : null}
         {layout.previewWidthProp > 0 ? (
-          <Preview note={previewNote} width={layout.previewWidthProp} height={layout.tagsWidth > 0 ? height - 2 : height - 1} rendered={rendered} cursorLine={cursorLine} focused={noteFocused} inTrash={collection.type === 'trash'} />
+          inlineEditOpen ? (
+            <InlineEditor note={previewNote} width={layout.previewWidthProp} height={layout.tagsWidth > 0 ? height - 2 : height - 1} base={inlineEditBase} onClose={onCloseEdit} onSave={onSaveEdit} />
+          ) : (
+            <Preview note={previewNote} width={layout.previewWidthProp} height={layout.tagsWidth > 0 ? height - 2 : height - 1} rendered={rendered} cursorLine={cursorLine} focused={noteFocused} inTrash={collection.type === 'trash'} />
+          )
         ) : null}
       </Box>
 

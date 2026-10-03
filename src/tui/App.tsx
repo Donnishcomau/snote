@@ -16,7 +16,7 @@ import { handleSearchKey, handleSearchClearKey, handleTagsKey, handleHistoryKey,
 import { handleNoteKey } from './note-focus';
 import { useReselect } from './use-reselect';
 import { splitPastedInput } from './split-input';
-import { editSelectedNote, createNote, copyLink, forceSyncNow } from './app-actions';
+import { editSelectedNote, createNote, copyLink, forceSyncNow, saveInlineEdit } from './app-actions'; import { useInlineEditorState } from './inline-editor-state';
 import type { EntityId } from '@vendor/types';
 
 interface AppProps {
@@ -55,7 +55,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   const [historyIndex, setHistoryIndex] = useState(0);
   const [reading, setReading] = useState(false);
   // T293/T298/T338: prompts whose state lives in BottomArea, read via cells
-  const { itemAsk, setItemAsk } = useItemAsk(); const { exportAsk, setExportAsk } = useExportAsk(); const { setBlogSendAsk } = useBlogSendAsk();
+  const { itemAsk, setItemAsk } = useItemAsk(); const { exportAsk, setExportAsk } = useExportAsk(); const { setBlogSendAsk } = useBlogSendAsk(); const { open: inlineEditOpen, base: inlineEditBase, openEdit: openInlineEdit, closeEdit: closeInlineEdit } = useInlineEditorState();
   const { notice, setNotice, setNoticeError, clearNotice } = useNotice();
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
   const syncedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -86,7 +86,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
     }
 
     // Ignore other keys while a prompt is open
-    if (emptyAsk || tagEditorOpen || logoutAsk || tagDialog || itemAsk || exportAsk || useBlogSendAsk().blogOpen) return;
+    if (emptyAsk || tagEditorOpen || logoutAsk || tagDialog || itemAsk || exportAsk || useBlogSendAsk().blogOpen || inlineEditOpen) return;
 
     // Narrow terminal reading mode: Escape or Enter switches back to the list
     if (reading && !tagsFocused && !searchOpen && (keyName === 'Escape' || keyName === 'Enter')) {
@@ -188,7 +188,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
       if (onLogout) {
         setLogoutAsk(true);
       }
-    }
+    } else if (input === 'i') { if (selectedEntry) openInlineEdit(selectedEntry.note.content ?? ''); }
   };
 
   // T300: after a search clear, keep the same note selected by id
@@ -223,7 +223,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
           <MainPanes store={store} view={view} width={width} height={height} tagsOpen={tagsOpen} tagsFocused={tagsFocused}
             tagIndex={tagIndex} rendered={rendered} searchOpen={searchOpen} selectedNote={selectedNote}
             historyOpen={historyOpen} historyIndex={historyIndex} reading={reading}
-            noteFocused={noteFocused} cursorLine={cursorLine} />
+            noteFocused={noteFocused} cursorLine={cursorLine} inlineEditOpen={inlineEditOpen} onCloseEdit={closeInlineEdit} inlineEditBase={inlineEditBase} onSaveEdit={(value: string) => { saveInlineEdit({ store, selectedEntry, base: inlineEditBase, local: value, onEditorError: setNoticeError }); closeInlineEdit(); }} />
           {notice ? <Text color={noticeColor(notice)}>{notice.message}</Text> : null}
           <BottomArea
             store={store}
