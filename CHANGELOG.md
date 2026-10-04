@@ -3,6 +3,16 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.2.1
+
+### Fixed
+
+- Blog draft links are always absolute. Skryf returns `//host/write/<id>`;
+  snote now shows `https://host/write/<id>`, including for drafts sent
+  earlier.
+- Verified end-to-end: sending a note from snote to Skryf was tested against
+  the real service.
+
 ## 0.2.0
 
 ### Added

@@ -5543,7 +5543,7 @@ var USAGE = [
 // package.json
 var package_default = {
   name: "snote",
-  version: "0.2.0",
+  version: "0.2.1",
   description: "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
   license: "GPL-2.0",
   type: "module",
@@ -6612,6 +6612,17 @@ async function loadBlogConfig(dir) {
 }
 
 // src/core/blog-client.ts
+function normalizeBlogUrl(url, origin) {
+  const base = origin.replace(/\/+$/, "");
+  if (url.startsWith("//")) {
+    const scheme = /^(https?:)\/\//i.exec(base)?.[1] ?? "https:";
+    return scheme + url;
+  }
+  if (url.startsWith("/")) {
+    return base + url;
+  }
+  return url;
+}
 async function postBlogDraft({
   origin,
   token,
@@ -6630,7 +6641,7 @@ async function postBlogDraft({
   });
   if (response.status === 201) {
     const body = await response.json();
-    return { id: body.id, url: body.url };
+    return { id: body.id, url: normalizeBlogUrl(body.url, origin) };
   }
   if (response.status === 401) {
     throw new Error("unauthorized");
@@ -6701,7 +6712,8 @@ function blogStatusLine(record) {
   if (!record) {
     return null;
   }
-  return "Sent as draft \xB7 " + record.sentAt.slice(0, 10) + " \xB7 " + record.url;
+  const url = record.url.startsWith("//") ? "https:" + record.url : record.url;
+  return "Sent as draft \xB7 " + record.sentAt.slice(0, 10) + " \xB7 " + url;
 }
 function recordBlogSend(dir, noteId, { postId, url, sentAt }) {
   const filePath = path5.join(dir, BLOG_SENT_FILE);

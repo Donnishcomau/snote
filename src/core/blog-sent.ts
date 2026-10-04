@@ -25,7 +25,9 @@ export function blogStatusLine(
   if (!record) {
     return null;
   }
-  return 'Sent as draft · ' + record.sentAt.slice(0, 10) + ' · ' + record.url;
+  // Records saved before url normalisation may be protocol-relative.
+  const url = record.url.startsWith('//') ? 'https:' + record.url : record.url;
+  return 'Sent as draft · ' + record.sentAt.slice(0, 10) + ' · ' + url;
 }
 
 /**
