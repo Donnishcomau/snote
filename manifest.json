@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.donnishcomau.snote-simplenote",
   "name": "snote: Simplenote in your terminal",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "qteamdon",
   "license": "GPL-2.0-only",
   "homepage": "https://github.com/donnishcomau/snote",

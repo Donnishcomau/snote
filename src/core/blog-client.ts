@@ -10,6 +10,22 @@ export interface BlogDraftResult {
   url: string;
 }
 
+/**
+ * Make the url an API reply returns clickable: `//host/x` takes the scheme
+ * of `origin`, `/path` is joined to `origin`, absolute urls are unchanged.
+ */
+export function normalizeBlogUrl(url: string, origin: string): string {
+  const base = origin.replace(/\/+$/, '');
+  if (url.startsWith('//')) {
+    const scheme = /^(https?:)\/\//i.exec(base)?.[1] ?? 'https:';
+    return scheme + url;
+  }
+  if (url.startsWith('/')) {
+    return base + url;
+  }
+  return url;
+}
+
 export async function postBlogDraft({
   origin,
   token,
@@ -30,7 +46,7 @@ export async function postBlogDraft({
 
   if (response.status === 201) {
     const body = (await response.json()) as { id: string; url: string };
-    return { id: body.id, url: body.url };
+    return { id: body.id, url: normalizeBlogUrl(body.url, origin) };
   }
 
   if (response.status === 401) {
