@@ -4,6 +4,7 @@ import { keymap, KeymapEntry } from '../core/keymap';
 import { SECTIONS } from '../core/help-sections';
 import { editorFinishHint } from '../core/editor-select';
 import { layoutHelp } from '../core/help-layout';
+import { theme } from './theme';
 
 interface HelpProps {
   width: number;
@@ -64,7 +65,7 @@ function Section({
                   const restPart = sliced.slice(keyLen);
                   return (
                     <>
-                      <Text color="cyan">{keyPart}</Text>
+                      <Text {...theme.accent}>{keyPart}</Text>
                       <Text>{restPart}</Text>
                     </>
                   );
@@ -131,7 +132,7 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
                   const restPart = sliced.slice(keyLen);
                   return (
                     <>
-                      <Text color="cyan">{keyPart}</Text>
+                      <Text {...theme.accent}>{keyPart}</Text>
                       <Text>{restPart}</Text>
                     </>
                   );
@@ -174,7 +175,7 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
                 <Box key={ci} flexDirection="column" width={narrowColWidth}>
                   {colEntries.map((entry) => (
                     <Box key={entry.action} flexDirection="row">
-                      <Text color="cyan">{entry.key.padEnd(8)}</Text>
+                      <Text {...theme.accent}>{entry.key.padEnd(8)}</Text>
                       <Text>{entry.description.slice(0, narrowColWidth - 9)}</Text>
                     </Box>
                   ))}

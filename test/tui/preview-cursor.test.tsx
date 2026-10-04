@@ -83,14 +83,16 @@ describe('Preview cursor', () => {
     expect(frameText).toContain('# Title');
   });
 
-  it('5: WHEN src/tui/Preview.tsx is read THEN it contains "inverse={focused}" exactly 1 time and "wrapLines(" at most 2 times', async () => {
+  it('5: WHEN src/tui/Preview.tsx is read THEN it contains "<PaneHeading" exactly 2 times and "inverse={focused}" exactly 0 times and "wrapLines(" at most 2 times', async () => {
     const source = readFileSync(
       new URL('../../src/tui/Preview.tsx', import.meta.url),
       'utf-8'
     );
+    const paneHeadingCount = (source.match(/<PaneHeading/g) || []).length;
     const inverseCount = (source.match(/inverse={focused}/g) || []).length;
     const wrapLinesCount = (source.match(/wrapLines\(/g) || []).length;
-    expect(inverseCount).toBe(1);
+    expect(paneHeadingCount).toBe(2);
+    expect(inverseCount).toBe(0);
     expect(wrapLinesCount).toBeLessThanOrEqual(2);
   });
 });

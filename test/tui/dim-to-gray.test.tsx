@@ -57,25 +57,25 @@ describe('T246 dimColor -> color="gray"', () => {
     expect(countOccurrences(source, 'dimColor')).toBe(0);
   });
 
-  it('2: WHEN the same 7 files are read as text THEN together they contain color="gray" exactly 4 times', async () => {
+  it('2: WHEN the same 7 files are read as text THEN together they contain color="gray" exactly 0 times', async () => {
     const source = await readAll();
-    expect(countOccurrences(source, 'color="gray"')).toBe(4);
+    expect(countOccurrences(source, 'color="gray"')).toBe(0);
   });
 
-  it('3: WHEN <Divider height={3} /> is rendered THEN lastFrame() is exactly the gray frames and does not contain \\u001b[2m', async () => {
+  it('3: WHEN <Divider height={3} /> is rendered THEN lastFrame() is exactly the dim frames and does not contain \\u001b[90m', async () => {
     restore = await forceInkChalk();
     const { lastFrame } = render(<Divider height={3} />);
     await delay(0);
-    expect(lastFrame()).toBe('\u001b[90m│\u001b[39m\n\u001b[90m│\u001b[39m\n\u001b[90m│\u001b[39m');
-    expect(lastFrame()).not.toContain('\u001b[2m');
+    expect(lastFrame()).toBe('\u001b[2m│\u001b[22m\n\u001b[2m│\u001b[22m\n\u001b[2m│\u001b[22m');
+    expect(lastFrame()).not.toContain('\u001b[90m');
   });
 
-  it('4: WHEN <StatusBar connected={true} count={3} width={40} /> is rendered THEN lastFrame() is exactly the gray run and does not contain \\u001b[2m', async () => {
+  it('4: WHEN <StatusBar connected={true} count={3} width={40} /> is rendered THEN lastFrame() is exactly the dim run and does not contain \\u001b[90m', async () => {
     restore = await forceInkChalk();
     const { lastFrame } = render(<StatusBar connected={true} count={3} width={40} />);
     await delay(0);
-    expect(lastFrame()).toBe('\u001b[90m[\u001b[32mconnected\u001b[90m]\u001b[39m 3 notes');
-    expect(lastFrame()).not.toContain('\u001b[2m');
+    expect(lastFrame()).toBe('\u001b[2m[\u001b[22m\u001b[32mconnected\u001b[39m\u001b[2m]\u001b[22m 3 notes');
+    expect(lastFrame()).not.toContain('\u001b[90m');
   });
 
   it('5: WHEN <StatusBar connected={true} count={3} width={40} /> is rendered without forcing chalk THEN lastFrame() is exactly "[connected] 3 notes"', async () => {

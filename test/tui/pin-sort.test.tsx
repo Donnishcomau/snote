@@ -10,6 +10,25 @@ import type { EntityId } from '@vendor/types';
 // Helper to create branded types for testing
 const eid = (id: string): EntityId => id as unknown as EntityId;
 
+function stripAnsi(s: string): string {
+  return s.replace(/\x1b\[[0-9;]*m/g, '');
+}
+
+// In App frames a row may contain pane borders; cut at the first border char.
+function ruleRows(frame: string): string[] {
+  return frame
+    .split('\n')
+    .map((l) => (l.includes('│') ? l.slice(0, l.indexOf('│')) : l));
+}
+
+function isRuleRow(row: string): boolean {
+  return /^─+$/.test(row.trim());
+}
+
+function rowsOf(frame: string): string[] {
+  return ruleRows(frame).map(stripAnsi);
+}
+
 describe('T43: Pinned marker and sort mode in the status bar', () => {
   let store: ReturnType<typeof makeStore>;
 
@@ -34,17 +53,23 @@ describe('T43: Pinned marker and sort mode in the status bar', () => {
     });
   });
 
-  it('1: WHEN j then p are sent THEN before p the frame contains Pinned note * and not Third normal note *, after it note-5 has pinned in systemTags, note-4 has not, and the frame contains Third normal note *', async () => {
+  it('1: WHEN j then p are sent THEN before p the Pinned note row is above the single rule row and the Third normal note row below it, after j then p the rule row is below both of those rows and above Second normal note, the frame never contains Third normal note *, and note-5 has pinned in systemTags while note-4 has not', async () => {
     const { stdin, lastFrame } = render(
       <App store={store} width={80} height={24} />
     );
 
     await new Promise((r) => setTimeout(r, 50));
 
-    // Move to first note (Pinned note)
-    let frame = lastFrame();
-    expect(frame).toContain('Pinned note *');
-    expect(frame).not.toContain('Third normal note *');
+    // Before p: exactly one rule row, Pinned note above it, Third normal below
+    let rows = rowsOf(lastFrame() ?? '');
+    expect(rows.filter(isRuleRow).length).toBe(1);
+    let ruleIdx = rows.findIndex(isRuleRow);
+    const pinnedIdx = rows.findIndex((r) => r.includes('Pinned note'));
+    const thirdIdx = rows.findIndex((r) => r.includes('Third normal note'));
+    expect(pinnedIdx).toBeGreaterThanOrEqual(0);
+    expect(thirdIdx).toBeGreaterThanOrEqual(0);
+    expect(pinnedIdx).toBeLessThan(ruleIdx);
+    expect(ruleIdx).toBeLessThan(thirdIdx);
 
     // j: move down to Third normal note (second item)
     stdin.write('j');
@@ -54,8 +79,45 @@ describe('T43: Pinned marker and sort mode in the status bar', () => {
     stdin.write('p');
     await new Promise((r) => setTimeout(r, 50));
 
-    frame = lastFrame();
-    expect(frame).toContain('Third normal note *');
+    // Poll for exactly the acceptance values: the rule row sits below both
+    // the Third normal note and Pinned note rows and above Second normal
+    // note, and the frame never contains Third normal note *.
+    let frame = lastFrame() ?? '';
+    for (let i = 0; i < 60; i++) {
+      rows = rowsOf(frame);
+      const ruleIdxAfter = rows.findIndex(isRuleRow);
+      const thirdAfter = rows.findIndex((r) => r.includes('Third normal note'));
+      const pinnedAfter = rows.findIndex((r) => r.includes('Pinned note'));
+      const secondAfter = rows.findIndex((r) => r.includes('Second normal note'));
+      if (
+        rows.filter(isRuleRow).length === 1 &&
+        thirdAfter >= 0 &&
+        pinnedAfter >= 0 &&
+        secondAfter >= 0 &&
+        thirdAfter < ruleIdxAfter &&
+        pinnedAfter < ruleIdxAfter &&
+        ruleIdxAfter < secondAfter &&
+        !frame.includes('Third normal note *')
+      ) {
+        break;
+      }
+      await new Promise((r) => setTimeout(r, 25));
+      frame = lastFrame() ?? '';
+    }
+
+    rows = rowsOf(frame);
+    const ruleIdxFinal = rows.findIndex(isRuleRow);
+    const thirdFinal = rows.findIndex((r) => r.includes('Third normal note'));
+    const pinnedFinal = rows.findIndex((r) => r.includes('Pinned note'));
+    const secondFinal = rows.findIndex((r) => r.includes('Second normal note'));
+    expect(rows.filter(isRuleRow).length).toBe(1);
+    expect(thirdFinal).toBeGreaterThanOrEqual(0);
+    expect(pinnedFinal).toBeGreaterThanOrEqual(0);
+    expect(secondFinal).toBeGreaterThanOrEqual(0);
+    expect(thirdFinal).toBeLessThan(ruleIdxFinal);
+    expect(pinnedFinal).toBeLessThan(ruleIdxFinal);
+    expect(ruleIdxFinal).toBeLessThan(secondFinal);
+    expect(frame).not.toContain('Third normal note *');
 
     const note5 = store.getState().data.notes.get('note-5' as never);
     const note4 = store.getState().data.notes.get('note-4' as never);
@@ -63,7 +125,7 @@ describe('T43: Pinned marker and sort mode in the status bar', () => {
     expect(note4?.systemTags.includes('pinned')).toBe(false);
   });
 
-  it('2: WHEN p is sent right after start THEN note-1 went from having pinned in systemTags to not having it, the frame no longer contains Pinned note *, and still contains >Pinned note and 4 notes', async () => {
+  it('2: WHEN p is sent right after start THEN note-1 went from having pinned in systemTags to not having it, before p the frame has 1 rule row, after p it has 0, still contains >Pinned note and 4 notes', async () => {
     const { stdin, lastFrame } = render(
       <App store={store} width={80} height={24} />
     );
@@ -73,8 +135,14 @@ describe('T43: Pinned marker and sort mode in the status bar', () => {
     const note1Before = store.getState().data.notes.get('note-1' as never);
     expect(note1Before?.systemTags.includes('pinned')).toBe(true);
 
-    let frame = lastFrame();
-    expect(frame).toContain('Pinned note *');
+    // Before p: exactly 1 rule row (the pinned/unpinned separator)
+    let frame = lastFrame() ?? '';
+    for (let i = 0; i < 60; i++) {
+      if (rowsOf(frame).filter(isRuleRow).length === 1) break;
+      await new Promise((r) => setTimeout(r, 25));
+      frame = lastFrame() ?? '';
+    }
+    expect(rowsOf(frame).filter(isRuleRow).length).toBe(1);
 
     // p: unpin note-1
     stdin.write('p');
@@ -83,8 +151,21 @@ describe('T43: Pinned marker and sort mode in the status bar', () => {
     const note1After = store.getState().data.notes.get('note-1' as never);
     expect(note1After?.systemTags.includes('pinned')).toBe(false);
 
-    frame = lastFrame();
-    expect(frame).not.toContain('Pinned note *');
+    // After p: 0 rule rows, still >Pinned note and 4 notes
+    frame = lastFrame() ?? '';
+    for (let i = 0; i < 60; i++) {
+      const rows = rowsOf(frame);
+      if (
+        rows.filter(isRuleRow).length === 0 &&
+        frame.includes('>Pinned note') &&
+        frame.includes('4 notes')
+      ) {
+        break;
+      }
+      await new Promise((r) => setTimeout(r, 25));
+      frame = lastFrame() ?? '';
+    }
+    expect(rowsOf(frame).filter(isRuleRow).length).toBe(0);
     expect(frame).toMatch(/>Pinned note/);
     expect(frame).toContain('4 notes');
   });

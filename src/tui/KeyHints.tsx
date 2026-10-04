@@ -1,5 +1,6 @@
 import { Box, Text } from 'ink';
 import React from 'react';
+import { theme } from './theme';
 
 export type HintEntry = { key: string; label: string };
 
@@ -10,6 +11,7 @@ export const LIST_HINTS: HintEntry[] = [
   { key: 'g', label: 'Add tag' },
   { key: '/', label: 'Search' },
   { key: 'q', label: 'Quit' },
+  { key: 'Tab', label: 'Tags' },
 ];
 
 export const TAGS_HINTS: HintEntry[] = [
@@ -61,7 +63,7 @@ export function KeyHints({ context, width }: KeyHintsProps): React.JSX.Element {
       {hints.map((h, i) => (
         <React.Fragment key={h.key}>
           {i > 0 && <Text>  </Text>}
-          <Text color="cyan">{h.key}</Text>
+          <Text {...theme.accent}>{h.key}</Text>
           <Text> {h.label}</Text>
         </React.Fragment>
       ))}

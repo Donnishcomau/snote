@@ -23,7 +23,7 @@ exports[`Golden frames: search, tags, help > 1: WHEN at 80x24 / then normal are 
                                 │
                                 │
 search: normal
-? Help  n New  e Edit  g Add tag  / Search  q Quit
+? Help  n New  e Edit  g Add tag  / Search  q Quit  Tab Tags
 [offline] 2 notes"
 `;
 
@@ -65,24 +65,24 @@ exports[`Golden frames: search, tags, help > 2: WHEN at 120x40 / then normal are
            │                                   │
            │                                   │
 search: normal
-? Help  n New  e Edit  g Add tag  / Search  q Quit
+? Help  n New  e Edit  g Add tag  / Search  q Quit  Tab Tags
 [offline] 2 notes
 "
 `;
 
-exports[`Golden frames: search, tags, help > 3: WHEN at 80x24 t then j are written THEN the frame contains Tags, All notes, >home, work, Untagged and still 4 notes (no filter chosen yet); snapshot tags-80x24 > tags-80x24 1`] = `
-"Tags         │Notes                     │Preview: Pinned note
-·All notes   │>Pinned note *            │g add tag
->home        │  alpha                   │alpha
- work        │                          │
-·Untagged    │ Third thing              │
-·Trash       │  delta                   │
+exports[`Golden frames: search, tags, help > 3: WHEN at 80x24 t then j are written THEN the frame contains Tags, All notes, >home, work, Untagged and 1 notes (the filter follows the marker); snapshot tags-80x24 > tags-80x24 1`] = `
+"Tags         │Notes                     │Preview: Second normal note
+·All notes   │>Second normal note       │#home
+>home        │  gamma                   │g add tag
+ work        │                          │gamma
+·Untagged    │                          │
+·Trash       │                          │
              │                          │
-             │ Second normal note       │
-             │  gamma                   │
              │                          │
-             │ First normal note        │
-             │  beta                    │
+             │                          │
+             │                          │
+             │                          │
+             │                          │
              │                          │
              │                          │
              │                          │
@@ -93,23 +93,23 @@ exports[`Golden frames: search, tags, help > 3: WHEN at 80x24 t then j are writt
              │                          │
 focus: tags
 j/k Move  Enter Select  R Rename  x Delete  Escape Back
-[offline] 4 notes
+[offline] 1 notes
 "
 `;
 
-exports[`Golden frames: search, tags, help > 4: WHEN at 120x40 t then j are written THEN the frame contains >home, Notes, Preview and 4 notes; snapshot tags-120x40 > tags-120x40 1`] = `
-"Tags       │Notes                              │Preview: Pinned note
-·All notes │>Pinned note *                     │g add tag
->home      │  alpha                            │alpha
- work      │                                   │
-·Untagged  │ Third thing                       │
-·Trash     │  delta                            │
+exports[`Golden frames: search, tags, help > 4: WHEN at 120x40 t then j are written THEN the frame contains >home, Notes, Preview and 1 notes; snapshot tags-120x40 > tags-120x40 1`] = `
+"Tags       │Notes                              │Preview: Second normal note
+·All notes │>Second normal note                │#home
+>home      │  gamma                            │g add tag
+ work      │                                   │gamma
+·Untagged  │                                   │
+·Trash     │                                   │
            │                                   │
-           │ Second normal note                │
-           │  gamma                            │
            │                                   │
-           │ First normal note                 │
-           │  beta                             │
+           │                                   │
+           │                                   │
+           │                                   │
+           │                                   │
            │                                   │
            │                                   │
            │                                   │
@@ -136,7 +136,7 @@ exports[`Golden frames: search, tags, help > 4: WHEN at 120x40 t then j are writ
            │                                   │
 focus: tags
 j/k Move  Enter Select  R Rename  x Delete  Escape Back
-[offline] 4 notes
+[offline] 1 notes
 "
 `;
 

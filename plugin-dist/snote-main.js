@@ -1480,9 +1480,9 @@ process.removeAllListeners("warning");
 
 // src/cli/main.tsx
 var import_react19 = __toESM(require_react(), 1);
-import fs8 from "node:fs";
+import fs9 from "node:fs";
 import os2 from "node:os";
-import path7 from "node:path";
+import path8 from "node:path";
 
 // src/core/crash-report.ts
 function crashReport(err, ctx) {
@@ -1522,9 +1522,9 @@ function secureMkdir(dir) {
   mkdirSync(dir, { recursive: true, mode: 448 });
   chmodSync(dir, 448);
 }
-function secureWriteFileSync(path8, data) {
-  writeFileSync(path8, data, { mode: 384 });
-  chmodSync(path8, 384);
+function secureWriteFileSync(path9, data) {
+  writeFileSync(path9, data, { mode: 384 });
+  chmodSync(path9, 384);
 }
 
 // src/core/crash-ring.ts
@@ -2097,10 +2097,10 @@ async function exportNote(note, dir) {
   const base = exportFileName(note.content ?? "");
   const text = exportText(note);
   for (let n = 1; ; n++) {
-    const path8 = join3(dir, n === 1 ? `${base}.md` : `${base} ${n}.md`);
+    const path9 = join3(dir, n === 1 ? `${base}.md` : `${base} ${n}.md`);
     try {
-      await writeFile(path8, text, { encoding: "utf8", flag: "wx" });
-      return path8;
+      await writeFile(path9, text, { encoding: "utf8", flag: "wx" });
+      return path9;
     } catch (err) {
       if (err.code !== "EEXIST") throw err;
     }
@@ -2485,7 +2485,7 @@ function exportSelectedNote(ctx) {
   const base = exportFileName(selectedEntry.note.content ?? "");
   const target = value.trim() !== "" ? value : join5(documentsDir(), `${base}.md`);
   const dir = dirname(target);
-  exportNote(selectedEntry.note, dir).then((path8) => setNotice(`exported: ${path8}`)).catch(
+  exportNote(selectedEntry.note, dir).then((path9) => setNotice(`exported: ${path9}`)).catch(
     (err) => setNoticeError(`export failed: ${err instanceof Error ? err.message : String(err)}`)
   );
 }
@@ -2539,31 +2539,35 @@ function handleSearchClearKey(keyName, ctx) {
   ctx.remember(ctx.selectedId, true);
   return true;
 }
+function dispatchTagRow(store, tagNames, index) {
+  if (index === 0) store.dispatch({ type: "SHOW_ALL_NOTES" });
+  else if (index === tagNames.length + 1) store.dispatch({ type: "SHOW_UNTAGGED_NOTES" });
+  else if (index !== tagNames.length + 2) store.dispatch({ type: "OPEN_TAG", tagName: tagNames[index - 1] });
+}
 function handleTagsKey(input, keyName, ctx) {
   const { store, tagNames, tagIndex, setTagIndex, setSelectedIndex, setTagsFocused, setTagsOpen, setTagDialog } = ctx;
   if (keyName === "downArrow" || input === "j") {
-    setTagIndex((i) => Math.min(i + 1, tagNames.length + 2));
+    const next = Math.min(tagIndex + 1, tagNames.length + 2);
+    setTagIndex(next);
+    dispatchTagRow(store, tagNames, next);
+    setSelectedIndex(0);
     return;
   }
   if (keyName === "upArrow" || input === "k") {
-    setTagIndex((i) => Math.max(i - 1, 0));
+    const next = Math.max(tagIndex - 1, 0);
+    setTagIndex(next);
+    dispatchTagRow(store, tagNames, next);
+    setSelectedIndex(0);
     return;
   }
   if (keyName === "Enter") {
-    if (tagIndex === 0) {
-      store.dispatch({ type: "SHOW_ALL_NOTES" });
-    } else if (tagIndex === tagNames.length + 1) {
-      store.dispatch({ type: "SHOW_UNTAGGED_NOTES" });
-    } else if (tagIndex === tagNames.length + 2) {
-      store.dispatch({ type: "SELECT_TRASH" });
-    } else {
-      store.dispatch({ type: "OPEN_TAG", tagName: tagNames[tagIndex - 1] });
-    }
+    if (tagIndex === tagNames.length + 2) store.dispatch({ type: "SELECT_TRASH" });
+    else dispatchTagRow(store, tagNames, tagIndex);
     setSelectedIndex(0);
     setTagsFocused(false);
     return;
   }
-  if (keyName === "Tab") {
+  if (keyName === "Tab" || keyName === "rightArrow") {
     setTagsFocused(false);
     return;
   }
@@ -2654,7 +2658,7 @@ function handleIdleKey(input, ctx) {
     if (n > 0) ctx.setEmptyAsk(n);
   }
 }
-function useAppEffects(width, tagCount, setTagsOpen, syncedTimerRef) {
+function useAppEffects(width, tagCount, setTagsOpen, syncedTimerRef, onStart) {
   const autoOpened = import_react.default.useRef(false);
   import_react.default.useEffect(() => {
     if (!autoOpened.current && shouldAutoOpenTags(width, tagCount)) {
@@ -2662,6 +2666,9 @@ function useAppEffects(width, tagCount, setTagsOpen, syncedTimerRef) {
       setTagsOpen(true);
     }
   }, [width, tagCount]);
+  import_react.default.useEffect(() => {
+    onStart?.();
+  }, []);
   import_react.default.useEffect(() => () => {
     if (syncedTimerRef.current) {
       clearTimeout(syncedTimerRef.current);
@@ -3754,9 +3761,9 @@ __export(actions_exports4, {
   toggleSortTagsAlpha: () => toggleSortTagsAlpha,
   toggleSpellCheck: () => toggleSpellCheck
 });
-var activateTheme = (theme2) => ({
+var activateTheme = (theme3) => ({
   type: "setTheme",
-  theme: theme2
+  theme: theme3
 });
 var setNoteDisplay = (noteDisplay2) => ({
   type: "setNoteDisplay",
@@ -5497,6 +5504,12 @@ function trackDeletions(store, dir) {
 
 // src/cli/args.ts
 import { parseArgs } from "node:util";
+function splitNewFlag(argv) {
+  return {
+    args: argv.filter((a) => a !== "--new"),
+    startNew: argv.includes("--new")
+  };
+}
 function parseCli(argv) {
   const result = parseArgs({
     args: argv,
@@ -5537,13 +5550,118 @@ var USAGE = [
   "  --data-dir <value>   Data directory path",
   "  --app-id <value>     Simperium app ID",
   "  --server <value>     Simperium server URL",
-  "  --report        Write a bundle for your coding agent"
+  "  --report        Write a bundle for your coding agent",
+  "  --new            Open the editor for a new note at start"
 ].join("\n");
+
+// src/core/status-file.ts
+import * as fs4 from "node:fs";
+import * as path3 from "node:path";
+var MAX_TITLE_CHARS = 40;
+function statusTitle(note) {
+  let title = sanitizeForTerminal(note_utils_default(note).title);
+  title = title.replace(/[\n\r\t]/g, " ").trim();
+  if (title.length > MAX_TITLE_CHARS) {
+    title = title.slice(0, MAX_TITLE_CHARS - 1) + "\u2026";
+  }
+  return title;
+}
+function buildStatus(state, synced) {
+  const live = [];
+  for (const [id, note] of state.data.notes) {
+    if (!note.deleted) {
+      live.push([id, note]);
+    }
+  }
+  live.sort(([idA, a], [idB, b]) => {
+    if (a.modificationDate !== b.modificationDate) {
+      return b.modificationDate - a.modificationDate;
+    }
+    return idA.localeCompare(idB);
+  });
+  const lastEntry = live[0];
+  return {
+    version: 1,
+    count: live.length,
+    last: lastEntry ? {
+      title: statusTitle(lastEntry[1]),
+      modified: lastEntry[1].modificationDate
+    } : null,
+    synced
+  };
+}
+function writeStatusFile(dir, status) {
+  fs4.mkdirSync(dir, { recursive: true });
+  const filePath = path3.join(dir, "status.json");
+  const tmpPath = filePath + ".tmp";
+  secureWriteFileSync(tmpPath, JSON.stringify(status) + "\n");
+  fs4.renameSync(tmpPath, filePath);
+}
+function statusDir(env) {
+  const override = env.SNOTE_STATUS_DIR;
+  if (override) {
+    return override;
+  }
+  const base = env.XDG_DATA_HOME || path3.join(env.HOME ?? "", ".local", "share");
+  return path3.join(base, "omarchy-snote-plugin");
+}
+function removeStatusFile(dir) {
+  for (const name of ["status.json", "status.json.tmp"]) {
+    try {
+      fs4.rmSync(path3.join(dir, name), { force: true });
+    } catch {
+    }
+  }
+}
+function watchStatus(store, dir, opts) {
+  const delayMs = opts?.delayMs ?? 1e3;
+  const now = opts?.now ?? Date.now;
+  let timer = null;
+  let lastNotes = null;
+  let lastSynced = false;
+  let synced = null;
+  const flush = () => {
+    if (timer !== null) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    try {
+      writeStatusFile(dir, buildStatus(store.getState(), synced));
+    } catch {
+    }
+  };
+  const schedule = () => {
+    const state = store.getState();
+    const notesChanged = state.data.notes !== lastNotes;
+    lastNotes = state.data.notes;
+    const isSynced = state.simperium.connected && pendingCount(state.simperium) === 0;
+    const justSynced = isSynced && !lastSynced;
+    lastSynced = isSynced;
+    if (justSynced) {
+      synced = new Date(now()).toISOString();
+    }
+    if (!notesChanged && !justSynced) {
+      return;
+    }
+    if (timer !== null) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(flush, delayMs);
+  };
+  const unsubscribe = store.subscribe(schedule);
+  schedule();
+  return () => {
+    unsubscribe();
+    if (timer !== null) {
+      flush();
+    }
+  };
+}
 
 // package.json
 var package_default = {
   name: "snote",
-  version: "0.2.1",
+  version: "0.2.2",
   description: "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
   license: "GPL-2.0",
   type: "module",
@@ -5599,29 +5717,29 @@ var package_default = {
 var VERSION = package_default.version;
 
 // src/core/token.ts
-import * as fs4 from "node:fs";
+import * as fs5 from "node:fs";
 import * as os from "node:os";
-import * as path3 from "node:path";
+import * as path4 from "node:path";
 function defaultDataDir() {
   const xdg = process.env.XDG_DATA_HOME;
   if (xdg && xdg !== "") {
-    return path3.join(xdg, "snote");
+    return path4.join(xdg, "snote");
   }
-  return path3.join(os.homedir(), ".local", "share", "snote");
+  return path4.join(os.homedir(), ".local", "share", "snote");
 }
 async function saveToken(dir, { email, token, server }) {
-  const filePath = path3.join(dir, "auth.json");
+  const filePath = path4.join(dir, "auth.json");
   secureMkdir(dir);
   const payload = server === void 0 ? { email, token } : { email, token, server };
   const data = JSON.stringify(payload);
-  fs4.writeFileSync(filePath, data, { mode: 384 });
-  fs4.chmodSync(filePath, 384);
+  fs5.writeFileSync(filePath, data, { mode: 384 });
+  fs5.chmodSync(filePath, 384);
 }
 async function loadToken(dir) {
-  const filePath = path3.join(dir, "auth.json");
+  const filePath = path4.join(dir, "auth.json");
   let raw;
   try {
-    raw = fs4.readFileSync(filePath, "utf8");
+    raw = fs5.readFileSync(filePath, "utf8");
   } catch {
     return null;
   }
@@ -5642,28 +5760,28 @@ async function loadToken(dir) {
   };
 }
 async function logout2(dir) {
-  fs4.rmSync(dir, { recursive: true, force: true });
+  fs5.rmSync(dir, { recursive: true, force: true });
   secureMkdir(dir);
 }
 function accountDir(root, email) {
   const name = email.trim().toLowerCase().replace(/[^a-z0-9 @._+\-]/g, "_");
   const safe = name === "" || name === "." || name === ".." ? "_" : name;
-  return path3.join(root, safe);
+  return path4.join(root, safe);
 }
 var ROOT_ONLY_FILES = ["auth.json", "blog.json", "blog-sent.json"];
 function migrateLegacyData(root, email) {
-  if (!fs4.existsSync(root)) {
+  if (!fs5.existsSync(root)) {
     return [];
   }
   const acctPath = accountDir(root, email);
   for (const name of ["blog.json", "blog-sent.json"]) {
-    const from = path3.join(acctPath, name);
-    const to = path3.join(root, name);
-    if (fs4.existsSync(from) && !fs4.existsSync(to)) {
-      fs4.renameSync(from, to);
+    const from = path4.join(acctPath, name);
+    const to = path4.join(root, name);
+    if (fs5.existsSync(from) && !fs5.existsSync(to)) {
+      fs5.renameSync(from, to);
     }
   }
-  const entries = fs4.readdirSync(root, { withFileTypes: true });
+  const entries = fs5.readdirSync(root, { withFileTypes: true });
   const files = entries.filter((e) => e.isFile());
   const filesToMove = files.filter((e) => !ROOT_ONLY_FILES.includes(e.name));
   if (filesToMove.length === 0) {
@@ -5672,10 +5790,10 @@ function migrateLegacyData(root, email) {
   secureMkdir(acctPath);
   const moved = [];
   for (const entry of filesToMove) {
-    const from = path3.join(root, entry.name);
-    const to = path3.join(acctPath, entry.name);
-    if (!fs4.existsSync(to)) {
-      fs4.renameSync(from, to);
+    const from = path4.join(root, entry.name);
+    const to = path4.join(acctPath, entry.name);
+    if (!fs5.existsSync(to)) {
+      fs5.renameSync(from, to);
       moved.push(entry.name);
     }
   }
@@ -5691,7 +5809,7 @@ async function prepareDataDir(root) {
 
 // src/core/instance-lock.ts
 import { closeSync, existsSync as existsSync6, openSync, readFileSync as readFileSync7, unlinkSync, writeSync } from "node:fs";
-import { join as join10 } from "node:path";
+import { join as join11 } from "node:path";
 var LOCK_FILE = "instance.lock";
 var heldByProcess = /* @__PURE__ */ new Set();
 function isPidAlive(pid) {
@@ -5713,7 +5831,7 @@ function readLockPid(lockPath) {
   }
 }
 function acquireInstanceLock(dir) {
-  const lockPath = join10(dir, LOCK_FILE);
+  const lockPath = join11(dir, LOCK_FILE);
   const writeLock = () => {
     const fd = openSync(lockPath, "wx");
     try {
@@ -5860,6 +5978,20 @@ var import_react18 = __toESM(require_react(), 1);
 
 // src/tui/Login.tsx
 var import_react2 = __toESM(require_react(), 1);
+
+// src/tui/theme.ts
+var theme2 = {
+  heading: { bold: true },
+  headingFocused: { bold: true, inverse: true },
+  muted: { dimColor: true },
+  accent: { color: "blue" },
+  selection: { bold: true, inverse: true },
+  error: { color: "red" },
+  warning: { color: "yellow" },
+  success: { color: "green" }
+};
+
+// src/tui/Login.tsx
 var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
 function Login({
   width,
@@ -5977,7 +6109,7 @@ function Login({
         code
       ] })
     ] }),
-    error !== "" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Text, { color: "red", children: [
+    error !== "" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Text, { ...theme2.error, children: [
       "Error: ",
       error
     ] }) : null
@@ -6032,6 +6164,8 @@ function keyNameFromEvent(key) {
   if (key.escape) return "Escape";
   if (key.upArrow) return "upArrow";
   if (key.downArrow) return "downArrow";
+  if (key.leftArrow) return "leftArrow";
+  if (key.rightArrow) return "rightArrow";
   return null;
 }
 
@@ -6186,7 +6320,7 @@ function Section({
       const keyPart = sliced.slice(0, keyLen);
       const restPart = sliced.slice(keyLen);
       return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { color: "cyan", children: keyPart }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { ...theme2.accent, children: keyPart }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: restPart })
       ] });
     })() }, entry.action)) }, ci)) })
@@ -6221,7 +6355,7 @@ function Help({ width, height, entries, editor }) {
       const keyPart = sliced.slice(0, keyLen);
       const restPart = sliced.slice(keyLen);
       return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { color: "cyan", children: keyPart }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { ...theme2.accent, children: keyPart }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: restPart })
       ] });
     })() }, entry.action)) }, ci)) }),
@@ -6240,7 +6374,7 @@ function Help({ width, height, entries, editor }) {
       children: wide ? wideLines.map((line, i) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: line }, i)) : narrow ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: "Help - Keyboard Shortcuts" }) }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", paddingX: 2, children: narrowCols.map((colEntries, ci) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "column", width: narrowColWidth, children: colEntries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(Box_default, { flexDirection: "row", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { color: "cyan", children: entry.key.padEnd(8) }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { ...theme2.accent, children: entry.key.padEnd(8) }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: entry.description.slice(0, narrowColWidth - 9) })
         ] }, entry.action)) }, ci)) }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: "Found a bug? Run snote --report to save a report bundle." }) }),
@@ -6284,7 +6418,7 @@ function Help({ width, height, entries, editor }) {
 
 // src/tui/BottomArea.tsx
 var import_react7 = __toESM(require_react(), 1);
-import { join as join14 } from "node:path";
+import { join as join15 } from "node:path";
 
 // src/tui/TagEditor.tsx
 var import_react3 = __toESM(require_react(), 1);
@@ -6385,7 +6519,7 @@ function TagEditor({ tags: tags2, allTags, onAdd, onRemove, onClose }) {
         display,
         text
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(Text, { color: "gray", children: restOfSuggestion })
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(Text, { ...theme2.muted, children: restOfSuggestion })
     ] });
   }
   return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(Box_default, { children: /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(Text, { bold: true, inverse: true, children: [
@@ -6398,22 +6532,22 @@ function TagEditor({ tags: tags2, allTags, onAdd, onRemove, onClose }) {
 var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
 function StatusBar({ connected, count, width, label, pending }) {
   const statusText = connected ? "connected" : "offline";
-  const statusColor = connected ? "green" : "red";
+  const statusRole = connected ? theme2.success : theme2.error;
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Box_default, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text, { color: "gray", children: "[" }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text, { color: statusColor, children: statusText }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text, { color: "gray", children: "]" }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text, { ...theme2.muted, children: "[" }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text, { ...statusRole, children: statusText }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text, { ...theme2.muted, children: "]" }),
     /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text, { children: " " }),
     /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Text, { children: [
       count,
       " notes"
     ] }),
-    pending && pending > 0 ? /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Text, { color: "yellow", children: [
+    pending && pending > 0 ? /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Text, { ...theme2.warning, children: [
       " ",
       pending,
       " pending"
     ] }) : null,
-    label ? /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Text, { color: "yellow", children: [
+    label ? /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Text, { ...theme2.warning, children: [
       " ",
       label
     ] }) : null
@@ -6492,7 +6626,7 @@ function Confirm({ question, onYes, onNo, destructive }) {
       return;
     }
   });
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Box_default, { children: destructive ? /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(Text, { bold: true, color: "red", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Box_default, { children: destructive ? /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(Text, { bold: true, ...theme2.error, children: [
     question,
     " y/n"
   ] }) : /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(Text, { children: [
@@ -6559,12 +6693,12 @@ var deleteTagHandlers = (store, tagDialog, setTagDialog) => {
 
 // src/tui/blog-send-ask.ts
 var import_react5 = __toESM(require_react(), 1);
-import * as fs7 from "node:fs";
-import * as path6 from "node:path";
+import * as fs8 from "node:fs";
+import * as path7 from "node:path";
 
 // src/core/blog-config.ts
-import * as fs5 from "node:fs";
-import * as path4 from "node:path";
+import * as fs6 from "node:fs";
+import * as path5 from "node:path";
 var BLOG_FILE = "blog.json";
 var DEFAULT_BLOG_ORIGIN = "https://skryf.art";
 function blogOriginFromEnv(env) {
@@ -6580,19 +6714,19 @@ async function saveBlogConfig(dir, { origin, token }) {
   if (!token || token.length === 0) {
     throw new Error("Blog token must be a non-empty string");
   }
-  const filePath = path4.join(dir, BLOG_FILE);
+  const filePath = path5.join(dir, BLOG_FILE);
   const trimmedOrigin = origin.replace(/\/+$/, "");
   const payload = { origin: trimmedOrigin, token };
   const data = JSON.stringify(payload);
   secureMkdir(dir);
-  fs5.writeFileSync(filePath, data, { mode: 384 });
-  fs5.chmodSync(filePath, 384);
+  fs6.writeFileSync(filePath, data, { mode: 384 });
+  fs6.chmodSync(filePath, 384);
 }
 async function loadBlogConfig(dir) {
-  const filePath = path4.join(dir, BLOG_FILE);
+  const filePath = path5.join(dir, BLOG_FILE);
   let raw;
   try {
-    raw = fs5.readFileSync(filePath, "utf8");
+    raw = fs6.readFileSync(filePath, "utf8");
   } catch {
     return null;
   }
@@ -6705,8 +6839,8 @@ function noteToBlogDraft(content) {
 }
 
 // src/core/blog-sent.ts
-import * as fs6 from "node:fs";
-import * as path5 from "node:path";
+import * as fs7 from "node:fs";
+import * as path6 from "node:path";
 var BLOG_SENT_FILE = "blog-sent.json";
 function blogStatusLine(record) {
   if (!record) {
@@ -6716,11 +6850,11 @@ function blogStatusLine(record) {
   return "Sent as draft \xB7 " + record.sentAt.slice(0, 10) + " \xB7 " + url;
 }
 function recordBlogSend(dir, noteId, { postId, url, sentAt }) {
-  const filePath = path5.join(dir, BLOG_SENT_FILE);
+  const filePath = path6.join(dir, BLOG_SENT_FILE);
   let data = {};
-  if (fs6.existsSync(filePath)) {
+  if (fs7.existsSync(filePath)) {
     try {
-      const raw = fs6.readFileSync(filePath, "utf8");
+      const raw = fs7.readFileSync(filePath, "utf8");
       data = JSON.parse(raw);
     } catch {
       data = {};
@@ -6731,12 +6865,12 @@ function recordBlogSend(dir, noteId, { postId, url, sentAt }) {
   secureWriteFileSync(filePath, JSON.stringify(data));
 }
 function loadBlogSend(dir, noteId) {
-  const filePath = path5.join(dir, BLOG_SENT_FILE);
-  if (!fs6.existsSync(filePath)) {
+  const filePath = path6.join(dir, BLOG_SENT_FILE);
+  if (!fs7.existsSync(filePath)) {
     return null;
   }
   try {
-    const raw = fs6.readFileSync(filePath, "utf8");
+    const raw = fs7.readFileSync(filePath, "utf8");
     const data = JSON.parse(raw);
     if (data === null || typeof data !== "object" || Array.isArray(data)) {
       return null;
@@ -6860,7 +6994,7 @@ function useBlogSendAskState(noteId, content, setNotice, setNoticeError) {
       return;
     }
     const dir = defaultDataDir();
-    const configured = fs7.existsSync(path6.join(dir, "blog.json"));
+    const configured = fs8.existsSync(path7.join(dir, "blog.json"));
     const id = noteIdRef.current;
     if (!configured) request({ kind: "token", origin: blogOriginFromEnv(process.env) });
     else if (id && loadBlogSend(dir, id)) request({ kind: "resend" });
@@ -6935,7 +7069,8 @@ var LIST_HINTS = [
   { key: "e", label: "Edit" },
   { key: "g", label: "Add tag" },
   { key: "/", label: "Search" },
-  { key: "q", label: "Quit" }
+  { key: "q", label: "Quit" },
+  { key: "Tab", label: "Tags" }
 ];
 var TAGS_HINTS = [
   { key: "j/k", label: "Move" },
@@ -6973,7 +7108,7 @@ function KeyHints({ context, width }) {
   const hints = visibleHints(hintsForContext(context), width);
   return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Box_default, { children: hints.map((h, i) => /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_react6.default.Fragment, { children: [
     i > 0 && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Text, { children: "  " }),
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Text, { color: "cyan", children: h.key }),
+    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Text, { ...theme2.accent, children: h.key }),
     /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(Text, { children: [
       " ",
       h.label
@@ -7046,7 +7181,7 @@ function BottomArea({
     if (kind === "rename") return tagDialog.tagName;
     if (exportPathRef.current === null) {
       const base = exportFileName(selectedEntry?.note.content ?? "");
-      exportPathRef.current = join14(documentsDir(), `${base}.md`);
+      exportPathRef.current = join15(documentsDir(), `${base}.md`);
     }
     return exportPathRef.current;
   };
@@ -7178,11 +7313,17 @@ function BottomArea({
 // src/tui/Divider.tsx
 var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
 function Divider({ height }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Box_default, { width: 1, height, flexDirection: "column", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Text, { color: "gray", children: Array.from({ length: Math.max(0, height) }, () => "\u2502").join("\n") }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Box_default, { width: 1, height, flexDirection: "column", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Text, { ...theme2.muted, children: Array.from({ length: Math.max(0, height) }, () => "\u2502").join("\n") }) });
+}
+
+// src/tui/PaneHeading.tsx
+var import_jsx_runtime10 = __toESM(require_jsx_runtime(), 1);
+function PaneHeading({ label, focused = false }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Text, { ...focused ? theme2.headingFocused : theme2.heading, children: label });
 }
 
 // src/tui/TagPane.tsx
-var import_jsx_runtime10 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime11 = __toESM(require_jsx_runtime(), 1);
 function TagPane({
   tags: tags2,
   selectedIndex,
@@ -7204,22 +7345,22 @@ function TagPane({
     if (idx === moreBelowSlot && idx !== moreAboveSlot) return "\u2026 " + hiddenBelow + " more";
     return String(tag ?? "");
   });
-  const content = /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(Box_default, { flexDirection: "column", width, height, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Text, { children: "Tags" }),
+  const content = /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(Box_default, { flexDirection: "column", width, height, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(PaneHeading, { label: "Tags", focused }),
     labels.map((label, idx) => {
       const actualIndex = visibleStart + idx;
       const isSelected = actualIndex === selectedIndex;
       const isMore = idx === moreAboveSlot || idx === moreBelowSlot && idx !== moreAboveSlot;
-      return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(Box_default, { children: [
-        isMore ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Text, { children: "\xA0" }) : isSelected ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Text, { bold: true, children: ">" }) : actualIndex === 0 || actualIndex === rows.length - 1 || trashRow && actualIndex === rows.length - 2 ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Text, { children: "\xB7" }) : /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Text, { children: " " }),
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Text, { children: label.slice(0, width - 2) })
+      return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(Box_default, { children: [
+        isMore ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: "\xA0" }) : isSelected ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { bold: true, children: ">" }) : actualIndex === 0 || actualIndex === rows.length - 1 || trashRow && actualIndex === rows.length - 2 ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: "\xB7" }) : /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: " " }),
+        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: label.slice(0, width - 2) })
       ] }, actualIndex);
     })
   ] });
   if (divider) {
-    return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(Box_default, { flexDirection: "row", width, height, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Box_default, { flexDirection: "column", width: width - 1, height, children: content }),
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Divider, { height })
+    return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(Box_default, { flexDirection: "row", width, height, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Box_default, { flexDirection: "column", width: width - 1, height, children: content }),
+      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Divider, { height })
     ] });
   }
   return content;
@@ -7258,45 +7399,59 @@ function noteRow(note, width, query) {
   const title = sanitizeForTerminal(rawTitle);
   const preview = sanitizeForTerminal(rawPreview);
   const truncatedTitle = title.length > width - 2 ? wrapLines(title, width - 4)[0].text + ".." : title;
-  const marker = note.systemTags.includes("pinned") ? " *" : "";
+  const marker = "";
   const rows = wrapLines(preview, width - 2);
   const previewLines = rows.slice(0, 2).map((r) => r.text).filter((t) => t !== "");
   return { title: truncatedTitle, marker, previewLines };
 }
 
 // src/tui/NoteList.tsx
-var import_jsx_runtime11 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime12 = __toESM(require_jsx_runtime(), 1);
 function listColWidth(width) {
   return Math.min(Math.floor(width * 0.4), 60);
+}
+function isBoundary(notes2, i) {
+  return i > 0 && notes2[i - 1].systemTags.includes("pinned") && !notes2[i].systemTags.includes("pinned");
 }
 function NoteList({
   notes: notes2,
   selectedIndex,
   width,
   height,
-  query
+  query,
+  focused = false
 }) {
   const listHeight = height - 2;
   const colWidth = listColWidth(width);
+  const bodyHeight = listHeight - 1;
   const perNote = 4;
-  const visibleCount = Math.max(1, Math.floor(listHeight / perNote));
+  const boundaryExists = notes2.some((_, i) => isBoundary(notes2, i));
+  const visibleCount = Math.max(
+    1,
+    Math.floor((listHeight - (boundaryExists ? 1 : 0)) / perNote)
+  );
   const maxStart = Math.max(0, notes2.length - visibleCount);
   let visibleStart = Math.min(
     Math.max(0, selectedIndex - Math.floor(visibleCount / 2)),
     maxStart
   );
   const visibleEnd = Math.min(notes2.length, visibleStart + visibleCount);
-  return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(Box_default, { flexDirection: "column", height: listHeight, width: colWidth, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: "Notes" }),
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Box_default, { flexDirection: "column", children: notes2.slice(visibleStart, visibleEnd).map((note, idx) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Box_default, { flexDirection: "column", height: listHeight, width: colWidth, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(PaneHeading, { label: "Notes", focused }),
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Box_default, { flexDirection: "column", height: bodyHeight, children: notes2.slice(visibleStart, visibleEnd).map((note, idx) => {
       const actualIndex = visibleStart + idx;
       const isSelected = actualIndex === selectedIndex;
       const { title, marker, previewLines } = noteRow(note, colWidth, query);
       const lines = [];
+      if (isBoundary(notes2, actualIndex)) {
+        lines.push(
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { wrap: "truncate", ...theme2.muted, children: "\u2500".repeat(colWidth - 2) }, `rule-${idx}`)
+        );
+      }
       lines.push(
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(Box_default, { children: [
-          isSelected ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { bold: true, inverse: true, children: ">" }) : /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: " " }),
-          /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(Text, { bold: isSelected, inverse: isSelected, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Box_default, { children: [
+          isSelected ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { bold: true, inverse: true, children: ">" }) : /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { children: " " }),
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Text, { bold: isSelected, inverse: isSelected, children: [
             title,
             marker
           ] })
@@ -7304,17 +7459,17 @@ function NoteList({
       );
       for (let p = 0; p < previewLines.length; p++) {
         lines.push(
-          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Box_default, { marginLeft: 2, children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: previewLines[p] }) }, `preview-${idx}-${p}`)
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Box_default, { marginLeft: 2, children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { children: previewLines[p] }) }, `preview-${idx}-${p}`)
         );
       }
-      lines.push(/* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: " " }, `blank-${idx}`));
-      return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Box_default, { flexDirection: "column", children: lines }, idx);
+      lines.push(/* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { children: " " }, `blank-${idx}`));
+      return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Box_default, { flexDirection: "column", children: lines }, idx);
     }) })
   ] });
 }
 
 // src/tui/History.tsx
-var import_jsx_runtime12 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime13 = __toESM(require_jsx_runtime(), 1);
 function History({
   rows,
   selectedIndex,
@@ -7332,16 +7487,16 @@ function History({
     }
     return text;
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Box_default, { flexDirection: "column", height: listHeight, width: colWidth, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { bold: true, children: "History" }),
-    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Box_default, { flexDirection: "column", children: rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Box_default, { children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { children: loading ? "loading..." : "no earlier versions" }) }) : rows.slice(visibleStart, visibleEnd).map((row, idx) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(Box_default, { flexDirection: "column", height: listHeight, width: colWidth, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(PaneHeading, { label: "History", focused: true }),
+    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Box_default, { flexDirection: "column", children: rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Box_default, { children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { children: loading ? "loading..." : "no earlier versions" }) }) : rows.slice(visibleStart, visibleEnd).map((row, idx) => {
       const actualIndex = visibleStart + idx;
       const isSelected = actualIndex === selectedIndex;
       const truncated = truncate(row);
-      return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Box_default, { children: [
-        isSelected && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { bold: true, children: ">" }),
-        !isSelected && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { children: " " }),
-        /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { children: truncated })
+      return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(Box_default, { children: [
+        isSelected && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { bold: true, children: ">" }),
+        !isSelected && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { children: " " }),
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { children: truncated })
       ] }, idx);
     }) })
   ] });
@@ -7349,7 +7504,7 @@ function History({
 
 // src/tui/Preview.tsx
 var import_remove_markdown2 = __toESM(require_remove_markdown(), 1);
-var import_jsx_runtime13 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime14 = __toESM(require_jsx_runtime(), 1);
 function previewColWidth(width) {
   return Math.min(Math.floor(width * 0.6) - 1, 100);
 }
@@ -7360,17 +7515,17 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
   const previewHeight = height - 2;
   const colWidth = previewColWidth(width);
   if (!note) {
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(Box_default, { flexDirection: "row", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Divider, { height: previewHeight }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(Box_default, { flexDirection: "row", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Divider, { height: previewHeight }),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(
         Box_default,
         {
           flexDirection: "column",
           height: previewHeight,
           width: colWidth,
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { children: "Preview" }),
-            /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Box_default, { flexDirection: "column", children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { children: "Select a note to preview" }) })
+            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(PaneHeading, { label: "Preview", focused }),
+            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Box_default, { flexDirection: "column", children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Text, { children: "Select a note to preview" }) })
           ]
         }
       )
@@ -7449,16 +7604,10 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
     });
   }
   const visibleRows = rows.slice(start2, start2 + avail);
-  const titleText = focused ? /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(Text, { bold: true, inverse: focused, children: [
-    "Preview: ",
-    title
-  ] }) : /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(Text, { children: [
-    "Preview: ",
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { bold: true, children: title })
-  ] });
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(Box_default, { flexDirection: "row", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Divider, { height: previewHeight }),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(
+  const titleText = /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(PaneHeading, { label: "Preview: " + title, focused });
+  return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(Box_default, { flexDirection: "row", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Divider, { height: previewHeight }),
+    /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(
       Box_default,
       {
         flexDirection: "column",
@@ -7466,12 +7615,12 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
         width: colWidth,
         children: [
           titleText,
-          shownTags.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { children: shownTags.map((t) => "#" + t).join(" ") }) : null,
-          inTrash ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { children: " " }) : /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(Text, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { color: "cyan", children: "g" }),
+          shownTags.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Text, { children: shownTags.map((t) => "#" + t).join(" ") }) : null,
+          inTrash ? /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Text, { children: " " }) : /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(Text, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Text, { ...theme2.accent, children: "g" }),
             " add tag"
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Box_default, { flexDirection: "column", children: visibleRows.map((row, idx) => {
+          /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Box_default, { flexDirection: "column", children: visibleRows.map((row, idx) => {
             const gutter = gutterRows[start2 + idx] ?? "";
             const rowText = row.text || " ";
             const isHeading = bodyHeadingFlags[row.line] ?? false;
@@ -7482,15 +7631,15 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
               const match = uncheckedMatch || checkedMatch;
               const isUnchecked = !!uncheckedMatch;
               const trailing = match[2] + match[3];
-              inner = /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(import_jsx_runtime13.Fragment, { children: [
+              inner = /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_jsx_runtime14.Fragment, { children: [
                 " ",
-                /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { color: isUnchecked ? "gray" : "green", children: match[1] }),
+                /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Text, { ...isUnchecked ? theme2.muted : theme2.success, children: match[1] }),
                 trailing
               ] });
             } else {
               inner = rowText;
             }
-            return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(Text, { bold: isHeading, wrap: "truncate", children: [
+            return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(Text, { bold: isHeading, wrap: "truncate", children: [
               gutter,
               inner
             ] }, idx);
@@ -7505,7 +7654,7 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
 var import_react13 = __toESM(require_react(), 1);
 
 // node_modules/react-ink-textarea/dist/TextArea.js
-var import_jsx_runtime14 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime15 = __toESM(require_jsx_runtime(), 1);
 var import_react12 = __toESM(require_react(), 1);
 
 // node_modules/react-ink-textarea/dist/constants.js
@@ -8643,7 +8792,7 @@ var renderRowBody = ({ chunk, chunkAbsStart, cursorPos, cursorVisible, isCursorA
     if (buf.length === 0)
       return;
     const props = propsForKey(bufKey);
-    nodes.push((0, import_jsx_runtime14.jsx)(Text, { ...props, children: buf }, `s${segIdx++}`));
+    nodes.push((0, import_jsx_runtime15.jsx)(Text, { ...props, children: buf }, `s${segIdx++}`));
     buf = "";
     bufKey = null;
   };
@@ -8891,7 +9040,7 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
   const renderPlaceholderLine = (lineText, absStart, keyPrefix) => {
     if (lineText.length === 0) {
       return [
-        (0, import_jsx_runtime14.jsx)(Text, { ...textProps, dimColor: true, children: " " }, `${keyPrefix}-empty`)
+        (0, import_jsx_runtime15.jsx)(Text, { ...textProps, dimColor: true, children: " " }, `${keyPrefix}-empty`)
       ];
     }
     const nodes = [];
@@ -8901,7 +9050,7 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
     const flush = () => {
       if (buf.length > 0) {
         const lp = bufLabel !== null && bufLabel !== "text" ? labelTextProps[bufLabel] : void 0;
-        nodes.push((0, import_jsx_runtime14.jsx)(Text, { ...textProps, ...lp, dimColor: true, children: buf }, `${keyPrefix}-${segCounter++}`));
+        nodes.push((0, import_jsx_runtime15.jsx)(Text, { ...textProps, ...lp, dimColor: true, children: buf }, `${keyPrefix}-${segCounter++}`));
         buf = "";
         bufLabel = null;
       }
@@ -8956,9 +9105,9 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
     const isHighlighted = highlightActiveLine && isActiveLine;
     const contentBoxRef = measurePerLine && !isVirtualLine ? getChunkRef(lineNumber, continuationIndex) : ref2;
     if (!hasPrefix && !hasSuffix) {
-      return (0, import_jsx_runtime14.jsx)(Box_default, { width: "100%", backgroundColor: isHighlighted ? activeLineColor : void 0, children: (0, import_jsx_runtime14.jsx)(Box_default, { ref: contentBoxRef, flexGrow: 1, children: content }) }, key);
+      return (0, import_jsx_runtime15.jsx)(Box_default, { width: "100%", backgroundColor: isHighlighted ? activeLineColor : void 0, children: (0, import_jsx_runtime15.jsx)(Box_default, { ref: contentBoxRef, flexGrow: 1, children: content }) }, key);
     }
-    return (0, import_jsx_runtime14.jsxs)(Box_default, { width: "100%", flexDirection: "row", backgroundColor: isHighlighted ? activeLineColor : void 0, children: [hasPrefix ? (0, import_jsx_runtime14.jsx)(Box_default, { flexShrink: 0, children: prefix }) : null, (0, import_jsx_runtime14.jsx)(Box_default, { ref: contentBoxRef, flexGrow: 1, children: content }), hasSuffix ? (0, import_jsx_runtime14.jsx)(Box_default, { flexShrink: 0, children: suffix }) : null] }, key);
+    return (0, import_jsx_runtime15.jsxs)(Box_default, { width: "100%", flexDirection: "row", backgroundColor: isHighlighted ? activeLineColor : void 0, children: [hasPrefix ? (0, import_jsx_runtime15.jsx)(Box_default, { flexShrink: 0, children: prefix }) : null, (0, import_jsx_runtime15.jsx)(Box_default, { ref: contentBoxRef, flexGrow: 1, children: content }), hasSuffix ? (0, import_jsx_runtime15.jsx)(Box_default, { flexShrink: 0, children: suffix }) : null] }, key);
   };
   const cursorRowIndex = isActive ? visualRowForCursor(visualRows, cursorLine, cursorColumn, getChunkWidth(cursorLine, 0)) : -1;
   const { stdout } = use_stdout_default();
@@ -8980,14 +9129,14 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
   });
   if (value.length === 0 && !isActive && placeholderLines.length > 0) {
     const visibleCount = Math.max(0, visibleRowEnd - visibleRowStart);
-    return (0, import_jsx_runtime14.jsx)(Box_default, { flexDirection: "column", width: "100%", children: Array.from({ length: visibleCount }, (_, k) => {
+    return (0, import_jsx_runtime15.jsx)(Box_default, { flexDirection: "column", width: "100%", children: Array.from({ length: visibleCount }, (_, k) => {
       const i = visibleRowStart + k;
-      return renderLine((0, import_jsx_runtime14.jsx)(Text, { children: renderPlaceholderLine(placeholderLines[i] ?? " ", placeholderLineStartOffsets[i] ?? 0, `ph-${i}`) }), i, i, initialLineCount, i > 0, k === 0 ? contentRef : void 0, false, 0, false, true);
+      return renderLine((0, import_jsx_runtime15.jsx)(Text, { children: renderPlaceholderLine(placeholderLines[i] ?? " ", placeholderLineStartOffsets[i] ?? 0, `ph-${i}`) }), i, i, initialLineCount, i > 0, k === 0 ? contentRef : void 0, false, 0, false, true);
     }) });
   }
   if (value.length === 0 && isActive) {
     const visibleCount = Math.max(0, visibleRowEnd - visibleRowStart);
-    return (0, import_jsx_runtime14.jsx)(Box_default, { flexDirection: "column", width: "100%", children: Array.from({ length: visibleCount }, (_, k) => {
+    return (0, import_jsx_runtime15.jsx)(Box_default, { flexDirection: "column", width: "100%", children: Array.from({ length: visibleCount }, (_, k) => {
       const i = visibleRowStart + k;
       const phLine = placeholderLines[i];
       const isCursorRow = i === cursorLine && cursorVisible;
@@ -8996,9 +9145,9 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
         const firstChar = phLine[0];
         const restOffset = (placeholderLineStartOffsets[i] ?? 0) + 1;
         const rest = phLine.slice(1);
-        content = (0, import_jsx_runtime14.jsxs)(Text, { ...textProps, children: [isCursorRow ? (0, import_jsx_runtime14.jsx)(Text, { children: `\x1B[7m${firstChar}\x1B[27m` }, "cur") : renderPlaceholderLine(firstChar, placeholderLineStartOffsets[i] ?? 0, `ph-${i}-h`), rest.length > 0 ? renderPlaceholderLine(rest, restOffset, `ph-${i}-r`) : null] });
+        content = (0, import_jsx_runtime15.jsxs)(Text, { ...textProps, children: [isCursorRow ? (0, import_jsx_runtime15.jsx)(Text, { children: `\x1B[7m${firstChar}\x1B[27m` }, "cur") : renderPlaceholderLine(firstChar, placeholderLineStartOffsets[i] ?? 0, `ph-${i}-h`), rest.length > 0 ? renderPlaceholderLine(rest, restOffset, `ph-${i}-r`) : null] });
       } else {
-        content = (0, import_jsx_runtime14.jsx)(Text, { ...textProps, children: isCursorRow ? "\x1B[7m \x1B[27m" : " " });
+        content = (0, import_jsx_runtime15.jsx)(Text, { ...textProps, children: isCursorRow ? "\x1B[7m \x1B[27m" : " " });
       }
       return renderLine(content, i, i, initialLineCount, i > 0, k === 0 ? contentRef : void 0, false, 0, isActive && i === cursorLine, true);
     }) });
@@ -9036,7 +9185,7 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
     const chunkAbsStart = row.absStart;
     const showPlaceholder = !isContinuation && !!placeholderLines[lineIdx] && !hasContent;
     if (isVirtualLine) {
-      renderedLines.push(renderLine((0, import_jsx_runtime14.jsx)(Text, { children: showPlaceholder ? renderPlaceholderLine(placeholderLines[lineIdx], placeholderLineStartOffsets[lineIdx] ?? 0, `ph-pad-${lineIdx}`) : " " }), `pad-${lineIdx}`, lineIdx, totalLines, true, void 0, false, 0, false, false));
+      renderedLines.push(renderLine((0, import_jsx_runtime15.jsx)(Text, { children: showPlaceholder ? renderPlaceholderLine(placeholderLines[lineIdx], placeholderLineStartOffsets[lineIdx] ?? 0, `ph-pad-${lineIdx}`) : " " }), `pad-${lineIdx}`, lineIdx, totalLines, true, void 0, false, 0, false, false));
       continue;
     }
     const chunk = row.text;
@@ -9054,15 +9203,15 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
       tabWidth
     });
     if (bodyNodes.length === 0 && !showNewlineGlyph && !showPlaceholder) {
-      bodyNodes.push((0, import_jsx_runtime14.jsx)(Text, { children: " " }, "b"));
+      bodyNodes.push((0, import_jsx_runtime15.jsx)(Text, { children: " " }, "b"));
     }
-    renderedLines.push(renderLine((0, import_jsx_runtime14.jsxs)(Text, { ...textProps, wrap: measurePerLine ? "truncate" : "wrap", children: [bodyNodes, showNewlineGlyph ? (0, import_jsx_runtime14.jsx)(Text, { ...invisibleProps, children: "\u21B5" }, "nl") : null, showPlaceholder ? renderPlaceholderLine(placeholderLines[lineIdx], placeholderLineStartOffsets[lineIdx] ?? 0, `ph-${lineIdx}`) : null] }), `${lineIdx}-${c}`, lineIdx, totalLines, false, i === visibleRowStart ? contentRef : void 0, isContinuation, c, isActiveRow, row.isLastChunkOfLine));
+    renderedLines.push(renderLine((0, import_jsx_runtime15.jsxs)(Text, { ...textProps, wrap: measurePerLine ? "truncate" : "wrap", children: [bodyNodes, showNewlineGlyph ? (0, import_jsx_runtime15.jsx)(Text, { ...invisibleProps, children: "\u21B5" }, "nl") : null, showPlaceholder ? renderPlaceholderLine(placeholderLines[lineIdx], placeholderLineStartOffsets[lineIdx] ?? 0, `ph-${lineIdx}`) : null] }), `${lineIdx}-${c}`, lineIdx, totalLines, false, i === visibleRowStart ? contentRef : void 0, isContinuation, c, isActiveRow, row.isLastChunkOfLine));
   }
-  return (0, import_jsx_runtime14.jsx)(Box_default, { flexDirection: "column", width: "100%", children: renderedLines });
+  return (0, import_jsx_runtime15.jsx)(Box_default, { flexDirection: "column", width: "100%", children: renderedLines });
 };
 
 // src/tui/InlineEditor.tsx
-var import_jsx_runtime15 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
 function endPosition(text) {
   const lines = text.split("\n");
   const last = lines.length - 1;
@@ -9098,9 +9247,9 @@ function InlineEditor({ width, height, base, onClose, onSave }) {
       else onClose();
     }
   });
-  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(Box_default, { flexDirection: "column", width: colWidth, height, children: [
-    confirmDiscard ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Text, { children: discardPrompt }) : null,
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(Box_default, { flexDirection: "column", width: colWidth, height, children: [
+    confirmDiscard ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Text, { children: discardPrompt }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
       TextArea,
       {
         ref,
@@ -9113,12 +9262,12 @@ function InlineEditor({ width, height, base, onClose, onSave }) {
         onCursorChange: (position) => setCursorPosition(position)
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Text, { children: FOOTER_HINT })
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Text, { children: FOOTER_HINT })
   ] });
 }
 
 // src/tui/MainPanes.tsx
-var import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
 function MainPanes({
   store,
   view,
@@ -9147,9 +9296,9 @@ function MainPanes({
   const revisions = historyOpen && selectedId ? revisionsOf(store.getState(), selectedId) : [];
   const previewNote = historyOpen ? revisions[historyIndex]?.note ?? selectedNote : selectedNote;
   const layout = paneLayout(width, tagsOpen, tagsFocused, reading);
-  return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(import_jsx_runtime16.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(Box_default, { flexDirection: "row", children: [
-      layout.tagsWidth > 0 ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(import_jsx_runtime17.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(Box_default, { flexDirection: "row", children: [
+      layout.tagsWidth > 0 ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
         TagPane,
         {
           tags: tagNames,
@@ -9161,7 +9310,7 @@ function MainPanes({
           divider: true
         }
       ) : null,
-      layout.listWidthProp > 0 ? historyOpen ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+      layout.listWidthProp > 0 ? historyOpen ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
         History,
         {
           rows: revisions.map(revisionLabel),
@@ -9170,23 +9319,24 @@ function MainPanes({
           width: layout.listWidthProp,
           height: layout.tagsWidth > 0 ? height - 2 : height - 1
         }
-      ) : /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+      ) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
         NoteList,
         {
           notes: noteEntries.map((e) => e.note),
           selectedIndex,
           width: layout.listWidthProp,
           height: layout.tagsWidth > 0 ? height - 2 : height - 1,
-          query
+          query,
+          focused: !tagsFocused && !noteFocused
         }
       ) : null,
-      layout.previewWidthProp > 0 ? inlineEditOpen ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(InlineEditor, { note: previewNote, width: layout.previewWidthProp, height: layout.tagsWidth > 0 ? height - 2 : height - 1, base: inlineEditBase, onClose: onCloseEdit, onSave: onSaveEdit }) : /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Preview, { note: previewNote, width: layout.previewWidthProp, height: layout.tagsWidth > 0 ? height - 2 : height - 1, rendered, cursorLine, focused: noteFocused, inTrash: collection2.type === "trash" }) : null
+      layout.previewWidthProp > 0 ? inlineEditOpen ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(InlineEditor, { note: previewNote, width: layout.previewWidthProp, height: layout.tagsWidth > 0 ? height - 2 : height - 1, base: inlineEditBase, onClose: onCloseEdit, onSave: onSaveEdit }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Preview, { note: previewNote, width: layout.previewWidthProp, height: layout.tagsWidth > 0 ? height - 2 : height - 1, rendered, cursorLine, focused: noteFocused, inTrash: collection2.type === "trash" }) : null
     ] }),
-    tagsFocused ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Text, { children: "focus: tags" }) : noteFocused ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Text, { children: "focus: notes" }) : searchOpen || query !== "" ? (() => {
+    tagsFocused ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: "focus: tags" }) : noteFocused ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: "focus: notes" }) : searchOpen || query !== "" ? (() => {
       const full = "search: " + query;
       const shown = full.length > width - 2 ? full.slice(0, width - 4) + ".." : full;
-      return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Text, { bold: true, inverse: searchOpen, children: shown });
-    })() : collection2.type === "tag" ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Text, { children: "tag: " + collection2.tagName }) : collection2.type === "untagged" ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Text, { children: "filter: untagged" }) : null
+      return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { bold: true, inverse: searchOpen, children: shown });
+    })() : collection2.type === "tag" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: "tag: " + collection2.tagName }) : collection2.type === "untagged" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: "filter: untagged" }) : null
   ] });
 }
 
@@ -9368,7 +9518,7 @@ function useNotice() {
   return { notice, setNotice, setNoticeError, clearNotice };
 }
 function noticeColor(notice) {
-  return notice.isError ? "red" : "green";
+  return notice.isError ? theme2.error.color : theme2.success.color;
 }
 
 // src/tui/note-focus.ts
@@ -9425,6 +9575,23 @@ function handleNoteKey(input, keyName, ctx) {
   return false;
 }
 
+// src/tui/pane-arrows.ts
+function handlePaneArrow(keyName, ctx) {
+  if (keyName === "leftArrow") {
+    if (ctx.noteFocused) ctx.setNoteFocused(false);
+    else {
+      ctx.setTagsOpen(true);
+      ctx.setTagsFocused(true);
+    }
+    return true;
+  }
+  if (keyName === "rightArrow") {
+    if (!ctx.noteFocused) ctx.setNoteFocused(true);
+    return true;
+  }
+  return false;
+}
+
 // src/tui/use-reselect.ts
 function useReselect(ctx) {
   const store = ctx.store;
@@ -9453,8 +9620,8 @@ function useInlineEditorState() {
 }
 
 // src/tui/App.tsx
-var import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
-function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, copyText }) {
+var import_jsx_runtime18 = __toESM(require_jsx_runtime(), 1);
+function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, copyText, startNew }) {
   const { exit, suspendTerminal } = use_app_default();
   const { setRawMode } = use_stdin_default();
   const view = useAppState(store);
@@ -9483,7 +9650,7 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
   const [syncedAt, setSyncedAt] = (0, import_react17.useState)(null);
   const syncedTimerRef = (0, import_react17.useRef)(null);
   const tagsAutoOpenedRef = (0, import_react17.useRef)(false);
-  useAppEffects(width, tagNames.length, setTagsOpen, syncedTimerRef);
+  useAppEffects(width, tagNames.length, setTagsOpen, syncedTimerRef, startNew ? () => handleKey("n", {}) : void 0);
   const handleKey = (input, key) => {
     recordKeyEvent(input, key, Boolean(searchOpen || tagEditorOpen || tagDialog?.kind === "rename" || emptyAsk || logoutAsk || itemAsk || exportAsk || useBlogSendAsk().blogOpen));
     if (notice) clearNotice();
@@ -9527,6 +9694,7 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
       setTagsFocused(true);
       return;
     }
+    if (handlePaneArrow(keyName, { tagsOpen, noteFocused, setTagsOpen, setTagsFocused, setNoteFocused })) return;
     if (keyName === "Tab" && tagsOpen) {
       setTagsFocused(true);
       return;
@@ -9612,8 +9780,8 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
   const selectedNote = selectedEntry?.note ?? null;
   const noteItems = noteFocused && selectedEntry ? checklistItems(selectedEntry.note.content ?? "") : [];
   const cursorLine = noteItems.length > 0 ? noteItems[Math.min(itemIndex, noteItems.length - 1)].line : null;
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Box_default, { flexDirection: "column", height, children: helpOpen ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Help, { width, height, editor: selectEditor(process.env) }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(import_jsx_runtime17.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Box_default, { flexDirection: "column", height, children: helpOpen ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Help, { width, height, editor: selectEditor(process.env) }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
       MainPanes,
       {
         store,
@@ -9640,8 +9808,8 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
         }
       }
     ),
-    notice ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { color: noticeColor(notice), children: notice.message }) : null,
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+    notice ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Text, { color: noticeColor(notice), children: notice.message }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
       BottomArea,
       {
         store,
@@ -9673,7 +9841,7 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
 }
 
 // src/tui/Root.tsx
-var import_jsx_runtime18 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
 function Root(props) {
   const [phase, setPhase] = (0, import_react18.useState)("loading");
   const [store, setStore] = (0, import_react18.useState)(null);
@@ -9751,14 +9919,14 @@ function Root(props) {
     [props.dataDir, props.makeStoreFor]
   );
   if (phase === "loading") {
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(Box_default, { flexDirection: "column", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Text, { children: "Loading..." }),
-      lockMessage ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Text, { color: "red", children: lockMessage }) : null
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(Box_default, { flexDirection: "column", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Text, { children: "Loading..." }),
+      lockMessage ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Text, { ...theme2.error, children: lockMessage }) : null
     ] });
   }
   if (phase === "login") {
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(Box_default, { flexDirection: "column", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(Box_default, { flexDirection: "column", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
         Login,
         {
           width: size.width,
@@ -9769,19 +9937,20 @@ function Root(props) {
           onLoggedIn
         }
       ),
-      error ? /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(Text, { color: "red", children: [
+      error ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(Text, { ...theme2.error, children: [
         "Error: ",
         error
       ] }) : null
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
     App,
     {
       store,
       width: size.width,
       height: size.height,
       onQuit: props.onQuit,
+      startNew: props.startNew,
       onLogout: () => {
         store.dispatch({ type: "REALLY_LOG_OUT" });
         void handleLogout();
@@ -9813,13 +9982,19 @@ function buildStore(opts, auth, onLogout) {
       authWatchdogMs: opts.authWatchdogMs,
       onLogout: () => {
         stopSaving();
+        if (opts.statusDir) {
+          removeStatusFile(opts.statusDir);
+        }
         onLogout();
       }
     }
   });
   const startSaving = persistOnChange(store, opts.dataDir);
+  const stopStatus = opts.statusDir ? watchStatus(store, opts.statusDir, { delayMs: opts.statusDelayMs }) : () => {
+  };
   stopSaving = () => {
     startSaving();
+    stopStatus();
     instanceLock.release();
   };
   if (noteGhosts)
@@ -9849,17 +10024,17 @@ function accountStore(opts, auth, onLogout) {
 function stateDir() {
   const xdg = process.env.XDG_STATE_HOME;
   if (xdg && xdg !== "") {
-    return path7.join(xdg, "snote");
+    return path8.join(xdg, "snote");
   }
-  return path7.join(os2.homedir(), ".local", "state", "snote");
+  return path8.join(os2.homedir(), ".local", "state", "snote");
 }
 async function writeReport(log, dataDir) {
   const dir = stateDir();
   let bundle;
   try {
-    const crashes = fs8.readdirSync(dir).filter((f) => f.startsWith("crash-") && f.endsWith(".json")).sort();
+    const crashes = fs9.readdirSync(dir).filter((f) => f.startsWith("crash-") && f.endsWith(".json")).sort();
     if (crashes.length > 0) {
-      const raw = fs8.readFileSync(path7.join(dir, crashes.at(-1)), "utf8");
+      const raw = fs9.readFileSync(path8.join(dir, crashes.at(-1)), "utf8");
       bundle = { ...JSON.parse(raw), source: "crash" };
     }
   } catch (err) {
@@ -9882,7 +10057,7 @@ async function writeReport(log, dataDir) {
       return 0;
     }
   }
-  const file = path7.join(
+  const file = path8.join(
     dir,
     `report-${(/* @__PURE__ */ new Date()).toISOString().replaceAll(":", "-")}.json`
   );
@@ -9902,7 +10077,7 @@ async function writeReport(log, dataDir) {
 async function main(argv, io) {
   const log = io?.log ?? console.log;
   const reportOnly = argv.includes("--report");
-  const args = argv.filter((a) => a !== "--report");
+  const { args, startNew } = splitNewFlag(argv.filter((a) => a !== "--report"));
   if (argv.includes("--version") || argv.includes("-v")) {
     log(`snote ${VERSION}`);
     return 0;
@@ -9947,7 +10122,12 @@ async function main(argv, io) {
   };
   let lastStore;
   const makeStoreFor = (auth, onLogout) => {
-    const built = accountStore({ dataDir, appId, server: o.server }, auth, onLogout);
+    const dir = statusDir(process.env);
+    const built = accountStore(
+      { dataDir, appId, server: o.server, statusDir: fs9.existsSync(dir) ? dir : void 0 },
+      auth,
+      onLogout
+    );
     stopSaving = built.stopSaving;
     lastStore = built.store;
     return built.store;
@@ -9960,6 +10140,7 @@ async function main(argv, io) {
       width: process.stdout.columns ?? 80,
       height: process.stdout.rows ?? 24,
       makeStoreFor,
+      startNew,
       requestCode: calls.requestCode,
       completeLogin: calls.completeLogin,
       passwordLogin: calls.passwordLogin,
@@ -9993,7 +10174,7 @@ async function main(argv, io) {
       home: os2.homedir()
     });
     const dir = stateDir();
-    const file = path7.join(
+    const file = path8.join(
       dir,
       `crash-${report.record.when.replaceAll(":", "-")}.json`
     );
@@ -10045,7 +10226,7 @@ async function main(argv, io) {
     }
     process.stderr.write(report.message.replace("{path}", pathText) + "\n");
     try {
-      fs8.fsyncSync(1);
+      fs9.fsyncSync(1);
     } catch {
     }
     process.exit(1);

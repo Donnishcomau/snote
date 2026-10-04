@@ -75,11 +75,11 @@ const makeBaseProps = () => ({
 });
 
 describe('KeyHints (T264)', () => {
-  it('1: WHEN <BottomArea {...makeBaseProps()} /> (from the reused makeBaseProps(), selectedEntry: null) is rendered with chalk forced to level 3 THEN the frame contains the exact \\u001b[36m?\\u001b[39m Help; rendered again WITHOUT forcing chalk, the frame contains the exact ? Help  n New  e Edit  g Add tag  / Search  q Quit', async () => {
+  it('1: WHEN <BottomArea {...makeBaseProps()} /> (from the reused makeBaseProps(), selectedEntry: null) is rendered with chalk forced to level 3 THEN the frame contains the exact \\u001b[34m?\\u001b[39m Help; rendered again WITHOUT forcing chalk, the frame contains the exact ? Help  n New  e Edit  g Add tag  / Search  q Quit', async () => {
     inkChalk.level = 3;
     const { lastFrame, unmount } = render(<BottomArea {...makeBaseProps()} />);
     await new Promise(r => setTimeout(r, 50));
-    expect(lastFrame()).toContain('\u001b[36m?\u001b[39m Help');
+    expect(lastFrame()).toContain('\u001b[34m?\u001b[39m Help');
     unmount();
 
     // Reset chalk level for the no-chalk test
@@ -111,12 +111,12 @@ describe('KeyHints (T264)', () => {
     unmount();
   });
 
-  it('4: WHEN visibleHints(LIST_HINTS, 80), visibleHints(LIST_HINTS, 120) and visibleHints(LIST_HINTS, 312) are each called THEN each call returns all 6 entries, unchanged and in the same order as LIST_HINTS', () => {
-    expect(visibleHints(LIST_HINTS, 80).length).toBe(6);
+  it('4: WHEN visibleHints(LIST_HINTS, 80), visibleHints(LIST_HINTS, 120) and visibleHints(LIST_HINTS, 312) are each called THEN each call returns all 7 entries, unchanged and in the same order as LIST_HINTS', () => {
+    expect(visibleHints(LIST_HINTS, 80).length).toBe(7);
     expect(visibleHints(LIST_HINTS, 80)).toEqual(LIST_HINTS);
-    expect(visibleHints(LIST_HINTS, 120).length).toBe(6);
+    expect(visibleHints(LIST_HINTS, 120).length).toBe(7);
     expect(visibleHints(LIST_HINTS, 120)).toEqual(LIST_HINTS);
-    expect(visibleHints(LIST_HINTS, 312).length).toBe(6);
+    expect(visibleHints(LIST_HINTS, 312).length).toBe(7);
     expect(visibleHints(LIST_HINTS, 312)).toEqual(LIST_HINTS);
   });
 

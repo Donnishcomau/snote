@@ -26,7 +26,9 @@ import { requeueUnsynced } from '../core/requeue';
 import { whenCatchUpApplied } from '../core/simperium-reconnect-fix';
 // T151 — resend offline "delete forever" ops at start-up (FR-5).
 import { resendDeletions, trackDeletions } from '../core/tombstones';
-import { parseCli, checkReport, USAGE } from './args';
+import { parseCli, checkReport, splitNewFlag, USAGE } from './args';
+// T358 — the bar widget's status file: watch, path, and removal on logout.
+import { statusDir, watchStatus, removeStatusFile } from '../core/status-file';
 // T323 — `--version`/`-v` prints `snote <version>` from package.json.
 import { VERSION } from './version';
 import { envReport } from './env-check';
@@ -46,6 +48,8 @@ export interface BuildStoreOptions {
   server?: string;
   noteEditDelayMs?: number;
   authWatchdogMs?: number;
+  statusDir?: string;
+  statusDelayMs?: number;
 }
 
 export function buildStore(
@@ -83,15 +87,24 @@ export function buildStore(
       authWatchdogMs: opts.authWatchdogMs,
       onLogout: () => {
         stopSaving();
+        if (opts.statusDir) {
+          removeStatusFile(opts.statusDir);
+        }
         onLogout();
       },
     },
   });
   const startSaving = persistOnChange(store, opts.dataDir);
+  // T358 — with a status dir (the bar plugin's), keep status.json fresh;
+  // stopStatus flushes any pending write at shutdown.
+  const stopStatus = opts.statusDir
+    ? watchStatus(store, opts.statusDir, { delayMs: opts.statusDelayMs })
+    : () => {};
   // T303 — the returned stopSaving also releases the instance lock. The
   // marker line below is the OMARCHY: boundary cast one structure.test counts.
   stopSaving = () => {
     startSaving();
+    stopStatus();
     instanceLock.release();
   };
   // T85 — re-queue notes newer than their ghost on start-up (FR-5).
@@ -127,6 +140,8 @@ export function accountStore(
     server?: string;
     noteEditDelayMs?: number;
     authWatchdogMs?: number;
+    statusDir?: string;
+    statusDelayMs?: number;
   },
   auth: { email: string; token: string },
   onLogout: () => void
@@ -218,7 +233,7 @@ export async function main(
   // fixed (strict parseArgs would reject it), and the report runs instead
   // of the login/render flow.
   const reportOnly = argv.includes('--report');
-  const args = argv.filter((a) => a !== '--report');
+  const { args, startNew } = splitNewFlag(argv.filter((a) => a !== '--report'));
 
   // T323 — `--version`/`-v` is stripped before parseCli too: CliOptions's
   // shape is fixed, so the strict parser would reject it. Print the
@@ -283,7 +298,14 @@ export async function main(
   // T232 — keep the latest store too, so the crash handler can snapshot it.
   let lastStore: ReturnType<typeof accountStore>['store'] | undefined;
   const makeStoreFor = (auth: Auth, onLogout: () => void) => {
-    const built = accountStore({ dataDir, appId, server: o.server }, auth, onLogout);
+    // T358 — only users who installed the bar plugin (its setup creates
+    // the directory) get the status file; snote never creates it.
+    const dir = statusDir(process.env);
+    const built = accountStore(
+      { dataDir, appId, server: o.server, statusDir: fs.existsSync(dir) ? dir : undefined },
+      auth,
+      onLogout
+    );
     stopSaving = built.stopSaving;
     lastStore = built.store;
     return built.store;
@@ -299,6 +321,7 @@ export async function main(
       width: process.stdout.columns ?? 80,
       height: process.stdout.rows ?? 24,
       makeStoreFor,
+      startNew,
       requestCode: calls.requestCode,
       completeLogin: calls.completeLogin,
       passwordLogin: calls.passwordLogin,

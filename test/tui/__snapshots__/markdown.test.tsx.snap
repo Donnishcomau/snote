@@ -22,7 +22,7 @@ exports[`Markdown preview > 5: snapshot test at 80x24 > markdown-rendered-80x24 
                                 │
                                 │
                                 │
-? Help  n New  e Edit  g Add tag  / Search  q Quit
+? Help  n New  e Edit  g Add tag  / Search  q Quit  Tab Tags
 [offline] 2 notes
 "
 `;

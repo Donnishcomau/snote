@@ -13,7 +13,7 @@ import { noteKeyAction, emptyTrashActions } from '../core/note-keys';
 import { checklistItems } from '../core/checklist';
 import { useAppState } from './useAppState'; import { useNotice, noticeColor } from './notice';
 import { handleSearchKey, handleSearchClearKey, handleTagsKey, handleHistoryKey, handleIdleKey, useAppEffects, recordKeyEvent, openHistory } from './app-keys';
-import { handleNoteKey } from './note-focus';
+import { handleNoteKey } from './note-focus'; import { handlePaneArrow } from './pane-arrows';
 import { useReselect } from './use-reselect';
 import { splitPastedInput } from './split-input';
 import { editSelectedNote, createNote, copyLink, forceSyncNow, saveInlineEdit } from './app-actions'; import { useInlineEditorState } from './inline-editor-state';
@@ -27,13 +27,13 @@ interface AppProps {
   onLogout?: () => void;
   runEditor?: (initial: string) => Promise<string | null>;
   onForceSync?: () => void;
-  copyText?: (text: string) => boolean;
+  copyText?: (text: string) => boolean; startNew?: boolean;
 }
 
 /**
  * Main App component - note list + preview panes.
  */
-export function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, copyText }: AppProps): React.JSX.Element {
+export function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, copyText, startNew }: AppProps): React.JSX.Element {
   const { exit, suspendTerminal } = useApp();
   const { setRawMode } = useStdin();
   const view = useAppState(store);
@@ -61,7 +61,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   const syncedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tagsAutoOpenedRef = useRef(false);
 
-  useAppEffects(width, tagNames.length, setTagsOpen, syncedTimerRef);
+  useAppEffects(width, tagNames.length, setTagsOpen, syncedTimerRef, startNew ? () => handleKey('n', {} as import('ink').Key) : undefined);
 
   // Handle keyboard input
   const handleKey = (input: string, key: import('ink').Key) => {
@@ -121,7 +121,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
       return;
     }
 
-    // Tab: only when tagsOpen, set focused; otherwise keep today's behaviour
+    if (handlePaneArrow(keyName, { tagsOpen, noteFocused, setTagsOpen, setTagsFocused, setNoteFocused })) return;
     if (keyName === 'Tab' && tagsOpen) {
       setTagsFocused(true);
       return;

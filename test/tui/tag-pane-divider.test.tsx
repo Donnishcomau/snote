@@ -126,7 +126,7 @@ describe('T192 TagPane divider', () => {
     stdin.write('\u001b');
   });
 
-  it('5: WHEN src/tui/TagPane.tsx is read THEN it contains <Divider exactly 1 time and <Text>Tags</Text> exactly 1 time', async () => {
+  it('5: WHEN src/tui/TagPane.tsx is read THEN it contains <Divider exactly 1 time and <PaneHeading label="Tags" exactly 1 time', async () => {
     const fs = await import('fs');
     const path = await import('path');
     const content = fs.readFileSync(
@@ -135,9 +135,9 @@ describe('T192 TagPane divider', () => {
     );
 
     const dividerMatches = (content.match(/<Divider/g) ?? []).length;
-    const textBoldTagsMatches = (content.match(/<Text>Tags<\/Text>/g) ?? []).length;
+    const paneHeadingTagsMatches = (content.match(/<PaneHeading label="Tags"/g) ?? []).length;
 
     expect(dividerMatches).toBe(1);
-    expect(textBoldTagsMatches).toBe(1);
+    expect(paneHeadingTagsMatches).toBe(1);
   });
 });

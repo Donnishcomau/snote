@@ -6,6 +6,7 @@ import { App } from './App';
 import { loadToken, saveToken, logout } from '../core/token';
 import type { Store } from 'redux';
 import type { State } from '../core/store';
+import { theme } from './theme';
 
 export type Auth = { email: string; token: string; server?: string };
 
@@ -21,6 +22,7 @@ export interface RootProps {
   onQuit?: () => void;
   // T304: called when an instance-lock error is detected
   onLockError?: (message: string) => void;
+  startNew?: boolean;
 }
 
 type Phase = 'loading' | 'login' | 'app';
@@ -116,7 +118,7 @@ export function Root(props: RootProps): React.JSX.Element {
     return (
       <Box flexDirection="column">
         <Text>Loading...</Text>
-        {lockMessage ? <Text color="red">{lockMessage}</Text> : null}
+        {lockMessage ? <Text {...theme.error}>{lockMessage}</Text> : null}
       </Box>
     );
   }
@@ -132,7 +134,7 @@ export function Root(props: RootProps): React.JSX.Element {
           passwordLogin={props.passwordLogin}
           onLoggedIn={onLoggedIn}
         />
-        {error ? <Text color="red">Error: {error}</Text> : null}
+        {error ? <Text {...theme.error}>Error: {error}</Text> : null}
       </Box>
     );
   }
@@ -144,6 +146,7 @@ export function Root(props: RootProps): React.JSX.Element {
       width={size.width}
       height={size.height}
       onQuit={props.onQuit}
+      startNew={props.startNew}
       onLogout={() => {
         store!.dispatch({ type: 'REALLY_LOG_OUT' });
         void handleLogout();

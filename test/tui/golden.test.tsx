@@ -98,7 +98,7 @@ describe('Golden frames: search, tags, help', () => {
     expect(frame).toMatchSnapshot('search-120x40');
   });
 
-  it('3: WHEN at 80x24 t then j are written THEN the frame contains Tags, All notes, >home, work, Untagged and still 4 notes (no filter chosen yet); snapshot tags-80x24', async () => {
+  it('3: WHEN at 80x24 t then j are written THEN the frame contains Tags, All notes, >home, work, Untagged and 1 notes (the filter follows the marker); snapshot tags-80x24', async () => {
     const { lastFrame, stdin } = render(
       <App store={store} width={80} height={24} />
     );
@@ -115,11 +115,11 @@ describe('Golden frames: search, tags, help', () => {
     expect(frame).toContain('>home');
     expect(frame).toContain('work');
     expect(frame).toContain('Untagged');
-    expect(frame).toContain('4 notes');
+    expect(frame).toContain('1 notes');
     expect(frame).toMatchSnapshot('tags-80x24');
   });
 
-  it('4: WHEN at 120x40 t then j are written THEN the frame contains >home, Notes, Preview and 4 notes; snapshot tags-120x40', async () => {
+  it('4: WHEN at 120x40 t then j are written THEN the frame contains >home, Notes, Preview and 1 notes; snapshot tags-120x40', async () => {
     const { lastFrame, stdin } = render(
       <App store={store} width={120} height={40} />
     );
@@ -134,7 +134,7 @@ describe('Golden frames: search, tags, help', () => {
     expect(frame).toContain('>home');
     expect(frame).toContain('Notes');
     expect(frame).toContain('Preview');
-    expect(frame).toContain('4 notes');
+    expect(frame).toContain('1 notes');
     expect(frame).toMatchSnapshot('tags-120x40');
   });
 

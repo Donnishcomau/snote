@@ -35,10 +35,10 @@ describe('noteRow', () => {
     expect(row.title).toBe('Just a title');
   });
 
-  it('4: noteRow(note("Pinned note\\nbody", ["pinned"]), 30) => marker " *", title "Pinned note"', () => {
+  it('4: noteRow(note("Pinned note\\nbody", ["pinned"]), 30) => marker "", title "Pinned note"', () => {
     const n = note('Pinned note\nbody', ['pinned']);
     const row = noteRow(n, 30);
-    expect(row.marker).toBe(' *');
+    expect(row.marker).toBe('');
     expect(row.title).toBe('Pinned note');
   });
 

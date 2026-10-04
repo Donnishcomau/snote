@@ -138,7 +138,7 @@ describe('T184 Tags pane trash row', () => {
     stdin.write('\u001b');
   });
 
-  it("4: WHEN 't' and then 'j' 7 times are written THEN the frame still contains '>Trash' (the marker stays on the last row) and ui.collection is still { type: 'all' }", async () => {
+  it("4: WHEN 't' and then 'j' 7 times are written THEN the frame still contains '>Trash' (the marker stays on the last row) and ui.collection equals { type: 'untagged' }", async () => {
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
 
     await delay(50);
@@ -150,7 +150,7 @@ describe('T184 Tags pane trash row', () => {
 
     const frame = lastFrame() ?? '';
     expect(frame).toContain('>Trash');
-    expect(store.getState().ui.collection).toEqual({ type: 'all' });
+    expect(store.getState().ui.collection).toEqual({ type: 'untagged' });
 
     stdin.write('\u001b');
   });

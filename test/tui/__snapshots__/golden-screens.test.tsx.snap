@@ -22,7 +22,7 @@ exports[`Golden frames > 1: WHEN at 80x24 h is written and the two versions are 
                                 │
                                 │
                                 │
-? Help  n New  e Edit  g Add tag  / Search  q Quit
+? Help  n New  e Edit  g Add tag  / Search  q Quit  Tab Tags
 [offline] 2 notes
 "
 `;
@@ -65,7 +65,7 @@ exports[`Golden frames > 2: WHEN the same is done at 120x40 THEN the frame conta
                                         │
                                         │
                                         │
-? Help  n New  e Edit  g Add tag  / Search  q Quit
+? Help  n New  e Edit  g Add tag  / Search  q Quit  Tab Tags
 [offline] 2 notes
 "
 `;

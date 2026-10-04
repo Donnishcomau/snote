@@ -57,6 +57,8 @@ export function keyNameFromEvent(key: {
   escape?: boolean;
   upArrow?: boolean;
   downArrow?: boolean;
+  leftArrow?: boolean;
+  rightArrow?: boolean;
   control?: boolean;
 }): string | null {
   if (key.return) return 'Enter';
@@ -64,5 +66,7 @@ export function keyNameFromEvent(key: {
   if (key.escape) return 'Escape';
   if (key.upArrow) return 'upArrow';
   if (key.downArrow) return 'downArrow';
+  if (key.leftArrow) return 'leftArrow';
+  if (key.rightArrow) return 'rightArrow';
   return null;
 }

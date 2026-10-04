@@ -1,5 +1,6 @@
 import { Box, Text, useInput } from 'ink';
 import React, { useState } from 'react';
+import { theme } from './theme';
 
 export interface LoginProps {
   width: number;
@@ -136,7 +137,7 @@ export function Login({
           <Text>Code: {code}</Text>
         </>
       )}
-      {error !== '' ? <Text color="red">Error: {error}</Text> : null}
+      {error !== '' ? <Text {...theme.error}>Error: {error}</Text> : null}
     </Box>
   );
 }

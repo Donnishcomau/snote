@@ -9,6 +9,16 @@ export interface CliOptions {
   server?: string;
 }
 
+export function splitNewFlag(argv: string[]): {
+  args: string[];
+  startNew: boolean;
+} {
+  return {
+    args: argv.filter((a) => a !== '--new'),
+    startNew: argv.includes('--new'),
+  };
+}
+
 export function parseCli(argv: string[]): CliOptions {
   const result = parseArgs({
     args: argv,
@@ -59,4 +69,5 @@ export const USAGE: string = [
   '  --app-id <value>     Simperium app ID',
   '  --server <value>     Simperium server URL',
   '  --report        Write a bundle for your coding agent',
+  '  --new            Open the editor for a new note at start',
 ].join('\n');

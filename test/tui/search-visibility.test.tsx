@@ -69,7 +69,7 @@ describe('Search visibility: focus marker and truncation', () => {
     }
   });
 
-  it('2: WHEN the same app then has \\r written (query kept, editing stopped), chalk still forced THEN lastFrame() contains exactly \\u001b[1msearch: falcon\\u001b[22m and does not contain \\u001b[7m', async () => {
+  it('2: WHEN the same app then has \\r written (query kept, editing stopped), chalk still forced THEN lastFrame() contains exactly \\u001b[1msearch: falcon\\u001b[22m and does not contain \\u001b[7m\\u001b[1msearch', async () => {
     const { restore } = await forceInkChalk();
     try {
       const { stdin, lastFrame } = render(
@@ -90,7 +90,9 @@ describe('Search visibility: focus marker and truncation', () => {
 
       const frame = lastFrame();
       expect(frame).toContain('\u001b[1msearch: falcon\u001b[22m');
-      expect(frame).not.toContain('\u001b[7m');
+      // The Notes heading is inverse while the list has focus, so only
+      // the search line must not be inverse.
+      expect(frame).not.toContain('\u001b[7m\u001b[1msearch');
     } finally {
       restore();
     }

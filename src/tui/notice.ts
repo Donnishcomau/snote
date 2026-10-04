@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { theme } from './theme';
 
 /**
  * The bottom-area notice line (T349): error notices stay red; success and
@@ -23,7 +24,7 @@ export function useNotice(): {
   return { notice, setNotice, setNoticeError, clearNotice };
 }
 
-/** Ink's named ANSI colours only: red for errors, green otherwise. */
-export function noticeColor(notice: NoticeState): 'red' | 'green' {
-  return notice.isError ? 'red' : 'green';
+/** The theme roles' colours: error notices keep red, everything else green. */
+export function noticeColor(notice: NoticeState): string {
+  return notice.isError ? theme.error.color : theme.success.color;
 }
