@@ -90,7 +90,7 @@ describe('Tag hint (T285)', () => {
     unmount();
   });
 
-  it('5: WHEN <Preview note={makeNote(\'t4\',\'No tags note\\nbody\',{tags:[]})} width={80} height={12} /> is rendered with chalk forced to level 3 THEN the frame contains the exact \\u001b[36mg\\u001b[39m add tag and does not contain \\u001b[90m', async () => {
+  it('5: WHEN <Preview note={makeNote(\'t4\',\'No tags note\\nbody\',{tags:[]})} width={80} height={12} /> is rendered with chalk forced to level 3 THEN the frame contains the exact \\u001b[34mg\\u001b[39m add tag and does not contain \\u001b[90m', async () => {
     const { restore } = await forceInkChalk();
     try {
       const note = makeNote('t4', 'No tags note\nbody', { tags: [] });
@@ -99,7 +99,7 @@ describe('Tag hint (T285)', () => {
       );
       await delay(50);
       const frame = lastFrame() ?? '';
-      expect(frame).toContain('\u001b[36mg\u001b[39m add tag');
+      expect(frame).toContain('\u001b[34mg\u001b[39m add tag');
       // \u001b[90m (gray) never precedes content; it only ever wraps the chrome
       // divider glyph, so drop that run (content-not-muted's mutedBefore idiom)
       // and check no gray remains anywhere else in the frame.

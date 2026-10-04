@@ -60,13 +60,14 @@ describe('Note list rows (T211)', () => {
     expect(idxTwo - idxOne).toBe(3);
   });
 
-  it('3: WHEN the third note is pinned THEN the frame contains "Note three *".', async () => {
+  it('3: WHEN the third note is pinned THEN the frame contains ">Note three" and not "Note three *".', async () => {
     const { lastFrame } = render(
       <NoteList notes={notes} selectedIndex={2} width={60} height={26} />
     );
     await new Promise(r => setTimeout(r, 0));
-    const frame = lastFrame();
-    expect(frame).toContain('Note three *');
+    const frame = stripAnsi(lastFrame());
+    expect(frame).toContain('>Note three');
+    expect(frame).not.toContain('Note three *');
   });
 
   it('4: WHEN the same list is rendered with height=26 THEN the number of non-empty frame lines is at most 24 and the frame contains "Note one" and does not contain "Note eight".', async () => {

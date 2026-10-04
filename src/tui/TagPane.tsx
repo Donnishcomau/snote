@@ -1,6 +1,7 @@
 import { Box, Text } from 'ink';
 import React from 'react';
 import { Divider } from './Divider';
+import { PaneHeading } from './PaneHeading';
 
 interface TagPaneProps {
   tags: string[];
@@ -46,7 +47,7 @@ export function TagPane({
 
   const content = (
     <Box flexDirection="column" width={width} height={height}>
-      <Text>Tags</Text>
+      <PaneHeading label="Tags" focused={focused} />
       {labels.map((label, idx) => {
         const actualIndex = visibleStart + idx;
         const isSelected = actualIndex === selectedIndex;

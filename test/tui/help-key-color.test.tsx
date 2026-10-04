@@ -27,7 +27,7 @@ async function forceChalkLevel3(): Promise<void> {
 }
 
 describe('Help key color (T254)', () => {
-  it('1: WHEN <Help width={80} height={24} entries={[{key:\'j\',action:\'move_down\',description:\'Move down\'}]} /> renders with chalk forced to level 3 THEN the frame contains the exact \\u001b[36mj       \\u001b[39m  Move down', async () => {
+  it('1: WHEN <Help width={80} height={24} entries={[{key:\'j\',action:\'move_down\',description:\'Move down\'}]} /> renders with chalk forced to level 3 THEN the frame contains the exact \\u001b[34mj       \\u001b[39m  Move down', async () => {
     await forceChalkLevel3();
     const { frames, unmount } = render(
       <Help
@@ -38,7 +38,7 @@ describe('Help key color (T254)', () => {
     );
     await new Promise((r) => setTimeout(r, 50));
     const joined = frames.join('\n');
-    expect(joined).toContain('\u001b[36mj       \u001b[39m  Move down');
+    expect(joined).toContain('\u001b[34mj       \u001b[39m  Move down');
     unmount();
   });
 
@@ -69,7 +69,7 @@ describe('Help key color (T254)', () => {
     unmount();
   });
 
-  it('3: WHEN <Help width={80} height={24} entries={[{key:\'Escape\',action:\'close\',description:\'Close overlay / back\'}]} /> renders with chalk forced THEN the frame contains the exact \\u001b[36mEscape  \\u001b[39m  Close overlay / back', async () => {
+  it('3: WHEN <Help width={80} height={24} entries={[{key:\'Escape\',action:\'close\',description:\'Close overlay / back\'}]} /> renders with chalk forced THEN the frame contains the exact \\u001b[34mEscape  \\u001b[39m  Close overlay / back', async () => {
     await forceChalkLevel3();
     const { frames, unmount } = render(
       <Help
@@ -82,7 +82,7 @@ describe('Help key color (T254)', () => {
     );
     await new Promise((r) => setTimeout(r, 50));
     const joined = frames.join('\n');
-    expect(joined).toContain('\u001b[36mEscape  \u001b[39m  Close overlay / back');
+    expect(joined).toContain('\u001b[34mEscape  \u001b[39m  Close overlay / back');
     unmount();
   });
 });

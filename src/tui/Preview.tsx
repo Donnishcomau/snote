@@ -7,7 +7,9 @@ import noteTitleAndPreview from '@vendor/utils/note-utils';
 import { wrapLines } from '../core/wrap';
 import { sanitizeForTerminal } from '../core/sanitize';
 import { Divider } from './Divider';
+import { PaneHeading } from './PaneHeading';
 import isEmailTag from '@vendor/utils/is-email-tag';
+import { theme } from './theme';
 
 export function previewColWidth(width: number): number {
   return Math.min(Math.floor(width * 0.6) - 1, 100);
@@ -47,7 +49,7 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
           height={previewHeight}
           width={colWidth}
         >
-          <Text>Preview</Text>
+          <PaneHeading label="Preview" focused={focused} />
           <Box flexDirection="column">
             <Text>Select a note to preview</Text>
           </Box>
@@ -143,11 +145,7 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
 
   const visibleRows = rows.slice(start, start + avail);
 
-  const titleText = focused ? (
-    <Text bold inverse={focused}>Preview: {title}</Text>
-  ) : (
-    <Text>Preview: <Text bold>{title}</Text></Text>
-  );
+  const titleText = <PaneHeading label={'Preview: ' + title} focused={focused} />;
 
   return (
     <Box flexDirection="row">
@@ -164,7 +162,7 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
         {inTrash ? (
           <Text> </Text>
         ) : (
-          <Text><Text color="cyan">g</Text> add tag</Text>
+          <Text><Text {...theme.accent}>g</Text> add tag</Text>
         )}
         <Box flexDirection="column">
           {visibleRows.map((row, idx) => {
@@ -183,7 +181,7 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
               inner = (
                 <>
                   {' '}
-                  <Text color={isUnchecked ? 'gray' : 'green'}>{match[1]}</Text>
+                  <Text {...(isUnchecked ? theme.muted : theme.success)}>{match[1]}</Text>
                   {trailing}
                 </>
               );

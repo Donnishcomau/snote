@@ -4,8 +4,7 @@ A keyboard-driven terminal client for Simplenote that reuses the official open-s
 (`simperium` + the Redux sync layer from `simplenote-electron`) and adds an Omarchy-native TUI.
 GPL-2.0.
 
-snote is an unofficial, community-built Simplenote client. It is not affiliated with, endorsed
-by, or supported by Automattic.
+snote is an unofficial, community-built Simplenote client. It is not affiliated with, endorsed by, or supported by Automattic.
 
 ![snote demo](docs/screenshots/demo.gif)
 
@@ -90,6 +89,8 @@ and select the snote entry — this invokes `<omarchy>/bin/omarchy-tui-install` 
 Alternatively, a Hyprland binding is available. The configuration includes `{ tui = "snote", focus = true }`,
 which runs `omarchy-launch-or-focus-tui snote` to launch or focus the app.
 
+Middle-click the bar button to open snote with a new note (`snote --new`). If snote is already running, the click only focuses its window and the new-note request is dropped: snote allows one process per data folder.
+
 ## Editor
 
 Press `e` to edit a note. By default this edits in place, in the same window, using your Omarchy default
@@ -113,7 +114,8 @@ cancel (it asks first if you have unsaved changes). `e` still opens your editor 
 | `j` | Move down |
 | `k` | Move up |
 | `Enter` | Open note |
-| `Tab` | Next pane |
+| `Tab` | Next pane (with the tags pane open: tags and notes) |
+| `←` / `→` | Move between the tags, notes and preview panes |
 | `q` | Quit |
 | `v` | Toggle rendered markdown preview |
 | `?` | Show this help |
@@ -186,8 +188,6 @@ anyone who holds the https link.
 - No bulk export; `w` exports one note at a time to a `.md` file.
 - ZWJ emoji sequences (multi-codepoint emoji) may misalign; the terminal sanitizer strips variation selectors but not ZWJ.
 - No image attachments.
-- Editing happens in an external editor (in-window by default, or Omawrite in its own window); a built-in
-  editor inside snote's own preview pane is planned for 0.2.
 
 ## Security
 

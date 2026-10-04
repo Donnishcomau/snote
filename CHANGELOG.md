@@ -3,6 +3,26 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.2.2
+
+### Added
+
+- Arrow keys move between the tags, notes and preview panes.
+- The tags list filters the notes as you move; Trash is still on Enter.
+- Footer key hint `Tab Tags`.
+- `snote --new`, and middle-click on the bar button, starts a new note.
+- The bar tooltip shows the note count, the last note and the last sync
+  time.
+
+### Changed
+
+- Pane headings are bold, and the focused pane is shown inverse.
+- Colours come from theme roles, so key hints are blue, and dividers and
+  brackets are dim and follow the terminal theme.
+- Pinned notes sit above a dim rule instead of ending in ` *`.
+- The bar button is a themed Nerd Font glyph and re-checks the install,
+  so the tooltip no longer says "Click to install" after setup.
+
 ## 0.2.1
 
 ### Fixed

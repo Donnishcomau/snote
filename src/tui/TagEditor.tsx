@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { sanitizeForTerminal } from '../core/sanitize';
 import { tagInputStep, suggestTag } from './tag-input';
 import { splitPastedInput } from './split-input';
+import { theme } from './theme';
 
 export interface TagEditorProps {
   tags: string[];
@@ -60,7 +61,7 @@ export function TagEditor({ tags, allTags, onAdd, onRemove, onClose }: TagEditor
     return (
       <Box>
         <Text bold inverse>{display}{text}</Text>
-        <Text color="gray">{restOfSuggestion}</Text>
+        <Text {...theme.muted}>{restOfSuggestion}</Text>
       </Box>
     );
   }

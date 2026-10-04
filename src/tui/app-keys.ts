@@ -103,35 +103,43 @@ export interface TagsKeyCtx {
   setTagDialog: (v: null | { kind: 'rename' | 'delete'; tagName: string }) => void;
 }
 
+// T347: filter for the tags row at `index`: All notes (0), tag rows, Untagged,
+// Trash. The Trash row dispatches nothing (its keys u/D/E differ, so the trash
+// stays Enter-only).
+export function dispatchTagRow(store: Store<State>, tagNames: string[], index: number): void {
+  if (index === 0) store.dispatch({ type: 'SHOW_ALL_NOTES' });
+  else if (index === tagNames.length + 1) store.dispatch({ type: 'SHOW_UNTAGGED_NOTES' });
+  else if (index !== tagNames.length + 2) store.dispatch({ type: 'OPEN_TAG', tagName: tagNames[index - 1] });
+}
+
 /**
  * Handle a key press while the tags pane has focus.
  */
 export function handleTagsKey(input: string, keyName: string | null, ctx: TagsKeyCtx): void {
   const { store, tagNames, tagIndex, setTagIndex, setSelectedIndex, setTagsFocused, setTagsOpen, setTagDialog } = ctx;
   if (keyName === 'downArrow' || input === 'j') {
-    setTagIndex((i) => Math.min(i + 1, tagNames.length + 2));
+    const next = Math.min(tagIndex + 1, tagNames.length + 2);
+    setTagIndex(next);
+    dispatchTagRow(store, tagNames, next);
+    setSelectedIndex(0);
     return;
   }
   if (keyName === 'upArrow' || input === 'k') {
-    setTagIndex((i) => Math.max(i - 1, 0));
+    // T347: on j/k the filter follows the marker and the list selection resets
+    const next = Math.max(tagIndex - 1, 0);
+    setTagIndex(next);
+    dispatchTagRow(store, tagNames, next);
+    setSelectedIndex(0);
     return;
   }
   if (keyName === 'Enter') {
-    if (tagIndex === 0) {
-      store.dispatch({ type: 'SHOW_ALL_NOTES' });
-    } else if (tagIndex === tagNames.length + 1) {
-      store.dispatch({ type: 'SHOW_UNTAGGED_NOTES' });
-    } else if (tagIndex === tagNames.length + 2) {
-      // the Trash row opens the trash, same state as the `T` key
-      store.dispatch({ type: 'SELECT_TRASH' });
-    } else {
-      store.dispatch({ type: 'OPEN_TAG', tagName: tagNames[tagIndex - 1] });
-    }
+    if (tagIndex === tagNames.length + 2) store.dispatch({ type: 'SELECT_TRASH' });
+    else dispatchTagRow(store, tagNames, tagIndex);
     setSelectedIndex(0);
     setTagsFocused(false);
     return;
   }
-  if (keyName === 'Tab') {
+  if (keyName === 'Tab' || keyName === 'rightArrow') {
     setTagsFocused(false);
     return;
   }
@@ -270,10 +278,8 @@ export function handleIdleKey(input: string, ctx: IdleKeyCtx): void {
   }
 }
 
-/**
- * Effects the App runs: auto-open tags on wide terminals, clear the sync timer.
- */
-export function useAppEffects(width: number, tagCount: number, setTagsOpen: (v: boolean) => void, syncedTimerRef: { current: ReturnType<typeof setTimeout> | null }): void {
+/** Effects the App runs: --new fires onStart, auto-open tags on wide terminals, clear the sync timer. */
+export function useAppEffects(width: number, tagCount: number, setTagsOpen: (v: boolean) => void, syncedTimerRef: { current: ReturnType<typeof setTimeout> | null }, onStart?: () => void): void {
   const autoOpened = React.useRef(false);
   React.useEffect(() => {
     if (!autoOpened.current && shouldAutoOpenTags(width, tagCount)) {
@@ -281,6 +287,8 @@ export function useAppEffects(width: number, tagCount: number, setTagsOpen: (v: 
       setTagsOpen(true);
     }
   }, [width, tagCount]);
+  // once on mount, --new opens the editor for a new note (T361)
+  React.useEffect(() => { onStart?.(); }, []);
   React.useEffect(() => () => {
     if (syncedTimerRef.current) {
       clearTimeout(syncedTimerRef.current);

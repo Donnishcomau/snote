@@ -15,7 +15,10 @@ export function noteRow(note: Note, width: number, query?: string): NoteRow {
       ? wrapLines(title, width - 4)[0].text + '..'
       : title;
 
-  const marker = note.systemTags.includes('pinned') ? ' *' : '';
+  // Pinned notes no longer carry a trailing ` *` marker: since T354 the
+  // pinned group shows as a block above a rule, so the marker is redundant.
+  // NoteRow keeps the field and NoteList still renders it (always empty).
+  const marker = '';
 
   const rows = wrapLines(preview, width - 2);
   const previewLines = rows

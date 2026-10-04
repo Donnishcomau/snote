@@ -98,6 +98,7 @@ export function MainPanes({
               width={layout.listWidthProp}
               height={layout.tagsWidth > 0 ? height - 2 : height - 1}
               query={query}
+              focused={!tagsFocused && !noteFocused}
             />
           )
         ) : null}

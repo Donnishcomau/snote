@@ -1,6 +1,7 @@
 import { Box, Text, useInput } from 'ink';
 import React from 'react';
 import { splitPastedInput } from './split-input';
+import { theme } from './theme';
 
 interface PromptProps {
   label: string;
@@ -128,7 +129,7 @@ export function Confirm({ question, onYes, onNo, destructive }: ConfirmProps): R
   return (
     <Box>
       {destructive ? (
-        <Text bold color="red">{question} y/n</Text>
+        <Text bold {...theme.error}>{question} y/n</Text>
       ) : (
         <Text>{question} y/n</Text>
       )}

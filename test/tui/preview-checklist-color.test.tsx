@@ -36,7 +36,7 @@ async function forceInkChalk(): Promise<{ inkChalk: typeof import('chalk'); rest
 }
 
 describe('Preview checklist color', () => {
-  it('1: WHEN makeNote("c", "Shopping List\\n\\n- [ ] milk\\n- [x] bread", { markdown: true }) renders rendered={true}, chalk forced to level 3, THEN the frame contains the exact \\u001b[90m☐\\u001b[39m milk and the exact \\u001b[32m☑\\u001b[39m bread', async () => {
+  it('1: WHEN makeNote("c", "Shopping List\\n\\n- [ ] milk\\n- [x] bread", { markdown: true }) renders rendered={true}, chalk forced to level 3, THEN the frame contains the exact \\u001b[2m☐\\u001b[22m milk and the exact \\u001b[32m☑\\u001b[39m bread', async () => {
     const { restore, inkChalk } = await forceInkChalk();
     try {
       const note = makeNote('c', 'Shopping List\n\n- [ ] milk\n- [x] bread', {
@@ -48,7 +48,7 @@ describe('Preview checklist color', () => {
       await delay(50);
       const frame = lastFrame() ?? '';
       console.log('RAW FRAME:', JSON.stringify(frame));
-      expect(frame).toContain('\u001b[90m☐\u001b[39m milk');
+      expect(frame).toContain('\u001b[2m☐\u001b[22m milk');
       expect(frame).toContain('\u001b[32m☑\u001b[39m bread');
     } finally {
       restore();

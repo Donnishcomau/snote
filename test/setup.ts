@@ -3,6 +3,7 @@
 
 import { Console } from 'node:console';
 import { vi } from 'vitest';
+import os from 'node:os';
 import path from 'node:path';
 
 // Vitest 4's console intercept replaces `console` and drops Node's Console
@@ -17,6 +18,9 @@ if (typeof console.Console !== 'function') {
 
 // Prevent any test from ever launching a real editor window: point SNOTE_EDITOR at a no-op stand-in named "omawrite" so editor-dependent text stays unchanged.
 process.env.SNOTE_EDITOR = path.resolve('test/fixtures/bin/omawrite');
+
+// Never let a test run write the bar status file into the real home directory.
+process.env.SNOTE_STATUS_DIR = path.join(os.tmpdir(), 'snote-test-status-' + process.pid);
 
 // Never let a test run invoke uwsm/create a systemd scope: force the plain-command branch in src/core/editor.ts.
 process.env.SNOTE_EDITOR_DIRECT = '1';

@@ -1,5 +1,6 @@
 import { Box, Text } from 'ink';
 import React from 'react';
+import { PaneHeading } from './PaneHeading';
 
 interface HistoryProps {
   rows: string[];
@@ -34,7 +35,7 @@ export function History({
 
   return (
     <Box flexDirection="column" height={listHeight} width={colWidth}>
-      <Text bold>History</Text>
+      <PaneHeading label="History" focused />
       <Box flexDirection="column">
         {rows.length === 0 ? (
           <Box>
