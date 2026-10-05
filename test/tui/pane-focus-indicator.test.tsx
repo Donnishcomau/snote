@@ -42,7 +42,7 @@ describe('Pane focus indicator', () => {
     });
   });
 
-  it('1: WHEN <App store={store} width={80} height={24} /> renders (2 seeded notes: note p1 titled Alpha note tagged home, note p2 titled Beta note) THEN the frame does not contain focus: tags and does not contain focus: notes', async () => {
+  it('1: WHEN <App store={store} width={80} height={24} /> renders (2 seeded notes: note p1 titled Alpha note tagged home, note p2 titled Beta note) THEN the frame does not contain focus: tags and does not contain focus: preview', async () => {
     const { lastFrame } = render(
       <App store={store} width={80} height={24} />
     );
@@ -50,7 +50,7 @@ describe('Pane focus indicator', () => {
     await new Promise(r => setTimeout(r, 50));
     const frame = lastFrame();
     expect(frame).not.toContain('focus: tags');
-    expect(frame).not.toContain('focus: notes');
+    expect(frame).not.toContain('focus: preview');
   });
 
   it('2: WHEN t is written THEN the frame contains focus: tags', async () => {
@@ -65,7 +65,7 @@ describe('Pane focus indicator', () => {
     expect(frame).toContain('focus: tags');
   });
 
-  it('3: WHEN t then \\t (Tab) are written THEN the frame does not contain focus: tags and does not contain focus: notes', async () => {
+  it('3: WHEN t then \\t (Tab) are written THEN the frame does not contain focus: tags and does not contain focus: preview', async () => {
     const { lastFrame, stdin } = render(
       <App store={store} width={80} height={24} />
     );
@@ -77,10 +77,10 @@ describe('Pane focus indicator', () => {
     await new Promise(r => setTimeout(r, 0));
     const frame = lastFrame();
     expect(frame).not.toContain('focus: tags');
-    expect(frame).not.toContain('focus: notes');
+    expect(frame).not.toContain('focus: preview');
   });
 
-  it('4: WHEN \\t (Tab) is written from the initial render THEN the frame contains focus: notes and does not contain focus: tags', async () => {
+  it('4: WHEN \\t (Tab) is written from the initial render THEN the frame contains focus: preview and does not contain focus: tags', async () => {
     const { lastFrame, stdin } = render(
       <App store={store} width={80} height={24} />
     );
@@ -89,11 +89,11 @@ describe('Pane focus indicator', () => {
     stdin.write('\t');
     await new Promise(r => setTimeout(r, 0));
     const frame = lastFrame();
-    expect(frame).toContain('focus: notes');
+    expect(frame).toContain('focus: preview');
     expect(frame).not.toContain('focus: tags');
   });
 
-  it('5: WHEN \\t then \\t are written THEN the frame does not contain focus: notes', async () => {
+  it('5: WHEN \\t then \\t are written THEN the frame does not contain focus: preview', async () => {
     const { lastFrame, stdin } = render(
       <App store={store} width={80} height={24} />
     );
@@ -104,6 +104,6 @@ describe('Pane focus indicator', () => {
     stdin.write('\t');
     await new Promise(r => setTimeout(r, 0));
     const frame = lastFrame();
-    expect(frame).not.toContain('focus: notes');
+    expect(frame).not.toContain('focus: preview');
   });
 });

@@ -150,7 +150,9 @@ source_version="$(cat "$dist_dir/VERSION" 2>/dev/null || true)"
 # carry. A candidate is accepted only when it actually runs and reports
 # major version 22 or newer. SNOTE_NODE is an override checked first and
 # exists ONLY for the tests (which have no /usr/bin/node or /usr/bin/mise
-# to point at); real users never have it set. Never downloads Node.
+# to point at); real users never have it set. When no usable Node is
+# found, setup runs Omarchy's own installer (omarchy-install-dev-env
+# node) and looks again; snote itself never fetches Node.
 node_message="snote needs Node.js 22 or newer. Install it with: omarchy-install-dev-env node"
 
 node_is_usable() {
@@ -184,6 +186,28 @@ find_node() {
   return 1
 }
 
+# Locate Omarchy's own dev-env installer so a missing Node can be
+# installed through Omarchy rather than downloaded by snote. Same
+# fixed-path policy as find_node above: never a bare name from PATH.
+# SNOTE_DEV_ENV_INSTALLER is the test-only override and is honoured ONLY
+# when SNOTE_NODE is also set (test mode), so a stray env var can never
+# make a real user's setup exec an arbitrary program. Prints the
+# installer path, or returns 1 when there is none.
+dev_env_installer() {
+  if [ -n "${SNOTE_NODE:-}" ]; then
+    if [ -n "${SNOTE_DEV_ENV_INSTALLER:-}" ] && [ -x "$SNOTE_DEV_ENV_INSTALLER" ]; then
+      printf '%s\n' "$SNOTE_DEV_ENV_INSTALLER"
+      return 0
+    fi
+    return 1
+  fi
+  if [ -x /usr/share/omarchy/bin/omarchy-install-dev-env ]; then
+    printf '%s\n' /usr/share/omarchy/bin/omarchy-install-dev-env
+    return 0
+  fi
+  return 1
+}
+
 # --check: used by BarWidget.qml to decide, without opening a terminal,
 # whether a click can launch straight away or needs to route through this
 # script's visible install path first. Exits 0 when the installed app's
@@ -198,9 +222,19 @@ fi
 # --- Pre-built payload ----------------------------------------------------
 # Check Node before the idempotent fast path: a re-run on a machine whose
 # Node went away still ends with the same actionable one-line message.
+# When Node is missing and Omarchy's own installer is present, run it
+# first (this script already runs in the visible setup terminal) and look
+# again; only if Node is still missing does setup give up. The installer's
+# own exit status is ignored — what matters is whether Node is there after.
 if ! find_node >/dev/null; then
-  printf '%s\n' "$node_message" >&2
-  exit 1
+  if installer="$(dev_env_installer)"; then
+    log "Node.js 22 or newer was not found; installing it through Omarchy (omarchy-install-dev-env node)..."
+    "$installer" node || true
+  fi
+  if ! find_node >/dev/null; then
+    printf '%s\n' "$node_message" >&2
+    exit 1
+  fi
 fi
 
 # Idempotent fast path: skip the re-copy if the installed app's VERSION

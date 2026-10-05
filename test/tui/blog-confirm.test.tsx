@@ -65,7 +65,7 @@ async function openQuestion(r: ReturnType<typeof render>): Promise<void> {
 }
 
 // When the note pane holds focus, every key the App swallows makes the
-// footer line "focus: notes" vanish for one frame — including Escape, which
+// footer line "focus: preview" vanish for one frame — including Escape, which
 // unfocuses the pane and brings the footer back (so Escape alone cannot
 // prove dismissal: the footer returns either way). Poll `n` until three
 // consecutive sampled frames show neither the question nor a swallowed-key
@@ -78,7 +78,7 @@ async function dismissedByN(r: ReturnType<typeof render>): Promise<boolean> {
     await delay(50);
     const f = stripAnsi(lastFrame());
     if (f.includes(QUESTION)) steady = 0;
-    else if (f.includes('focus: notes')) steady += 1;
+    else if (f.includes('focus: preview')) steady += 1;
     else steady = 0;
   }
   return steady >= 3;

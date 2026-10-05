@@ -5661,7 +5661,7 @@ function watchStatus(store, dir, opts) {
 // package.json
 var package_default = {
   name: "snote",
-  version: "0.2.2",
+  version: "0.2.3",
   description: "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
   license: "GPL-2.0",
   type: "module",
@@ -9332,7 +9332,7 @@ function MainPanes({
       ) : null,
       layout.previewWidthProp > 0 ? inlineEditOpen ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(InlineEditor, { note: previewNote, width: layout.previewWidthProp, height: layout.tagsWidth > 0 ? height - 2 : height - 1, base: inlineEditBase, onClose: onCloseEdit, onSave: onSaveEdit }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Preview, { note: previewNote, width: layout.previewWidthProp, height: layout.tagsWidth > 0 ? height - 2 : height - 1, rendered, cursorLine, focused: noteFocused, inTrash: collection2.type === "trash" }) : null
     ] }),
-    tagsFocused ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: "focus: tags" }) : noteFocused ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: "focus: notes" }) : searchOpen || query !== "" ? (() => {
+    tagsFocused ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: "focus: tags" }) : noteFocused ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: "focus: preview" }) : searchOpen || query !== "" ? (() => {
       const full = "search: " + query;
       const shown = full.length > width - 2 ? full.slice(0, width - 4) + ".." : full;
       return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { bold: true, inverse: searchOpen, children: shown });

@@ -114,7 +114,7 @@ export function MainPanes({
       {tagsFocused ? (
         <Text>focus: tags</Text>
       ) : noteFocused ? (
-        <Text>focus: notes</Text>
+        <Text>focus: preview</Text>
       ) : searchOpen || query !== '' ? (
         (() => {
           const full = 'search: ' + query;

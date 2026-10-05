@@ -38,7 +38,7 @@ without leaving the terminal, and without shipping a browser to render a text bo
 
 ## Install on Omarchy
 
-Requires Node.js 22 or newer (Omarchy installs Node through mise; if it is missing: omarchy-install-dev-env node).
+Requires Node.js 22 or newer. If it is missing, the first click installs it through Omarchy (`omarchy-install-dev-env node`).
 
 A one-click bar button is available through the Omarchy plugin marketplace:
 
