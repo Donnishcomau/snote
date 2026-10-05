@@ -235,6 +235,14 @@ BarWidget {
     }
   }
 
+  Timer {
+    id: ageTimer
+    interval: 30000
+    repeat: true
+    running: button.tooltipHovered
+    onTriggered: root.nowMs = Date.now()
+  }
+
   Component.onCompleted: {
     root.reprobe()
   }

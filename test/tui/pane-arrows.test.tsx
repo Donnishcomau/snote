@@ -83,7 +83,7 @@ describe('T348 Left and right arrows move between the panes (tags, list, preview
     expect(frame).toContain('>All notes');
   });
 
-  it("2: WHEN leftArrow and then '\\u001b[C' (rightArrow) are written THEN the frame contains '>All notes' and neither 'focus: tags' nor 'focus: notes', and ui.collection equals { type: 'all' }", async () => {
+  it("2: WHEN leftArrow and then '\\u001b[C' (rightArrow) are written THEN the frame contains '>All notes' and neither 'focus: tags' nor 'focus: preview', and ui.collection equals { type: 'all' }", async () => {
     const { stdin, lastFrame } = render(
       <App store={store} width={80} height={24} />
     );
@@ -100,16 +100,16 @@ describe('T348 Left and right arrows move between the panes (tags, list, preview
       (f) =>
         f.includes('>All notes') &&
         !f.includes('focus: tags') &&
-        !f.includes('focus: notes') &&
+        !f.includes('focus: preview') &&
         JSON.stringify(store.getState().ui.collection) === JSON.stringify({ type: 'all' }),
     );
     expect(frame).toContain('>All notes');
     expect(frame).not.toContain('focus: tags');
-    expect(frame).not.toContain('focus: notes');
+    expect(frame).not.toContain('focus: preview');
     expect(store.getState().ui.collection).toEqual({ type: 'all' });
   });
 
-  it("3: WHEN rightArrow is written from the initial screen THEN the frame contains 'focus: notes' and does not contain 'focus: tags'", async () => {
+  it("3: WHEN rightArrow is written from the initial screen THEN the frame contains 'focus: preview' and does not contain 'focus: tags'", async () => {
     const { stdin, lastFrame } = render(
       <App store={store} width={80} height={24} />
     );
@@ -119,12 +119,12 @@ describe('T348 Left and right arrows move between the panes (tags, list, preview
     stdin.write(RIGHT);
     await delay(50);
 
-    const frame = await framesUntil(lastFrame, (f) => f.includes('focus: notes') && !f.includes('focus: tags'));
-    expect(frame).toContain('focus: notes');
+    const frame = await framesUntil(lastFrame, (f) => f.includes('focus: preview') && !f.includes('focus: tags'));
+    expect(frame).toContain('focus: preview');
     expect(frame).not.toContain('focus: tags');
   });
 
-  it("4: WHEN rightArrow and then leftArrow are written THEN the frame contains neither 'focus: notes' nor 'focus: tags' and does not contain 'All notes' (the tags pane was not opened)", async () => {
+  it("4: WHEN rightArrow and then leftArrow are written THEN the frame contains neither 'focus: preview' nor 'focus: tags' and does not contain 'All notes' (the tags pane was not opened)", async () => {
     const { stdin, lastFrame } = render(
       <App store={store} width={80} height={24} />
     );
@@ -138,14 +138,14 @@ describe('T348 Left and right arrows move between the panes (tags, list, preview
 
     const frame = await framesUntil(
       lastFrame,
-      (f) => !f.includes('focus: notes') && !f.includes('focus: tags') && !f.includes('All notes'),
+      (f) => !f.includes('focus: preview') && !f.includes('focus: tags') && !f.includes('All notes'),
     );
-    expect(frame).not.toContain('focus: notes');
+    expect(frame).not.toContain('focus: preview');
     expect(frame).not.toContain('focus: tags');
     expect(frame).not.toContain('All notes');
   });
 
-  it("5: WHEN the App is rendered at width '100' and leftArrow, rightArrow, rightArrow are written THEN the frames are in turn 'focus: tags', neither focus line, 'focus: notes', and 'All notes' is in every frame", async () => {
+  it("5: WHEN the App is rendered at width '100' and leftArrow, rightArrow, rightArrow are written THEN the frames are in turn 'focus: tags', neither focus line, 'focus: preview', and 'All notes' is in every frame", async () => {
     const { stdin, lastFrame, frames } = render(
       <App store={store} width={100} height={24} />
     );
@@ -163,7 +163,7 @@ describe('T348 Left and right arrows move between the panes (tags, list, preview
     await delay(50);
     const f1 = await framesUntil(
       lastFrame,
-      (f) => f.includes('focus: tags') && !f.includes('focus: notes') && f.includes('All notes'),
+      (f) => f.includes('focus: tags') && !f.includes('focus: preview') && f.includes('All notes'),
     );
     expect(f1).toContain('focus: tags');
 
@@ -171,18 +171,18 @@ describe('T348 Left and right arrows move between the panes (tags, list, preview
     await delay(50);
     const f2 = await framesUntil(
       lastFrame,
-      (f) => !f.includes('focus: tags') && !f.includes('focus: notes') && f.includes('All notes'),
+      (f) => !f.includes('focus: tags') && !f.includes('focus: preview') && f.includes('All notes'),
     );
     expect(f2).not.toContain('focus: tags');
-    expect(f2).not.toContain('focus: notes');
+    expect(f2).not.toContain('focus: preview');
 
     stdin.write(RIGHT);
     await delay(50);
     const f3 = await framesUntil(
       lastFrame,
-      (f) => f.includes('focus: notes') && !f.includes('focus: tags') && f.includes('All notes'),
+      (f) => f.includes('focus: preview') && !f.includes('focus: tags') && f.includes('All notes'),
     );
-    expect(f3).toContain('focus: notes');
+    expect(f3).toContain('focus: preview');
 
     for (const f of frames.slice(firstOpen - 1)) expect(f).toContain('All notes');
   });

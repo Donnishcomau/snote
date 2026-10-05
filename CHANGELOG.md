@@ -3,6 +3,17 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.2.3
+
+### Changed
+
+- First-click setup installs Node.js 22 through Omarchy
+  (`omarchy-install-dev-env node`) when it is missing, so there is no
+  manual step.
+- The line under the panes says `focus: preview` when the preview pane
+  has focus.
+- The bar tooltip's sync age keeps updating while the tooltip is open.
+
 ## 0.2.2
 
 ### Added

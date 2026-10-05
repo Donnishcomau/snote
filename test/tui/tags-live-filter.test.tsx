@@ -137,7 +137,7 @@ describe('T347 Tags pane live filter', () => {
     stdin.write('\u001b');
   });
 
-  it("5: WHEN 't', 'j', '\\r' are written THEN the collection is { type: 'tag', tagName: 'home' } before and after '\\r', the frame has neither 'focus: tags' nor 'focus: notes', and data.notes is the same Map (toBe)", async () => {
+  it("5: WHEN 't', 'j', '\\r' are written THEN the collection is { type: 'tag', tagName: 'home' } before and after '\\r', the frame has neither 'focus: tags' nor 'focus: preview', and data.notes is the same Map (toBe)", async () => {
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
 
     await delay(50);
@@ -155,7 +155,7 @@ describe('T347 Tags pane live filter', () => {
 
     const frame = lastFrame() ?? '';
     expect(frame).not.toContain('focus: tags');
-    expect(frame).not.toContain('focus: notes');
+    expect(frame).not.toContain('focus: preview');
     expect(store.getState().data.notes).toBe(notesBefore);
 
     stdin.write('\u001b');

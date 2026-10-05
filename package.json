@@ -1,6 +1,6 @@
 {
   "name": "snote",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
   "license": "GPL-2.0",
   "type": "module",
