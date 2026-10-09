@@ -6,6 +6,7 @@ import * as path from 'node:path';
 import React from 'react';
 
 import { Root } from '../../src/tui/Root';
+import { waitForFrame, waitForInput } from '../helpers/ink-waits';
 import { makeStore } from '../../src/core/store';
 import { loadToken, saveToken } from '../../src/core/token';
 import type { Store } from 'redux';
@@ -133,16 +134,18 @@ describe('T31 Root screen', () => {
       />
     );
 
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'Email:');
+    await new Promise((r) => setImmediate(r));
 
     stdin.write('a@b.co');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Email: a@b.co');
     stdin.write('\r');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Code:');
     stdin.write('ABC123');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Code: ABC123');
     stdin.write('\r');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Root note');
 
     const token = await loadToken(dir);
     expect(token).not.toBeNull();
@@ -170,16 +173,18 @@ describe('T31 Root screen', () => {
       />
     );
 
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'Email:');
+    await new Promise((r) => setImmediate(r));
 
     stdin.write('a@b.co');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Email: a@b.co');
     stdin.write('\r');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Code:');
     stdin.write('ABC123');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Code: ABC123');
     stdin.write('\r');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Error: 401 bad code');
 
     const token = await loadToken(dir);
     expect(token).toBeNull();

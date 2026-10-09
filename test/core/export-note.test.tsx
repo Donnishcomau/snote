@@ -32,7 +32,6 @@ const note = (content: string, tags: string[] = []): Note =>
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // Ink's ANSI frames break substring checks; search the stripped frame.
-// eslint-disable-next-line no-control-regex
 const stripAnsi = (s: string | undefined): string => (s ?? '').replace(/\u001b\[[0-9;]*m/g, '');
 
 describe('export-note', () => {

@@ -23,7 +23,7 @@ describe('crash-report', () => {
   it('2: WHEN the error\'s stack contains the line at /home/someone/app/x.js:1:1 THEN record.error.stack[0] contains ~/app/x.js and contains no /home/someone', () => {
     const err = new Error('stacktest');
     // Make the stack's first line be the path we want replaced
-    err.stack = `    at /home/someone/app/x.js:1:1\n    at other:1:1`;
+    err.stack = `Error: stacktest\n    at /home/someone/app/x.js:1:1\n    at other:1:1`;
     const result = crashReport(err, ctx);
     expect(result.record.error.stack[0]).toContain('~/app/x.js');
     expect(result.record.error.stack[0]).not.toContain('/home/someone');
@@ -40,11 +40,11 @@ describe('crash-report', () => {
     expect(result.record.error.stack.length).toBe(12);
   });
 
-  it('4: WHEN the error\'s message is \'x\' repeated 500 times THEN record.error.message has length 200', () => {
+  it('4: WHEN the error\'s message is \'x\' repeated 500 times THEN record.error.message is <w>', () => {
     const longMsg = 'x'.repeat(500);
     const err = new Error(longMsg);
     const result = crashReport(err, ctx);
-    expect(result.record.error.message.length).toBe(200);
+    expect(result.record.error.message).toBe('<w>');
   });
 
   it('5: WHEN crashReport("just a string", ctx) and crashReport(undefined, ctx) are called THEN neither throws, both give record.error.name Unknown, and record.error.stack is an array', () => {

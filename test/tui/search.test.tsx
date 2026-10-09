@@ -67,7 +67,7 @@ describe('Search', () => {
     expect(store.getState().ui.searchQuery).toBe('first');
     expect(frameAfter).toContain('search: first');
     expect(frameAfter).toContain('First normal note');
-    expect(frameAfter).toContain('1 notes');
+    expect(frameAfter).toContain('1 note');
     expect(frameAfter).not.toContain('Second normal note');
   });
 

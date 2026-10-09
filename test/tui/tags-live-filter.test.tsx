@@ -69,7 +69,7 @@ describe('T347 Tags pane live filter', () => {
     const frame = lastFrame() ?? '';
     expect(frame).toContain('>home');
     expect(frame).toContain('Second normal note');
-    expect(frame).toContain('1 notes');
+    expect(frame).toContain('1 note');
     expect(frame).toContain('focus: tags');
     expect(frame).not.toContain('First normal note');
 

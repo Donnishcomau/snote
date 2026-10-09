@@ -95,7 +95,7 @@ describe('T233 --report', () => {
     expect(json.session.tagCount).toBe(1);
   });
 
-  it("2: WHEN stateDir already holds crash-2020-01-01T00-00-00-000Z.json with content {\"error\":{\"message\":\"boom\"}} THEN the written report's source is crash and error.message is boom", async () => {
+  it("2: WHEN stateDir already holds crash-2020-01-01T00-00-00-000Z.json with content {\"error\":{\"message\":\"boom\"}} THEN the written report's source is crash and error.message is <w> (redacted again)", async () => {
     const snoteDir = path.join(stateDir, 'snote');
     fs.mkdirSync(snoteDir, { recursive: true });
     fs.writeFileSync(
@@ -112,19 +112,19 @@ describe('T233 --report', () => {
       fs.readFileSync(path.join(snoteDir, files[0]), 'utf8'),
     );
     expect(json.source).toBe('crash');
-    expect(json.error.message).toBe('boom');
+    expect(json.error.message).toBe('<w>');
   });
 
-  it("3: WHEN stateDir holds both that file and a later crash-2021-01-01T00-00-00-000Z.json with content {\"error\":{\"message\":\"new\"}} THEN the written report's error.message is new", async () => {
+  it("3: WHEN stateDir holds both that file and a later crash-2021-01-01T00-00-00-000Z.json with content {\"error\":{\"message\":\"timeout\"}} THEN the written report's error.message is timeout", async () => {
     const snoteDir = path.join(stateDir, 'snote');
     fs.mkdirSync(snoteDir, { recursive: true });
     fs.writeFileSync(
       path.join(snoteDir, 'crash-2020-01-01T00-00-00-000Z.json'),
-      JSON.stringify({ error: { message: 'boom' } }),
+      JSON.stringify({ error: { message: 'denied' } }),
     );
     fs.writeFileSync(
       path.join(snoteDir, 'crash-2021-01-01T00-00-00-000Z.json'),
-      JSON.stringify({ error: { message: 'new' } }),
+      JSON.stringify({ error: { message: 'timeout' } }),
     );
 
     const code = await main(['--report', '--data-dir', dataDir], io);
@@ -135,7 +135,7 @@ describe('T233 --report', () => {
     const json = JSON.parse(
       fs.readFileSync(path.join(snoteDir, files[0]), 'utf8'),
     );
-    expect(json.error.message).toBe('new');
+    expect(json.error.message).toBe('timeout');
   });
 
   it("4: WHEN case 2 runs THEN logged.join('\\n') contains the report file's path and contains Hand this file to your coding agent", async () => {

@@ -1,4 +1,4 @@
-export interface PaneLayout {
+interface PaneLayout {
   tagsWidth: number;
   listWidthProp: number;
   previewWidthProp: number;

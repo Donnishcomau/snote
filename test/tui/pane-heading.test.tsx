@@ -93,7 +93,7 @@ describe('T350 One shared PaneHeading', () => {
     await delay(50);
     const frame = unfocused() ?? '';
     unmount2();
-    expect(frame).toContain(BOLD + 'Notes\u001b[22m');
+    expect(frame).toContain('\u001b[1m\u001b[34mNotes\u001b[39m\u001b[22m');
   });
 
   it('2: WHEN <TagPane tags={[\'home\']} selectedIndex={0} focused width={20} height={5} /> renders THEN the frame has \\u001b[7m\\u001b[1mTags\\u001b[22m\\u001b[27m; with focused={false} it has \\u001b[1mTags\\u001b[22m', async () => {
@@ -111,7 +111,7 @@ describe('T350 One shared PaneHeading', () => {
     await delay(50);
     const frame = unfocused() ?? '';
     unmount2();
-    expect(frame).toContain(BOLD + 'Tags\u001b[22m');
+    expect(frame).toContain('\u001b[1m\u001b[34mTags\u001b[39m\u001b[22m');
   });
 
   it('3: WHEN Preview renders a Groceries note THEN focused it has \\u001b[7m\\u001b[1mPreview: Groceries\\u001b[22m\\u001b[27m, unfocused \\u001b[1mPreview: Groceries\\u001b[22m, no note \\u001b[1mPreview\\u001b[22m', async () => {
@@ -130,7 +130,7 @@ describe('T350 One shared PaneHeading', () => {
     await delay(50);
     const frame = unfocused() ?? '';
     unmount2();
-    expect(frame).toContain(BOLD + 'Preview: Groceries\u001b[22m');
+    expect(frame).toContain('\u001b[1m\u001b[34mPreview: Groceries\u001b[39m\u001b[22m');
     expect(frame).not.toContain(BOLD + 'Preview\u001b[22m');
   });
 

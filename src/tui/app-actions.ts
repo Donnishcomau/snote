@@ -16,7 +16,10 @@ import { editNote } from '@vendor/state/data/actions';
 
 import type { EntityId, Note } from '@vendor/types';
 
-export interface EditSelectedNoteCtx {
+// T375: true while an editor session owns the terminal; no second session starts.
+let editorOpen = false;
+
+interface EditSelectedNoteCtx {
   store: Store<State>;
   selectedEntry: { id: EntityId; note: Note } | null;
   setRawMode: (mode: boolean) => void;
@@ -31,7 +34,8 @@ export interface EditSelectedNoteCtx {
 export function editSelectedNote(ctx: EditSelectedNoteCtx): void {
   const { store, selectedEntry, setRawMode, runEditor, onEditorError, suspend } = ctx;
   // Edit the selected note in the editor
-  if (selectedEntry) {
+  if (selectedEntry && !editorOpen) {
+    editorOpen = true;
     setRawMode(false);
     const editor = runEditor ?? editInEditor;
     // Keep the result outside the suspend callback: it resolves to undefined.
@@ -54,6 +58,7 @@ export function editSelectedNote(ctx: EditSelectedNoteCtx): void {
         editorFailed = true;
       }
       // the editor is done, whatever the outcome: hand the terminal back
+      editorOpen = false;
       setRawMode(true);
       settle();
     };
@@ -83,7 +88,7 @@ export function editSelectedNote(ctx: EditSelectedNoteCtx): void {
   }
 }
 
-export interface SaveInlineEditCtx {
+interface SaveInlineEditCtx {
   store: Store<State>;
   selectedEntry: { id: EntityId; note: Note } | null;
   // the note's content when the inline editor was opened (InlineEditor's
@@ -115,7 +120,7 @@ export function saveInlineEdit(ctx: SaveInlineEditCtx): void {
   }
 }
 
-export interface CreateNoteCtx {
+interface CreateNoteCtx {
   store: Store<State>;
   // the note on the first row of the current list, when there is one
   topNote?: Note | null;
@@ -132,6 +137,8 @@ export interface CreateNoteCtx {
  */
 export function createNote(ctx: CreateNoteCtx): void {
   const { store, setRawMode, runEditor, setSelectedIndex, onEditorError, onNoteCreated, suspend } = ctx;
+  if (editorOpen) return;
+  editorOpen = true;
   setRawMode(false);
   const noteId: EntityId = crypto.randomUUID() as EntityId;
   const editor = runEditor ?? editInEditor;
@@ -155,6 +162,7 @@ export function createNote(ctx: CreateNoteCtx): void {
       editorFailed = true;
     }
     // the editor is done, whatever the outcome: hand the terminal back
+    editorOpen = false;
     setRawMode(true);
     settle();
   };
@@ -184,7 +192,7 @@ export function createNote(ctx: CreateNoteCtx): void {
   void Promise.resolve(done);
 }
 
-export interface CopyLinkCtx {
+interface CopyLinkCtx {
   selectedEntry: { id: EntityId; note: Note } | null;
   copyText?: (text: string) => boolean;
   setCopyResult: (v: null | { noteId: EntityId; ok: boolean }) => void;
@@ -204,7 +212,7 @@ export function copyLink(ctx: CopyLinkCtx): void {
   }
 }
 
-export interface ForceSyncNowCtx {
+interface ForceSyncNowCtx {
   store: Store<State>;
   onForceSync?: () => void;
   timerRef: { current: ReturnType<typeof setTimeout> | null };
@@ -227,7 +235,7 @@ export function forceSyncNow(ctx: ForceSyncNowCtx): void {
   }, 3000);
 }
 
-export interface InsertCheckItemCtx {
+interface InsertCheckItemCtx {
   store: Store<State>;
   selectedEntry: { id: EntityId; note: Note } | null;
   itemIndex: number;
@@ -253,14 +261,14 @@ export function insertCheckItem(ctx: InsertCheckItemCtx): void {
  */
 function announceEditorIfGui(): void {
   const cmd = selectEditor(process.env);
-  if (isTerminalEditor(cmd)) return;
+  if (isTerminalEditor(cmd) || !process.stdout.isTTY) return;
   const first = cmd.trim().split(/\s+/)[0] ?? '';
   const name = basename(first);
   const displayName = name.charAt(0).toUpperCase() + name.slice(1);
   process.stdout.write(`Editing in ${displayName} — ${editorFinishHint(cmd)}\n`);
 }
 
-export interface ExportSelectedNoteCtx {
+interface ExportSelectedNoteCtx {
   selectedEntry: { id: EntityId; note: Note } | null;
   // the path typed into the prompt; only its directory part is used, the
   // file name is always regenerated so a collision picks a free one

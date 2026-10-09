@@ -77,7 +77,7 @@ describe('Trash', () => {
     let frame = lastFrame();
     expect(frame).toContain('Deleted note');
     expect(frame).not.toContain('Third normal note');
-    expect(frame).toMatch(/1 notes/);
+    expect(frame).toMatch(/1 note\b/);
     expect(frame).toContain('trash');
 
     stdin.write('T');

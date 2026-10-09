@@ -61,7 +61,7 @@ describe('theme adoption (T352)', () => {
     }
   });
 
-  it('3: WHEN <StatusBar connected={true} count={3} width={40} /> is rendered THEN the frame is exactly \\u001b[2m[\\u001b[22m\\u001b[32mconnected\\u001b[39m\\u001b[2m]\\u001b[22m 3 notes', async () => {
+  it('3: WHEN <StatusBar connected={true} count={3} width={40} /> is rendered THEN the frame is exactly \\u001b[2m[\\u001b[22m\\u001b[32mconnected\\u001b[39m\\u001b[2m]\\u001b[22m \\u001b[2m3 notes\\u001b[22m', async () => {
     const { restore } = await forceInkChalk();
     try {
       const { lastFrame, unmount } = render(
@@ -69,7 +69,7 @@ describe('theme adoption (T352)', () => {
       );
       await delay(50);
       expect(lastFrame()).toBe(
-        '\u001b[2m[\u001b[22m\u001b[32mconnected\u001b[39m\u001b[2m]\u001b[22m 3 notes',
+        '\u001b[2m[\u001b[22m\u001b[32mconnected\u001b[39m\u001b[2m]\u001b[22m \u001b[2m3 notes\u001b[22m',
       );
       unmount();
     } finally {
@@ -96,7 +96,7 @@ describe('theme adoption (T352)', () => {
     }
   });
 
-  it('5: WHEN a markdown note with `- [ ] milk` and `- [x] bread` and a tagless note are rendered in Preview THEN frames contain \\u001b[2m☐\\u001b[22m milk, \\u001b[32m☑\\u001b[39m bread and \\u001b[34mg\\u001b[39m add tag', async () => {
+  it('5: WHEN a markdown note with `- [ ] milk` and `- [x] bread` and a tagless note are rendered in Preview THEN frames contain \\u001b[2m☐\\u001b[22m milk, \\u001b[32m☑\\u001b[39m bread and \\u001b[34mg\\u001b[39m\\u001b[2m add tag\\u001b[22m', async () => {
     const { restore } = await forceInkChalk();
     try {
       const checklist = makeNote('c', 'Shopping List\n\n- [ ] milk\n- [x] bread', {
@@ -116,7 +116,7 @@ describe('theme adoption (T352)', () => {
         <Preview note={tagless} width={80} height={12} />,
       );
       await delay(50);
-      expect(taglessFrame() ?? '').toContain('\u001b[34mg\u001b[39m add tag');
+      expect(taglessFrame() ?? '').toContain('\u001b[34mg\u001b[39m\u001b[2m add tag\u001b[22m');
       unmount2();
     } finally {
       restore();

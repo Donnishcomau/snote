@@ -3,6 +3,201 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.2.5
+
+The first release since 0.2.3: it also ships every change listed under
+0.2.4, which was not released on its own.
+
+### Added
+
+- Below 20x7 snote shows "snote needs at least 20x7 — make the window
+  bigger" instead of overlapping panes. It keeps your place, including
+  unsaved inline-editor text and an open search, ignores every key but
+  `q`, and returns to the same screen when the window is big enough.
+  `q` quits from there, except while an inline edit is open, when it is
+  ignored too so unsaved text is not lost.
+- When Help does not fit the window, it shows a one-column list that
+  scrolls with `j` and `k`, so it never draws one row over another at
+  any size from 20x7.
+
+### Changed
+
+- The notice line stays on one row, cut to the window width with `…`,
+  so it no longer pushes the key hints or the status line away.
+- The status line fits its width: when it is wider than the window it
+  is cut with `…` instead of squeezed.
+- The inline editor uses the same rows as the Preview and draws the
+  same divider, so its footer and text no longer land on the key hints
+  or the list.
+- `i` does not open the inline editor on a note with a line over
+  10,000 characters; the notice line suggests `e` to edit in your
+  editor.
+- The error for a refused endpoint override says what is allowed:
+  https, or http only to localhost, 127.0.0.1 or `[::1]`, and never an
+  address with a username or password.
+- Lint warnings now fail the check, and code comments about
+  `SNOTE_NODE` match what the launcher does.
+
+### Fixed
+
+- The Help screen no longer draws one row over another at widths 50-99
+  and heights 30 and up.
+- When snote is not running, the bar says "snote is not running"
+  instead of implying a stale sync.
+- Keys typed quickly in the inline editor, or pasted in a burst, are
+  no longer lost or applied to stale text, and every arrow key in a
+  burst moves the caret once, in order.
+
+## 0.2.4
+
+### Added
+
+- snote checks whether a plugin update is available at start-up, at most once every 24 hours, and says so on its notice line and in the bar tooltip.
+- `SNOTE_UPDATE_CHECK=off` turns the check off and also silences the
+  local "downloaded, restart" notice. The README has an Updating section
+  (the plugin update command, `q` for the diff pager,
+  `omarchy-restart-shell`).
+- The login screen's email step now shows where to create an account:
+  `https://app.simplenote.com/signup/`.
+
+### Changed
+
+- The bar button's middle-click now opens a new note in an already
+  running snote, via `snote --notify-new`.
+- Pane headings are in the accent colour and bold; the focused heading
+  stays inverse.
+- In rendered markdown notes, heading rows are accent, links are blue
+  and underlined, `inline code` is yellow, and checkboxes are dim or
+  green.
+- The notes list dims preview lines and shows the selected row in
+  accent.
+- The tags list shows the selected tag in accent and dims the system
+  rows.
+- The status line's note count is dim and says `1 note`, not
+  `1 notes`.
+- The `g add tag` hint is dim.
+- The update notice is yellow (the warning colour), not the green used
+  for success.
+
+### Fixed
+
+- The launcher finds a mise-installed Node when `XDG_*` or `MISE_*`
+  directories are customised.
+- The launcher passes the user's arguments through unchanged.
+- The update check reports an update available only when the remote
+  has something the local plugin clone does not; a clone that is ahead
+  of, or has diverged from, its remote stays quiet.
+- Quitting snote removes the update notice from the bar's status file,
+  so the bar tooltip stops saying "Update available" after
+  `omarchy plugin update` without a restart.
+- A failed login shows at most 200 characters of the server's reply,
+  on one line, instead of a whole error page.
+- Login says when the server cannot be reached or does not answer,
+  gives up after 15 seconds, and shows `Contacting the server...`
+  while it waits.
+- When the server signs snote out, the login screen says the session
+  ended instead of returning there with no reason.
+- A stale `instance.lock` whose process id has been reused by another
+  program is reclaimed, instead of snote saying another snote is
+  already using this data.
+- A failed save or a failed re-send, and a force sync that cannot
+  reach the server, shows a red notice instead of crashing or failing
+  silently, and one press of force sync shows at most one `force sync`
+  notice.
+- After a corrupt ghost file, an edit made offline still reaches the
+  server.
+- An unchanged note is not re-sent.
+- A note saved to the server just before a crash comes back on the
+  next start, as the server has it.
+- A note deleted forever stays deleted after a crash, and a failed
+  save at start shows a notice instead of stopping snote.
+- An edit or trash made offline is sent on the next start even if the
+  note changed on another device meanwhile.
+- A note created offline never disappears while snote catches up
+  after a restart.
+- Tags holding control characters or an emoji selector can be opened,
+  renamed and deleted.
+- Login waits the full 15 seconds for a slow server before giving up.
+- The first key typed into the checklist or export prompt goes only
+  into the prompt.
+- A paste into the notes list changes nothing and shows
+  `Paste ignored`.
+- The AUR package passes `namcap`.
+- Notes held for an offline catch-up are released even when a later
+  step of the catch-up fails.
+- An unsent offline change survives several offline sessions until the
+  server confirms it.
+- `snote --report` shows the real note count.
+
+### Security
+
+- A note's text (for example a shared note) could carry terminal
+  control sequences such as OSC 52, which some terminals use to set
+  the clipboard. snote now filters OSC, DCS, APC, PM, SOS and C1
+  control strings, and every escape sequence except the cursor and
+  colour (display CSI) ones the interface itself needs, on both stdout
+  and stderr; `INK_SCREEN_READER=true` no longer bypasses that, and
+  exported file names drop control characters. Reported in the
+  Omarchy plugin marketplace review.
+- The `shared with:`, `published:` and blog lines now show sanitised
+  server text, and a publish link is used only when its id is valid,
+  so `y` can never copy a link built from hostile text.
+- Terminal text and export file names drop bidi controls, zero-width
+  characters and line/paragraph separators (the emoji joiner is
+  kept).
+- The crash and report key ring never stores typed text: keystrokes in
+  the inline editor and pasted text in any mode are stored as
+  `<text>`.
+- The inline editor shows control, bidi and zero-width characters as
+  visible stand-ins and saves the note's bytes unchanged.
+- The output guard keeps Ink's own output unchanged, drops every other
+  escape, keeps one state per stream across writes and `Buffer`s, and
+  ends a dropped string on `CAN` or `SUB` so later output is not lost.
+- snote's own output to stderr goes through the output guard as well.
+  The `e` external terminal editor draws note text itself, so what it
+  shows is not filtered.
+- The update check never lets the plugin clone's git config run
+  anything: it reads the origin URL itself, refuses anything that is
+  not `https` or a local path, and runs `git ls-remote` outside any
+  repository with a clean environment. Its other git steps run in the
+  plugin's own clone.
+- The bar's first-click setup command quotes the setup path for both
+  shells it passes through, so a space or a quote in the path can run
+  nothing.
+- Endpoint overrides must use https (`http://` only for localhost and
+  127.0.0.1), and `NODE_TLS_REJECT_UNAUTHORIZED=0` prints a warning.
+  An endpoint address is judged by its parsed host, and one with a
+  username or password in it is refused.
+- A pasted text containing ESC is stored in the crash key ring as
+  `<text>`.
+- Signing out (logout) removes only snote's own files, not other files
+  in the data folder.
+- The one-time migration moves only snote's own old files.
+- The update check runs outside any repository, treats a timed-out git
+  step as unknown (never available), and accepts only a hex commit id.
+- The CI workflow runs with a read-only token and its actions pinned
+  by commit SHA.
+- The vendored in-memory bucket no longer carries dead debug logging
+  that could print account data.
+- Logout, both in the app and with `snote --logout`, removes all of
+  snote's files in its data folder including `unsynced.json`, and
+  `snote --logout` also removes the bar status file. Crash and report
+  files, the update-check file and the compile cache stay.
+- A blog address must be https, or http only to this machine
+  (localhost), and the token is never sent anywhere else. A blog send
+  never follows a redirect, so the note text goes only to the address
+  you configured.
+- Crash reports no longer copy the error text: they keep only known
+  words of the message, the error type, its code and the stack frames
+  (code locations). `snote --report` redacts an older crash file the
+  same way before sharing it, and drops the key list of a crash file
+  written by 0.2.3 or older.
+- Pasted text in search, the tag editor, prompts and the inline editor
+  is drawn safely, with no colours or direction overrides; the inline
+  editor still saves exactly what was pasted.
+- The compile cache folder is private (0700) and the lock file is
+  private (0600).
+
 ## 0.2.3
 
 ### Changed

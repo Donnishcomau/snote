@@ -13,6 +13,7 @@ import { join } from 'node:path';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { bundle } from '../../scripts/build.mjs';
+import { isLockError } from '../../src/core/crash-redact';
 import { resetKeyLog } from '../../src/tui/app-keys';
 
 const ENTRY = 'test/fixtures/crash-entry.ts';
@@ -57,7 +58,7 @@ function runCrash(
 
 // The crash file lands under <XDG_STATE_HOME>/snote. The Boom render error
 // reaches the handler before any secondary effect error (a piped-stdin raw
-// mode throw), so poll until the recorded error.message is `kaboom`.
+// mode throw), so poll until the recorded error.message is `<w>`.
 async function waitForCrashFile(
   dir: string,
   timeoutMs: number,
@@ -76,7 +77,7 @@ async function waitForCrashFile(
         const r = JSON.parse(
           readFileSync(join(snote, f), 'utf8'),
         ) as { error?: { message?: string } };
-        if (r.error?.message === 'kaboom') return f;
+        if (r.error?.message === '<w>') return f;
       } catch {
         // file still being written
       }
@@ -160,7 +161,7 @@ describe('T214 crash handler', () => {
     rmSync(stateDir, { recursive: true, force: true });
   }, 12000);
 
-  it('2: WHEN the same run has finished THEN exactly `1` file matching `crash-` exists in the state dir and its parsed JSON has `error.message` equal to `kaboom`', async () => {
+  it('2: WHEN the same run has finished THEN exactly `1` file matching `crash-` exists in the state dir and its parsed JSON has `error.message` equal to `<w>` (the message is redacted)', async () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'crash-state-'));
     const result = await runCrash([stateDir], { XDG_STATE_HOME: stateDir });
     expect(result.status).toBe(1);
@@ -172,7 +173,7 @@ describe('T214 crash handler', () => {
     const record = JSON.parse(
       readFileSync(join(stateDir, 'snote', file), 'utf8'),
     ) as { error: { message: string } };
-    expect(record.error.message).toBe('kaboom');
+    expect(record.error.message).toBe('<w>');
     rmSync(stateDir, { recursive: true, force: true });
   }, 12000);
 
@@ -255,4 +256,13 @@ describe('T214 crash handler', () => {
     expect(record.session.keys).toEqual([]);
     rmSync(stateDir, { recursive: true, force: true });
   }, 12000);
+
+  it('10: WHEN `isLockError` gets an Error whose message is the number `5`, a value whose toString throws, and an Error saying `holds the instance lock` THEN the first two give `false` without throwing and the last gives `true`', () => {
+    const numeric = Object.assign(new Error('x'), { message: 5 as unknown as string });
+    const throwing = { toString() { throw new Error('boom'); } };
+    expect(() => isLockError(numeric)).not.toThrow();
+    expect(isLockError(numeric)).toBe(false);
+    expect(isLockError(throwing)).toBe(false);
+    expect(isLockError(new Error('snote holds the instance lock'))).toBe(true);
+  });
 });

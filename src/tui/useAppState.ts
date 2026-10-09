@@ -6,7 +6,7 @@ import type { Note, EntityId } from '@vendor/types';
 import { sortEntries } from './app-model';
 import { parseQuery, matchParsed } from '../core/search';
 import { inCollection } from '../core/collection';
-import { tagRows } from '../core/collection';
+import { tagRowsStored } from '../core/collection';
 import { pendingCount } from '../core/simperium-reducer';
 import { sortLabel } from '../core/note-keys';
 
@@ -116,7 +116,7 @@ export function useAppState(store: Store<State>) {
         tags.push(tag.name);
       }
       setAllTagNames(tags);
-      setTagNames(tagRows(state.data.tags));
+      setTagNames(tagRowsStored(state.data.tags));
       setCollection(state.ui.collection);
     };
 

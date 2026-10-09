@@ -2,7 +2,7 @@ import { findOnPath } from '../cli/env-check.js';
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
-export interface EditorEnv {
+interface EditorEnv {
   SNOTE_EDITOR?: string;
   EDITOR?: string;
   PATH?: string;

@@ -1,5 +1,6 @@
-import { Box, Text, useStdout } from 'ink';
-import React, { useCallback, useEffect, useState } from 'react';
+import { isInlineEditOpen } from './inline-editor-state';
+import { Box, Text, useApp, useStdin, useStdout } from 'ink';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Login } from './Login';
 import { App } from './App';
@@ -10,7 +11,7 @@ import { theme } from './theme';
 
 export type Auth = { email: string; token: string; server?: string };
 
-export interface RootProps {
+interface RootProps {
   dataDir: string;
   server?: string;
   width: number;
@@ -27,14 +28,60 @@ export interface RootProps {
 
 type Phase = 'loading' | 'login' | 'app';
 
+const MIN_W = 20;
+const MIN_H = 7;
+const TOO_SMALL = `snote needs at least ${MIN_W}x${MIN_H} — make the window bigger`;
+
+// The message cut into lines that fit the window: at most `rows` lines of at
+// most `cols` characters.
+function smallLines(cols: number, rows: number): string[] {
+  const w = Math.max(1, cols);
+  const out: string[] = [];
+  for (let i = 0; i < TOO_SMALL.length && out.length < Math.max(1, rows); i += w) {
+    out.push(TOO_SMALL.slice(i, i + w));
+  }
+  return out;
+}
+
 export function Root(props: RootProps): React.JSX.Element {
   const [phase, setPhase] = useState<Phase>('loading');
   const [store, setStore] = useState<Store<State> | null>(null);
   const [error, setError] = useState<string>('');
+  const userLogoutRef = useRef(false);
   const [lockMessage, setLockMessage] = useState<string | null>(null);
-  const [size, setSize] = useState({ width: props.width, height: props.height });
+  const [size, setSize] = useState({
+    width: props.width,
+    height: props.height,
+  });
 
   const { stdout } = useStdout();
+  const { exit } = useApp();
+  const stdin = useStdin() as unknown as {
+    internal_eventEmitter?: NodeJS.EventEmitter;
+  };
+  const tooSmall = size.width < MIN_W || size.height < MIN_H;
+  const roomy = useRef(size);
+  if (!tooSmall) roomy.current = size;
+  const quitRef = useRef<() => void>(() => {});
+  quitRef.current = props.onQuit ?? exit;
+
+  // While too small, Ink's one key/paste emitter drops everything but `q`.
+  useLayoutEffect(() => {
+    const em = stdin.internal_eventEmitter;
+    if (!tooSmall || !em) return;
+    const real = em.emit;
+    em.emit = function (this: NodeJS.EventEmitter, ev: string | symbol, ...a: unknown[]) {
+      if (ev === 'input') {
+        if (a[0] === 'q' && !isInlineEditOpen()) quitRef.current(); // S6-02: keep unsaved inline text
+        return false;
+      }
+      if (ev === 'paste') return false;
+      return real.call(this, ev, ...a);
+    } as typeof em.emit;
+    return () => {
+      em.emit = real;
+    };
+  }, [tooSmall, stdin]);
 
   useEffect(() => {
     const onResize = () => {
@@ -63,6 +110,12 @@ export function Root(props: RootProps): React.JSX.Element {
           const onLogout = () => {
             logout(props.dataDir);
             setStore(null);
+            // The middleware also calls this after the user's own logout;
+            // only a server-forced sign-out (expired or revoked token)
+            // deserves an explanation on the login screen.
+            if (!userLogoutRef.current) {
+              setError('Your session has expired or was revoked. Log in again.');
+            }
             setPhase('login');
           };
           setStore(props.makeStoreFor(auth, onLogout));
@@ -94,9 +147,16 @@ export function Root(props: RootProps): React.JSX.Element {
     async (auth: Auth) => {
       try {
         await saveToken(props.dataDir, { ...auth, server: props.server });
+        userLogoutRef.current = false;
+        setError('');
         const onLogout = () => {
           logout(props.dataDir);
           setStore(null);
+          // Same rule as the saved-token path above: a forced sign-out
+          // explains itself, the user's own logout stays silent.
+          if (!userLogoutRef.current) {
+            setError('Your session has expired or was revoked. Log in again.');
+          }
           setPhase('login');
         };
         setStore(props.makeStoreFor(auth, onLogout));
@@ -114,21 +174,20 @@ export function Root(props: RootProps): React.JSX.Element {
     [props.dataDir, props.makeStoreFor],
   );
 
+  let screen: React.JSX.Element;
   if (phase === 'loading') {
-    return (
+    screen = (
       <Box flexDirection="column">
         <Text>Loading...</Text>
         {lockMessage ? <Text {...theme.error}>{lockMessage}</Text> : null}
       </Box>
     );
-  }
-
-  if (phase === 'login') {
-    return (
+  } else if (phase === 'login') {
+    screen = (
       <Box flexDirection="column">
         <Login
-          width={size.width}
-          height={size.height}
+          width={roomy.current.width}
+          height={roomy.current.height}
           requestCode={props.requestCode}
           completeLogin={props.completeLogin}
           passwordLogin={props.passwordLogin}
@@ -137,21 +196,37 @@ export function Root(props: RootProps): React.JSX.Element {
         {error ? <Text {...theme.error}>Error: {error}</Text> : null}
       </Box>
     );
+  } else {
+    screen = (
+      <App
+        store={store!}
+        width={roomy.current.width}
+        height={roomy.current.height}
+        onQuit={props.onQuit}
+        startNew={props.startNew}
+        onLogout={() => {
+          userLogoutRef.current = true;
+          store!.dispatch({ type: 'REALLY_LOG_OUT' });
+          void handleLogout();
+        }}
+      />
+    );
   }
 
-  // phase === 'app'
+  // One stable tree in both states, so the hidden screen keeps its state.
   return (
-    <App
-      store={store!}
-      width={size.width}
-      height={size.height}
-      onQuit={props.onQuit}
-      startNew={props.startNew}
-      onLogout={() => {
-        store!.dispatch({ type: 'REALLY_LOG_OUT' });
-        void handleLogout();
-      }}
-    />
+    <Box flexDirection="column">
+      {tooSmall ? (
+        <Box flexDirection="column">
+          {smallLines(size.width, size.height).map((l, i) => (
+            <Text key={i}>{l}</Text>
+          ))}
+        </Box>
+      ) : null}
+      <Box display={tooSmall ? 'none' : 'flex'} flexDirection="column">
+        {screen}
+      </Box>
+    </Box>
   );
 }
 

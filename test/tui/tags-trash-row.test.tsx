@@ -97,7 +97,7 @@ describe('T184 Tags pane trash row', () => {
     expect(store.getState().ui.collection).toEqual({ type: 'trash' });
     const frame = lastFrame() ?? '';
     expect(frame).toContain('Deleted note');
-    expect(frame).toContain('1 notes');
+    expect(frame).toContain('1 note');
     expect(frame).not.toContain('Third normal note');
     expect(store.getState().data.notes).toBe(notesBefore);
 

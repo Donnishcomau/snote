@@ -9,40 +9,6 @@
 import { AUTH_BASE, ACCOUNT_BASE, APP_ID, API_KEY } from './config';
 
 /**
- * Result of requesting a login code via email.
- */
-export interface LoginCodeResult {
-  /** True when the code was requested successfully (server accepted the email) */
-  ok: boolean;
-}
-
-/**
- * Result of completing a login with a received code.
- */
-export interface LoginTokenResult {
-  /** The simperium sync_token on success */
-  token?: string;
-  /** True when the login succeeded */
-  ok: boolean;
-  /** Error message when the login failed */
-  error?: string;
-}
-
-/**
- * Result of password-based login.
- */
-export interface PasswordLoginResult {
-  /** The simperium access_token on success */
-  token?: string;
-  /** The user id on success */
-  userId?: string;
-  /** True when the login succeeded */
-  ok: boolean;
-  /** Error message when the login failed */
-  error?: string;
-}
-
-/**
  * Options object for auth functions.
  */
 export interface AuthOpts {
@@ -50,6 +16,51 @@ export interface AuthOpts {
   authBase?: string;
   appId?: string;
   apiKey?: string;
+  /** Milliseconds before a call gives up (default 15000). */
+  timeoutMs?: number;
+}
+
+/** Fallback give-up time for a single auth request (ms). */
+const DEFAULT_TIMEOUT_MS = 15000;
+
+/**
+ * Bound a server-supplied error text to a single readable line:
+ * fold every run of whitespace into one space, trim, and cut to
+ * the first 200 characters (no ellipsis).
+ */
+function summarizeErrorText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim().slice(0, 200);
+}
+
+/**
+ * POST with a deadline and human-readable failures.
+ *
+ * - gives up after `timeoutMs` with `no answer from <host> within <N> s`
+ *   (`<host>` = URL host with port, `<N>` = whole seconds, rounded up);
+ * - a connection that never opens (nothing listening, DNS) rejects with
+ *   `could not reach <host>` instead of the raw `fetch failed`;
+ * - every other failure passes through unchanged, so HTTP error replies
+ *   keep the caller's formatting.
+ */
+async function fetchBounded(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const host = new URL(url).host;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...init, signal: controller.signal });
+    return res;
+  } catch (e) {
+    const err = e as Error & { cause?: unknown };
+    if (err.name === 'AbortError') {
+      throw new Error(`no answer from ${host} within ${Math.ceil(timeoutMs / 1000)} s`);
+    }
+    if (err.cause) {
+      throw new Error(`could not reach ${host}`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /**
@@ -69,18 +80,23 @@ export async function requestLoginCode(
 ): Promise<void> {
   const accountUrl = opts?.accountBase ?? ACCOUNT_BASE;
   const url = `${accountUrl}/account/request-login`;
+  const timeoutMs = opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      username: email.trim().toLowerCase(),
-      request_source: 'electron',
-    }),
-  });
+  const res = await fetchBounded(
+    url,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: email.trim().toLowerCase(),
+        request_source: 'electron',
+      }),
+    },
+    timeoutMs,
+  );
 
   if (!res.ok) {
-    throw new Error(`${res.status} ${await res.text()}`);
+    throw new Error(`${res.status} ${summarizeErrorText(await res.text())}`);
   }
 }
 
@@ -102,15 +118,20 @@ export async function completeLogin(
 ): Promise<string> {
   const accountUrl = opts?.accountBase ?? ACCOUNT_BASE;
   const url = `${accountUrl}/account/complete-login`;
+  const timeoutMs = opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      username: email.trim().toLowerCase(),
-      auth_code: code.trim().toUpperCase(),
-    }),
-  });
+  const res = await fetchBounded(
+    url,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: email.trim().toLowerCase(),
+        auth_code: code.trim().toUpperCase(),
+      }),
+    },
+    timeoutMs,
+  );
 
   if (!res.ok) {
     let message = `completeLogin failed: ${res.status}`;
@@ -118,7 +139,7 @@ export async function completeLogin(
       const errBody = (await res.json()) as Record<string, unknown>;
       if (errBody.message) message = String(errBody.message);
     } catch { /* ignore */ }
-    throw new Error(`${res.status} ${message}`);
+    throw new Error(`${res.status} ${summarizeErrorText(message)}`);
   }
 
   const json = (await res.json()) as { sync_token?: string };
@@ -145,22 +166,27 @@ export async function loginWithPassword(
   const appId = opts?.appId ?? APP_ID;
   const apiKey = opts?.apiKey ?? API_KEY;
   const url = `${authUrl}/1/${appId}/authorize/`;
+  const timeoutMs = opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Simperium-API-Key': apiKey,
+  const res = await fetchBounded(
+    url,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Simperium-API-Key': apiKey,
+      },
+      body: JSON.stringify({
+        username: email.trim().toLowerCase(),
+        password,
+      }),
     },
-    body: JSON.stringify({
-      username: email.trim().toLowerCase(),
-      password,
-    }),
-  });
+    timeoutMs,
+  );
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`${res.status} ${text}`);
+    throw new Error(`${res.status} ${summarizeErrorText(text)}`);
   }
 
   const json = (await res.json()) as { access_token?: string; userid?: string };

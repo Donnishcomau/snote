@@ -6,6 +6,7 @@ import * as path from 'node:path';
 import React from 'react';
 
 import { Root } from '../../src/tui/Root';
+import { waitForFrame, waitForInput } from '../helpers/ink-waits';
 import { makeStore } from '../../src/core/store';
 import { loadToken, saveToken } from '../../src/core/token';
 import type { Store } from 'redux';
@@ -126,7 +127,7 @@ describe('T289 saved sync token is only sent to the server it was issued for', (
       (_auth: Auth, _onLogout: () => void) =>
         (makeStore({ stubClient: {} }) as Store<State>)
     );
-    const { stdin, unmount } = render(
+    const { stdin, lastFrame, unmount } = render(
       <Root
         dataDir={dir}
         server="ws://new.example"
@@ -139,14 +140,16 @@ describe('T289 saved sync token is only sent to the server it was issued for', (
       />
     );
 
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'Email:');
+    await new Promise((r) => setImmediate(r));
 
     stdin.write('a@b.co');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Email: a@b.co');
     stdin.write('\t');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Password login for a@b.co');
     stdin.write('hunter2secret');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Password: *************');
     stdin.write('\r');
 
     let saved: Awaited<ReturnType<typeof loadToken>> = null;

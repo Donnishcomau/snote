@@ -69,11 +69,28 @@ BarWidget {
     var noun = status.count === 1 ? "note" : "notes"
     lines.push("snote — " + status.count + " " + noun)
     if (status.last !== null) lines.push("Last: " + status.last.title)
-    if (status.synced === null) {
+    // F134: status.json is only kept fresh while snote runs (`alive` is its
+    // heartbeat, written every 30 s), so an old heartbeat means "not
+    // running", not a failed sync. A file without `alive` is shown as before.
+    var notRunning = typeof status.alive === "string" &&
+      nowMs - Date.parse(status.alive) > 120000
+    if (notRunning) {
+      if (status.synced === null) {
+        lines.push("snote is not running")
+      } else {
+        lines.push("snote is not running · last synced " + formatAgo(nowMs - Date.parse(status.synced)))
+      }
+    } else if (status.synced === null) {
       lines.push("Not synced yet")
     } else {
       var ago = formatAgo(nowMs - Date.parse(status.synced))
       lines.push(ago === "just now" ? "Synced just now" : "Synced " + ago)
+    }
+    if (status.update === "available") {
+      lines.push("Update available: omarchy plugin update io.github.donnishcomau.snote-simplenote")
+      lines.push("then click this button and run omarchy-restart-shell")
+    } else if (status.update === "restart") {
+      lines.push("Update downloaded: restart snote / the bar to use it")
     }
     lines.push("Click: open · Middle-click: new note")
     return lines.join("\n")
@@ -146,16 +163,30 @@ BarWidget {
 
   readonly property string setupScript: root.localPath("packaging/omarchy/setup")
 
-  // setupScript is a plain filesystem path built from this plugin clone's
-  // own on-disk location (via Qt.resolvedUrl, not from any environment
-  // variable), so in practice it never contains a single quote. Still,
-  // launchOrHint() below embeds it inside a single-quoted shell string, so
-  // escape defensively rather than assume: a literal single quote in the
-  // path would otherwise close that quote early and let whatever follows
-  // it run as a second, unintended shell command.
+  // Escape a string as one single-quoted POSIX shell word.
   function shellEscapeSingleQuoted(path) {
     return String(path).replace(/'/g, "'\\''")
   }
+
+  // setup-command:begin
+  // Wrap a string in single quotes for one shell pass, escaping any
+  // literal single quote inside it.
+  function q(s) {
+    return "'" + String(s).replace(/'/g, "'\\''") + "'"
+  }
+
+  // Build the full command for bar.run. It passes through TWO shells:
+  // bar.run executes with `bash -lc`, and the launcher joins its
+  // arguments with `cmd="$*"` and runs them again with `bash -c`. One
+  // level of escaping is not enough — the setup path must be quoted for
+  // the inner shell, and the whole inner command quoted again for the
+  // outer one, or a space, quote or $(...) in the path breaks the
+  // install or runs as a command.
+  function setupCommand(path) {
+    var inner = q(path) + " && omarchy-launch-or-focus-tui snote"
+    return "omarchy-launch-floating-terminal-with-presentation " + q(inner)
+  }
+  // setup-command:end
 
   // After a setup click, bar.run is fire-and-forget, so nothing reports the
   // install back here; reprobe() counts down on a timer until both probes
@@ -180,22 +211,21 @@ BarWidget {
       return
     }
     if (root.bar) {
-      root.bar.run(
-        "omarchy-launch-floating-terminal-with-presentation '"
-        + root.shellEscapeSingleQuoted(root.setupScript) + " && omarchy-launch-or-focus-tui snote'"
-      )
+      root.bar.run(root.setupCommand(root.setupScript))
       root.reprobeLeft = 15
     }
   }
 
   // Middle click: a new note. Only meaningful when snote is installed
   // and current; otherwise it does what a left click does (the install
-  // path) rather than a broken `--new`. Note the launcher limitation
-  // documented in the README: if snote is already running, it only
-  // focuses the existing window and the `--new` argument is dropped.
+  // path) rather than a broken `--new`. When snote is already running,
+  // the shim's `--notify-new` hands the new-note request to that running
+  // instance first, and the launcher focuses its window second; with no
+  // snote running the request exits non-zero and the launcher cold-starts
+  // snote with `--new`, as before.
   function newNote() {
     if (root.snoteAvailable && !root.snoteStale) {
-      if (root.bar) root.bar.run("omarchy-launch-or-focus-tui snote --new")
+      if (root.bar) root.bar.run("if '" + root.shellEscapeSingleQuoted(root.snoteShim) + "' --notify-new; then omarchy-launch-or-focus-tui snote; else omarchy-launch-or-focus-tui snote --new; fi")
       return
     }
     root.launchOrHint()

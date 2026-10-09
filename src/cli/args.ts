@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 
-export interface CliOptions {
+interface CliOptions {
   check: boolean;
   logout: boolean;
   help: boolean;
@@ -16,6 +16,16 @@ export function splitNewFlag(argv: string[]): {
   return {
     args: argv.filter((a) => a !== '--new'),
     startNew: argv.includes('--new'),
+  };
+}
+
+export function splitNotifyFlag(argv: string[]): {
+  args: string[];
+  notifyNew: boolean;
+} {
+  return {
+    args: argv.filter((a) => a !== '--notify-new'),
+    notifyNew: argv.includes('--notify-new'),
   };
 }
 
@@ -70,4 +80,5 @@ export const USAGE: string = [
   '  --server <value>     Simperium server URL',
   '  --report        Write a bundle for your coding agent',
   '  --new            Open the editor for a new note at start',
+  '  --notify-new     Ask a running snote to open a new note, then exit',
 ].join('\n');

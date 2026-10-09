@@ -93,7 +93,7 @@ exports[`Golden frames: search, tags, help > 3: WHEN at 80x24 t then j are writt
              │                          │
 focus: tags
 j/k Move  Enter Select  R Rename  x Delete  Escape Back
-[offline] 1 notes
+[offline] 1 note
 "
 `;
 
@@ -136,7 +136,7 @@ exports[`Golden frames: search, tags, help > 4: WHEN at 120x40 t then j are writ
            │                                   │
 focus: tags
 j/k Move  Enter Select  R Rename  x Delete  Escape Back
-[offline] 1 notes
+[offline] 1 note
 "
 `;
 

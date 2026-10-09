@@ -2,7 +2,7 @@ import type { Note, TagName, TagHash } from '@vendor/types';
 import { getTerms } from '@vendor/utils/filter-notes';
 import { tagHashOf } from '@vendor/utils/tag-hash';
 
-export type ParsedQuery = { terms: string[]; tags: Set<TagHash> };
+type ParsedQuery = { terms: string[]; tags: Set<TagHash> };
 
 const TAG_TOKEN_PATTERN = /(?:\btag:)([^\s,]+)/g;
 

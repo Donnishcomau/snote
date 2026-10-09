@@ -115,7 +115,7 @@ describe('Golden frames: search, tags, help', () => {
     expect(frame).toContain('>home');
     expect(frame).toContain('work');
     expect(frame).toContain('Untagged');
-    expect(frame).toContain('1 notes');
+    expect(frame).toContain('1 note');
     expect(frame).toMatchSnapshot('tags-80x24');
   });
 
@@ -134,7 +134,7 @@ describe('Golden frames: search, tags, help', () => {
     expect(frame).toContain('>home');
     expect(frame).toContain('Notes');
     expect(frame).toContain('Preview');
-    expect(frame).toContain('1 notes');
+    expect(frame).toContain('1 note');
     expect(frame).toMatchSnapshot('tags-120x40');
   });
 

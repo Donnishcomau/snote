@@ -2,6 +2,8 @@ import { Box, Text } from 'ink';
 import React from 'react';
 import { Divider } from './Divider';
 import { PaneHeading } from './PaneHeading';
+import { theme } from './theme';
+import { sanitizeForTerminal } from '../core/sanitize';
 
 interface TagPaneProps {
   tags: string[];
@@ -42,7 +44,7 @@ export function TagPane({
   const labels = rows.slice(visibleStart, visibleEnd).map((tag, idx) => {
     if (idx === moreAboveSlot) return '… ' + hiddenAbove + ' more';
     if (idx === moreBelowSlot && idx !== moreAboveSlot) return '… ' + hiddenBelow + ' more';
-    return String(tag ?? '');
+    return sanitizeForTerminal(String(tag ?? ''));
   });
 
   const content = (
@@ -54,10 +56,21 @@ export function TagPane({
         // indicator rows keep the marker column but as a non-breaking space:
         // a frame line whose only content is a bare `<Text> </Text>` gets dropped by ink-testing-library
         const isMore = idx === moreAboveSlot || (idx === moreBelowSlot && idx !== moreAboveSlot);
+        // system rows are decided by index, exactly like the `·` marker above
+        const isSystem =
+          actualIndex === 0 ||
+          actualIndex === rows.length - 1 ||
+          (trashRow && actualIndex === rows.length - 2);
+        // selected label in the accent colour; unselected system rows recede to dim
+        const labelStyle = isSelected
+          ? theme.accent
+          : isSystem && !isMore
+            ? theme.muted
+            : {};
         return (
           <Box key={actualIndex}>
             {isMore ? <Text>{'\u00a0'}</Text> : isSelected ? <Text bold>{'>'}</Text> : actualIndex === 0 || actualIndex === rows.length - 1 || (trashRow && actualIndex === rows.length - 2) ? <Text>{'·'}</Text> : <Text>{' '}</Text>}
-            <Text>{label.slice(0, width - 2)}</Text>
+            <Text {...labelStyle}>{label.slice(0, width - 2)}</Text>
           </Box>
         );
       })}

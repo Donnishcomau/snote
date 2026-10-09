@@ -75,7 +75,7 @@ describe('T114 Tags pane edges', () => {
     const frame = lastFrame();
     expect(frame).not.toContain('All notes');
     expect(frame).toContain('tag: work');
-    expect(frame).toContain('1 notes');
+    expect(frame).toContain('1 note');
     expect(store.getState().ui.collection.type).toBe('tag');
 
     stdin.write('\u001b');

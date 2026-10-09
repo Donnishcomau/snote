@@ -138,7 +138,7 @@ describe('KeyHints (T264)', () => {
     const frame = lastFrame();
     expect(frame).toContain('? Help');
     expect(frame).toContain('[connected]');
-    expect(frame).toContain('1 notes');
+    expect(frame).toContain('1 note');
     unmount();
   });
 });

@@ -3,6 +3,7 @@
 
 import { Console } from 'node:console';
 import { vi } from 'vitest';
+import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -24,6 +25,21 @@ process.env.SNOTE_STATUS_DIR = path.join(os.tmpdir(), 'snote-test-status-' + pro
 
 // Never let a test run invoke uwsm/create a systemd scope: force the plain-command branch in src/core/editor.ts.
 process.env.SNOTE_EDITOR_DIRECT = '1';
+
+// Never let a test spawn git for a real remote update check: main() now starts one at startup (src/core/update-run.ts).
+// The sentinel is `disabled` (not `off`): `off` would also disable the per-test env of test/core/update-check.test.ts,
+// whose tests 1-2 spread process.env and must run the check; update-check.runUpdateChecks skips the runner when it sees `disabled`.
+process.env.SNOTE_UPDATE_CHECK = 'disabled';
+
+// Never let a test read or write the owner's real home: one temp home per test
+// process, so HOME and every XDG directory resolve inside os.tmpdir().
+const testHome = fs.mkdtempSync(path.join(os.tmpdir(), 'snote-test-home-'));
+process.env.HOME = testHome;
+process.env.XDG_DATA_HOME = path.join(testHome, 'data');
+process.env.XDG_STATE_HOME = path.join(testHome, 'state');
+process.env.XDG_CONFIG_HOME = path.join(testHome, 'config');
+process.env.XDG_CACHE_HOME = path.join(testHome, 'cache');
+process.env.XDG_DOCUMENTS_DIR = path.join(testHome, 'Documents');
 
 // Mock navigator.onLine for online/offline detection
 Object.defineProperty(global, 'navigator', {

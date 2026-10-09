@@ -5,7 +5,7 @@ import { tagInputStep, suggestTag } from './tag-input';
 import { splitPastedInput } from './split-input';
 import { theme } from './theme';
 
-export interface TagEditorProps {
+interface TagEditorProps {
   tags: string[];
   allTags: string[];
   onAdd: (tagName: string) => void;
@@ -60,7 +60,7 @@ export function TagEditor({ tags, allTags, onAdd, onRemove, onClose }: TagEditor
     const restOfSuggestion = sanitizeForTerminal(suggestion.slice(text.length));
     return (
       <Box>
-        <Text bold inverse>{display}{text}</Text>
+        <Text bold inverse>{display}{sanitizeForTerminal(text)}</Text>
         <Text {...theme.muted}>{restOfSuggestion}</Text>
       </Box>
     );
@@ -68,7 +68,7 @@ export function TagEditor({ tags, allTags, onAdd, onRemove, onClose }: TagEditor
 
   return (
     <Box>
-      <Text bold inverse>{display}{text}</Text>
+      <Text bold inverse>{display}{sanitizeForTerminal(text)}</Text>
     </Box>
   );
 }

@@ -2,16 +2,17 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import { secureMkdir, secureWriteFileSync } from './secure-fs';
+import { sanitizeForTerminal } from './sanitize';
 
 const BLOG_SENT_FILE = 'blog-sent.json';
 
-export interface BlogSendRecord {
+interface BlogSendRecord {
   postId: string;
   url: string;
   sentAt: string;
 }
 
-export interface BlogSentData {
+interface BlogSentData {
   [noteId: string]: BlogSendRecord;
 }
 
@@ -26,7 +27,9 @@ export function blogStatusLine(
     return null;
   }
   // Records saved before url normalisation may be protocol-relative.
-  const url = record.url.startsWith('//') ? 'https:' + record.url : record.url;
+  const rawUrl = record.url.startsWith('//') ? 'https:' + record.url : record.url;
+  // The url is server text: strip control sequences, fold newlines/tabs (F088).
+  const url = sanitizeForTerminal(rawUrl).replace(/[\n\t]/g, ' ');
   return 'Sent as draft · ' + record.sentAt.slice(0, 10) + ' · ' + url;
 }
 

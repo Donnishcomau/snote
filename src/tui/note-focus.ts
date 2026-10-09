@@ -5,7 +5,7 @@ import type { EntityId, Note } from '@vendor/types';
 import type { BlogSendAskActions } from './blog-send-ask';
 import { checklistItems, toggleChecklistItem } from '../core/checklist';
 
-export interface NoteKeyCtx {
+interface NoteKeyCtx {
   store: Store<State>;
   selectedEntry: { id: EntityId; note: Note } | null;
   itemIndex: number;

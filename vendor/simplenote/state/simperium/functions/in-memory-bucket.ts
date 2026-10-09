@@ -30,11 +30,9 @@ export class InMemoryBucket<U> implements BucketStore<U> {
     callback(null);
   }
 
-  // OMARCHY: Added for Simperium client compatibility - store.put is called during indexing
+  // OMARCHY: added for Simperium client compatibility; simperium 1.1.4 calls put only on ghost stores, so this is not reached today.
   put(id: T.EntityId, version: number, data: U): Promise<{ id: T.EntityId; data: U; version: number }> {
-    console.log('[TEST] InMemoryBucket.put: id=' + id + ' version=' + version + ' data=', data);
     this.entities.set(id, data);
-    console.log('[TEST] InMemoryBucket.put: entities.size=' + this.entities.size);
     return Promise.resolve({ id, data, version });
   }
 

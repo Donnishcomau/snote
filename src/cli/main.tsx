@@ -10,6 +10,7 @@ import { render } from 'ink';
 
 // T214 — one new import.
 import { crashReport } from '../core/crash-report';
+import { redactStoredError, redactStoredKeys, isLockError } from '../core/crash-redact';
 // T291 — data files private: mkdirs 0o700, files 0o600.
 import { secureMkdir, secureWriteFileSync } from '../core/secure-fs';
 // T232 — the crash bundle carries a redacted session snapshot (T230).
@@ -21,19 +22,49 @@ import { makeStore } from '../core/store';
 // T233 — loadState for the live `--report` bundle.
 import { loadState, persistOnChange } from '../core/persistence';
 import { FileGhostStore } from '../core/ghost-store';
+// T445 — a note the server holds but state.json lost (killed inside the
+// save debounce) is added back from the ghost file at start-up.
+import { restoreNotesFromGhosts } from '../core/ghost-restore';
 // T85 — re-queue notes newer than their ghost on start-up.
 import { requeueUnsynced } from '../core/requeue';
+// T493 — the record of local changes the server never confirmed: kept and
+// re-sent on restart whatever the ghost's date says.
+import { loadUnsynced, trackUnsynced } from '../core/unsynced';
 import { whenCatchUpApplied } from '../core/simperium-reconnect-fix';
 // T151 — resend offline "delete forever" ops at start-up (FR-5).
-import { resendDeletions, trackDeletions } from '../core/tombstones';
-import { parseCli, checkReport, splitNewFlag, USAGE } from './args';
+import { dropTombstonedNotes, resendDeletions, trackDeletions } from '../core/tombstones';
+import { parseCli, checkReport, splitNewFlag, splitNotifyFlag, USAGE } from './args';
+// T443 — a fire-and-forget failure that cannot reach the screen shows on the notice line.
+import { problemText, publishProblem } from '../core/problem-signal';
 // T358 — the bar widget's status file: watch, path, and removal on logout.
-import { statusDir, watchStatus, removeStatusFile } from '../core/status-file';
+import {
+  statusDir,
+  watchStatus,
+  removeStatusFile,
+  clearUpdateStatusFile,
+} from '../core/status-file';
+// T374 — cross-process "open a new note": the sender and the running watcher.
+import {
+  requestNewNote,
+  watchNewRequests,
+  emitNewRequest,
+} from '../core/new-request';
 // T323 — `--version`/`-v` prints `snote <version>` from package.json.
 import { VERSION } from './version';
 import { envReport } from './env-check';
+import { checkEndpoints } from '../core/endpoint-check';
 // T156 — one data folder per account: accountDir + prepareDataDir.
-import { defaultDataDir, logout, accountDir, prepareDataDir } from '../core/token';
+import {
+  defaultDataDir,
+  logout,
+  accountDir,
+  prepareDataDir,
+  loadToken,
+} from '../core/token';
+import { setDataRoot } from '../core/data-root';
+// T390 — start-up update checks (local first, then the daily remote one).
+import { runUpdateChecks } from '../core/update-run';
+import { updateCheckEnabled } from '../core/update-check';
 // T303 — one snote process per account dir: stale locks reclaimed, live ones refuse.
 import { acquireInstanceLock } from '../core/instance-lock';
 // T73 — login calls now come from ./login-calls, not direct auth imports.
@@ -41,8 +72,11 @@ import { loginCalls } from './login-calls';
 import { APP_ID } from '../core/config';
 import { Root } from '../tui/Root';
 import type { Auth } from '../tui/Root';
+// T402 — the output guard. process.stdout meets
+// the guard's MinimalOutputStream (write(chunk, ...args)) structurally.
+import { guardOutputStream } from '../core/output-guard';
 
-export interface BuildStoreOptions {
+interface BuildStoreOptions {
   dataDir: string;
   appId: string;
   server?: string;
@@ -50,6 +84,7 @@ export interface BuildStoreOptions {
   authWatchdogMs?: number;
   statusDir?: string;
   statusDelayMs?: number;
+  newRequestPollMs?: number;
 }
 
 export function buildStore(
@@ -69,8 +104,12 @@ export function buildStore(
   // T85 — keep the note bucket's ghost store so start-up can
   // re-queue notes whose local copy is newer than the last sync.
   let noteGhosts: FileGhostStore<unknown> | undefined;
+  // T493 — read the record of unconfirmed local changes before the store is
+  // built: restoreNotesFromGhosts and requeueUnsynced both consult it, and
+  // it is only ever written by trackUnsynced below, never by the 500 ms save.
+  const unsynced = loadUnsynced(opts.dataDir);
   const store = makeStore({
-    preloadedState: loadState(opts.dataDir),
+    preloadedState: dropTombstonedNotes(opts.dataDir, loadState(opts.dataDir)),
     sync: {
       appId: opts.appId,
       token: auth.token,
@@ -94,17 +133,41 @@ export function buildStore(
       },
     },
   });
+  // T445 — state.json lands on a 500 ms debounce while the ghost file and its
+  // cv land at once, so a note the server confirmed inside that window is
+  // missing from state.json when the process dies. The ghost holds the
+  // server's copy, so add those notes back to the store; nothing is sent.
+  // Deferred one turn so no start-up dispatch races the sync bucket's setup.
+  if (noteGhosts) {
+    const ghosts = noteGhosts;
+    setTimeout(() => {
+      restoreNotesFromGhosts(store, ghosts, unsynced);
+    }, 0);
+  }
   const startSaving = persistOnChange(store, opts.dataDir);
+  // T493 — keep the unsynced record fresh: written at once whenever the
+  // pending set changes, never by the debounced state.json save.
+  const unsyncedTracker = trackUnsynced(store, opts.dataDir);
+  const stopUnsynced = unsyncedTracker.stop;
   // T358 — with a status dir (the bar plugin's), keep status.json fresh;
   // stopStatus flushes any pending write at shutdown.
   const stopStatus = opts.statusDir
     ? watchStatus(store, opts.statusDir, { delayMs: opts.statusDelayMs })
     : () => {};
+  // T374 — the running instance listens for `new-note.request` dropped by
+  // `snote --notify-new`; each request becomes an emitNewRequest().
+  const stopNewRequests = watchNewRequests(opts.dataDir, emitNewRequest, {
+    pollMs: opts.newRequestPollMs,
+  });
   // T303 — the returned stopSaving also releases the instance lock. The
   // marker line below is the OMARCHY: boundary cast one structure.test counts.
   stopSaving = () => {
     startSaving();
+    stopUnsynced();
     stopStatus();
+    // T417 — quit clears the notice: status.json loses its `update` key.
+    if (opts.statusDir) clearUpdateStatusFile(opts.statusDir);
+    stopNewRequests();
     instanceLock.release();
   };
   // T85 — re-queue notes newer than their ghost on start-up (FR-5).
@@ -114,8 +177,18 @@ export function buildStore(
       store,
       noteGhosts as unknown as Parameters<typeof requeueUnsynced>[1],
       // T313/T314 — offline edits wait for the note bucket's catch-up, then rebase
-      () => whenCatchUpApplied(store.client, 'note')
-    ).catch(() => {});
+      () => whenCatchUpApplied(store.client, 'note'),
+      // T493 — a change the record says the server never confirmed is
+      // re-sent even when the ghost's date is newer.
+      unsynced
+    ).then(
+      // T502 — the start-up re-send is over: a carried entry that never went
+      // pending with it was found equal to its ghost, so it leaves the record.
+      () => unsyncedTracker.settle(),
+      (err) => {
+        publishProblem(problemText('could not re-send offline edits', err));
+      }
+    );
   // T151 — record every "delete forever" in the tombstone file and
   // resend the removal for each tombstone the server still holds (FR-5).
   trackDeletions(store, opts.dataDir);
@@ -125,7 +198,9 @@ export function buildStore(
       store,
       opts.dataDir,
       noteGhosts as unknown as Parameters<typeof resendDeletions>[2]
-    ).catch(() => {});
+    ).catch((err) => {
+      publishProblem(problemText('could not re-send deletions', err));
+    });
   }
   return { store, stopSaving };
 }
@@ -181,7 +256,19 @@ async function writeReport(log: (text: string) => void, dataDir: string): Promis
       .sort();
     if (crashes.length > 0) {
       const raw = fs.readFileSync(path.join(dir, crashes.at(-1)!), 'utf8');
-      bundle = { ...(JSON.parse(raw) as Record<string, unknown>), source: 'crash' };
+      // The file may predate redaction: its error goes through the same
+      // redaction before it is re-shared.
+      const old = JSON.parse(raw) as Record<string, unknown>;
+      const oldSession = old.session;
+      // S5d-01: a file without the `keysMasked` marker is from 0.2.3 or older,
+      // which stored inline-editor typing one character per entry: drop its keys.
+      const session =
+        typeof oldSession === 'object' && oldSession !== null
+          ? (oldSession as { keysMasked?: unknown }).keysMasked === true
+            ? { ...(oldSession as Record<string, unknown>), keys: redactStoredKeys((oldSession as { keys?: unknown }).keys) }
+            : { ...(oldSession as Record<string, unknown>), keys: [], keysDropped: 'older version' }
+          : oldSession;
+      bundle = { ...old, error: redactStoredError(old.error, os.homedir()), session, source: 'crash' };
     }
   } catch (err) {
     if ((err as { code?: string }).code !== 'ENOENT') {
@@ -191,7 +278,12 @@ async function writeReport(log: (text: string) => void, dataDir: string): Promis
   }
   if (!bundle!) {
     try {
-      const store = makeStore({ preloadedState: loadState(dataDir), stubClient: {} });
+      // T508 — the app saves state.json inside the saved account's folder
+      // (T156), so read it from the same folder --notify-new uses. With no
+      // auth.json there is no saved account and the root is the source.
+      const saved = await loadToken(dataDir);
+      const stateFolder = saved ? accountDir(dataDir, saved.email) : dataDir;
+      const store = makeStore({ preloadedState: loadState(stateFolder), stubClient: {} });
       const session = sessionSnapshot(store.getState(), getKeyLog(), {
         columns: process.stdout.columns ?? 80,
         rows: process.stdout.rows ?? 24,
@@ -233,7 +325,12 @@ export async function main(
   // fixed (strict parseArgs would reject it), and the report runs instead
   // of the login/render flow.
   const reportOnly = argv.includes('--report');
-  const { args, startNew } = splitNewFlag(argv.filter((a) => a !== '--report'));
+  // T374 — `--notify-new` is stripped here too (same strict-parser reason);
+  // it sends a request to a running instance instead of rendering.
+  const { args: argsWithoutReport, notifyNew } = splitNotifyFlag(
+    argv.filter((a) => a !== '--report')
+  );
+  const { args, startNew } = splitNewFlag(argsWithoutReport);
 
   // T323 — `--version`/`-v` is stripped before parseCli too: CliOptions's
   // shape is fixed, so the strict parser would reject it. Print the
@@ -258,11 +355,22 @@ export async function main(
   }
 
   const dataDir = o.dataDir ?? defaultDataDir();
+  // T408 — publish the resolved root so the blog sites read/write there.
+  setDataRoot(dataDir);
   const appId = o.appId ?? APP_ID;
 
   if (o.help) {
     log(USAGE);
     return 0;
+  }
+
+  // T419 — an endpoint override carries credentials, so refuse http unless
+  // it points at the loopback, and flag any run with TLS checks disabled.
+  const endpoints = checkEndpoints(process.env);
+  for (const w of endpoints.warnings) log(w);
+  if (endpoints.errors.length > 0) {
+    for (const e of endpoints.errors) log(e);
+    return 2;
   }
 
   if (o.check) {
@@ -280,8 +388,21 @@ export async function main(
 
   if (o.logout) {
     await logout(dataDir);
+    removeStatusFile(statusDir(process.env));
     log('logged out');
     return 0;
+  }
+
+  // T374 — ask the running instance to open a new note and leave: 0 when a
+  // request was sent, 3 when there is no auth.json or no running instance.
+  // Prints nothing either way; runs before prepareDataDir so it never
+  // creates or migrates anything.
+  if (notifyNew) {
+    const saved = await loadToken(dataDir);
+    if (!saved) {
+      return 3;
+    }
+    return requestNewNote(accountDir(dataDir, saved.email)) === 'sent' ? 0 : 3;
   }
 
   // T156 — move an old single-folder install into the saved
@@ -308,11 +429,29 @@ export async function main(
     );
     stopSaving = built.stopSaving;
     lastStore = built.store;
+    // T390 — start checks only when the opt-out switch allows it, so no test path spawns git.
+    // test/setup.ts sets the sentinel `disabled` (not `off`, which update-check.test.ts pins to its own per-test env).
+    if (updateCheckEnabled(process.env) && process.env.SNOTE_UPDATE_CHECK !== 'disabled') {
+      void runUpdateChecks({
+        version: VERSION,
+        home: os.homedir(),
+        env: process.env,
+        stateDir: statusDir(process.env),
+      }).catch(() => {});
+    }
     return built.store;
   };
 
   // T304: flag set by onLockError so main() returns non-zero on stale lock.
   let locked = false;
+
+  // T402 — wrap stdout with the output guard before Ink renders, so no
+  // note text can program the terminal.
+  // NodeJS.WriteStream is the guard's MinimalOutputStream at the boundary.
+  guardOutputStream(process.stdout);
+  // T414 — stderr needs the same guard: Ink's patchConsole and debug
+  // logs write server-supplied text there.
+  guardOutputStream(process.stderr);
 
   const { waitUntilExit, unmount, clear } = render(
     React.createElement(Root, {
@@ -334,7 +473,10 @@ export async function main(
           try { unmount(); } catch { /* ink-testing-library may throw */ }
         } catch { /* already handled */ }
       },
-    })
+    }),
+    // T402 — never take Ink's screen-reader output path (it skips the
+    // stage that drops OSC sequences).
+    { isScreenReaderEnabled: false }
   );
 
   // T214 — one shared crash handler: an error anywhere (React render, an
@@ -347,8 +489,7 @@ export async function main(
     // T304: if onLockError already handled a lock error, just return 1 —
     // don't call process.exit(1) again (which vitest blocks in tests).
     if (locked) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('holds the instance lock')) return Promise.resolve(1);
+      if (isLockError(err)) return Promise.resolve(1); // S5c-04: never throws
     }
     const report = crashReport(err, {
       version: '0.0.1',
@@ -363,7 +504,8 @@ export async function main(
       `crash-${report.record.when.replaceAll(':', '-')}.json`,
     );
     // T232 — the bundle is a replayable recipe: notes/tags/keys as they were
-    // at the moment of the crash, redacted (lengths and keys only, no content).
+    // at the moment of the crash, redacted (lengths and keys only; typed and
+    // pasted text is stored as `<text>`, never the characters themselves).
     let session: SessionSnapshot;
     try {
       if (lastStore) {
@@ -399,7 +541,7 @@ export async function main(
     let pathText: string;
     try {
       secureMkdir(dir);
-      secureWriteFileSync(file, JSON.stringify({ ...report.record, session }, null, 2));
+      secureWriteFileSync(file, JSON.stringify({ ...report.record, session: { ...session, keysMasked: true } }, null, 2));
       pathText = file;
     } catch {
       pathText = 'could not be saved';

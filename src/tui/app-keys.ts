@@ -3,33 +3,19 @@ import { Store } from 'redux';
 
 import { moveTagActions } from '../core/collection';
 import { revisionsOf, restoreRevisionAction } from '../core/history';
-import { pushKeyEvent } from '../core/crash-ring';
 import { shouldAutoOpenTags } from '../core/layout';
-import { emptyTrashActions } from '../core/note-keys';
+import { emptyTrashActions } from '../core/note-keys'; import { onNewRequest } from '../core/new-request';
 import { copyLink, forceSyncNow } from './app-actions';
 import type { State } from '../core/store';
-import type { KeyEvent } from '../core/crash-ring';
+import type { EntityId, Note, TagName } from '@vendor/types'; import type { Key } from 'ink';
 
-import type { EntityId, Note, TagName } from '@vendor/types';
-import type { Key } from 'ink';
+export { recordKeyEvent, getKeyLog, resetKeyLog } from './key-ring';
+import { useKeyRingTextListener } from './key-ring-listener';
 
-let keyLog: KeyEvent[] = [];
+// T375: identity sentinel for an external "new note" request, never a keystroke.
+export const EXTERNAL_KEY = {} as Key;
 
-export function recordKeyEvent(input: string, key: Key, textPromptOpen: boolean): void {
-  // T291 — while a text prompt is open the user is typing content; the ring
-  // must never store what was typed, only that a keystroke happened.
-  keyLog = pushKeyEvent(keyLog, { input: textPromptOpen && input ? '<text>' : input, key: { ...key } });
-}
-
-export function getKeyLog(): KeyEvent[] {
-  return keyLog;
-}
-
-export function resetKeyLog(): void {
-  keyLog = [];
-}
-
-export interface SearchKeyCtx {
+interface SearchKeyCtx {
   store: Store<State>;
   setSearchOpen: (v: boolean) => void;
   setQuery: (v: string) => void;
@@ -92,7 +78,7 @@ export function handleSearchClearKey(
   return true;
 }
 
-export interface TagsKeyCtx {
+interface TagsKeyCtx {
   store: Store<State>;
   tagNames: string[];
   tagIndex: number;
@@ -106,7 +92,7 @@ export interface TagsKeyCtx {
 // T347: filter for the tags row at `index`: All notes (0), tag rows, Untagged,
 // Trash. The Trash row dispatches nothing (its keys u/D/E differ, so the trash
 // stays Enter-only).
-export function dispatchTagRow(store: Store<State>, tagNames: string[], index: number): void {
+function dispatchTagRow(store: Store<State>, tagNames: string[], index: number): void {
   if (index === 0) store.dispatch({ type: 'SHOW_ALL_NOTES' });
   else if (index === tagNames.length + 1) store.dispatch({ type: 'SHOW_UNTAGGED_NOTES' });
   else if (index !== tagNames.length + 2) store.dispatch({ type: 'OPEN_TAG', tagName: tagNames[index - 1] });
@@ -172,7 +158,7 @@ export function handleTagsKey(input: string, keyName: string | null, ctx: TagsKe
   return;
 }
 
-export interface HistoryKeyCtx {
+interface HistoryKeyCtx {
   store: Store<State>;
   noteEntries: { id: EntityId; note: Note }[];
   selectedIndex: number;
@@ -216,7 +202,7 @@ export function handleHistoryKey(input: string, keyName: string | null, ctx: His
   return;
 }
 
-export interface OpenHistoryCtx {
+interface OpenHistoryCtx {
   store: Store<State>;
   selectedEntry: { id: EntityId; note: Note } | null;
   setHistoryOpen: (v: boolean) => void;
@@ -237,7 +223,7 @@ export function openHistory(ctx: OpenHistoryCtx): void {
   }
 }
 
-export interface IdleKeyCtx {
+interface IdleKeyCtx {
   store: Store<State>;
   selectedEntry: { id: EntityId; note: Note } | null;
   onForceSync?: () => void;
@@ -277,9 +263,14 @@ export function handleIdleKey(input: string, ctx: IdleKeyCtx): void {
     if (n > 0) ctx.setEmptyAsk(n);
   }
 }
-
+function useNewRequestEffect(onNew: () => void, startNew: boolean): void {
+  const latest = React.useRef(onNew); latest.current = onNew; // LATEST closure
+  React.useEffect(() => { if (startNew) latest.current(); }, []);
+  React.useEffect(() => onNewRequest(() => latest.current()), []); // unsub on unmount
+}
 /** Effects the App runs: --new fires onStart, auto-open tags on wide terminals, clear the sync timer. */
-export function useAppEffects(width: number, tagCount: number, setTagsOpen: (v: boolean) => void, syncedTimerRef: { current: ReturnType<typeof setTimeout> | null }, onStart?: () => void): void {
+export function useAppEffects(width: number, tagCount: number, setTagsOpen: (v: boolean) => void, syncedTimerRef: { current: ReturnType<typeof setTimeout> | null }, onNew: () => void, startNew: boolean): void {
+  useKeyRingTextListener(); // T411: ring masks pastes; runs ahead of App's useInput
   const autoOpened = React.useRef(false);
   React.useEffect(() => {
     if (!autoOpened.current && shouldAutoOpenTags(width, tagCount)) {
@@ -287,8 +278,7 @@ export function useAppEffects(width: number, tagCount: number, setTagsOpen: (v: 
       setTagsOpen(true);
     }
   }, [width, tagCount]);
-  // once on mount, --new opens the editor for a new note (T361)
-  React.useEffect(() => { onStart?.(); }, []);
+  useNewRequestEffect(onNew, startNew); // --new fires on mount (T361)
   React.useEffect(() => () => {
     if (syncedTimerRef.current) {
       clearTimeout(syncedTimerRef.current);

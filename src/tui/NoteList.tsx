@@ -95,8 +95,17 @@ export function NoteList({
           // Title line with marker
           lines.push(
             <Box key={`title-${idx}`}>
-              {isSelected ? <Text bold inverse>{'>'}</Text> : <Text>{' '}</Text>}
-              <Text bold={isSelected} inverse={isSelected}>{title}{marker}</Text>
+              {isSelected ? (
+                <Text {...theme.selection} {...theme.accent}>
+                  {'>'}
+                </Text>
+              ) : (
+                <Text>{' '}</Text>
+              )}
+              <Text {...(isSelected ? theme.selection : {})} {...(isSelected ? theme.accent : {})}>
+                {title}
+                {marker}
+              </Text>
             </Box>,
           );
 
@@ -104,7 +113,7 @@ export function NoteList({
           for (let p = 0; p < previewLines.length; p++) {
             lines.push(
               <Box key={`preview-${idx}-${p}`} marginLeft={2}>
-                <Text>{previewLines[p]}</Text>
+                <Text {...theme.muted}>{previewLines[p]}</Text>
               </Box>,
             );
           }

@@ -279,7 +279,7 @@ describe('T43: Pinned marker and sort mode in the status bar', () => {
 
     let frame = lastFrame();
     // Should have 1 note in trash
-    expect(frame).toContain('1 notes');
+    expect(frame).toContain('1 note');
     expect(frame).toContain('trash');
     expect(frame).not.toContain('sort:');
 

@@ -103,7 +103,7 @@ describe('T10 Tags pane', () => {
     const frame = lastFrame();
     expect(frame).toContain('First normal note');
     expect(frame).toContain('tag: work');
-    expect(frame).toContain('1 notes');
+    expect(frame).toContain('1 note');
     expect(frame).not.toContain('Third normal note');
 
     stdin.write('\u001b');

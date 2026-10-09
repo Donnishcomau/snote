@@ -7,6 +7,6 @@ export const theme = {
   error: { color: 'red' },
   warning: { color: 'yellow' },
   success: { color: 'green' },
+  link: { color: 'blue', underline: true },
+  code: { color: 'yellow' },
 } as const;
-
-export type ThemeRole = keyof typeof theme;

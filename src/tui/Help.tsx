@@ -1,9 +1,10 @@
-import { Box, Text } from 'ink';
-import React from 'react';
+import { Box, Text, useInput } from 'ink';
+import React, { useState } from 'react';
 import { keymap, KeymapEntry } from '../core/keymap';
 import { SECTIONS } from '../core/help-sections';
 import { editorFinishHint } from '../core/editor-select';
 import { layoutHelp } from '../core/help-layout';
+import { helpListLines, helpListWindow } from '../core/help-list';
 import { theme } from './theme';
 
 interface HelpProps {
@@ -36,16 +37,16 @@ function Section({
   name,
   entries,
   rowWidth,
-  maxRows,
+  colCount,
 }: {
   name: string;
   entries: KeymapEntry[];
   rowWidth: number;
-  maxRows: number;
+  colCount: number;
 }): React.JSX.Element {
-  // Chunk entries into sub-columns that fit within maxRows
-  const subCols = helpColumns(entries, Math.max(1, maxRows));
-  const subColWidth = Math.floor(rowWidth / Math.max(1, subCols.length));
+  // Every section uses the same number of sub-columns
+  const subCols = helpColumns(entries, Math.ceil(entries.length / colCount));
+  const subColWidth = Math.floor(rowWidth / colCount);
 
   return (
     <Box flexDirection="column">
@@ -84,6 +85,23 @@ function Section({
  * so that every key fits on the screen.
  */
 export function Help({ width, height, entries, editor }: HelpProps): React.JSX.Element {
+  const [scroll, setScroll] = useState(0);
+  // Pick the first layout that fits: wide (100+ wide, 30+ high), sectioned
+  // (50-99 wide, 30+ high), two-column narrow (80+ wide, 24+ high), else a
+  // one-column list that scrolls with j/k (T465).
+  const list =
+    entries === undefined &&
+    !((width >= 100 && height >= 30) || (width >= 50 && width < 100 && height >= 30) || (width >= 80 && height >= 24));
+  const listLines = list ? helpListLines(editor ?? 'nvim') : [];
+  const win = helpListWindow(listLines, scroll, Math.max(1, width - 2), Math.max(1, height - 2));
+  useInput(
+    (input, key) => {
+      const top = Math.max(0, listLines.length - Math.max(1, height - 3));
+      if (input === 'j' || key.downArrow) setScroll((s) => Math.min(top, s + 1));
+      else if (input === 'k' || key.upArrow) setScroll((s) => Math.max(0, s - 1));
+    },
+    { isActive: list },
+  );
   const contentRows = Math.max(1, height - 4);
   const displayEntries = entries ?? keymap;
   const columns = helpColumns(displayEntries, contentRows);
@@ -94,23 +112,33 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
     keymap.filter((e) => section.actions.includes(e.action)),
   );
 
-  const totalEntryRows = sectionEntries.reduce((sum, s) => sum + s.length, 0);
   const twoCols = width >= 100;
   const leftSections = twoCols ? sectionEntries.slice(0, 3) : sectionEntries;
   const rightSections = twoCols ? sectionEntries.slice(3) : [];
   const sectionCount = twoCols ? 3 : SECTIONS.length;
 
-  // Distribute entry rows proportionally to each section's entry count
-  const availableContent = Math.max(1, height - 4 - sectionCount);
-  const sectionRowBudget = sectionEntries.map(s =>
-    Math.max(1, Math.round(availableContent * s.length / totalEntryRows)),
-  );
-
+  // Inner width is width - 6 (border 2, paddingX 2 each side). The footer
+  // lines may wrap, so count their rows; then use the fewest sub-columns
+  // (same for every section) whose rows fit below the title and names.
+  const innerWidth = Math.max(1, width - 6);
   const editorHint = editorFinishHint(editor ?? 'nvim');
+  const footerRows = [
+    'Found a bug? Run snote --report to save a report bundle.',
+    'Editing: ' + editorHint,
+  ].reduce((n, l) => n + Math.ceil(l.length / innerWidth), 0);
+  const availableContent = Math.max(1, height - 3 - footerRows - sectionCount);
+  const rowsAt = (n: number): number =>
+    (twoCols ? [sectionEntries.slice(0, 3), sectionEntries.slice(3)] : [sectionEntries]).reduce(
+      (m, group) => Math.max(m, group.reduce((sum, s) => sum + Math.ceil(s.length / n), 0)),
+      0,
+    );
+  let sectionCols = 1;
+  while (sectionCols < 4 && rowsAt(sectionCols) > availableContent) sectionCols++;
+  const sectionRowWidth = twoCols ? width - 4 : innerWidth;
 
   // Wide path (cols>=100): pure two-column text output. The box hugs its
   // content so the title is never scrolled off a short terminal.
-  const wide = entries === undefined && width >= 100;
+  const wide = entries === undefined && !list && width >= 100 && height >= 30;
   const wideLines = wide ? layoutHelp(width, height, editor ?? 'nvim') : [];
 
   // Legacy flat-path content (preserved from original Help implementation)
@@ -151,7 +179,7 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
   // Narrow path (T298): when the screen is too short for the sectioned
   // layout (80x24), switch to a two-column flat list that fits every
   // entry without truncating descriptions below what fits in a column.
-  const narrow = entries === undefined && width < 100 && height < 30;
+  const narrow = entries === undefined && !list && height < 30;
   const narrowCols = narrow ? helpColumns(displayEntries, Math.ceil(displayEntries.length / 2)) : [];
   const narrowColWidth = narrow ? Math.floor((width - 6) / 2) : 0;
 
@@ -159,10 +187,24 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
     <Box
       flexDirection="column"
       width={width}
-      height={wide ? wideLines.length + 2 : height}
+      height={wide ? Math.min(height, wideLines.length + 2) : height}
       borderStyle="single"
+      borderTop={!wide || height >= wideLines.length + 1}
+      borderBottom={!wide || height >= wideLines.length + 2}
     >
-      {wide
+      {list
+        ? (
+          <>
+            {win.shown.map((l, i) => (
+              <Text key={i} bold={l.bold}>
+                <Text {...theme.accent}>{l.text.slice(0, l.keyLen)}</Text>
+                {l.text.slice(l.keyLen)}
+              </Text>
+            ))}
+            <Text>{win.counter}</Text>
+          </>
+        )
+        : wide
         ? wideLines.map((line, i) => <Text key={i}>{line}</Text>)
         : narrow
         ? (
@@ -204,8 +246,8 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
                     key={SECTIONS[i].name}
                     name={SECTIONS[i].name}
                     entries={sec}
-                    rowWidth={width - 4}
-                    maxRows={sectionRowBudget[i] ?? 1}
+                    rowWidth={sectionRowWidth}
+                    colCount={sectionCols}
                   />
                 ))}
               </Box>
@@ -216,8 +258,8 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
                       key={SECTIONS[i + 3].name}
                       name={SECTIONS[i + 3].name}
                       entries={sec}
-                      rowWidth={width - 4}
-                      maxRows={sectionRowBudget[i + 3] ?? 1}
+                      rowWidth={sectionRowWidth}
+                      colCount={sectionCols}
                     />
                   ))}
                 </Box>

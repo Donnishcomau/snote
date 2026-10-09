@@ -6,7 +6,7 @@ import { useInput } from 'ink';
 import { blogOriginFromEnv } from '../core/blog-config';
 import { sendNoteToBlog } from '../core/blog-send';
 import { loadBlogSend } from '../core/blog-sent';
-import { defaultDataDir } from '../core/token';
+import { dataRoot } from '../core/data-root';
 
 export interface BlogSendAskActions {
   onYes: () => void;
@@ -19,7 +19,7 @@ export type BlogPhase =
   | { kind: 'send' }
   | { kind: 'resend' };
 
-export interface BlogSendAskState {
+interface BlogSendAskState {
   blogSendAsk: null | BlogSendAskActions;
   setBlogSendAsk: (v: null | BlogSendAskActions) => void;
   closeBlogSend: () => void;
@@ -105,7 +105,7 @@ export function useBlogSendAskState(
       const id = noteIdRef.current;
       if (!id) return;
       sendNoteToBlog({
-        dir: defaultDataDir(),
+        dir: dataRoot(),
         noteId: id,
         content: contentRef.current,
         force: resend,
@@ -125,7 +125,7 @@ export function useBlogSendAskState(
       request('close');
       return;
     }
-    const dir = defaultDataDir();
+    const dir = dataRoot();
     const configured = fs.existsSync(path.join(dir, 'blog.json'));
     const id = noteIdRef.current;
     if (!configured) request({ kind: 'token', origin: blogOriginFromEnv(process.env) });

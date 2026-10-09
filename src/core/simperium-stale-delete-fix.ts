@@ -35,12 +35,19 @@
  * Two ids are never removed:
  * - ids the index itself just removed during this run (they are already
  *   gone from `data.notes`, so the diff skips them anyway), and
- * - ids in `store.getState().simperium.pendingNotes` (the same field
- *   `store.forceSync` reads, src/core/store.ts:194, populated before any
- *   index round-trip completes by `requeueUnsynced`'s `IMPORT_NOTE_WITH_ID`
- *   for notes newer than their ghost, T85). Those are local work the
- *   server has not confirmed yet — a fresh index says nothing about them,
- *   and deleting them would destroy an unsynced offline edit or create.
+ * - ids with unsynced local work: `store.getState().simperium.pendingNotes`
+ *   (the same field `store.forceSync` reads, src/core/store.ts:194) once
+ *   their hand-off has been dispatched, and the `held-unsynced` registry
+ *   (src/core/held-unsynced.ts) while `requeueUnsynced` is still waiting on
+ *   the catch-up to hand one over. T499 corrects an earlier claim here:
+ *   `pendingNotes` is NOT filled before any index event — with
+ *   `whenCaughtUp` given, `requeueUnsynced` dispatches nothing until the
+ *   catch-up lands, which can be after `'index'` fires, so the hold
+ *   registry is the only record sparing an offline create while its
+ *   `IMPORT_NOTE_WITH_ID` is still pending (F141). Those are local work
+ *   the server has not confirmed yet — a fresh index says nothing about
+ *   them, and deleting them would destroy an unsynced offline edit or
+ *   create.
  *
  * The listener is attached with `on` (runs after the vendored listeners,
  * which were attached at construction), and re-indexes are idempotent:
@@ -51,6 +58,7 @@ import type { Store } from 'redux';
 
 import type * as A from '@vendor/state/action-types';
 import type { State } from './store';
+import { isHeld } from './held-unsynced';
 
 // OMARCHY: boundary cast — Channel is untyped where it reaches through
 // the simperium client's `buckets`; only these members are touched.
@@ -120,13 +128,17 @@ function installOnChannel(
     }
     // The index is complete: every id the server holds was seen. Local
     // ids it never carried are notes the server deleted forever while
-    // we were offline — remove them. Notes with unsynced local work
-    // (`pendingNotes`, set by `requeueUnsynced` before any index event
-    // can fire) are spared: a fresh index says nothing about them.
+    // we were offline — remove them. Notes with unsynced local work are
+    // spared: `pendingNotes` once their hand-off ran, and the hold
+    // registry while `requeueUnsynced` still has the hand-off pending
+    // (T499 — with `whenCaughtUp` the catch-up may land after `'index'`
+    // fires and dispatches nothing until it does, so `pendingNotes` is
+    // empty here and the hold is the only record). A fresh index says
+    // nothing about either.
     const { notes } = store.getState().data;
     const { pendingNotes } = store.getState().simperium;
     for (const id of notes.keys()) {
-      if (seenDuringIndex.has(id) || id in pendingNotes) {
+      if (seenDuringIndex.has(id) || id in pendingNotes || isHeld(store, id)) {
         continue;
       }
       store.dispatch({

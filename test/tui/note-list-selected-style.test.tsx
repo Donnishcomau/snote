@@ -52,7 +52,7 @@ describe('Note list selected style (T247)', () => {
     });
     const lines = getLines(frame);
     const titleLine = lines.find(l => l.includes('Note one') && l.includes('>'));
-    expect(titleLine).toBe('\u001b[7m\u001b[1m>Note one\u001b[22m\u001b[27m');
+    expect(titleLine).toBe('\u001b[7m\u001b[1m\u001b[34m>Note one\u001b[39m\u001b[22m\u001b[27m');
   });
 
   it('2: WHEN the same 2 notes are rendered with selectedIndex=0 THEN the frame line for Note two is exactly " Note two".', async () => {
@@ -78,7 +78,7 @@ describe('Note list selected style (T247)', () => {
     const lineNoteOne = lines.find(l => stripAnsi(l).match(/^(\s*)>?(?:\s*)Note one/));
     const lineNoteTwo = lines.find(l => stripAnsi(l).match(/^(\s*)>?(?:\s*)Note two/));
     expect(lineNoteOne).toBe(' Note one');
-    expect(lineNoteTwo).toBe('\u001b[7m\u001b[1m>Note two\u001b[22m\u001b[27m');
+    expect(lineNoteTwo).toBe('\u001b[7m\u001b[1m\u001b[34m>Note two\u001b[39m\u001b[22m\u001b[27m');
   });
 
   it('4: WHEN the same 2 notes are rendered with selectedIndex=0 THEN lastFrame() is exactly "Notes\\n>Note one\\n  body one line\\n\\n Note two\\n  body two\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n".', async () => {

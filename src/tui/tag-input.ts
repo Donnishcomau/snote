@@ -14,7 +14,7 @@ export interface TagKey {
   meta?: boolean;
 }
 
-export interface TagStep {
+interface TagStep {
   text: string;
   add?: string;
   remove?: string;

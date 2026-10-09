@@ -1,4 +1,4 @@
-export type Row = { text: string; line: number };
+type Row = { text: string; line: number };
 
 export function wrapLines(content: string, width: number): Row[] {
   const w = Math.max(1, width);

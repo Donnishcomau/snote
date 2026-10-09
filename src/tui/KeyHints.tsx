@@ -2,7 +2,7 @@ import { Box, Text } from 'ink';
 import React from 'react';
 import { theme } from './theme';
 
-export type HintEntry = { key: string; label: string };
+type HintEntry = { key: string; label: string };
 
 export const LIST_HINTS: HintEntry[] = [
   { key: '?', label: 'Help' },
@@ -29,7 +29,7 @@ export const TRASH_HINTS: HintEntry[] = [
   { key: 'T', label: 'Back' },
 ];
 
-export const EDITING_HINTS: HintEntry[] = [
+const EDITING_HINTS: HintEntry[] = [
   { key: 'Enter', label: 'Confirm' },
   { key: 'Escape', label: 'Cancel' },
 ];

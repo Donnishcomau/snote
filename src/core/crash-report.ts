@@ -1,3 +1,5 @@
+import { redactMessage, redactStack, safeCode, safeName } from './crash-redact';
+
 export type CrashContext = {
   version: string;
   columns: number;
@@ -6,11 +8,11 @@ export type CrashContext = {
   home: string;
 };
 
-export type CrashRecord = {
+type CrashRecord = {
   version: string;
   when: string;
   terminal: string;
-  error: { name: string; message: string; stack: string[] };
+  error: { name: string; message: string; code?: string; stack: string[] };
 };
 
 export function crashReport(
@@ -19,39 +21,44 @@ export function crashReport(
 ): { record: CrashRecord; message: string } {
   let name = 'Unknown';
   let message = 'Unknown';
+  let code: string | undefined;
   let stackLines: string[] = [];
 
-  if (err instanceof Error) {
-    name = err.name;
-    message = err.message;
-    if (err.stack) {
-      stackLines = err.stack.split('\n');
+  // The crash path must never throw: hostile getters, a non-string
+  // message or stack, or an object String() cannot convert all fall back.
+  try {
+    if (err instanceof Error) {
+      name = safeName(err.name);
+      const rawMessage: unknown = err.message;
+      message = typeof rawMessage === 'string' ? redactMessage(rawMessage) : 'Unknown';
+      code = safeCode((err as { code?: unknown }).code);
+      const stack: unknown = err.stack;
+      if (typeof stack === 'string' && stack && typeof rawMessage === 'string') {
+        stackLines = redactStack(stack, ctx.home, String(err.name), rawMessage);
+      }
+    } else {
+      message = redactMessage(String(err));
     }
-  } else {
-    message = String(err);
+  } catch {
+    // keep what was gathered so far
   }
-
-  // Trim message to at most 200 characters
-  if (message.length > 200) {
-    message = message.slice(0, 200);
-  }
-
-  // Replace home path with ~ in stack lines, take at most first 12
-  stackLines = stackLines
-    .map((line) => line.replaceAll(ctx.home, '~'))
-    .slice(0, 12);
 
   const record: CrashRecord = {
     version: ctx.version,
     when: ctx.when.toISOString(),
     terminal: `${ctx.columns}x${ctx.rows}`,
-    error: { name, message, stack: stackLines },
+    error: {
+      name,
+      message,
+      ...(code === undefined ? {} : { code }),
+      stack: stackLines,
+    },
   };
 
   const messageText = [
     'snote hit a bug and stopped.',
     `A report was saved to: {path}`,
-    'Hand that file to your coding agent, or attach it to an issue.',
+    'Hand that file to your coding agent, or read it before you attach it to an issue.',
   ].join('\n');
 
   return { record, message: messageText };

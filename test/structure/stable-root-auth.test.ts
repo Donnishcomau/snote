@@ -12,14 +12,16 @@ describe('T177 stable-root-auth structure checks', () => {
     expect(content).not.toContain('throw new Error');
   });
 
-  it('2: WHEN the file is read THEN it contains await waitFor( exactly 2 times', () => {
+  it('2: WHEN the file is read THEN it contains await waitFor( exactly 1 time', () => {
     const waitForCalls = (content.match(/await waitFor\(/g) || []).length;
-    expect(waitForCalls).toBe(2);
+    expect(waitForCalls).toBe(1);
   });
 
-  it('3: WHEN the file is read THEN it contains setTimeout(r, 50) exactly 20 times', () => {
+  it('3: WHEN the file is read THEN it contains setTimeout(r, 50) exactly 0 times and waitForFrame( at least 20 times', () => {
     const sleepMatches = (content.match(/setTimeout\(r, 50\)/g) || []).length;
-    expect(sleepMatches).toBe(20);
+    expect(sleepMatches).toBe(0);
+    const frameWaits = (content.match(/waitForFrame\(/g) || []).length;
+    expect(frameWaits).toBeGreaterThanOrEqual(20);
   });
 
   it('4: WHEN the file is read THEN it contains no stdin.emit( and no stdin.read(', () => {

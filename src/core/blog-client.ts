@@ -1,4 +1,4 @@
-export interface BlogDraftOptions {
+interface BlogDraftOptions {
   origin: string;
   token: string;
   title: string;
@@ -42,6 +42,7 @@ export async function postBlogDraft({
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ title, markdown, draft: true }),
+    redirect: 'error',
   });
 
   if (response.status === 201) {

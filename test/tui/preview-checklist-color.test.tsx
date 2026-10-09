@@ -89,7 +89,7 @@ describe('Preview checklist color', () => {
     }
   });
 
-  it('4: WHEN makeNote("g", "Grocery Notes\\n\\n# Produce", { markdown: true }) renders rendered={true}, chalk forced, THEN the frame contains the exact \\u001b[1mProduce\\u001b[22m and the heading content does not contain \\u001b[90m or \\u001b[32m', async () => {
+  it('4: WHEN makeNote("g", "Grocery Notes\\n\\n# Produce", { markdown: true }) renders rendered={true}, chalk forced, THEN the frame contains the exact \\u001b[1m\\u001b[34mProduce\\u001b[39m\\u001b[22m and the heading content does not contain \\u001b[90m or \\u001b[32m', async () => {
     const { restore, inkChalk } = await forceInkChalk();
     try {
       const note = makeNote('g', 'Grocery Notes\n\n# Produce', {
@@ -100,15 +100,13 @@ describe('Preview checklist color', () => {
       );
       await delay(50);
       const frame = lastFrame() ?? '';
-      expect(frame).toContain('\u001b[1mProduce\u001b[22m');
+      expect(frame).toContain('\u001b[1m\u001b[34mProduce\u001b[39m\u001b[22m');
       const frameLines = frame.split('\n');
       const headingLine = frameLines.find(l => l.includes('Produce'));
       expect(headingLine).toBeDefined();
       // Strip the divider (│) and its ANSI codes, then check the content
       const contentPart = (headingLine ?? '').replace(/\u001b\[[0-9;]*m/g, '').replace('│', '');
-      // Restore only the bold code on the content part for checking
-      const boldedContent = `\u001b[1m${contentPart}\u001b[22m`;
-      expect(headingLine).toContain('\u001b[1mProduce\u001b[22m');
+      expect(headingLine).toContain('\u001b[1m\u001b[34mProduce\u001b[39m\u001b[22m');
       // Ensure the heading text itself isn't gray or green — check that
       // the bold text contains "Produce" without being wrapped in gray/green
       const headingAnsiMatch = headingLine?.match(/\u001b\[1m(.+?)\u001b\[22m/);

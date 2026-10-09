@@ -3,12 +3,15 @@ import * as path from 'node:path';
 
 import type { Store } from 'redux';
 import type * as A from '@vendor/state/action-types';
+import type { EntityId } from '@vendor/types';
+import { problemText, publishProblem } from './problem-signal';
 import { secureMkdir, secureWriteFileSync } from './secure-fs';
+import { saveState } from './persistence';
 import type { State } from './store';
 
 const TOMBSTONE_FILE = 'tombstones.json';
 
-export interface GhostVersions {
+interface GhostVersions {
   get(id: string): Promise<{ version?: number }>;
 }
 
@@ -100,4 +103,51 @@ export function trackDeletions(
     }
     return originalDispatch(action);
   }) as typeof store.dispatch;
+}
+
+/**
+ * T488 — drop notes that a tombstone says were deleted forever.
+ *
+ * A "delete forever" removes the note from the server and the ghost file at
+ * once, but state.json is only written 500 ms later. Killed inside that
+ * window, the restart would load the stale state.json and re-create the note
+ * on the server. Called while LOADING, before `resendDeletions` and
+ * `requeueUnsynced` run, this removes every tombstoned note from the loaded
+ * state; when anything was dropped the pruned state is written at once, so a
+ * second kill cannot bring the note back either.
+ *
+ * With no tombstones, no match, or no state, the input comes back unchanged
+ * and nothing is written.
+ */
+export function dropTombstonedNotes(
+  dir: string,
+  loaded: Partial<State> | undefined
+): Partial<State> | undefined {
+  const ids = loadTombstones(dir);
+  const notes = loaded?.data?.notes;
+
+  if (!loaded || !notes || !ids.some((id) => notes.has(id as EntityId))) {
+    return loaded;
+  }
+
+  const kept = new Map(notes);
+  for (const id of ids) {
+    kept.delete(id as EntityId);
+  }
+
+  const next = {
+    ...loaded,
+    data: { ...loaded.data, notes: kept },
+  } as Partial<State>;
+
+  try {
+    saveState(next as State, dir);
+  } catch (err) {
+    // T494 — a state.json that cannot be written (an EISDIR on the temp
+    // file) must not stop snote from starting: show it on the notice line
+    // like every other save failure does and carry on with the pruned
+    // state in memory.
+    publishProblem(problemText('could not save notes', err));
+  }
+  return next;
 }

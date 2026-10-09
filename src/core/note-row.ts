@@ -3,7 +3,7 @@ import noteTitleAndPreview from '@vendor/utils/note-utils';
 import { wrapLines } from './wrap';
 import { sanitizeForTerminal } from './sanitize';
 
-export type NoteRow = { title: string; marker: string; previewLines: string[] };
+type NoteRow = { title: string; marker: string; previewLines: string[] };
 
 export function noteRow(note: Note, width: number, query?: string): NoteRow {
   const { title: rawTitle, preview: rawPreview } = noteTitleAndPreview(note, query);

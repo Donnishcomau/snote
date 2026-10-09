@@ -8,7 +8,7 @@ import {
   type AuthOpts,
 } from '../core/auth';
 
-export interface LoginCalls {
+interface LoginCalls {
   requestCode: (email: string) => Promise<unknown>;
   completeLogin: (email: string, code: string) => Promise<string>;
   passwordLogin: (email: string, password: string) => Promise<string>;

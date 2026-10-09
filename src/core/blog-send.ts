@@ -1,9 +1,10 @@
 import { loadBlogConfig } from './blog-config.js';
+import { isAllowed } from './endpoint-check.js';
 import { postBlogDraft, BlogDraftResult } from './blog-client.js';
 import { noteToBlogDraft } from './blog-draft.js';
 import { recordBlogSend, loadBlogSend } from './blog-sent.js';
 
-export interface SendNoteToBlogOptions {
+interface SendNoteToBlogOptions {
   dir: string;
   noteId: string;
   content: string;
@@ -11,14 +12,14 @@ export interface SendNoteToBlogOptions {
   now: string;
 }
 
-export interface SendNoteToBlogResult {
+interface SendNoteToBlogResult {
   url: string;
   sentAt: string;
   postId: string;
   already?: false;
 }
 
-export interface AlreadySentResult {
+interface AlreadySentResult {
   already: true;
 }
 
@@ -41,6 +42,11 @@ export async function sendNoteToBlog({
   const config = await loadBlogConfig(dir);
   if (!config) {
     throw new Error('blog is not configured');
+  }
+  if (!isAllowed(config.origin)) {
+    throw new Error(
+      'blog origin is not allowed: use https (http only for localhost)'
+    );
   }
 
   const existing = loadBlogSend(dir, noteId);
