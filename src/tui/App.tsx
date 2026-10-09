@@ -12,11 +12,11 @@ import { shouldAutoOpenTags } from '../core/layout';
 import { noteKeyAction, emptyTrashActions } from '../core/note-keys';
 import { checklistItems } from '../core/checklist';
 import { useAppState } from './useAppState'; import { useNotice, noticeColor } from './notice';
-import { handleSearchKey, handleSearchClearKey, handleTagsKey, handleHistoryKey, handleIdleKey, useAppEffects, recordKeyEvent, openHistory } from './app-keys';
+import { handleSearchKey, handleSearchClearKey, handleTagsKey, handleHistoryKey, handleIdleKey, useAppEffects, recordKeyEvent, openHistory, EXTERNAL_KEY } from './app-keys';
 import { handleNoteKey } from './note-focus'; import { handlePaneArrow } from './pane-arrows';
 import { useReselect } from './use-reselect';
-import { splitPastedInput } from './split-input';
-import { editSelectedNote, createNote, copyLink, forceSyncNow, saveInlineEdit } from './app-actions'; import { useInlineEditorState } from './inline-editor-state';
+import { splitPastedInput } from './split-input'; import { sanitizeForTerminal } from '../core/sanitize';
+import { editSelectedNote, createNote, copyLink, forceSyncNow, saveInlineEdit } from './app-actions'; import { useInlineEditorState, inlineEditRefusal } from './inline-editor-state';
 import type { EntityId } from '@vendor/types';
 
 interface AppProps {
@@ -61,12 +61,12 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   const syncedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tagsAutoOpenedRef = useRef(false);
 
-  useAppEffects(width, tagNames.length, setTagsOpen, syncedTimerRef, startNew ? () => handleKey('n', {} as import('ink').Key) : undefined);
+  useAppEffects(width, tagNames.length, setTagsOpen, syncedTimerRef, () => handleKey('n', EXTERNAL_KEY), startNew);
 
   // Handle keyboard input
   const handleKey = (input: string, key: import('ink').Key) => {
     // T291: with a text prompt open the ring stores '<text>', never the typed char
-    recordKeyEvent(input, key, Boolean(searchOpen || tagEditorOpen || tagDialog?.kind === 'rename' || emptyAsk || logoutAsk || itemAsk || exportAsk || useBlogSendAsk().blogOpen));
+    recordKeyEvent(input, key, Boolean(searchOpen || tagEditorOpen || tagDialog?.kind === 'rename' || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen || inlineEditOpen));
     if (notice) clearNotice();
     const keyName = keyNameFromEvent(key);
 
@@ -86,7 +86,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
     }
 
     // Ignore other keys while a prompt is open
-    if (emptyAsk || tagEditorOpen || logoutAsk || tagDialog || itemAsk || exportAsk || useBlogSendAsk().blogOpen || inlineEditOpen) return;
+    if (emptyAsk || tagEditorOpen || logoutAsk || tagDialog || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen || inlineEditOpen || (key === EXTERNAL_KEY && searchOpen)) return;
 
     // Narrow terminal reading mode: Escape or Enter switches back to the list
     if (reading && !tagsFocused && !searchOpen && (keyName === 'Escape' || keyName === 'Enter')) {
@@ -188,7 +188,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
       if (onLogout) {
         setLogoutAsk(true);
       }
-    } else if (input === 'i') { if (selectedEntry) openInlineEdit(selectedEntry.note.content ?? ''); }
+    } else if (input === 'i') { if (selectedEntry) { const c = selectedEntry.note.content ?? ''; const r = inlineEditRefusal(c); if (r) setNotice(r); else openInlineEdit(c); } }
   };
 
   // T300: after a search clear, keep the same note selected by id
@@ -224,7 +224,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
             tagIndex={tagIndex} rendered={rendered} searchOpen={searchOpen} selectedNote={selectedNote}
             historyOpen={historyOpen} historyIndex={historyIndex} reading={reading}
             noteFocused={noteFocused} cursorLine={cursorLine} inlineEditOpen={inlineEditOpen} onCloseEdit={closeInlineEdit} inlineEditBase={inlineEditBase} onSaveEdit={(value: string) => { saveInlineEdit({ store, selectedEntry, base: inlineEditBase, local: value, onEditorError: setNoticeError }); closeInlineEdit(); }} />
-          {notice ? <Text color={noticeColor(notice)}>{notice.message}</Text> : null}
+          {notice ? <Text color={noticeColor(notice)} wrap="truncate-end">{sanitizeForTerminal(notice.message)}</Text> : null}
           <BottomArea
             store={store}
             view={{
@@ -237,7 +237,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
             onLogout={onLogout}
             tagEditorOpen={tagEditorOpen} setTagEditorOpen={setTagEditorOpen} tagDialog={tagDialog} setTagDialog={setTagDialog}
             logoutAsk={logoutAsk} setLogoutAsk={setLogoutAsk} emptyAsk={emptyAsk} setEmptyAsk={setEmptyAsk} copyResult={copyResult}
-            tagsFocused={tagsFocused} searchOpen={searchOpen} itemIndex={itemIndex} setNotice={setNotice} setNoticeError={setNoticeError} />
+            tagsFocused={tagsFocused} searchOpen={searchOpen} itemIndex={itemIndex} setNotice={setNotice} setNoticeError={setNoticeError} inlineEditOpen={inlineEditOpen} />
         </>
       )}
     </Box>

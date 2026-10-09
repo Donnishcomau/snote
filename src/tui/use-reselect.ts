@@ -4,7 +4,7 @@ import { Store } from 'redux';
 import type { State } from '../core/store';
 import type { EntityId } from '@vendor/types';
 
-export interface ReselectCtx {
+interface ReselectCtx {
   store: Store<State>;
   /**
    * Declares the note that selection should land on after the upcoming

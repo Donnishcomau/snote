@@ -12,8 +12,9 @@ import { NoteList } from './NoteList';
 import { History } from './History';
 import { Preview } from './Preview';
 import { InlineEditor } from './InlineEditor';
+import { sanitizeForTerminal } from '../core/sanitize';
 
-export interface MainPanesProps {
+interface MainPanesProps {
   store: Store<State>;
   view: ReturnType<typeof useAppState>;
   width: number;
@@ -117,13 +118,13 @@ export function MainPanes({
         <Text>focus: preview</Text>
       ) : searchOpen || query !== '' ? (
         (() => {
-          const full = 'search: ' + query;
+          const full = 'search: ' + sanitizeForTerminal(query);
           const shown = full.length > width - 2 ? full.slice(0, width - 4) + '..' : full;
           return <Text bold inverse={searchOpen}>{shown}</Text>;
         })()
       ) : collection.type === 'tag' ? (
         <Text>
-          {'tag: ' + collection.tagName}
+          {'tag: ' + sanitizeForTerminal(collection.tagName ?? '')}
         </Text>
       ) : collection.type === 'untagged' ? (
         <Text>filter: untagged</Text>

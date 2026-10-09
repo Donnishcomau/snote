@@ -2,7 +2,7 @@ import { checkboxRegex } from '@vendor/utils/task-transform';
 
 const ITEM = new RegExp(checkboxRegex.source);
 
-export type ChecklistItem = { line: number; checked: boolean; text: string };
+type ChecklistItem = { line: number; checked: boolean; text: string };
 
 export function checklistItems(content: string): ChecklistItem[] {
   const items: ChecklistItem[] = [];

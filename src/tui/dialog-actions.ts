@@ -6,7 +6,7 @@ import type { State } from '../core/store';
 import type { TagName } from '@vendor/types';
 import { emptyTrashActions } from '../core/note-keys';
 
-export interface TagDialogState {
+interface TagDialogState {
   kind: 'rename' | 'delete';
   tagName: string;
 }

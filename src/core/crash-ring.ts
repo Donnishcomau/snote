@@ -22,6 +22,8 @@ export type SessionSnapshot = {
   tagCount: number;
   collectionType: string;
   keys: KeyEvent[];
+  // Set by the 0.2.4+ writer: keys were masked when stored. Absent in 0.2.3 and older.
+  keysMasked?: true;
 };
 
 export function sessionSnapshot(

@@ -2,7 +2,7 @@ import { Box, Text } from 'ink';
 import React from 'react';
 
 import { DEFAULT_BLOG_ORIGIN, saveBlogConfig } from '../core/blog-config';
-import { defaultDataDir } from '../core/token';
+import { dataRoot } from '../core/data-root';
 import { Prompt } from './Prompt';
 import type { BlogPhase } from './blog-send-ask';
 
@@ -42,7 +42,7 @@ export function BlogSendDialog({
         label={label}
         initial=""
         onSubmit={(token) => {
-          const dir = defaultDataDir();
+          const dir = dataRoot();
           saveBlogConfig(dir, { origin, token }).then(
             () => request({ kind: 'send' }),
             (error: unknown) => {

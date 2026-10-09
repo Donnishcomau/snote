@@ -38,8 +38,12 @@ describe('T324 strip Ink devtools and ws from the bundle', () => {
   // actually imported by src/tui/InlineEditor.tsx). Case 2 below (`ws/lib`
   // absent) is the direct guard this cap exists for; a regression there
   // (Ink devtools/`ws` coming back, ~129 KB) would still exceed this cap.
-  it('1: WHEN the bundle is built into a temp outfile with `bundle` from `scripts/build.mjs` THEN its size from `fs.statSync` is below `1500000` bytes', () => {
-    expect(size).toBeLessThan(1500000);
+  // (2026-10-07): raised to 1,520,000 for the security review 4 fixes (output guard v2, editor stand-ins, endpoint checks).
+  // (2026-10-09): raised to 1,540,000. Measured 1,524,492 bytes at 8204e78 (1,515,703 at 74a42ba): the 0.2.5 UI features
+  // (Help scrolling, too-small screen, status truncation, inline-editor stand-ins) grew src by ~430 lines.
+  // 1,537,371 bytes after the 0.2.5 arrow-key burst fix (caretMoves.ts).
+  it('1: WHEN the bundle is built into a temp outfile with `bundle` from `scripts/build.mjs` THEN its size from `fs.statSync` is below `1540000` bytes', () => {
+    expect(size).toBeLessThan(1540000);
   });
 
   it('2: WHEN that built bundle is read as text THEN it does not contain `ws/lib`', () => {

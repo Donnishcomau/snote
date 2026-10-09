@@ -27,7 +27,6 @@ import { App } from '../../src/tui/App';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// eslint-disable-next-line no-control-regex
 const stripAnsi = (s: string | undefined): string => (s ?? '').replace(/\u001b\[[0-9;]*m/g, '');
 
 const QUESTION = 'Send this note to your blog as a draft?';

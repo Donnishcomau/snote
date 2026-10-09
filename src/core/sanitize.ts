@@ -16,6 +16,13 @@
  *    as 1 (`wcwidth`: 1 + 0), misaligning pane dividers. Stripping the
  *    selector makes both agree: `❤️` renders as `❤`, 1 column everywhere.
  *
+ * 5. Bidi controls, zero-width characters and line/paragraph separators:
+ *    ZWSP U+200B, ZWNJ U+200C, LRM U+200E, RLM U+200F, bidi embedding /
+ *    override U+202A-U+202E, bidi isolates U+2066-U+2069, and the
+ *    separators U+2028/U+2029. A title `report<U+202E>dm.exe` (RLO)
+ *    otherwise displays as `reportexe.md`. U+200D (ZWJ) is kept: emoji
+ *    such as the family emoji need it to stay one grapheme.
+ *
  * Everything else (Unicode incl. emoji and CJK, markdown punctuation)
  * passes through untouched.
  */
@@ -44,10 +51,15 @@ const CONTROL_BYTES = new RegExp('[\\u0080-\\u009f\\x00-\\x08\\x0b-\\x1f\\x7f]',
 // in agreement (see header).
 const VARIATION_SELECTORS = /[\uFE0F\uFE0E]/g;
 
+// Bidi controls, zero-width characters and line/paragraph separators
+// (U+200D/ZWJ deliberately absent — see header item 5).
+const BIDI_INVISIBLES = /[\u200B\u200C\u200E\u200F\u202A-\u202E\u2066-\u2069\u2028\u2029]/g;
+
 export function sanitizeForTerminal(s: string): string {
   return s
     .replace(CSI_OR_OSC, '')
     .replace(ANY_ESC_PAIR, '')
     .replace(CONTROL_BYTES, '')
+    .replace(BIDI_INVISIBLES, '')
     .replace(VARIATION_SELECTORS, '');
 }

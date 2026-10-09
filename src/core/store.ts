@@ -15,6 +15,8 @@ import { installSimperiumReconnectFix } from './simperium-reconnect-fix';
 import { installSimperiumStaleDeleteFix } from './simperium-stale-delete-fix';
 import { installSimperiumRemovedNoteFix } from './simperium-removed-note-fix';
 import { installSimperiumAuthWatchdog } from './simperium-auth-watchdog';
+// T443 — a force-sync step that fails shows on the notice line instead of vanishing.
+import { problemText, publishProblem } from './problem-signal';
 
 import type * as A from '@vendor/state/action-types';
 import type * as T from '@vendor/types';
@@ -59,7 +61,7 @@ export interface SyncConfig {
 /**
  * Options for creating the store.
  */
-export interface StoreOptions {
+interface StoreOptions {
   /** Stub client for testing - if provided, simperium middleware is skipped */
   stubClient?: unknown;
   /** Sync configuration - if provided, wires up simperium middleware */
@@ -187,6 +189,10 @@ export function makeStore(
     // every note still stuck in pendingNotes (T243). Never throws,
     // dispatches nothing, and never closes or reopens the connection.
     store.forceSync = () => {
+      // T486: one press shows at most one notice. Every step of this press
+      // resolves to null (success) or its failure text, and after all have
+      // settled a single summary publishes if any step failed.
+      const steps: Promise<string | null>[] = [];
       for (const bucket of client?.buckets ?? []) {
         const channel = bucket.channel as
           | {
@@ -194,18 +200,20 @@ export function makeStore(
               sendChangeVersionRequest?: (cv: string) => void;
             }
           | undefined;
-        Promise.resolve()
-          .then(() => channel?.store?.getChangeVersion?.())
-          .then((cv) => {
-            if (cv) {
-              try {
-                channel?.sendChangeVersionRequest?.(cv);
-              } catch {
-                /* not connected */
+        steps.push(
+          Promise.resolve()
+            .then(() => channel?.store?.getChangeVersion?.())
+            .then((cv) => {
+              if (cv) {
+                try {
+                  channel?.sendChangeVersionRequest?.(cv);
+                } catch {
+                  /* not connected */
+                }
               }
-            }
-          })
-          .catch(() => {});
+              return null;
+            }, (err) => problemText('force sync failed', err))
+        );
       }
       // T243: a note stuck in pendingNotes was sent but never acknowledged;
       // touch() re-reads it locally and re-queues a change for it so the
@@ -217,11 +225,24 @@ export function makeStore(
       const pending = Object.keys(store.getState().simperium.pendingNotes);
       for (const id of pending) {
         try {
-          Promise.resolve(noteBucket?.touch?.(id)).catch(() => {});
+          steps.push(
+            Promise.resolve(noteBucket?.touch?.(id)).then(
+              () => null,
+              (err) => problemText('could not re-send a pending note', err)
+            )
+          );
         } catch {
           /* not connected */
         }
       }
+      void Promise.all(steps).then((texts) => {
+        const failed = texts.filter((t): t is string => t !== null);
+        if (failed.length > 0) {
+          publishProblem(
+            `force sync: ${failed.length} step(s) failed (${failed[0]})`
+          );
+        }
+      });
     };
 
     // T272: simperium@1.1.4 never resolves a brand-new object's own

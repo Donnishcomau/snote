@@ -72,7 +72,7 @@ describe('Search edges', () => {
     const frameAfter = lastFrame();
     expect(store.getState().ui.searchQuery).toBe('first');
     expect(frameAfter).toContain('search: first');
-    expect(frameAfter).toContain('1 notes');
+    expect(frameAfter).toContain('1 note');
   });
 
   it('2: WHEN / then BACKSPACE are written THEN ui.searchQuery is empty, the frame contains search: and 4 notes, and a following first gives 1 notes (the input is still open)', async () => {
@@ -99,7 +99,7 @@ describe('Search edges', () => {
     await new Promise(r => setTimeout(r, 50));
 
     const frameAfterFirst = lastFrame();
-    expect(frameAfterFirst).toContain('1 notes');
+    expect(frameAfterFirst).toContain('1 note');
   });
 
   it('3: WHEN /, pinned, ENTER, then ESCAPE are written THEN ui.searchQuery is empty and the frame contains 4 notes and >Pinned note and does not contain search:', async () => {

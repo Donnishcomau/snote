@@ -1,6 +1,6 @@
 {
   "name": "snote",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
   "license": "GPL-2.0",
   "type": "module",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src test vendor",
+    "lint": "eslint --max-warnings 0 src test vendor",
     "test": "vitest run",
     "test:keymap": "vitest run test/keymap.test.ts",
     "lint:ansi": "node scripts/lint-ansi.mjs",

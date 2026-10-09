@@ -67,7 +67,7 @@ describe('BarWidget.qml + README: middle-click starts a new note', () => {
     expect(slice).toContain('root.launchOrHint()');
   });
 
-  it('4: WHEN README.md is read THEN its `## Launcher` section contains `Middle-click`, `snote --new`, `already running` and `only focuses its window`', () => {
+  it('4: WHEN README.md is read THEN its `## Launcher` section contains `Middle-click`, `snote --new`, `already running` and `--notify-new`', () => {
     const readme = readFileSync(README, 'utf8');
     const start = readme.indexOf('## Launcher');
     expect(start).toBeGreaterThan(-1);
@@ -77,6 +77,7 @@ describe('BarWidget.qml + README: middle-click starts a new note', () => {
     expect(section).toContain('Middle-click');
     expect(section).toContain('snote --new');
     expect(section).toContain('already running');
-    expect(section).toContain('only focuses its window');
+    expect(section).toContain('--notify-new');
+    expect(section).not.toContain('only focuses its window');
   });
 });

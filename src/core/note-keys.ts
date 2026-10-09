@@ -9,6 +9,7 @@ import type * as A from '@vendor/state/action-types';
 import type { EntityId, SortType, Note } from '@vendor/types';
 import type { State } from './store';
 import isEmailTag from '@vendor/utils/is-email-tag';
+import { sanitizeForTerminal } from './sanitize';
 
 /**
  * Given a key press, the currently selected note's ID, and the full
@@ -136,13 +137,17 @@ export function emptyTrashActions(state: State): A.ActionType[] {
 
 /**
  * Build the public link URL for a published note, or null when the note
- * is not published or lacks a publishURL.
+ * is not published or lacks a publishURL. A server-supplied id that is
+ * not the safe character set yields null too (F089): callers then show
+ * "waiting for link" and `y` copies nothing.
  */
+const PUBLISH_ID = /^[A-Za-z0-9_-]{1,64}$/;
+
 export function publishLink(note: Note | null | undefined): string | null {
   if (!note || !note.systemTags?.includes('published')) {
     return null;
   }
-  if (typeof note.publishURL === 'string' && note.publishURL.length > 0) {
+  if (typeof note.publishURL === 'string' && PUBLISH_ID.test(note.publishURL)) {
     return 'https://simp.ly/p/' + note.publishURL;
   }
   return null;
@@ -150,12 +155,16 @@ export function publishLink(note: Note | null | undefined): string | null {
 
 /**
  * Return a label showing who a note is shared with, or null.
+ * Email tags are server text: each one is run through the terminal
+ * sanitizer first and then had its newlines/tabs folded to spaces (F088).
  */
 export function sharedLine(note: Note | null | undefined): string | null {
   if (!note) {
     return null;
   }
-  const emails = note.tags.filter(isEmailTag);
+  const emails = note.tags
+    .filter(isEmailTag)
+    .map((tag) => sanitizeForTerminal(String(tag)).replace(/[\n\t]/g, ' '));
   if (emails.length > 0) {
     return 'shared with: ' + emails.join(', ');
   }

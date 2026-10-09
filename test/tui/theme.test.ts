@@ -28,12 +28,14 @@ function isInkColorName(value: string): boolean {
 }
 
 describe('T351 theme roles', () => {
-  it("1: WHEN `theme` is imported THEN `Object.keys(theme).sort()` equals `['accent', 'error', 'heading', 'headingFocused', 'muted', 'selection', 'success', 'warning']`", () => {
+  it("1: WHEN `theme` is imported THEN `Object.keys(theme).sort()` equals `['accent', 'code', 'error', 'heading', 'headingFocused', 'link', 'muted', 'selection', 'success', 'warning']`", () => {
     expect(Object.keys(theme).sort()).toEqual([
       'accent',
+      'code',
       'error',
       'heading',
       'headingFocused',
+      'link',
       'muted',
       'selection',
       'success',

@@ -52,7 +52,7 @@ function seedTags(store: ReturnType<typeof makeStore>) {
   store.dispatch({ type: 'ADD_NOTE_TAG', noteId: eid('note-4'), tagName: 'home' as never });
 }
 
-// Open the 'work' tag list: t, j, j, Enter -> '1 notes'
+// Open the 'work' tag list: t, j, j, Enter -> '1 note'
 async function openWorkList(stdin: { write: (d: string) => void }, lastFrame: () => string | undefined) {
   stdin.write('t');
   await delay(50);
@@ -62,7 +62,7 @@ async function openWorkList(stdin: { write: (d: string) => void }, lastFrame: ()
   await delay(50);
   stdin.write('\r');
   await delay(50);
-  expect(lastFrame() ?? '').toContain('1 notes');
+  expect(lastFrame() ?? '').toContain('1 note');
 }
 
 function freshNote(store: ReturnType<typeof makeStore>): Note | undefined {

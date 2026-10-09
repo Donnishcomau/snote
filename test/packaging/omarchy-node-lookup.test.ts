@@ -80,7 +80,7 @@ function runShim(
 ) {
   return spawnSync(join(home, '.local', 'bin', 'snote'), ['--version'], {
     encoding: 'utf8',
-    env: { ...process.env, XDG_DATA_HOME: xdg, ...env },
+    env: { ...process.env, ...env },
     timeout: SPAWN_TIMEOUT_MS,
     killSignal: 'SIGKILL',
   });

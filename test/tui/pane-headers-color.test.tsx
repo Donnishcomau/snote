@@ -39,7 +39,7 @@ describe('T256 Pane headers recede (bold + muted, not full brightness)', () => {
     );
     await delay(0);
     const frame = lastFrame() ?? '';
-    expect(frame).toContain('\u001b[1mNotes');
+    expect(frame).toContain('\u001b[1m\u001b[34mNotes');
     expect(frame).not.toContain('\u001b[90mNotes');
   });
 
@@ -49,7 +49,7 @@ describe('T256 Pane headers recede (bold + muted, not full brightness)', () => {
     );
     await delay(0);
     const frame = lastFrame() ?? '';
-    expect(frame).toContain('\u001b[1mTags');
+    expect(frame).toContain('\u001b[1m\u001b[34mTags');
     expect(frame).not.toContain('\u001b[90mTags');
   });
 
@@ -62,7 +62,7 @@ describe('T256 Pane headers recede (bold + muted, not full brightness)', () => {
     // The header is bold (PaneHeading, unfocused). The sibling
     // <Divider> emits \u001b[90m first, but the heading itself carries
     // no gray.
-    expect(frame).toContain('\u001b[1mPreview');
+    expect(frame).toContain('\u001b[1m\u001b[34mPreview');
     expect(frame).not.toContain('\u001b[90mPreview');
   });
 
@@ -73,7 +73,7 @@ describe('T256 Pane headers recede (bold + muted, not full brightness)', () => {
     await delay(0);
     const frame = lastFrame() ?? '';
     // The whole heading is one bold string (PaneHeading, unfocused).
-    expect(frame).toContain('\u001b[1mPreview: Groceries\u001b[22m');
+    expect(frame).toContain('\u001b[1m\u001b[34mPreview: Groceries\u001b[39m\u001b[22m');
   });
 
   it('5: WHEN the same note is rendered with focused={true} and chalk forced THEN the frame does not contain \\u001b[90m anywhere', async () => {

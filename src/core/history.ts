@@ -5,7 +5,7 @@ import { getRevision } from '@vendor/state/selectors';
 import { noteTitleAndPreview } from '@vendor/utils/note-utils';
 import { sanitizeForTerminal } from './sanitize';
 
-export type Revision = { version: number; note: Note };
+type Revision = { version: number; note: Note };
 
 export function revisionsOf(state: State, noteId: EntityId | null): Revision[] {
   if (noteId === null) {

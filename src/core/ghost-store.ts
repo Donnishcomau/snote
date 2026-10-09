@@ -1,6 +1,7 @@
 import { readFileSync, renameSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { problemText, publishProblem } from './problem-signal';
 import { secureMkdir, secureWriteFileSync } from './secure-fs';
 
 // GhostStore interface matching vendor/simplenote/state/simperium/functions/in-memory-ghost.ts
@@ -104,8 +105,15 @@ export class FileGhostStore<U> implements GhostStore<U> {
       clearTimeout(this.timer);
       this.timer = null;
     }
-    this.persist();
-    this.lastWrite = Date.now();
+    try {
+      this.persist();
+      this.lastWrite = Date.now();
+    } catch (err) {
+      // A failed write (EACCES, ENOSPC, EISDIR) is shown on the notice
+      // line instead of crashing sync; the in-memory ghosts stay, so the
+      // next write retries the same content.
+      publishProblem(problemText('could not save sync state', err));
+    }
   }
 
   getChangeVersion(): Promise<string> {

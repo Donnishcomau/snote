@@ -1,5 +1,6 @@
 import { Box, Text, useInput } from 'ink';
 import React from 'react';
+import { sanitizeForTerminal } from '../core/sanitize';
 import { splitPastedInput } from './split-input';
 import { theme } from './theme';
 
@@ -88,7 +89,7 @@ export function Prompt({ label, initial, onSubmit, onCancel }: PromptProps): Rea
   return (
     <Box>
       <Text bold inverse>{label}: </Text>
-      <Text bold inverse>{text}</Text>
+      <Text bold inverse>{sanitizeForTerminal(text)}</Text>
     </Box>
   );
 }

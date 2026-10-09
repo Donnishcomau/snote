@@ -37,7 +37,7 @@ async function forceInkChalk(): Promise<{ inkChalk: typeof import('chalk'); rest
 }
 
 describe('Preview markdown style', () => {
-  it('1: WHEN makeNote("g", "Grocery Notes\\n\\n# Produce\\n## Dairy\\n### Bakery", { markdown: true }) is rendered with rendered={true} (chalk forced) THEN the frame contains Produce, Dairy, Bakery, contains the exact \\u001b[1mProduce\\u001b[22m, and does not contain # Produce, ## Dairy, or ### Bakery', async () => {
+  it('1: WHEN makeNote("g", "Grocery Notes\\n\\n# Produce\\n## Dairy\\n### Bakery", { markdown: true }) is rendered with rendered={true} (chalk forced) THEN the frame contains Produce, Dairy, Bakery, contains the exact \\u001b[1m\\u001b[34mProduce\\u001b[39m\\u001b[22m, and does not contain # Produce, ## Dairy, or ### Bakery', async () => {
     const { restore, inkChalk } = await forceInkChalk();
     try {
       const note = makeNote('g', 'Grocery Notes\n\n# Produce\n## Dairy\n### Bakery', {
@@ -53,7 +53,7 @@ describe('Preview markdown style', () => {
       expect(frameText).toContain('Produce');
       expect(frameText).toContain('Dairy');
       expect(frameText).toContain('Bakery');
-      expect(frameText).toContain('\u001b[1mProduce\u001b[22m');
+       expect(frameText).toContain('\u001b[1m\u001b[34mProduce\u001b[39m\u001b[22m');
       expect(frameText).not.toContain('# Produce');
       expect(frameText).not.toContain('## Dairy');
       expect(frameText).not.toContain('### Bakery');

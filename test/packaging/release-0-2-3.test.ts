@@ -7,7 +7,7 @@ const read = (...parts: string[]) =>
   readFileSync(join(process.cwd(), ...parts), 'utf8');
 
 describe('release 0.2.3', () => {
-  it("1: WHEN package.json, manifest.json and package-lock.json are parsed THEN `version` (and `packages[''].version`) all equal `0.2.3`, and PKGBUILD contains `pkgver=0.2.3`.", () => {
+  it("1: WHEN package.json, manifest.json and package-lock.json are parsed THEN `version` (and `packages[''].version`) all equal `0.2.5`, and PKGBUILD contains `pkgver=0.2.5`.", () => {
     const pkg = JSON.parse(read('package.json')) as { version: string };
     const manifest = JSON.parse(read('manifest.json')) as { version: string };
     const lock = JSON.parse(read('package-lock.json')) as {
@@ -15,11 +15,11 @@ describe('release 0.2.3', () => {
       packages: Record<string, { version?: string }>;
     };
     const pkgbuild = read('packaging', 'aur', 'PKGBUILD');
-    expect(pkg.version).toBe('0.2.3');
-    expect(manifest.version).toBe('0.2.3');
-    expect(lock.version).toBe('0.2.3');
-    expect(lock.packages[''].version).toBe('0.2.3');
-    expect(pkgbuild).toContain('pkgver=0.2.3');
+    expect(pkg.version).toBe('0.2.5');
+    expect(manifest.version).toBe('0.2.5');
+    expect(lock.version).toBe('0.2.5');
+    expect(lock.packages[''].version).toBe('0.2.5');
+    expect(pkgbuild).toContain('pkgver=0.2.5');
   });
 
   it("2: WHEN CHANGELOG.md is read THEN `## 0.2.3` comes before `## 0.2.2`, and the text between them contains `omarchy-install-dev-env node`, `focus: preview` and `tooltip`.", () => {

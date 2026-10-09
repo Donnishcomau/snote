@@ -1,4 +1,4 @@
-export interface PaneArrowCtx {
+interface PaneArrowCtx {
   tagsOpen: boolean;
   noteFocused: boolean;
   setTagsOpen: (v: boolean) => void;

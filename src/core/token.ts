@@ -81,11 +81,87 @@ export async function loadToken(
   };
 }
 
+// F102: exactly the files snote itself writes — the per-folder set swept on
+// logout. Root-only files (auth.json, blog.json, blog-sent.json) are handled
+// separately; everything here may sit in the root (pre-T156 installs) or in
+// an account sub-folder. `.tmp` siblings are the atomic-write temp files of
+// state.json, tombstones.json, ghosts-*.json and new-note.request.
+const SNOTE_FILES = [
+  'state.json',
+  'state.json.tmp',
+  'tombstones.json',
+  'tombstones.json.tmp',
+  'ghosts-account.json',
+  'ghosts-account.json.tmp',
+  'ghosts-note.json',
+  'ghosts-note.json.tmp',
+  'ghosts-preferences.json',
+  'ghosts-preferences.json.tmp',
+  'ghosts-tag.json',
+  'ghosts-tag.json.tmp',
+  'instance.lock',
+  'new-note.request',
+  'new-note.request.tmp',
+  'unsynced.json',
+  'unsynced.json.tmp',
+];
+
+function isSnoteFile(name: string): boolean {
+  return SNOTE_FILES.includes(name);
+}
+
+function removeIfFile(p: string): void {
+  // Unlink, never `fs.rmSync`: this platform's `rm(2)` removes empty
+  // directories too, so a plain rm would sweep unrelated empty folders.
+  try {
+    fs.unlinkSync(p);
+  } catch (e) {
+    const code = (e as NodeJS.ErrnoException).code;
+    if (code !== 'ENOENT' && code !== 'EISDIR') {
+      throw e;
+    }
+  }
+}
+
 /**
- * Logout — wipe the whole data dir, then re-create it empty.
+ * Logout — remove only the files snote wrote, never anything else.
+ * In `dir` itself: auth.json, blog.json, blog-sent.json and every file of
+ * snote's set. In each direct sub-folder (symlinks never followed): every
+ * file of snote's set, then the sub-folder itself when that left it empty.
+ * No deeper level is entered. Afterwards `dir` exists with mode 0700
+ * (created when missing, as before).
  */
 export async function logout(dir: string): Promise<void> {
-  fs.rmSync(dir, { recursive: true, force: true });
+  if (fs.existsSync(dir)) {
+    for (const name of ['auth.json', 'blog.json', 'blog-sent.json']) {
+      removeIfFile(path.join(dir, name));
+    }
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isFile() && isSnoteFile(entry.name)) {
+        removeIfFile(path.join(dir, entry.name));
+      }
+    }
+    for (const entry of entries) {
+      // lstat-based entries only: a symlink stays a symlink here, and a
+      // symlinked folder is never entered or removed.
+      if (!entry.isDirectory()) {
+        continue;
+      }
+      const sub = path.join(dir, entry.name);
+      let removedAny = false;
+      for (const child of fs.readdirSync(sub, { withFileTypes: true })) {
+        if (child.isFile() && isSnoteFile(child.name)) {
+          removeIfFile(path.join(sub, child.name));
+          removedAny = true;
+        }
+      }
+      // Only a folder *we* emptied goes away; one the user left empty stays.
+      if (removedAny && fs.readdirSync(sub).length === 0) {
+        fs.rmdirSync(sub);
+      }
+    }
+  }
   secureMkdir(dir);
 }
 
@@ -100,20 +176,39 @@ export function accountDir(root: string, email: string): string {
   return path.join(root, safe);
 }
 
-// Files that stay at the data-dir root, never swept into the account
-// sub-folder: `auth.json` (T156), and the blog integration's own files
-// (blog.json, blog-sent.json) — every blog read/write in src/tui goes
-// through defaultDataDir() (the root), not the account folder, so there is
-// no per-account blog scoping to preserve here.
-const ROOT_ONLY_FILES = ['auth.json', 'blog.json', 'blog-sent.json'];
+// F105: exactly the files a pre-T156 (single-folder) install left in the
+// data-dir root — the state file, the tombstone file, and the ghost files of
+// the four buckets that have file ghosts (note, tag, account, preferences,
+// vendor/simplenote/state/simperium/middleware.ts), each with the `.tmp`
+// sibling written by the atomic writer. Nothing else may ever be moved:
+// `--data-dir` may point at a folder holding the user's own files, and the
+// old rule ("move every plain file except the root-only ones") silently
+// swept them into the account folder on the next start.
+const LEGACY_ROOT_FILES = [
+  'state.json',
+  'state.json.tmp',
+  'tombstones.json',
+  'tombstones.json.tmp',
+  'ghosts-account.json',
+  'ghosts-account.json.tmp',
+  'ghosts-note.json',
+  'ghosts-note.json.tmp',
+  'ghosts-preferences.json',
+  'ghosts-preferences.json.tmp',
+  'ghosts-tag.json',
+  'ghosts-tag.json.tmp',
+];
 
 /**
- * Move plain files from `root` into the account sub-folder (one-time migration
- * from a single-folder install).  `auth.json` is never moved, and neither are
- * the blog files (see ROOT_ONLY_FILES above).  Folders are never touched.
- * Files whose target already exists in the account folder are left in place.
- * Returns the sorted list of filenames that were moved into the account
- * folder (blog files moved back out to the root are not included).
+ * Move snote's own legacy files from `root` into the account sub-folder
+ * (one-time migration from a single-folder install).  Only the files of
+ * LEGACY_ROOT_FILES are ever moved; every other file — `auth.json`, the blog
+ * files, and anything the user put there — stays in the root, and folders are
+ * never touched.  The account folder is created only when at least one legacy
+ * file is actually present. Files whose target already exists in the account
+ * folder are left in place.  Returns the sorted list of filenames that were
+ * moved into the account folder (blog files moved back out to the root are
+ * not included).
  *
  * blog-restart-fix: an earlier build of this migration had no such
  * exclusion and swept blog.json/blog-sent.json into the account folder on
@@ -137,7 +232,7 @@ export function migrateLegacyData(root: string, email: string): string[] {
 
   const entries = fs.readdirSync(root, { withFileTypes: true });
   const files = entries.filter(e => e.isFile());
-  const filesToMove = files.filter(e => !ROOT_ONLY_FILES.includes(e.name));
+  const filesToMove = files.filter(e => LEGACY_ROOT_FILES.includes(e.name));
   if (filesToMove.length === 0) {
     return [];
   }

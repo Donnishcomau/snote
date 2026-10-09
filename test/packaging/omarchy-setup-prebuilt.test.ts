@@ -5,8 +5,8 @@
 // Every case uses its own temp HOME and XDG_DATA_HOME plus a throwaway
 // clone directory (containing packaging/omarchy/setup, the real
 // uninstall, and a small fake plugin-dist). No network, no real Node
-// install: the setup script and the shim honour SNOTE_NODE, a test-only
-// override checked first by the same Node lookup.
+// install: the setup script and the shim honour SNOTE_NODE, an override
+// checked first by the same Node lookup.
 import { describe, it, expect, afterEach } from 'vitest';
 import {
   mkdtempSync,

@@ -32,7 +32,6 @@ function formatters(): {
   expect(begin).toBeGreaterThan(-1);
   expect(end).toBeGreaterThan(begin);
   const slice = text.slice(begin + '// tooltip-format:begin'.length, end);
-  // eslint-disable-next-line no-new-func
   return new Function(slice + '\nreturn { formatAgo, formatTooltip };')() as {
     formatAgo: (diffMs: number) => string;
     formatTooltip: (status: unknown, nowMs: number, baseText: string) => string;

@@ -3,13 +3,14 @@
  * read-only (no typing/save yet — that's Task 3); Escape (no edits made)
  * returns to Preview. See research/reviews/T315-BUILTIN-EDITOR-PLAN.md.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from 'ink-testing-library';
 import React from 'react';
 
 import { makeStore } from '../../src/core/store';
 import { App } from '../../src/tui/App';
 import { keymap } from '../../src/core/keymap';
+import { waitForFrame, waitForInput } from '../helpers/ink-waits';
 import type { EntityId } from '@vendor/types';
 
 const eid = (id: string): EntityId => id as unknown as EntityId;
@@ -41,12 +42,12 @@ describe('inline editor mount (i key, T315.2)', () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    const frame = await waitForFrame(lastFrame, (f) => f.includes('hello world') && !f.includes('Preview:'));
 
-    const frame = lastFrame();
     expect(frame).toContain('hello world');
     expect(frame).not.toContain('Preview:');
   });
@@ -55,14 +56,17 @@ describe('inline editor mount (i key, T315.2)', () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
     stdin.write('\x1b');
-    await new Promise((r) => setTimeout(r, 50));
+    const frame = await waitForFrame(
+      lastFrame,
+      (f) => f.includes('Preview:') && store.getState().data.notes.get(eid('t1'))?.content === 'hello world',
+    );
 
-    const frame = lastFrame();
     expect(frame).toContain('Preview:');
     expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello world');
   });
@@ -70,11 +74,12 @@ describe('inline editor mount (i key, T315.2)', () => {
   it("3: WHEN `i` is pressed THEN the keymap's edit_note_inline row's key is `i`", async () => {
     seedNote(store, 'hello world');
 
-    const { stdin } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
 
     const entry = keymap.find((e) => e.action === 'edit_note_inline');
     expect(entry).toBeDefined();
@@ -99,18 +104,21 @@ describe('inline editor mount (i key, T315.2)', () => {
     });
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
 
-    const frameBefore = lastFrame();
+    const frameBefore = await waitForFrame(lastFrame, 'hello world');
     expect(frameBefore).toContain('hello world');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
     stdin.write('j');
-    await new Promise((r) => setTimeout(r, 50));
+    // the editor takes `j` as text (`hello worldj`) instead of moving down
+    const frameAfter = await waitForFrame(
+      lastFrame,
+      (f) => f.includes('hello worldj') && !f.includes('Preview:'),
+    );
 
     // Still showing t1's content in the editor, not having navigated to t2.
-    const frameAfter = lastFrame();
     expect(frameAfter).toContain('hello world');
     expect(frameAfter).not.toContain('Preview:');
   });
@@ -126,14 +134,18 @@ describe('inline editor typing + save (i key, T315.3)', () => {
     seedNote(store, 'line1');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'line1');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
     stdin.write('X');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'line1X');
     stdin.write('\x13');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(
+      lastFrame,
+      (f) => f.includes('Preview:') && store.getState().data.notes.get(eid('t1'))?.content === 'line1X',
+    );
 
     expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('line1X');
     expect(lastFrame()).toContain('Preview:');
@@ -142,17 +154,21 @@ describe('inline editor typing + save (i key, T315.3)', () => {
   it("6: WHEN a note is opened with `i`, Enter is pressed, then `Y` is typed, then `Ctrl+S` is pressed THEN the store's note content contains a newline between the original content and `Y`", async () => {
     seedNote(store, 'line1');
 
-    const { stdin } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'line1');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
     stdin.write('\r');
-    await new Promise((r) => setTimeout(r, 50));
     stdin.write('Y');
-    await new Promise((r) => setTimeout(r, 50));
+    // `Y` starts the editor's second row (the caret may be drawn after it)
+    await waitForFrame(lastFrame, (f) => f.split('\n').some((l) => /[ │]Y(\s|\x1b|$)/.test(l)));
     stdin.write('\x13');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(
+      lastFrame,
+      (f) => f.includes('Preview:') && store.getState().data.notes.get(eid('t1'))?.content === 'line1\nY',
+    );
 
     expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('line1\nY');
   });
@@ -161,23 +177,21 @@ describe('inline editor typing + save (i key, T315.3)', () => {
     seedNote(store, 'Conflict target\noriginal body');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'Conflict target');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
 
     // Replace the whole buffer with the LOCAL variant via bracketed paste:
     // select-all isn't available, so clear with enough backspaces then paste.
-    // Each backspace needs its own await: react-ink-textarea's cursor/value
-    // state updates asynchronously, so writing many `\x7F` bytes with no gap
-    // replays every keystroke against the same stale closure instead of
-    // deleting cumulatively.
+    // F161: the editor keeps every key of a burst, so the backspaces need no
+    // wait between them.
     for (let i = 0; i < 'Conflict target\noriginal body'.length; i++) {
       stdin.write('\x7F');
-      await new Promise((r) => setTimeout(r, 10));
     }
     stdin.write('\x1b[200~Conflict target\nLOCAL changed this line\x1b[201~');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'LOCAL changed this line');
 
     // Simulate a remote change landing while the editor is open.
     store.dispatch({
@@ -185,10 +199,17 @@ describe('inline editor typing + save (i key, T315.3)', () => {
       noteId: eid('t1'),
       changes: { content: 'Conflict target\nREMOTE changed this line differently' },
     } as never);
-    await new Promise((r) => setTimeout(r, 50));
 
     stdin.write('\x13');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, (f) => {
+      const c = store.getState().data.notes.get(eid('t1'))?.content ?? '';
+      return (
+        c.includes('LOCAL changed this line') &&
+        c.includes('REMOTE changed this line differently') &&
+        c.includes('--- conflicting change from another device ---') &&
+        f.includes('A change from another device could not be merged automatically - both versions were kept.')
+      );
+    });
 
     const content = store.getState().data.notes.get(eid('t1'))?.content ?? '';
     expect(content).toContain('LOCAL changed this line');
@@ -211,34 +232,39 @@ describe('inline editor discard-changes confirm (Escape, T315.4)', () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello world'));
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('Ctrl+S save · Esc cancel · Enter new line'));
     stdin.write('Z');
-    await new Promise((r) => setTimeout(r, 50));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello worldZ'));
     stdin.write('\x1b');
-    await new Promise((r) => setTimeout(r, 50));
 
-    expect(lastFrame()).toContain('discard changes?');
-    expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello world');
+    await vi.waitFor(() => {
+      expect(lastFrame() ?? '').toContain('discard changes?');
+      expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello world');
+    });
   });
 
   it("9: WHEN that `discard changes?` prompt is open and `y` is pressed THEN `lastFrame()` contains `Preview:` again and the store's note content is unchanged (the typed `Z` is discarded)", async () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
     stdin.write('Z');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'hello worldZ');
     stdin.write('\x1b');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'discard changes?');
     expect(lastFrame()).toContain('discard changes?');
     stdin.write('y');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(
+      lastFrame,
+      (f) => f.includes('Preview:') && store.getState().data.notes.get(eid('t1'))?.content === 'hello world',
+    );
 
     expect(lastFrame()).toContain('Preview:');
     expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello world');
@@ -248,20 +274,21 @@ describe('inline editor discard-changes confirm (Escape, T315.4)', () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello world'));
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('Ctrl+S save · Esc cancel · Enter new line'));
     stdin.write('Z');
-    await new Promise((r) => setTimeout(r, 50));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello worldZ'));
     stdin.write('\x1b');
-    await new Promise((r) => setTimeout(r, 50));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('discard changes?'));
     stdin.write('n');
-    await new Promise((r) => setTimeout(r, 50));
 
-    const frame = lastFrame();
-    expect(frame).toContain('hello worldZ');
-    expect(frame).not.toContain('Preview:');
+    await vi.waitFor(() => {
+      const frame = lastFrame() ?? '';
+      expect(frame).toContain('hello worldZ');
+      expect(frame).not.toContain('Preview:');
+    });
   });
 
   // Fast-keypress regression (no numbered Acceptance line). `\x1b` written
@@ -273,19 +300,23 @@ describe('inline editor discard-changes confirm (Escape, T315.4)', () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
     stdin.write('Z');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'hello worldZ');
     stdin.write('\x1b');
     for (let i = 0; i < 400 && !(lastFrame() ?? '').includes('discard changes?'); i++) {
       await new Promise((r) => setTimeout(r, 2));
     }
     expect(lastFrame()).toContain('discard changes?');
     stdin.write('y');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(
+      lastFrame,
+      (f) => f.includes('Preview:') && store.getState().data.notes.get(eid('t1'))?.content === 'hello world',
+    );
 
     expect(lastFrame()).toContain('Preview:');
     expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello world');
@@ -295,12 +326,13 @@ describe('inline editor discard-changes confirm (Escape, T315.4)', () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
     stdin.write('Z');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'hello worldZ');
     stdin.write('\x1b');
     for (let i = 0; i < 400 && !(lastFrame() ?? '').includes('discard changes?'); i++) {
       await new Promise((r) => setTimeout(r, 2));
@@ -312,9 +344,7 @@ describe('inline editor discard-changes confirm (Escape, T315.4)', () => {
     }
     expect(lastFrame()).not.toContain('discard changes?');
     stdin.write('X');
-    for (let i = 0; i < 400 && !(lastFrame() ?? '').includes('hello worldZX'); i++) {
-      await new Promise((r) => setTimeout(r, 2));
-    }
+    await waitForFrame(lastFrame, 'hello worldZX');
 
     expect(lastFrame()).toContain('hello worldZX');
   });
@@ -331,14 +361,18 @@ describe('inline editor wrap, paste, 10,000-line note (T315.5)', () => {
     seedNote(store, 'line1');
 
     const { stdin, lastFrame } = render(<App store={store} width={118} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'line1');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
     stdin.write('y'.repeat(130));
-    await new Promise((r) => setTimeout(r, 50));
+    // all 130 typed characters are on screen, and every line fits in 118
+    const frame = await waitForFrame(
+      lastFrame,
+      (f) => (f.match(/y/g) ?? []).length >= 130 && f.split('\n').every((l) => l.length <= 118),
+    );
 
-    const frame = lastFrame() ?? '';
     for (const line of frame.split('\n')) {
       expect(line.length).toBeLessThanOrEqual(118);
     }
@@ -347,15 +381,19 @@ describe('inline editor wrap, paste, 10,000-line note (T315.5)', () => {
   it('12: WHEN the text `hello\\rworld` is pasted (via the bracketed-paste sequence) into the open inline editor THEN the store\'s saved content (after Ctrl+S) holds `hello` and `world` as two separate lines, not one line containing a literal `\\r`', async () => {
     seedNote(store, '');
 
-    const { stdin } = render(<App store={store} width={118} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    const { stdin, lastFrame } = render(<App store={store} width={118} height={24} />);
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, '1 note');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
     stdin.write('\x1b[200~hello\rworld\x1b[201~');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'world');
     stdin.write('\x13');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, (f) => {
+      const lines = (store.getState().data.notes.get(eid('t1'))?.content ?? '').split('\n');
+      return f.includes('Preview:') && !lines.join('\n').includes('\r') && lines.includes('hello') && lines.includes('world');
+    });
 
     const content = store.getState().data.notes.get(eid('t1'))?.content ?? '';
     expect(content).not.toContain('\r');
@@ -368,11 +406,13 @@ describe('inline editor wrap, paste, 10,000-line note (T315.5)', () => {
     seedNote(store, tenThousandLines);
 
     const { stdin, lastFrame } = render(<App store={store} width={118} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'line 0');
 
     const start = Date.now();
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    // the editor opens with the caret at the end, so the last line is drawn
+    await waitForFrame(lastFrame, (f) => f.length > 0 && f.includes('line 9999'));
     const elapsed = Date.now() - start;
 
     const frame = lastFrame() ?? '';
@@ -393,12 +433,12 @@ describe('inline editor help entry, footer hint, narrow terminal (T315.6)', () =
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('?');
-    await new Promise((r) => setTimeout(r, 50));
+    const frame = await waitForFrame(lastFrame, (f) => f.includes('i') && f.includes('Edit inline'));
 
-    const frame = lastFrame() ?? '';
     expect(frame).toContain('i');
     expect(frame).toContain('Edit inline');
   });
@@ -407,17 +447,20 @@ describe('inline editor help entry, footer hint, narrow terminal (T315.6)', () =
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={40} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'hello world');
 
     // Width < 50 needs "reading" mode (Enter) for the preview slot to be
     // given any width at all (src/core/layout.ts paneLayout); see
     // test/tui/frame-width.test.tsx for the same two-step pattern.
     stdin.write('\r');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Preview: hello world');
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    const frame = await waitForFrame(
+      lastFrame,
+      (f) => f.includes('Ctrl+S') && f.includes('hello world') && f.split('\n').every((l) => l.length <= 40),
+    );
 
-    const frame = lastFrame() ?? '';
     expect(frame).toContain('hello world');
     for (const line of frame.split('\n')) {
       expect(line.length).toBeLessThanOrEqual(40);
@@ -428,35 +471,38 @@ describe('inline editor help entry, footer hint, narrow terminal (T315.6)', () =
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello world'));
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('Ctrl+S save · Esc cancel · Enter new line'));
     stdin.write('Z');
-    await new Promise((r) => setTimeout(r, 50));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello worldZ'));
     stdin.write('\x1b');
-    await new Promise((r) => setTimeout(r, 50));
-    expect(lastFrame()).toContain('discard changes?');
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('discard changes?'));
 
     stdin.write('\x1b');
-    await new Promise((r) => setTimeout(r, 50));
 
-    const frame = lastFrame() ?? '';
-    expect(frame).toContain('hello worldZ');
-    expect(frame).not.toContain('Preview:');
-    expect(frame).not.toContain('discard changes?');
+    await vi.waitFor(() => {
+      const frame = lastFrame() ?? '';
+      expect(frame).toContain('hello worldZ');
+      expect(frame).not.toContain('Preview:');
+      expect(frame).not.toContain('discard changes?');
+    });
   });
 
   it('17: WHEN a note is opened with `i` at width 80 THEN lastFrame() contains `Ctrl+S save · Esc cancel · Enter new line` and no line of lastFrame() is longer than 80 characters', async () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    const frame = await waitForFrame(
+      lastFrame,
+      (f) => f.includes('Ctrl+S save · Esc cancel · Enter new line') && f.split('\n').every((l) => l.length <= 80),
+    );
 
-    const frame = lastFrame() ?? '';
     expect(frame).toContain('Ctrl+S save · Esc cancel · Enter new line');
     for (const line of frame.split('\n')) {
       expect(line.length).toBeLessThanOrEqual(80);
@@ -467,14 +513,17 @@ describe('inline editor help entry, footer hint, narrow terminal (T315.6)', () =
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={40} height={24} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('\r');
-    await new Promise((r) => setTimeout(r, 50));
+    await waitForFrame(lastFrame, 'Preview: hello world');
     stdin.write('i');
-    await new Promise((r) => setTimeout(r, 50));
+    const frame = await waitForFrame(
+      lastFrame,
+      (f) => f.includes('Ctrl+S') && f.split('\n').every((l) => l.length <= 40),
+    );
 
-    const frame = lastFrame() ?? '';
     expect(frame).toContain('Ctrl+S');
     for (const line of frame.split('\n')) {
       expect(line.length).toBeLessThanOrEqual(40);

@@ -1,13 +1,15 @@
 import { Box, Text } from 'ink';
 import React from 'react';
-import removeMarkdown from 'remove-markdown';
 
 import type { Note } from '@vendor/types';
 import noteTitleAndPreview from '@vendor/utils/note-utils';
 import { wrapLines } from '../core/wrap';
+import { markdownBodyLine, bodyRowSpans } from '../core/md-inline';
+import type { BodyLine, InlineSpan } from '../core/md-inline';
 import { sanitizeForTerminal } from '../core/sanitize';
 import { Divider } from './Divider';
 import { PaneHeading } from './PaneHeading';
+import { MdRowText } from './md-row';
 import isEmailTag from '@vendor/utils/is-email-tag';
 import { theme } from './theme';
 
@@ -63,32 +65,11 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
 
   // When cursorLine is provided, use raw content with gutter; otherwise use rendered or raw as before
   let displayContent: string;
-  let processedLines: { text: string; isHeading: boolean }[] = [];
+  let processedLines: BodyLine[] = [];
   if (typeof cursorLine === 'number') {
     displayContent = content;
   } else if (rendered && isMarkdownNote(note)) {
-    processedLines = [];
-    content.split('\n').forEach(raw => {
-      const headingMatch = raw.match(/^#{1,6}\s+(.*)$/);
-      if (headingMatch) {
-        processedLines.push({ text: removeMarkdown(headingMatch[1]), isHeading: true });
-        return;
-      }
-      const checklistMatch = raw.match(/^[-*]\s+\[([ xX])\]\s+(.*)$/);
-      if (checklistMatch) {
-        processedLines.push({
-          text: (checklistMatch[1] === ' ' ? '☐ ' : '☑ ') + removeMarkdown(checklistMatch[2]),
-          isHeading: false,
-        });
-        return;
-      }
-      const bulletMatch = raw.match(/^[-*]\s+(.*)$/);
-      if (bulletMatch) {
-        processedLines.push({ text: '• ' + removeMarkdown(bulletMatch[1]), isHeading: false });
-        return;
-      }
-      processedLines.push({ text: removeMarkdown(raw), isHeading: false });
-    });
+    processedLines = content.split('\n').map(markdownBodyLine);
     displayContent = processedLines.map(p => p.text).join('\n');
   } else {
     displayContent = content;
@@ -98,21 +79,33 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
   // checklist-cursor mode (T239).
   let bodyContent: string;
   let bodyHeadingFlags: boolean[] = [];
+  let bodyLines: BodyLine[] = [];
   if (typeof cursorLine !== 'number') {
     const nl = displayContent.indexOf('\n');
     const firstLine = nl === -1 ? displayContent : displayContent.slice(0, nl);
     if (firstLine === title) {
       bodyContent = nl === -1 ? '' : displayContent.slice(nl + 1);
-      bodyHeadingFlags = processedLines.length > 1 ? processedLines.slice(1).map(p => p.isHeading) : [];
+      bodyLines = processedLines.length > 1 ? processedLines.slice(1) : [];
     } else {
       bodyContent = displayContent;
-      bodyHeadingFlags = processedLines.map(p => p.isHeading);
+      bodyLines = processedLines;
     }
   } else {
     bodyContent = displayContent;
-    bodyHeadingFlags = processedLines.map(p => p.isHeading);
+    bodyLines = processedLines;
   }
+  bodyHeadingFlags = bodyLines.map(p => p.isHeading);
   const rows = wrapLines(bodyContent, colWidth);
+  // One span array per wrapped row, offsets re-based to that row; heading
+  // rows are rendered plain (accent wins), so drop their spans here. Only
+  // the markdown-rendered branch has parsed body lines; raw/cursor modes
+  // render no inline colour and pass no spans (MdRowText draws plain text).
+  const isRenderedMarkdown = processedLines.length > 0;
+  const rowSpansByRow: InlineSpan[][] = isRenderedMarkdown
+    ? bodyRowSpans(bodyLines, rows).map((spans, i) =>
+        bodyHeadingFlags[rows[i].line] ? [] : spans,
+      )
+    : [];
 
   // Determine which row index in `rows` has line === cursorLine
   let cursorRowIndex: number | null = null;
@@ -162,35 +155,26 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
         {inTrash ? (
           <Text> </Text>
         ) : (
-          <Text><Text {...theme.accent}>g</Text> add tag</Text>
+          <Text><Text {...theme.accent}>g</Text><Text {...theme.muted}> add tag</Text></Text>
         )}
         <Box flexDirection="column">
           {visibleRows.map((row, idx) => {
             const gutter = gutterRows[start + idx] ?? '';
             const rowText = row.text || ' ';
             const isHeading = bodyHeadingFlags[row.line] ?? false;
-            // OMARCHY: boundary cast — T255 colourises the checklist glyph inside
-            // the single-row <Text> so Ink emits a reset before the glyph.
-            const uncheckedMatch = rowText.match(/^(☐)(\s*)(.*)$/);
-            const checkedMatch = rowText.match(/^(☑)(\s*)(.*)$/);
-            let inner: string | React.JSX.Element;
-            if (uncheckedMatch || checkedMatch) {
-              const match = uncheckedMatch || checkedMatch;
-              const isUnchecked = !!uncheckedMatch;
-              const trailing = match[2] + match[3];
-              inner = (
-                <>
-                  {' '}
-                  <Text {...(isUnchecked ? theme.muted : theme.success)}>{match[1]}</Text>
-                  {trailing}
-                </>
-              );
-            } else {
-              inner = rowText;
-            }
+            // Render every body row through MdRowText, which
+            // colours the checklist glyph and any link/code spans. Heading
+            // rows keep the accent styling here and get an empty span set.
+            const spans = rowSpansByRow[start + idx] ?? [];
             return (
-              <Text key={idx} bold={isHeading} wrap="truncate">
-                {gutter}{inner}
+              <Text
+                key={idx}
+                bold={isHeading}
+                {...(isHeading ? theme.accent : {})}
+                wrap="truncate"
+              >
+                {gutter}
+                <MdRowText text={rowText} spans={spans} />
               </Text>
             );
           })}

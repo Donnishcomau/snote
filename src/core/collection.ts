@@ -12,6 +12,21 @@ import { sanitizeForTerminal } from './sanitize';
  * Returns a new array; the Map is never mutated.
  */
 export function tagRows(tags: Map<TagHash, Tag>): TagName[] {
+  return tagRowsStored(tags).map(
+    // OMARCHY: boundary cast — TagName is a branded string and the
+    // sanitize result is a plain string with identical runtime shape.
+    (name) => sanitizeForTerminal(name) as TagName
+  );
+}
+
+/**
+ * Return the stored (raw) tag names in exactly the same order as
+ * `tagRows`, without the display sanitising. Actions that address a tag
+ * (open, rename, delete, move) must use these names: a stored name may
+ * hold control characters or an emoji selector, and `tagHashOf` of the
+ * sanitised form would not match the note's tag.
+ */
+export function tagRowsStored(tags: Map<TagHash, Tag>): TagName[] {
   const arr: Tag[] = [];
   tags.forEach((tag) => {
     if (typeof tag?.name === 'string' && tag.name !== '' && !isEmailTag(tag.name)) arr.push(tag);
@@ -22,9 +37,9 @@ export function tagRows(tags: Map<TagHash, Tag>): TagName[] {
     if (aIdx !== bIdx) return aIdx - bIdx;
     return a.name.localeCompare(b.name);
   });
-  // OMARCHY: boundary cast — TagName is a branded string and the sanitize
-  // result is a plain string with identical runtime shape.
-  return arr.map((tag) => sanitizeForTerminal(tag.name) as TagName);
+  // OMARCHY: boundary cast — TagName is a branded string; the stored name
+  // is a plain string with identical runtime shape.
+  return arr.map((tag) => tag.name as TagName);
 }
 
 /**

@@ -138,7 +138,7 @@ describe('T275 content not muted', () => {
     }
   });
 
-  it('6: WHEN src/tui/Divider.tsx, src/tui/StatusBar.tsx and src/tui/TagEditor.tsx are read as text THEN together they contain color="gray" exactly 0 times and theme.muted exactly 4 times', async () => {
+  it('6: WHEN src/tui/Divider.tsx, src/tui/StatusBar.tsx and src/tui/TagEditor.tsx are read as text THEN together they contain color="gray" exactly 0 times and theme.muted exactly 5 times', async () => {
     const fs = await import('fs');
     const files = [
       'src/tui/Divider.tsx',
@@ -149,6 +149,6 @@ describe('T275 content not muted', () => {
       await Promise.all(files.map((f) => fs.promises.readFile(f, 'utf8')))
     ).join('\n');
     expect(source.split('color="gray"').length - 1).toBe(0);
-    expect(source.split('theme.muted').length - 1).toBe(4);
+    expect(source.split('theme.muted').length - 1).toBe(5);
   });
 });

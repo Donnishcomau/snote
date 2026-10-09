@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+import { problemText, publishProblem } from './problem-signal';
 import { secureMkdir, secureWriteFileSync } from './secure-fs';
 import type { State } from './store';
 
@@ -146,8 +147,15 @@ export function persistOnChange(
 
   const flush = () => {
     if (lastState) {
-      saveState(lastState, dir);
-      lastState = null;
+      try {
+        // A failed write (EACCES, ENOSPC, EISDIR) must not crash the app
+        // through the timer: show it on the notice line instead and keep
+        // the pending state so the next save tries again.
+        saveState(lastState, dir);
+        lastState = null;
+      } catch (err) {
+        publishProblem(problemText('could not save notes', err));
+      }
     }
     timer = null;
   };

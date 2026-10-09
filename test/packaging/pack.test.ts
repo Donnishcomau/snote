@@ -47,7 +47,7 @@ describe('packaging pack', () => {
     const content = readFileSync(pkgPath, 'utf8');
 
     expect(content).toContain('pkgname=snote');
-    expect(content).toContain("depends=('nodejs>=22')");
+    expect(content).toContain("depends=('nodejs>=22' 'hicolor-icon-theme')");
     expect(content).toContain('npm run build');
     expect(content).toContain('$pkgdir/usr/bin/snote');
     expect(content).toContain('$pkgdir/usr/share/applications/snote.desktop');

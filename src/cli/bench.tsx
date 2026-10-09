@@ -23,7 +23,7 @@ import { App } from '../tui/App';
 
 export const THRESHOLDS = { startMs: 150, searchMs: 50, rssMb: 120 };
 
-export type BenchResult = {
+type BenchResult = {
   notes: number;
   matches: number;
   startMs: number;

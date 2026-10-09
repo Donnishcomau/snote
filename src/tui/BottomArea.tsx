@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 import type { State } from '../core/store';
 import type { EntityId, Note, TagName } from '@vendor/types';
-import { TagEditor } from './TagEditor';
+import { TagEditor } from './TagEditor'; import { useListPaste } from './list-paste';
 import { StatusBar } from './StatusBar';
 import { Confirm, Prompt } from './Prompt';
 import { publishLink, emptyTrashActions, sharedLine } from '../core/note-keys';
@@ -13,11 +13,12 @@ import { pendingCount } from '../core/simperium-reducer';
 import { insertCheckItem, exportSelectedNote } from './app-actions';
 import { logoutHandlers, emptyTrashHandlers, renameHandlers, deleteTagHandlers } from './dialog-actions';
 import { documentsDir, exportFileName } from '../core/export-note';
-import { defaultDataDir } from '../core/token';
+import { dataRoot } from '../core/data-root';
 import { useBlogSendAskState } from './blog-send-ask';
 import { BlogSendDialog } from './blog-send-dialog';
 import { loadBlogSend, blogStatusLine } from '../core/blog-sent';
 import isEmailTag from '@vendor/utils/is-email-tag';
+import { sanitizeForTerminal } from '../core/sanitize';
 import type { useAppState } from './useAppState';
 import { KeyHints } from './KeyHints';
 
@@ -71,6 +72,7 @@ interface BottomAreaProps {
   tagsFocused: boolean;
   searchOpen: boolean;
   itemIndex?: number;
+  inlineEditOpen?: boolean;
   setNotice?: (v: string) => void;
   setNoticeError?: (v: string) => void;
 }
@@ -93,11 +95,12 @@ export function BottomArea({
   tagsFocused,
   searchOpen,
   itemIndex = 0,
+  inlineEditOpen = false,
   setNotice,
   setNoticeError,
 }: BottomAreaProps): React.JSX.Element {
   const { allTagNames, connected, noteEntries, inTrash, sortLabelStr, pending } = view;
-  const blogLine = selectedEntry ? blogStatusLine(loadBlogSend(defaultDataDir(), String(selectedEntry.id))) : null;
+  const blogLine = selectedEntry ? blogStatusLine(loadBlogSend(dataRoot(), String(selectedEntry.id))) : null;
   // T293: the checklist-item prompt state is owned here and published to the
   // module cell App.tsx reads via useItemAsk() (see itemAskRef above).
   const [itemAsk, setItemAsk] = useState(false);
@@ -123,6 +126,10 @@ export function BottomArea({
   const rename = tagDialog?.kind === 'rename' ? renameHandlers(store, tagDialog, setTagDialog) : null;
   const deleteTag = tagDialog?.kind === 'delete' ? deleteTagHandlers(store, tagDialog, setTagDialog) : null;
 
+  // T482: while the list has the keys (no prompt, no dialog, no inline
+  // editor) a bracketed paste is refused here, never replayed as keys.
+  useListPaste(!(searchOpen || tagEditorOpen || tagDialog || emptyAsk || logoutAsk || itemAsk || exportAsk || phase || inlineEditOpen), (m) => setNotice?.(m));
+
   // T293: `a` in the note pane — insert a checklist item via app-actions.
   const handleItemAskSubmit = (value: string) => {
     insertCheckItem({ store, selectedEntry, itemIndex, value });
@@ -136,7 +143,7 @@ export function BottomArea({
   // T298: `w` — the path the prompt opens with, upstream's naming in the
   // documents dir. Recomputed when the prompt closes, captured when it opens.
   const initialFor = (kind: 'rename' | 'export'): string => {
-    if (kind === 'rename') return tagDialog!.tagName;
+    if (kind === 'rename') return sanitizeForTerminal(tagDialog!.tagName);
     if (exportPathRef.current === null) {
       const base = exportFileName(selectedEntry?.note.content ?? '');
       exportPathRef.current = join(documentsDir(), `${base}.md`);
@@ -198,7 +205,7 @@ export function BottomArea({
         </>
       ) : tagDialog?.kind === 'delete' ? (
         <Confirm
-          question={'delete tag ' + tagDialog.tagName + '?'}
+          question={'delete tag ' + sanitizeForTerminal(tagDialog.tagName) + '?'}
           onYes={deleteTag!.yes}
           onNo={deleteTag!.no}
           destructive

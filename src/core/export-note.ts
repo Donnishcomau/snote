@@ -20,10 +20,16 @@ interface NodeError {
 }
 
 /** Upstream FILENAME_LENGTH (to-zip.ts line 6). */
-export const FILENAME_LENGTH = 40;
+const FILENAME_LENGTH = 40;
 
-/** Characters upstream's sanitize-filename forbids (done by hand here). */
-const INVALID_CHARS = /[\/\\?<>:*|"\u0000-\u001f]/g;
+/**
+ * Characters upstream's sanitize-filename forbids (done by hand here),
+ * plus the bidi controls, zero-width characters and line/paragraph
+ * separators `sanitizeForTerminal` drops (U+200D/ZWJ stays allowed:
+ * emoji such as the family emoji need it).
+ */
+const INVALID_CHARS =
+  /[\/\\?<>:*|"\u0000-\u001f\u007f-\u009f\u200B\u200C\u200E\u200F\u202A-\u202E\u2066-\u2069\u2028\u2029]/g;
 
 /**
  * Export file name (no extension) for a note's content: the first non-blank

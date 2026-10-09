@@ -74,7 +74,7 @@ describe('T246 dimColor -> color="gray"', () => {
     restore = await forceInkChalk();
     const { lastFrame } = render(<StatusBar connected={true} count={3} width={40} />);
     await delay(0);
-    expect(lastFrame()).toBe('\u001b[2m[\u001b[22m\u001b[32mconnected\u001b[39m\u001b[2m]\u001b[22m 3 notes');
+    expect(lastFrame()).toBe('\u001b[2m[\u001b[22m\u001b[32mconnected\u001b[39m\u001b[2m]\u001b[22m \u001b[2m3 notes\u001b[22m');
     expect(lastFrame()).not.toContain('\u001b[90m');
   });
 

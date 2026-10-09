@@ -1,8 +1,9 @@
 import { Box, Text, useInput } from 'ink';
 import React, { useState } from 'react';
-import { theme } from './theme';
+// F162: pasted email/code drawn through sanitizeForTerminal (display only)
+import { theme } from './theme'; import { sanitizeForTerminal } from '../core/sanitize';
 
-export interface LoginProps {
+interface LoginProps {
   width: number;
   height: number;
   requestCode: (email: string) => Promise<unknown>;
@@ -14,6 +15,9 @@ export interface LoginProps {
 /**
  * Login screen: email step → emailed code step.
  */
+const hidden = (s: string): boolean => sanitizeForTerminal(s) !== s; // F162: control/direction chars
+const REFUSED = 'Email or code has control or hidden characters';
+
 export function Login({
   width,
   height,
@@ -27,23 +31,31 @@ export function Login({
   const [code, setCode] = useState('');
   const [password, setPassword] = useState(''); // T70
   const [error, setError] = useState('');
+  const [pending, setPending] = useState(false);
 
   useInput((input, key) => {
     // Enter first
     if (key.return) {
       if (step === 'email') {
         if (email.trim() === '') return;
+        if (hidden(email)) { setError(REFUSED); return; } // F162
         setError('');
+        setPending(true);
         requestCode(email.trim())
           .then(() => {
             setStep('code');
           })
           .catch((err: Error) => {
             setError(err.message);
+          })
+          .finally(() => {
+            setPending(false);
           });
       } else if (step === 'code') {
         if (code.trim() === '') return;
+        if (hidden(code)) { setError(REFUSED); return; } // F162
         setError('');
+        setPending(true);
         completeLogin(email.trim(), code.trim())
           .then((token: string) => {
             onLoggedIn({ email: email.trim(), token });
@@ -51,10 +63,15 @@ export function Login({
           .catch((err: Error) => {
             setError(err.message);
             setCode('');
+          })
+          .finally(() => {
+            setPending(false);
           });
       } else if (step === 'password') { // T70
         if (password === '') return;
+        if (hidden(email)) { setError(REFUSED); return; } // S5c-02
         setError('');
+        setPending(true);
         passwordLogin!(email.trim(), password)
           .then((token: string) => {
             onLoggedIn({ email: email.trim(), token });
@@ -62,6 +79,9 @@ export function Login({
           .catch((err: Error) => {
             setError(err.message);
             setPassword('');
+          })
+          .finally(() => {
+            setPending(false);
           });
       }
       return;
@@ -121,23 +141,25 @@ export function Login({
       <Text bold>Simplenote login</Text>
       {step === 'email' ? (
         <>
-          <Text>Email: {email}</Text>
+          <Text>Email: {sanitizeForTerminal(email)}</Text>
           {passwordLogin !== undefined ? ( // T70
             <Text>Tab: log in with a password</Text>
           ) : null}
+          <Text {...theme.muted}>No account? Sign up at https://app.simplenote.com/signup/</Text>
         </>
       ) : step === 'password' ? ( // T70
         <>
-          <Text>Password login for {email}</Text>
+          <Text>Password login for {sanitizeForTerminal(email)}</Text>
           <Text>Password: {'*'.repeat(password.length)}</Text>
         </>
       ) : (
         <>
-          <Text>Code sent to {email}</Text>
-          <Text>Code: {code}</Text>
+          <Text>Code sent to {sanitizeForTerminal(email)}</Text>
+          <Text>Code: {sanitizeForTerminal(code)}</Text>
         </>
       )}
-      {error !== '' ? <Text {...theme.error}>Error: {error}</Text> : null}
+      {pending ? <Text>Contacting the server...</Text> : null}
+      {error !== '' ? <Text {...theme.error}>Error: {sanitizeForTerminal(error)}</Text> : null}
     </Box>
   );
 }
