@@ -31,6 +31,9 @@ import { requeueUnsynced } from '../core/requeue';
 // re-sent on restart whatever the ghost's date says.
 import { loadUnsynced, trackUnsynced } from '../core/unsynced';
 import { whenCatchUpApplied } from '../core/simperium-reconnect-fix';
+// T523 — make the server's echo of a pre-quit change the library's own
+// acknowledgement after a restart (F178, issue #9).
+import { trackOwnEchoes } from '../core/own-echoes';
 // T151 — resend offline "delete forever" ops at start-up (FR-5).
 import { dropTombstonedNotes, resendDeletions, trackDeletions } from '../core/tombstones';
 import { parseCli, checkReport, splitNewFlag, splitNotifyFlag, USAGE } from './args';
@@ -144,6 +147,12 @@ export function buildStore(
       restoreNotesFromGhosts(store, ghosts, unsynced);
     }, 0);
   }
+  // T523 — the owed-ack tracker: records every change the note channel
+  // sends and its acknowledgements, so after a restart the server's echo
+  // of a change sent before the last quit reads as this client's own
+  // confirmation instead of being applied a second time. Created before
+  // the first start-up save can run.
+  const ownEchoes = trackOwnEchoes(store.client, opts.dataDir);
   const startSaving = persistOnChange(store, opts.dataDir);
   // T493 — keep the unsynced record fresh: written at once whenever the
   // pending set changes, never by the debounced state.json save.
@@ -164,8 +173,15 @@ export function buildStore(
   stopSaving = () => {
     startSaving();
     stopUnsynced();
+    // T526 — quit and logout both stop the owed-ack tracker here: the
+    // library keeps sending until client.end(), and a late write would
+    // re-create sent-changes.json (and the account folder) after a stop.
+    ownEchoes.stop();
     stopStatus();
     // T417 — quit clears the notice: status.json loses its `update` key.
+    // F177 (T518) — the same write sets `alive` to the epoch so the bar
+    // says "snote is not running" at once; it runs after stopStatus, so
+    // no later heartbeat can overwrite the mark.
     if (opts.statusDir) clearUpdateStatusFile(opts.statusDir);
     stopNewRequests();
     instanceLock.release();
@@ -189,6 +205,12 @@ export function buildStore(
         publishProblem(problemText('could not re-send offline edits', err));
       }
     );
+  // T523 — once the start-up catch-up is applied, entries the record
+  // loaded whose echo never came leave it (they were never owed).
+  void whenCatchUpApplied(store.client, 'note').then(
+    () => ownEchoes.settle(),
+    () => ownEchoes.settle()
+  );
   // T151 — record every "delete forever" in the tombstone file and
   // resend the removal for each tombstone the server still holds (FR-5).
   trackDeletions(store, opts.dataDir);

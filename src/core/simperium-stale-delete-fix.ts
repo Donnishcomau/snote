@@ -65,6 +65,10 @@ import { isHeld } from './held-unsynced';
 interface ChannelLike {
   on(event: string, listener: (...args: never[]) => void): unknown;
   isIndexing?: boolean;
+  // The channel's ghost store: `FileGhostStore` (src/core/ghost-store.ts)
+  // satisfies this structurally, and `remove` deletes the entry and
+  // rewrites the file at once.
+  store?: { remove(id: string): Promise<unknown> };
 }
 
 interface BucketLike {
@@ -145,6 +149,13 @@ function installOnChannel(
         type: 'REMOTE_NOTE_DELETE_FOREVER',
         noteId: id,
       } as A.ActionType);
+      // F180 (T521) — the saved server copy must go with the note: if the
+      // ghost survived, the NEXT start's `restoreNotesFromGhosts`
+      // (src/core/ghost-restore.ts) would find a ghost with text and no
+      // note and bring the deleted note back to life. Only ids this
+      // reconcile deleted get their ghost removed; spared ids (held,
+      // pending, index-carried) keep theirs.
+      void channel.store?.remove(id);
     }
   };
 

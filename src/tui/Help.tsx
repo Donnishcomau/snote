@@ -4,7 +4,8 @@ import { keymap, KeymapEntry } from '../core/keymap';
 import { SECTIONS } from '../core/help-sections';
 import { editorFinishHint } from '../core/editor-select';
 import { layoutHelp } from '../core/help-layout';
-import { helpListLines, helpListWindow } from '../core/help-list';
+import { cutLine, helpListLines, helpListWindow } from '../core/help-list';
+import { maxFitColumns } from '../core/help-fit';
 import { theme } from './theme';
 
 interface HelpProps {
@@ -60,7 +61,7 @@ function Section({
               <Box key={entry.action} flexDirection="row">
                 {(() => {
                   const full = entry.key.padEnd(8) + '  ' + entry.description;
-                  const sliced = full.slice(0, subColWidth - 1);
+                  const sliced = cutLine(full, subColWidth - 1);
                   const keyLen = Math.min(8, sliced.length);
                   const keyPart = sliced.slice(0, keyLen);
                   const restPart = sliced.slice(keyLen);
@@ -87,21 +88,8 @@ function Section({
 export function Help({ width, height, entries, editor }: HelpProps): React.JSX.Element {
   const [scroll, setScroll] = useState(0);
   // Pick the first layout that fits: wide (100+ wide, 30+ high), sectioned
-  // (50-99 wide, 30+ high), two-column narrow (80+ wide, 24+ high), else a
-  // one-column list that scrolls with j/k (T465).
-  const list =
-    entries === undefined &&
-    !((width >= 100 && height >= 30) || (width >= 50 && width < 100 && height >= 30) || (width >= 80 && height >= 24));
-  const listLines = list ? helpListLines(editor ?? 'nvim') : [];
-  const win = helpListWindow(listLines, scroll, Math.max(1, width - 2), Math.max(1, height - 2));
-  useInput(
-    (input, key) => {
-      const top = Math.max(0, listLines.length - Math.max(1, height - 3));
-      if (input === 'j' || key.downArrow) setScroll((s) => Math.min(top, s + 1));
-      else if (input === 'k' || key.upArrow) setScroll((s) => Math.max(0, s - 1));
-    },
-    { isActive: list },
-  );
+  // (50-99 wide, 30+ high, columns wide enough only, T522), two-column narrow
+  // (80+ wide, 24+ high), else a one-column list that scrolls with j/k (T465).
   const contentRows = Math.max(1, height - 4);
   const displayEntries = entries ?? keymap;
   const columns = helpColumns(displayEntries, contentRows);
@@ -135,6 +123,24 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
   let sectionCols = 1;
   while (sectionCols < 4 && rowsAt(sectionCols) > availableContent) sectionCols++;
   const sectionRowWidth = twoCols ? width - 4 : innerWidth;
+
+  // The list decision (T522): at 50-99 wide, sectioned only while its
+  // column count fits the width rule; otherwise the scrolling list.
+  const sectioned =
+    (width >= 100 && height >= 30) ||
+    (width >= 80 && height >= 24) ||
+    (width >= 50 && width < 100 && height >= 30 && sectionCols <= maxFitColumns(width));
+  const list = entries === undefined && !sectioned;
+  const listLines = list ? helpListLines(editor ?? 'nvim') : [];
+  const win = helpListWindow(listLines, scroll, Math.max(1, width - 2), Math.max(1, height - 2));
+  useInput(
+    (input, key) => {
+      const top = Math.max(0, listLines.length - Math.max(1, height - 3));
+      if (input === 'j' || key.downArrow) setScroll((s) => Math.min(top, s + 1));
+      else if (input === 'k' || key.upArrow) setScroll((s) => Math.max(0, s - 1));
+    },
+    { isActive: list },
+  );
 
   // Wide path (cols>=100): pure two-column text output. The box hugs its
   // content so the title is never scrolled off a short terminal.
@@ -218,7 +224,7 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
                   {colEntries.map((entry) => (
                     <Box key={entry.action} flexDirection="row">
                       <Text {...theme.accent}>{entry.key.padEnd(8)}</Text>
-                      <Text>{entry.description.slice(0, narrowColWidth - 9)}</Text>
+                      <Text>{cutLine(entry.description, narrowColWidth - 9)}</Text>
                     </Box>
                   ))}
                 </Box>
