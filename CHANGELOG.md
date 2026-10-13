@@ -3,6 +3,64 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.2.6
+
+Data-safety and polish fixes. Your saved notes are not changed by the
+upgrade.
+
+### Changed
+
+- `i` does not open the inline editor on a note with more than 20,000
+  non-ASCII characters (an emoji counts as one); the notice line
+  suggests `e` to edit in your editor. Long notes of plain ASCII text
+  still open. The 10,000-character line limit is checked first.
+- Help cuts a description that does not fit with `…` instead of in the
+  middle of a word, and never cuts a key name.
+- Help uses the sectioned layout only when its columns are wide enough
+  to read; otherwise it shows the one-column list that scrolls with `j`
+  and `k`.
+
+### Fixed
+
+- An edit saved less than half a second before snote was closed or
+  killed is kept: it is written to disk at once instead of after a
+  short delay.
+
+- In the inline editor, Delete removes the character after the caret
+  (at a line end it joins the next line, at the end of the text it does
+  nothing). It used to delete backwards like Backspace. Backspace is
+  unchanged, and so are Alt+Delete and Ctrl+Delete.
+- When snote quits normally (`q` or Ctrl+C), the bar tooltip says
+  "snote is not running" at once instead of "Synced …" for up to two
+  minutes. After a crash or kill the two-minute fallback still applies.
+- An edit no longer appears twice after you quit within about two
+  seconds of saving. snote now keeps a record of the changes it sent
+  but the server had not yet confirmed (`sent-changes.json` in its data
+  folder), and on the next start counts the server's copy of such a
+  change as its own confirmation. A change that never reached the
+  server is still sent, other devices' edits still merge, and a damaged
+  record is ignored.
+- A note you deleted for good on another device no longer comes back
+  on this device after a restart that re-reads the whole note list.
+
+### Known issues
+
+- A change can be lost in three rare cases, all needing a change that
+  had not reached the server when snote closed and then a change to the
+  same note right after the next start, before snote has caught up with
+  the server: a pin, trash or tag on a note edited offline can be
+  undone; another device's change to the note's tags, pin or Markdown
+  setting is dropped when you change the same setting; and changing a
+  note back to exactly how it was before an unconfirmed edit brings the
+  edit back. No note text is removed. 0.2.5 behaves the same; a fix is
+  planned for 0.2.7.
+- A second save made while the first was still unconfirmed, followed by
+  a quit and restart, can still double the first edit. In a few rarer
+  timing cases around a quit, a crash or a reconnect, a change can still
+  appear twice, for example when the server is slow to answer after a
+  restart (half a second or more is enough). Nothing is lost in these cases; a
+  fix is planned for 0.2.7.
+
 ## 0.2.5
 
 The first release since 0.2.3: it also ships every change listed under

@@ -1480,9 +1480,9 @@ process.removeAllListeners("warning");
 
 // src/cli/main.tsx
 var import_react21 = __toESM(require_react(), 1);
-import fs12 from "node:fs";
+import fs13 from "node:fs";
 import os2 from "node:os";
-import path11 from "node:path";
+import path12 from "node:path";
 
 // src/core/crash-redact.ts
 var KNOWN_WORDS = new Set(
@@ -1603,9 +1603,9 @@ function secureMkdir(dir) {
   mkdirSync(dir, { recursive: true, mode: 448 });
   chmodSync(dir, 448);
 }
-function secureWriteFileSync(path12, data) {
-  writeFileSync(path12, data, { mode: 384 });
-  chmodSync(path12, 384);
+function secureWriteFileSync(path13, data) {
+  writeFileSync(path13, data, { mode: 384 });
+  chmodSync(path13, 384);
 }
 
 // src/core/crash-ring.ts
@@ -2311,10 +2311,10 @@ async function exportNote(note, dir) {
   const base = exportFileName(note.content ?? "");
   const text = exportText(note);
   for (let n = 1; ; n++) {
-    const path12 = join4(dir, n === 1 ? `${base}.md` : `${base} ${n}.md`);
+    const path13 = join4(dir, n === 1 ? `${base}.md` : `${base} ${n}.md`);
     try {
-      await writeFile(path12, text, { encoding: "utf8", flag: "wx" });
-      return path12;
+      await writeFile(path13, text, { encoding: "utf8", flag: "wx" });
+      return path13;
     } catch (err) {
       if (err.code !== "EEXIST") throw err;
     }
@@ -2705,7 +2705,7 @@ function exportSelectedNote(ctx) {
   const base = exportFileName(selectedEntry.note.content ?? "");
   const target = value.trim() !== "" ? value : join6(documentsDir(), `${base}.md`);
   const dir = dirname(target);
-  exportNote(selectedEntry.note, dir).then((path12) => setNotice(`exported: ${path12}`)).catch(
+  exportNote(selectedEntry.note, dir).then((path13) => setNotice(`exported: ${path13}`)).catch(
     (err) => setNoticeError(`export failed: ${err instanceof Error ? err.message : String(err)}`)
   );
 }
@@ -5210,6 +5210,7 @@ function installOnChannel2(channel, store) {
         type: "REMOTE_NOTE_DELETE_FOREVER",
         noteId: id
       });
+      void channel.store?.remove(id);
     }
   };
   channel.on("indexingStateChange", (isIndexing) => {
@@ -5768,6 +5769,10 @@ function trackUnsynced(store, dir) {
       return;
     }
     written = next;
+    try {
+      saveState(store.getState(), dir);
+    } catch {
+    }
     writeRecord(dir, written);
   };
   const unsubscribe = store.subscribe(onStoreChange);
@@ -5940,17 +5945,190 @@ async function requeueUnsynced(store, ghosts, whenCaughtUp, unsynced = {}) {
   return ids;
 }
 
-// src/core/tombstones.ts
+// src/core/own-echoes.ts
+var import_change2 = __toESM(require_change(), 1);
+
+// src/core/sent-changes.ts
 import * as fs4 from "node:fs";
 import * as path3 from "node:path";
+var SENT_CHANGES_FILE = "sent-changes.json";
+function loadSentChanges(dir) {
+  const filePath = path3.join(dir, SENT_CHANGES_FILE);
+  if (!fs4.existsSync(filePath)) {
+    return {};
+  }
+  try {
+    const parsed = JSON.parse(fs4.readFileSync(filePath, "utf8"));
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return {};
+    }
+    const record = {};
+    for (const [id, ccid] of Object.entries(parsed)) {
+      if (typeof ccid !== "string") {
+        continue;
+      }
+      record[id] = ccid;
+    }
+    return record;
+  } catch {
+    return {};
+  }
+}
+var writeRecord2 = (dir, record) => {
+  const filePath = path3.join(dir, SENT_CHANGES_FILE);
+  const tmpPath = filePath + ".tmp";
+  try {
+    secureMkdir(dir);
+    secureWriteFileSync(tmpPath, JSON.stringify(record));
+    fs4.renameSync(tmpPath, filePath);
+  } catch {
+  }
+};
+function createSentChanges(dir) {
+  const loaded = loadSentChanges(dir);
+  const fresh = {};
+  const current3 = () => ({ ...loaded, ...fresh });
+  return {
+    sent(id, ccid) {
+      fresh[id] = ccid;
+      delete loaded[id];
+      writeRecord2(dir, current3());
+    },
+    acknowledged(id, ccid) {
+      const record = current3();
+      if (record[id] === ccid) {
+        delete loaded[id];
+        delete fresh[id];
+      }
+      writeRecord2(dir, current3());
+    },
+    settle() {
+      for (const id of Object.keys(loaded)) {
+        delete loaded[id];
+      }
+      writeRecord2(dir, current3());
+    },
+    echoes(data, inFlight) {
+      let changes;
+      try {
+        changes = JSON.parse(data);
+      } catch {
+        return [];
+      }
+      if (!Array.isArray(changes)) {
+        return [];
+      }
+      const found = [];
+      for (const change of changes) {
+        if (!change || typeof change !== "object" || Array.isArray(change)) {
+          continue;
+        }
+        const id = change.id;
+        if (typeof id !== "string" || "error" in change) {
+          continue;
+        }
+        const ccid = loaded[id];
+        if (ccid === void 0 || inFlight[id]) {
+          continue;
+        }
+        const { ccids } = change;
+        if (Array.isArray(ccids) && ccids.includes(ccid)) {
+          found.push({ id, ccid });
+        }
+      }
+      return found;
+    }
+  };
+}
+
+// src/core/own-echoes.ts
+function trackOwnEchoes(client, dir) {
+  const record = createSentChanges(dir);
+  let stopped = false;
+  const sent = (id, ccid) => {
+    if (!stopped) record.sent(id, ccid);
+  };
+  const acknowledged = (id, ccid) => {
+    if (!stopped) record.acknowledged(id, ccid);
+  };
+  const buckets = client?.buckets ?? [];
+  const bucket = buckets.find((b) => b?.name === "note");
+  const channel = bucket?.channel ?? void 0;
+  const notes2 = bucket?.store;
+  const holds = (change) => {
+    const keys = Object.keys(change.v ?? {});
+    if (keys.length === 0) return true;
+    let ghost;
+    channel?.store?.eachGhost((g) => {
+      if (g.key === change.id) ghost = g.data;
+    });
+    let local;
+    notes2?.get(change.id, (_e, o) => {
+      local = o?.data;
+    });
+    try {
+      const target = (0, import_change2.apply)(change.v, ghost ?? {});
+      return keys.every(
+        (k) => JSON.stringify(local?.[k]) === JSON.stringify(target[k])
+      );
+    } catch {
+      return false;
+    }
+  };
+  let seedEcho;
+  let recordSend;
+  let dropAck;
+  if (channel?.message && channel.localQueue && channel.on) {
+    seedEcho = (data) => {
+      const inFlight = channel.localQueue.sent;
+      for (const { id, ccid } of record.echoes(data, inFlight)) {
+        const change = JSON.parse(data).find(
+          (c) => c?.id === id
+        );
+        if (change && holds(change)) {
+          channel.localQueue.sent[id] = { id, ccid, o: "M", v: {} };
+        }
+      }
+    };
+    channel.message.prependListener("c", seedEcho);
+    recordSend = (change) => {
+      if (change && typeof change === "object" && change.id && change.ccid) {
+        sent(change.id, change.ccid);
+      }
+    };
+    channel.localQueue.on("send", recordSend);
+    dropAck = (id, change) => {
+      if (change?.ccid) {
+        acknowledged(id, change.ccid);
+      }
+    };
+    channel.on("acknowledge", dropAck);
+  }
+  return {
+    settle: () => {
+      if (!stopped) record.settle();
+    },
+    stop: () => {
+      stopped = true;
+      if (channel?.message && seedEcho) channel.message.removeListener("c", seedEcho);
+      if (channel?.localQueue && recordSend)
+        channel.localQueue.removeListener("send", recordSend);
+      if (channel?.on && dropAck) channel.removeListener("acknowledge", dropAck);
+    }
+  };
+}
+
+// src/core/tombstones.ts
+import * as fs5 from "node:fs";
+import * as path4 from "node:path";
 var TOMBSTONE_FILE = "tombstones.json";
 function loadTombstones(dir) {
-  const filePath = path3.join(dir, TOMBSTONE_FILE);
-  if (!fs4.existsSync(filePath)) {
+  const filePath = path4.join(dir, TOMBSTONE_FILE);
+  if (!fs5.existsSync(filePath)) {
     return [];
   }
   try {
-    const raw = fs4.readFileSync(filePath, "utf8");
+    const raw = fs5.readFileSync(filePath, "utf8");
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) {
       return [];
@@ -5966,11 +6144,11 @@ function loadTombstones(dir) {
   }
 }
 function saveTombstones(dir, ids) {
-  const filePath = path3.join(dir, TOMBSTONE_FILE);
+  const filePath = path4.join(dir, TOMBSTONE_FILE);
   const tmpPath = filePath + ".tmp";
   secureMkdir(dir);
   secureWriteFileSync(tmpPath, JSON.stringify(ids));
-  fs4.renameSync(tmpPath, filePath);
+  fs5.renameSync(tmpPath, filePath);
 }
 function addTombstone(dir, id) {
   const list = loadTombstones(dir);
@@ -6092,8 +6270,8 @@ var USAGE = [
 ].join("\n");
 
 // src/core/status-file.ts
-import * as fs5 from "node:fs";
-import * as path4 from "node:path";
+import * as fs6 from "node:fs";
+import * as path5 from "node:path";
 
 // src/core/update-signal.ts
 var current2 = null;
@@ -6156,40 +6334,49 @@ function buildStatus(state, synced, update) {
   return status;
 }
 function writeStatusFile(dir, status) {
-  fs5.mkdirSync(dir, { recursive: true });
-  const filePath = path4.join(dir, "status.json");
+  fs6.mkdirSync(dir, { recursive: true });
+  const filePath = path5.join(dir, "status.json");
   const tmpPath = filePath + ".tmp";
   secureWriteFileSync(tmpPath, JSON.stringify(status) + "\n");
-  fs5.renameSync(tmpPath, filePath);
+  fs6.renameSync(tmpPath, filePath);
 }
 function statusDir(env) {
   const override = env.SNOTE_STATUS_DIR;
   if (override) {
     return override;
   }
-  const base = env.XDG_DATA_HOME || path4.join(env.HOME ?? "", ".local", "share");
-  return path4.join(base, "omarchy-snote-plugin");
+  const base = env.XDG_DATA_HOME || path5.join(env.HOME ?? "", ".local", "share");
+  return path5.join(base, "omarchy-snote-plugin");
 }
 function removeStatusFile(dir) {
   for (const name of ["status.json", "status.json.tmp"]) {
     try {
-      fs5.rmSync(path4.join(dir, name), { force: true });
+      fs6.rmSync(path5.join(dir, name), { force: true });
     } catch {
     }
   }
 }
+var STOPPED_ALIVE = "1970-01-01T00:00:00.000Z";
 function clearUpdateStatusFile(dir) {
   try {
-    const file = path4.join(dir, "status.json");
-    const parsed = JSON.parse(fs5.readFileSync(file, "utf8"));
+    const file = path5.join(dir, "status.json");
+    const parsed = JSON.parse(fs6.readFileSync(file, "utf8"));
     if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
       return;
     }
     const record = parsed;
-    if (!("update" in record)) {
+    let changed = false;
+    if ("update" in record) {
+      delete record.update;
+      changed = true;
+    }
+    if (record.alive !== STOPPED_ALIVE) {
+      record.alive = STOPPED_ALIVE;
+      changed = true;
+    }
+    if (!changed) {
       return;
     }
-    delete record.update;
     writeStatusFile(dir, record);
   } catch {
   }
@@ -6260,7 +6447,7 @@ function watchStatus(store, dir, opts) {
 // package.json
 var package_default = {
   name: "snote",
-  version: "0.2.5",
+  version: "0.2.6",
   description: "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
   license: "GPL-2.0",
   type: "module",
@@ -6355,29 +6542,29 @@ function checkEndpoints(env) {
 }
 
 // src/core/token.ts
-import * as fs6 from "node:fs";
+import * as fs7 from "node:fs";
 import * as os from "node:os";
-import * as path5 from "node:path";
+import * as path6 from "node:path";
 function defaultDataDir() {
   const xdg = process.env.XDG_DATA_HOME;
   if (xdg && xdg !== "") {
-    return path5.join(xdg, "snote");
+    return path6.join(xdg, "snote");
   }
-  return path5.join(os.homedir(), ".local", "share", "snote");
+  return path6.join(os.homedir(), ".local", "share", "snote");
 }
 async function saveToken(dir, { email, token, server }) {
-  const filePath = path5.join(dir, "auth.json");
+  const filePath = path6.join(dir, "auth.json");
   secureMkdir(dir);
   const payload = server === void 0 ? { email, token } : { email, token, server };
   const data = JSON.stringify(payload);
-  fs6.writeFileSync(filePath, data, { mode: 384 });
-  fs6.chmodSync(filePath, 384);
+  fs7.writeFileSync(filePath, data, { mode: 384 });
+  fs7.chmodSync(filePath, 384);
 }
 async function loadToken(dir) {
-  const filePath = path5.join(dir, "auth.json");
+  const filePath = path6.join(dir, "auth.json");
   let raw;
   try {
-    raw = fs6.readFileSync(filePath, "utf8");
+    raw = fs7.readFileSync(filePath, "utf8");
   } catch {
     return null;
   }
@@ -6414,14 +6601,17 @@ var SNOTE_FILES = [
   "new-note.request",
   "new-note.request.tmp",
   "unsynced.json",
-  "unsynced.json.tmp"
+  "unsynced.json.tmp",
+  // T523 — the owed-ack record: logout sweeps it like the others.
+  "sent-changes.json",
+  "sent-changes.json.tmp"
 ];
 function isSnoteFile(name) {
   return SNOTE_FILES.includes(name);
 }
 function removeIfFile(p) {
   try {
-    fs6.unlinkSync(p);
+    fs7.unlinkSync(p);
   } catch (e) {
     const code = e.code;
     if (code !== "ENOENT" && code !== "EISDIR") {
@@ -6430,30 +6620,30 @@ function removeIfFile(p) {
   }
 }
 async function logout2(dir) {
-  if (fs6.existsSync(dir)) {
+  if (fs7.existsSync(dir)) {
     for (const name of ["auth.json", "blog.json", "blog-sent.json"]) {
-      removeIfFile(path5.join(dir, name));
+      removeIfFile(path6.join(dir, name));
     }
-    const entries = fs6.readdirSync(dir, { withFileTypes: true });
+    const entries = fs7.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
       if (entry.isFile() && isSnoteFile(entry.name)) {
-        removeIfFile(path5.join(dir, entry.name));
+        removeIfFile(path6.join(dir, entry.name));
       }
     }
     for (const entry of entries) {
       if (!entry.isDirectory()) {
         continue;
       }
-      const sub = path5.join(dir, entry.name);
+      const sub = path6.join(dir, entry.name);
       let removedAny = false;
-      for (const child of fs6.readdirSync(sub, { withFileTypes: true })) {
+      for (const child of fs7.readdirSync(sub, { withFileTypes: true })) {
         if (child.isFile() && isSnoteFile(child.name)) {
-          removeIfFile(path5.join(sub, child.name));
+          removeIfFile(path6.join(sub, child.name));
           removedAny = true;
         }
       }
-      if (removedAny && fs6.readdirSync(sub).length === 0) {
-        fs6.rmdirSync(sub);
+      if (removedAny && fs7.readdirSync(sub).length === 0) {
+        fs7.rmdirSync(sub);
       }
     }
   }
@@ -6462,7 +6652,7 @@ async function logout2(dir) {
 function accountDir(root2, email) {
   const name = email.trim().toLowerCase().replace(/[^a-z0-9 @._+\-]/g, "_");
   const safe = name === "" || name === "." || name === ".." ? "_" : name;
-  return path5.join(root2, safe);
+  return path6.join(root2, safe);
 }
 var LEGACY_ROOT_FILES = [
   "state.json",
@@ -6479,18 +6669,18 @@ var LEGACY_ROOT_FILES = [
   "ghosts-tag.json.tmp"
 ];
 function migrateLegacyData(root2, email) {
-  if (!fs6.existsSync(root2)) {
+  if (!fs7.existsSync(root2)) {
     return [];
   }
   const acctPath = accountDir(root2, email);
   for (const name of ["blog.json", "blog-sent.json"]) {
-    const from = path5.join(acctPath, name);
-    const to = path5.join(root2, name);
-    if (fs6.existsSync(from) && !fs6.existsSync(to)) {
-      fs6.renameSync(from, to);
+    const from = path6.join(acctPath, name);
+    const to = path6.join(root2, name);
+    if (fs7.existsSync(from) && !fs7.existsSync(to)) {
+      fs7.renameSync(from, to);
     }
   }
-  const entries = fs6.readdirSync(root2, { withFileTypes: true });
+  const entries = fs7.readdirSync(root2, { withFileTypes: true });
   const files = entries.filter((e) => e.isFile());
   const filesToMove = files.filter((e) => LEGACY_ROOT_FILES.includes(e.name));
   if (filesToMove.length === 0) {
@@ -6499,10 +6689,10 @@ function migrateLegacyData(root2, email) {
   secureMkdir(acctPath);
   const moved = [];
   for (const entry of filesToMove) {
-    const from = path5.join(root2, entry.name);
-    const to = path5.join(acctPath, entry.name);
-    if (!fs6.existsSync(to)) {
-      fs6.renameSync(from, to);
+    const from = path6.join(root2, entry.name);
+    const to = path6.join(acctPath, entry.name);
+    if (!fs7.existsSync(to)) {
+      fs7.renameSync(from, to);
       moved.push(entry.name);
     }
   }
@@ -6526,8 +6716,8 @@ function dataRoot() {
 }
 
 // src/core/update-state.ts
-import * as fs7 from "node:fs";
-import * as path6 from "node:path";
+import * as fs8 from "node:fs";
+import * as path7 from "node:path";
 var VERSION_RE = /^\d+(\.\d+)*$/;
 function compareVersions(a, b) {
   const pa = a.trim().split(".");
@@ -6543,7 +6733,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function pluginCloneDir(home) {
-  return path6.join(
+  return path7.join(
     home,
     ".config",
     "omarchy",
@@ -6551,10 +6741,10 @@ function pluginCloneDir(home) {
     "io.github.donnishcomau.snote-simplenote"
   );
 }
-function checkLocalUpdate(running, cloneDir, read = (file) => fs7.readFileSync(file, "utf8")) {
+function checkLocalUpdate(running, cloneDir, read = (file) => fs8.readFileSync(file, "utf8")) {
   let raw;
   try {
-    raw = read(path6.join(cloneDir, "plugin-dist", "VERSION"));
+    raw = read(path7.join(cloneDir, "plugin-dist", "VERSION"));
   } catch {
     return { state: "current" };
   }
@@ -6570,8 +6760,8 @@ function checkLocalUpdate(running, cloneDir, read = (file) => fs7.readFileSync(f
 
 // src/core/update-check.ts
 import { execFile } from "node:child_process";
-import * as fs8 from "node:fs";
-import * as path7 from "node:path";
+import * as fs9 from "node:fs";
+import * as path8 from "node:path";
 function updateCheckEnabled(env) {
   const v = env.SNOTE_UPDATE_CHECK;
   return !(v === "off" || v === "0");
@@ -6591,7 +6781,7 @@ function gitEnv(env) {
 function readOriginUrl(cloneDir) {
   let text;
   try {
-    text = fs8.readFileSync(path7.join(cloneDir, ".git", "config"), "utf8");
+    text = fs9.readFileSync(path8.join(cloneDir, ".git", "config"), "utf8");
   } catch {
     return null;
   }
@@ -6677,7 +6867,7 @@ function isValidCommitId(head) {
 }
 function readCache(file) {
   try {
-    const parsed = JSON.parse(fs8.readFileSync(file, "utf8"));
+    const parsed = JSON.parse(fs9.readFileSync(file, "utf8"));
     if (parsed && typeof parsed.checkedAt === "number" && typeof parsed.remoteHead === "string" && parsed.remoteHead.length > 0 && isValidCommitId(parsed.remoteHead)) {
       return { checkedAt: parsed.checkedAt, remoteHead: parsed.remoteHead };
     }
@@ -6689,11 +6879,11 @@ async function checkRemoteUpdate(o) {
   if (!updateCheckEnabled(o.env)) {
     return { state: "disabled" };
   }
-  if (!fs8.existsSync(path7.join(o.cloneDir, ".git"))) {
+  if (!fs9.existsSync(path8.join(o.cloneDir, ".git"))) {
     return { state: "unknown" };
   }
   const run = o.run ?? defaultGitRunner;
-  const cacheFile = path7.join(o.stateDir, "update-check.json");
+  const cacheFile = path8.join(o.stateDir, "update-check.json");
   const cache = readCache(cacheFile);
   let remoteHead = null;
   if (cache !== null && o.now - cache.checkedAt < CACHE_TTL_MS) {
@@ -6722,7 +6912,7 @@ async function checkRemoteUpdate(o) {
     }
     remoteHead = sha;
     try {
-      fs8.mkdirSync(o.stateDir, { recursive: true });
+      fs9.mkdirSync(o.stateDir, { recursive: true });
       secureWriteFileSync(
         cacheFile,
         JSON.stringify({ checkedAt: o.now, remoteHead: sha }) + "\n"
@@ -6779,14 +6969,14 @@ async function runUpdateChecks(o) {
 // src/core/instance-lock.ts
 import {
   closeSync,
-  existsSync as existsSync9,
+  existsSync as existsSync10,
   openSync,
-  readFileSync as readFileSync12,
+  readFileSync as readFileSync13,
   statSync as statSync2,
   unlinkSync as unlinkSync3,
   writeSync
 } from "node:fs";
-import { join as join15 } from "node:path";
+import { join as join16 } from "node:path";
 var LOCK_FILE2 = "instance.lock";
 var heldByProcess = /* @__PURE__ */ new Set();
 function isPidAlive2(pid) {
@@ -6810,7 +7000,7 @@ function systemBootTimeMs() {
 }
 function readBootTimeMs() {
   try {
-    for (const line of readFileSync12("/proc/stat", "utf8").split("\n")) {
+    for (const line of readFileSync13("/proc/stat", "utf8").split("\n")) {
       if (line.startsWith("btime ")) {
         const seconds = Number.parseInt(line.slice("btime ".length).trim(), 10);
         return Number.isFinite(seconds) ? seconds * 1e3 : null;
@@ -6823,7 +7013,7 @@ function readBootTimeMs() {
 }
 function processStartMs(pid) {
   try {
-    const stat = readFileSync12(`/proc/${pid}/stat`, "utf8");
+    const stat = readFileSync13(`/proc/${pid}/stat`, "utf8");
     const close = stat.lastIndexOf(")");
     const fields = stat.slice(close + 1).trim().split(/\s+/);
     const ticks = Number.parseInt(fields[19] ?? "", 10);
@@ -6855,13 +7045,13 @@ function lockMtimeMs(lockPath) {
 }
 function readLockPid(lockPath) {
   try {
-    return existsSync9(lockPath) ? readFileSync12(lockPath, "utf8").trim() : "";
+    return existsSync10(lockPath) ? readFileSync13(lockPath, "utf8").trim() : "";
   } catch {
     return "";
   }
 }
 function acquireInstanceLock(dir) {
-  const lockPath = join15(dir, LOCK_FILE2);
+  const lockPath = join16(dir, LOCK_FILE2);
   const writeLock = () => {
     const fd = openSync(lockPath, "wx", 384);
     try {
@@ -7066,8 +7256,12 @@ function useInlineEditorState() {
 }
 var INLINE_EDIT_MAX_LINE = 1e4;
 var INLINE_EDIT_TOO_LONG = "A line is over 10,000 characters: press e to edit in your editor";
+var INLINE_EDIT_MAX_NON_ASCII = 2e4;
+var INLINE_EDIT_TOO_MANY_NON_ASCII = "The note has over 20,000 non-ASCII characters: press e to edit in your editor";
 function inlineEditRefusal(content) {
-  return content.split("\n").some((l) => l.length > INLINE_EDIT_MAX_LINE) ? INLINE_EDIT_TOO_LONG : null;
+  if (content.split("\n").some((l) => l.length > INLINE_EDIT_MAX_LINE)) return INLINE_EDIT_TOO_LONG;
+  const nonAscii = content.match(/[^\x00-\x7f]/gu)?.length ?? 0;
+  return nonAscii > INLINE_EDIT_MAX_NON_ASCII ? INLINE_EDIT_TOO_MANY_NON_ASCII : null;
 }
 
 // src/tui/Root.tsx
@@ -7446,6 +7640,11 @@ function helpListWindow(lines, offset, innerWidth, innerHeight) {
   return { shown, counter, offset: start2 };
 }
 
+// src/core/help-fit.ts
+function maxFitColumns(width) {
+  return Math.max(0, Math.floor((width - 6) / 23));
+}
+
 // src/tui/Help.tsx
 var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
 function helpColumns(entries, rows) {
@@ -7469,7 +7668,7 @@ function Section({
     /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 1, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: name }) }),
     /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", children: subCols.map((colEntries, ci) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "column", width: subColWidth, children: colEntries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", children: (() => {
       const full = entry.key.padEnd(8) + "  " + entry.description;
-      const sliced = full.slice(0, subColWidth - 1);
+      const sliced = cutLine(full, subColWidth - 1);
       const keyLen = Math.min(8, sliced.length);
       const keyPart = sliced.slice(0, keyLen);
       const restPart = sliced.slice(keyLen);
@@ -7482,17 +7681,6 @@ function Section({
 }
 function Help({ width, height, entries, editor }) {
   const [scroll, setScroll] = (0, import_react5.useState)(0);
-  const list = entries === void 0 && !(width >= 100 && height >= 30 || width >= 50 && width < 100 && height >= 30 || width >= 80 && height >= 24);
-  const listLines = list ? helpListLines(editor ?? "nvim") : [];
-  const win = helpListWindow(listLines, scroll, Math.max(1, width - 2), Math.max(1, height - 2));
-  use_input_default(
-    (input, key) => {
-      const top = Math.max(0, listLines.length - Math.max(1, height - 3));
-      if (input === "j" || key.downArrow) setScroll((s) => Math.min(top, s + 1));
-      else if (input === "k" || key.upArrow) setScroll((s) => Math.max(0, s - 1));
-    },
-    { isActive: list }
-  );
   const contentRows = Math.max(1, height - 4);
   const displayEntries = entries ?? keymap;
   const columns = helpColumns(displayEntries, contentRows);
@@ -7518,6 +7706,18 @@ function Help({ width, height, entries, editor }) {
   let sectionCols = 1;
   while (sectionCols < 4 && rowsAt(sectionCols) > availableContent) sectionCols++;
   const sectionRowWidth = twoCols ? width - 4 : innerWidth;
+  const sectioned = width >= 100 && height >= 30 || width >= 80 && height >= 24 || width >= 50 && width < 100 && height >= 30 && sectionCols <= maxFitColumns(width);
+  const list = entries === void 0 && !sectioned;
+  const listLines = list ? helpListLines(editor ?? "nvim") : [];
+  const win = helpListWindow(listLines, scroll, Math.max(1, width - 2), Math.max(1, height - 2));
+  use_input_default(
+    (input, key) => {
+      const top = Math.max(0, listLines.length - Math.max(1, height - 3));
+      if (input === "j" || key.downArrow) setScroll((s) => Math.min(top, s + 1));
+      else if (input === "k" || key.upArrow) setScroll((s) => Math.max(0, s - 1));
+    },
+    { isActive: list }
+  );
   const wide = entries === void 0 && !list && width >= 100 && height >= 30;
   const wideLines = wide ? layoutHelp(width, height, editor ?? "nvim") : [];
   const flatContent = /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(Box_default, { flexDirection: "column", width, height, children: [
@@ -7557,7 +7757,7 @@ function Help({ width, height, entries, editor }) {
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: "Help - Keyboard Shortcuts" }) }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", paddingX: 2, children: narrowCols.map((colEntries, ci) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "column", width: narrowColWidth, children: colEntries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(Box_default, { flexDirection: "row", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { ...theme2.accent, children: entry.key.padEnd(8) }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: entry.description.slice(0, narrowColWidth - 9) })
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: cutLine(entry.description, narrowColWidth - 9) })
         ] }, entry.action)) }, ci)) }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: "Found a bug? Run snote --report to save a report bundle." }) }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(Text, { children: [
@@ -7600,7 +7800,7 @@ function Help({ width, height, entries, editor }) {
 
 // src/tui/BottomArea.tsx
 var import_react10 = __toESM(require_react(), 1);
-import { join as join19 } from "node:path";
+import { join as join20 } from "node:path";
 
 // src/tui/TagEditor.tsx
 var import_react6 = __toESM(require_react(), 1);
@@ -7881,12 +8081,12 @@ var deleteTagHandlers = (store, tagDialog, setTagDialog) => {
 
 // src/tui/blog-send-ask.ts
 var import_react8 = __toESM(require_react(), 1);
-import * as fs11 from "node:fs";
-import * as path10 from "node:path";
+import * as fs12 from "node:fs";
+import * as path11 from "node:path";
 
 // src/core/blog-config.ts
-import * as fs9 from "node:fs";
-import * as path8 from "node:path";
+import * as fs10 from "node:fs";
+import * as path9 from "node:path";
 var BLOG_FILE = "blog.json";
 var DEFAULT_BLOG_ORIGIN = "https://skryf.art";
 function blogOriginFromEnv(env) {
@@ -7902,19 +8102,19 @@ async function saveBlogConfig(dir, { origin, token }) {
   if (!token || token.length === 0) {
     throw new Error("Blog token must be a non-empty string");
   }
-  const filePath = path8.join(dir, BLOG_FILE);
+  const filePath = path9.join(dir, BLOG_FILE);
   const trimmedOrigin = origin.replace(/\/+$/, "");
   const payload = { origin: trimmedOrigin, token };
   const data = JSON.stringify(payload);
   secureMkdir(dir);
-  fs9.writeFileSync(filePath, data, { mode: 384 });
-  fs9.chmodSync(filePath, 384);
+  fs10.writeFileSync(filePath, data, { mode: 384 });
+  fs10.chmodSync(filePath, 384);
 }
 async function loadBlogConfig(dir) {
-  const filePath = path8.join(dir, BLOG_FILE);
+  const filePath = path9.join(dir, BLOG_FILE);
   let raw;
   try {
-    raw = fs9.readFileSync(filePath, "utf8");
+    raw = fs10.readFileSync(filePath, "utf8");
   } catch {
     return null;
   }
@@ -8028,8 +8228,8 @@ function noteToBlogDraft(content) {
 }
 
 // src/core/blog-sent.ts
-import * as fs10 from "node:fs";
-import * as path9 from "node:path";
+import * as fs11 from "node:fs";
+import * as path10 from "node:path";
 var BLOG_SENT_FILE = "blog-sent.json";
 function blogStatusLine(record) {
   if (!record) {
@@ -8040,11 +8240,11 @@ function blogStatusLine(record) {
   return "Sent as draft \xB7 " + record.sentAt.slice(0, 10) + " \xB7 " + url;
 }
 function recordBlogSend(dir, noteId, { postId, url, sentAt }) {
-  const filePath = path9.join(dir, BLOG_SENT_FILE);
+  const filePath = path10.join(dir, BLOG_SENT_FILE);
   let data = {};
-  if (fs10.existsSync(filePath)) {
+  if (fs11.existsSync(filePath)) {
     try {
-      const raw = fs10.readFileSync(filePath, "utf8");
+      const raw = fs11.readFileSync(filePath, "utf8");
       data = JSON.parse(raw);
     } catch {
       data = {};
@@ -8055,12 +8255,12 @@ function recordBlogSend(dir, noteId, { postId, url, sentAt }) {
   secureWriteFileSync(filePath, JSON.stringify(data));
 }
 function loadBlogSend(dir, noteId) {
-  const filePath = path9.join(dir, BLOG_SENT_FILE);
-  if (!fs10.existsSync(filePath)) {
+  const filePath = path10.join(dir, BLOG_SENT_FILE);
+  if (!fs11.existsSync(filePath)) {
     return null;
   }
   try {
-    const raw = fs10.readFileSync(filePath, "utf8");
+    const raw = fs11.readFileSync(filePath, "utf8");
     const data = JSON.parse(raw);
     if (data === null || typeof data !== "object" || Array.isArray(data)) {
       return null;
@@ -8189,7 +8389,7 @@ function useBlogSendAskState(noteId, content, setNotice, setNoticeError) {
       return;
     }
     const dir = dataRoot();
-    const configured = fs11.existsSync(path10.join(dir, "blog.json"));
+    const configured = fs12.existsSync(path11.join(dir, "blog.json"));
     const id = noteIdRef.current;
     if (!configured) request({ kind: "token", origin: blogOriginFromEnv(process.env) });
     else if (id && loadBlogSend(dir, id)) request({ kind: "resend" });
@@ -8378,7 +8578,7 @@ function BottomArea({
     if (kind === "rename") return sanitizeForTerminal(tagDialog.tagName);
     if (exportPathRef.current === null) {
       const base = exportFileName(selectedEntry?.note.content ?? "");
-      exportPathRef.current = join19(documentsDir(), `${base}.md`);
+      exportPathRef.current = join20(documentsDir(), `${base}.md`);
     }
     return exportPathRef.current;
   };
@@ -10695,6 +10895,7 @@ function caretMove(value, caret, input, key, width) {
   if (key.meta && input === "f") return at(nextWord(value, caret));
   if (key.ctrl && input === "a") return at(lineStart(value, caret));
   if (key.ctrl && input === "e") return at(lineEnd(value, caret));
+  if (key.delete && !key.ctrl && !key.meta && !key.super) return { caret, value: value.slice(0, caret) + value.slice(nextGrapheme(value, caret)) };
   return null;
 }
 
@@ -10835,9 +11036,9 @@ function InlineEditor({ width, height, base, onClose, onSave }) {
     const fresh = !stale();
     const move = caretMove(shownRef.current, caretRef.current, input, key, widthRef.current);
     if (!move) return;
-    moveRef.current = fresh ? "fresh" : "stale";
+    moveRef.current = key.delete ? "stale" : fresh ? "fresh" : "stale";
     if (move.value !== shownRef.current) {
-      show(realRef.current + move.value.slice(shownRef.current.length), move.caret);
+      show(remapEdit(realRef.current, shownRef.current, move.value, move.caret), move.caret);
       return;
     }
     if (move.caret === caretRef.current) return;
@@ -11794,6 +11995,7 @@ function buildStore(opts, auth, onLogout) {
       restoreNotesFromGhosts(store, ghosts, unsynced);
     }, 0);
   }
+  const ownEchoes = trackOwnEchoes(store.client, opts.dataDir);
   const startSaving = persistOnChange(store, opts.dataDir);
   const unsyncedTracker = trackUnsynced(store, opts.dataDir);
   const stopUnsynced = unsyncedTracker.stop;
@@ -11805,6 +12007,7 @@ function buildStore(opts, auth, onLogout) {
   stopSaving = () => {
     startSaving();
     stopUnsynced();
+    ownEchoes.stop();
     stopStatus();
     if (opts.statusDir) clearUpdateStatusFile(opts.statusDir);
     stopNewRequests();
@@ -11827,6 +12030,10 @@ function buildStore(opts, auth, onLogout) {
         publishProblem(problemText("could not re-send offline edits", err));
       }
     );
+  void whenCatchUpApplied(store.client, "note").then(
+    () => ownEchoes.settle(),
+    () => ownEchoes.settle()
+  );
   trackDeletions(store, opts.dataDir);
   if (noteGhosts) {
     void resendDeletions(
@@ -11847,17 +12054,17 @@ function accountStore(opts, auth, onLogout) {
 function stateDir() {
   const xdg = process.env.XDG_STATE_HOME;
   if (xdg && xdg !== "") {
-    return path11.join(xdg, "snote");
+    return path12.join(xdg, "snote");
   }
-  return path11.join(os2.homedir(), ".local", "state", "snote");
+  return path12.join(os2.homedir(), ".local", "state", "snote");
 }
 async function writeReport(log, dataDir) {
   const dir = stateDir();
   let bundle;
   try {
-    const crashes = fs12.readdirSync(dir).filter((f) => f.startsWith("crash-") && f.endsWith(".json")).sort();
+    const crashes = fs13.readdirSync(dir).filter((f) => f.startsWith("crash-") && f.endsWith(".json")).sort();
     if (crashes.length > 0) {
-      const raw = fs12.readFileSync(path11.join(dir, crashes.at(-1)), "utf8");
+      const raw = fs13.readFileSync(path12.join(dir, crashes.at(-1)), "utf8");
       const old = JSON.parse(raw);
       const oldSession = old.session;
       const session = typeof oldSession === "object" && oldSession !== null ? oldSession.keysMasked === true ? { ...oldSession, keys: redactStoredKeys(oldSession.keys) } : { ...oldSession, keys: [], keysDropped: "older version" } : oldSession;
@@ -11885,7 +12092,7 @@ async function writeReport(log, dataDir) {
       return 0;
     }
   }
-  const file = path11.join(
+  const file = path12.join(
     dir,
     `report-${(/* @__PURE__ */ new Date()).toISOString().replaceAll(":", "-")}.json`
   );
@@ -11970,7 +12177,7 @@ async function main(argv, io) {
   const makeStoreFor = (auth, onLogout) => {
     const dir = statusDir(process.env);
     const built = accountStore(
-      { dataDir, appId, server: o.server, statusDir: fs12.existsSync(dir) ? dir : void 0 },
+      { dataDir, appId, server: o.server, statusDir: fs13.existsSync(dir) ? dir : void 0 },
       auth,
       onLogout
     );
@@ -12033,7 +12240,7 @@ async function main(argv, io) {
       home: os2.homedir()
     });
     const dir = stateDir();
-    const file = path11.join(
+    const file = path12.join(
       dir,
       `crash-${report.record.when.replaceAll(":", "-")}.json`
     );
@@ -12085,7 +12292,7 @@ async function main(argv, io) {
     }
     process.stderr.write(report.message.replace("{path}", pathText) + "\n");
     try {
-      fs12.fsyncSync(1);
+      fs13.fsyncSync(1);
     } catch {
     }
     process.exit(1);

@@ -5,3 +5,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# machine-specific paths for the shared agent skills (agent-skills bin/init-project)
+.claude/skill-context/local.md

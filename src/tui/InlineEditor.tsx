@@ -231,10 +231,10 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
     const fresh = !stale();
     const move = caretMove(shownRef.current, caretRef.current, input, key, widthRef.current);
     if (!move) return;
-    moveRef.current = fresh ? 'fresh' : 'stale';
+    moveRef.current = key.delete ? 'stale' : fresh ? 'fresh' : 'stale';
     if (move.value !== shownRef.current) {
       // Down on the last row: the stand-in text maps one unit for one
-      show(realRef.current + move.value.slice(shownRef.current.length), move.caret);
+      show(remapEdit(realRef.current, shownRef.current, move.value, move.caret), move.caret);
       return;
     }
     if (move.caret === caretRef.current) return;

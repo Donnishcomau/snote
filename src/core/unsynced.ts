@@ -3,6 +3,7 @@ import * as path from 'node:path';
 
 import type { EntityId } from '@vendor/types';
 
+import { saveState } from './persistence';
 import { secureMkdir, secureWriteFileSync } from './secure-fs';
 import type { State } from './store';
 
@@ -138,6 +139,15 @@ export function trackUnsynced(
       return;
     }
     written = next;
+    // F198 — the record holds only ids and dates; the change itself lives in
+    // state.json, which the debounced saver writes up to 500 ms later. Save
+    // it now, before the record, so a kill inside that window cannot leave
+    // a record entry pointing at a change that exists only in memory.
+    try {
+      saveState(store.getState(), dir);
+    } catch {
+      // the debounced saver retries and shows the failure on the notice line
+    }
     writeRecord(dir, written);
   };
 

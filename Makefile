@@ -4,7 +4,7 @@ VITEST_TIMEOUT ?= 600
 check:
 	npm run -s typecheck
 	npm run -s lint
-	@timeout $(VITEST_TIMEOUT) npx vitest run --passWithNoTests || { code=$$?; if [ $$code -eq 124 ]; then echo "FAIL: vitest did not finish within $(VITEST_TIMEOUT)s: a test left a handle open. Re-run with --reporter=hanging-process to see which one."; fi; exit $$code; }
+	@timeout $(VITEST_TIMEOUT) npx vitest run --passWithNoTests || { code=$$?; if [ $$code -eq 124 ]; then echo "FAIL: vitest did not finish within $(VITEST_TIMEOUT)s: the suite was too slow (machine load) or a test left a handle open. Re-run with --reporter=hanging-process to see which one."; fi; exit $$code; }
 	@grep -rnE "\.only\(|\.skip\(" test vendor --include=*.ts --include=*.tsx && { echo "FAIL: .only/.skip found"; exit 1; } || true
 	@[ -f test/keymap.test.ts ] && npm run -s test:keymap || echo "skip: keymap gate (T16)"
 	@[ -f scripts/lint-ansi.mjs ] && npm run -s lint:ansi || echo "skip: ansi gate (T12)"
@@ -21,7 +21,7 @@ check:
 check-ci:
 	npm run -s typecheck
 	npm run -s lint
-	@timeout $(VITEST_TIMEOUT) npx vitest run --passWithNoTests || { code=$$?; if [ $$code -eq 124 ]; then echo "FAIL: vitest did not finish within $(VITEST_TIMEOUT)s: a test left a handle open. Re-run with --reporter=hanging-process to see which one."; fi; exit $$code; }
+	@timeout $(VITEST_TIMEOUT) npx vitest run --passWithNoTests || { code=$$?; if [ $$code -eq 124 ]; then echo "FAIL: vitest did not finish within $(VITEST_TIMEOUT)s: the suite was too slow (machine load) or a test left a handle open. Re-run with --reporter=hanging-process to see which one."; fi; exit $$code; }
 	@grep -rnE "\.only\(|\.skip\(" test vendor --include=*.ts --include=*.tsx && { echo "FAIL: .only/.skip found"; exit 1; } || true
 	@[ -f test/keymap.test.ts ] && npm run -s test:keymap || echo "skip: keymap gate (T16)"
 	@[ -f scripts/lint-ansi.mjs ] && npm run -s lint:ansi || echo "skip: ansi gate (T12)"

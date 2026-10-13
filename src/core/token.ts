@@ -104,6 +104,9 @@ const SNOTE_FILES = [
   'new-note.request.tmp',
   'unsynced.json',
   'unsynced.json.tmp',
+  // T523 — the owed-ack record: logout sweeps it like the others.
+  'sent-changes.json',
+  'sent-changes.json.tmp',
 ];
 
 function isSnoteFile(name: string): boolean {

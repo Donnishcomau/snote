@@ -148,19 +148,19 @@ exports[`Golden frames: search, tags, help > 5: WHEN at 80x24 ? is written THEN 
 │  Enter   Open note                    m       Markdown on / off              │
 │  Tab     Next pane                    s       Sort: modified, created, a-z   │
 │  q       Quit                         S       Reverse the sort order         │
-│  v       Toggle rendered markdown pre /       Search notes                   │
+│  v       Toggle rendered markdown pr… /       Search notes                   │
 │  ?       Show this help               t       Show / focus the tags pane     │
 │  Escape  Close overlay / back         J       Move tag down (tags pane)      │
 │  e       Edit in $EDITOR              K       Move tag up (tags pane)        │
 │  n       New note                     R       Rename tag (tags pane)         │
-│  g       Edit tags of the selected no x       Delete tag (tags pane)         │
+│  g       Edit tags of the selected n… x       Delete tag (tags pane)         │
 │  w       Export note to .md           r       Sync now                       │
 │  b       Send to blog as draft        P       Publish / unpublish            │
 │  L       Log out (asks first)         y       Copy the public link           │
-│  d       Move to trash                h       Note history (Enter restores   │
-│  u       Restore from trash (trash vi c       Tick / untick item (note)      │
+│  d       Move to trash                h       Note history (Enter restore…   │
+│  u       Restore from trash (trash v… c       Tick / untick item (note)      │
 │  D       Delete forever (trash view)  a       Add checklist item (note)      │
-│  T       Show trash / all notes       i       Edit inline (built-in editor   │
+│  T       Show trash / all notes       i       Edit inline (built-in edito…   │
 │  Found a bug? Run snote --report to save a report bundle.                    │
 │  Editing: save with Ctrl+S and close the window to return                    │
 │                                                                              │

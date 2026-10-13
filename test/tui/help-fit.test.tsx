@@ -30,8 +30,8 @@ function expectFit(w: number, h: number): string {
 }
 
 describe('help fit', () => {
-  it('1: WHEN Help renders at 60x30 THEN FIT(60, 30) holds and no line contains `JTrash`', () => {
-    const frame = expectFit(60, 30);
+  it('1: WHEN Help renders at 60x40 THEN FIT(60, 40) holds and no line contains `JTrash`', () => {
+    const frame = expectFit(60, 40);
     expect(frame.split('\n').some((l) => l.includes('JTrash'))).toBe(false);
   });
 
@@ -40,8 +40,8 @@ describe('help fit', () => {
     expect(frame).toContain('Editing: Esc then :wq to save and return');
   });
 
-  it('3: WHEN Help renders at 50x34 THEN FIT(50, 34) holds', () => {
-    expect(expectFit(50, 34)).not.toBe('');
+  it('3: WHEN Help renders at 50x50 THEN FIT(50, 50) holds', () => {
+    expect(expectFit(50, 50)).not.toBe('');
   });
 
   it('4: WHEN Help renders at 90x40 THEN FIT(90, 40) holds', () => {

@@ -231,5 +231,6 @@ export function caretMove(value: string, caret: number, input: string, key: Key,
   if (key.meta && input === 'f') return at(nextWord(value, caret));
   if (key.ctrl && input === 'a') return at(lineStart(value, caret));
   if (key.ctrl && input === 'e') return at(lineEnd(value, caret));
+  if (key.delete && !key.ctrl && !key.meta && !key.super) return { caret, value: value.slice(0, caret) + value.slice(nextGrapheme(value, caret)) };
   return null;
 }

@@ -143,12 +143,21 @@ export function removeStatusFile(dir: string): void {
 }
 
 /**
- * Rewrite `status.json` in `dir` without the `update` key (T417, quit).
- * Quitting clears the on-screen notice, so the bar tooltip must not keep
- * saying "Update available" until snote starts again. Read-modify-write:
- * every other key stays byte-for-byte as written; the `update` key is
- * dropped only when the file is valid JSON that carries it. Missing,
- * unreadable or malformed files are left untouched.
+ * F177 (T518): the epoch `alive` a clean quit writes into `status.json`.
+ * `Date.parse` of it is 0, so every widget version reads the file as
+ * "snote is not running" the moment snote ends, instead of waiting for
+ * the 120 s heartbeat rule.
+ */
+export const STOPPED_ALIVE = '1970-01-01T00:00:00.000Z';
+
+/**
+ * Rewrite `status.json` in `dir` at quit (T417 + F177/T518): the `update`
+ * key is dropped so the bar tooltip stops saying "Update available", and
+ * `alive` becomes the epoch so the tooltip says "snote is not running"
+ * at once instead of "Synced …" for up to 120 s. Read-modify-write:
+ * every other key stays byte-for-byte as written. Missing, unreadable
+ * or malformed files are left untouched (a crash or kill never marks
+ * the file: the 120 s heartbeat rule still decides those).
  */
 export function clearUpdateStatusFile(dir: string): void {
   try {
@@ -158,10 +167,18 @@ export function clearUpdateStatusFile(dir: string): void {
       return;
     }
     const record = parsed as Record<string, unknown>;
-    if (!('update' in record)) {
+    let changed = false;
+    if ('update' in record) {
+      delete record.update;
+      changed = true;
+    }
+    if (record.alive !== STOPPED_ALIVE) {
+      record.alive = STOPPED_ALIVE;
+      changed = true;
+    }
+    if (!changed) {
       return;
     }
-    delete record.update;
     writeStatusFile(dir, record as unknown as Status);
   } catch {
     /* best-effort: no file, or nothing to clear */
