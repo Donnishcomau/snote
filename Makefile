@@ -32,12 +32,18 @@ check-ci:
 # uncommitted change (vitest --changed follows imports). The loop itself runs the full `make check-ci` once per
 # attempt, so the model no longer idles through repeated full-suite runs.
 # known load-flaky files (.loop/known-flaky) are skipped here; the loop reruns them alone in its full check
+# check-fast compares with the merge base of origin/main, so a committed branch still selects its tests;
+# vitest --changed <ref> also takes uncommitted and untracked files. Falls back to HEAD without origin/main.
+FAST_BASE = $(shell git merge-base HEAD origin/main 2>/dev/null || echo HEAD)
 KNOWN_FLAKY_EXCLUDES = $(addprefix --exclude ,$(shell grep -oE '^test/[^ #]+' .loop/known-flaky 2>/dev/null))
 .PHONY: check-fast
 check-fast:
 	npm run -s typecheck
 	npm run -s lint
-	@timeout $(VITEST_TIMEOUT) npx vitest run --changed HEAD --passWithNoTests $(KNOWN_FLAKY_EXCLUDES)
+	@timeout $(VITEST_TIMEOUT) npx vitest run --changed $(FAST_BASE) --passWithNoTests $(KNOWN_FLAKY_EXCLUDES)
+	@# T538: a change that can grow the bundle runs every test that builds it (size caps live in several; vitest --changed cannot see them)
+	@if { git diff --name-only $(FAST_BASE); git ls-files --others --exclude-standard; } | grep -qE '^(src|vendor)/|^package(-lock)?\.json$$|^scripts/build\.mjs$$'; then \
+	  timeout $(VITEST_TIMEOUT) npx vitest run $$(grep -rlE "scripts/build\.mjs" test --include='*.test.ts' --include='*.test.tsx'); fi
 	@grep -rnE "\.only\(|\.skip\(" test vendor --include=*.ts --include=*.tsx && { echo "FAIL: .only/.skip found"; exit 1; } || true
 	@[ -f test/keymap.test.ts ] && npm run -s test:keymap || echo "skip: keymap gate (T16)"
 	@[ -f scripts/lint-ansi.mjs ] && npm run -s lint:ansi || echo "skip: ansi gate (T12)"

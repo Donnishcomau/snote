@@ -1,11 +1,27 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdtempSync, readFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 
 import { selectEditor, isTerminalEditor } from './editor-select.js';
 import { findOnPath } from '../cli/env-check.js';
 import { exportFileName } from './export-note.js';
+import { ensureDraftsDir, removeDrafts } from './editor-drafts.js';
+import { secureWriteFileSync } from './secure-fs.js';
+import { afterNextSave } from './persistence.js';
+
+// #65: draft folders whose text went back to snote and may not be saved to
+// disk yet; the caller releases them once it has dispatched the text.
+let handedBack: string[] = [];
+
+/**
+ * Call right after the editor's text is dispatched: the draft folders handed
+ * back so far are removed once state.json holds that text, never before.
+ */
+export function releaseDraftsAfterSave(): void {
+  const drafts = handedBack;
+  handedBack = [];
+  if (drafts.length > 0) afterNextSave(() => removeDrafts(drafts));
+}
 
 // One-line key cheat-sheet nvim shows in the note window's winbar, so the
 // main keys stay visible while editing inside snote's window.
@@ -60,8 +76,12 @@ export function nvimHintArgs(): string[] {
 }
 
 /**
- * Opens the user's editor on a temporary file containing *initial*,
- * waits for it to exit, reads back the result, and cleans up.
+ * Opens the user's editor on a draft file containing *initial* and waits
+ * for it to exit. #65: the draft sits in a private folder of its own under
+ * the open account's drafts folder (editor-drafts.ts). Unchanged text removes the folder at once; changed text is
+ * returned and the folder is handed back (releaseDraftsAfterSave) to be
+ * removed once the note is on disk; when the editor fails to start or exits
+ * with a status other than 0 the folder is kept and the error names the file.
  *
  * Returns the edited text, or `null` when the file is unchanged.
  */
@@ -74,48 +94,50 @@ export async function editInEditor(
   const cmd = parts[0];
   const args = parts.slice(1);
 
-  const tmpDir = mkdtempSync(join(tmpdir(), 'snote-'));
-  try {
-    // Name the file after the note itself (same name the export would use),
-    // so the editor's status bar shows which note is open. The .md suffix
-    // keeps markdown highlighting; an empty note lands on 'untitled.md'.
-    const stem = exportFileName(initial);
-    const tmpFile = join(tmpDir, `${stem}.md`);
-    writeFileSync(tmpFile, initial, 'utf-8');
+  // mkdtemp creates the folder with mode 0700
+  const tmpDir = mkdtempSync(join(ensureDraftsDir(), 'snote-'));
+  // Name the file after the note itself (same name the export would use),
+  // so the editor's status bar shows which note is open. The .md suffix
+  // keeps markdown highlighting; an empty note lands on 'untitled.md'.
+  const stem = exportFileName(initial);
+  const tmpFile = join(tmpDir, `${stem}.md`);
+  secureWriteFileSync(tmpFile, initial);
 
-    // Terminal editors (nvim, vim, ...) run inline exactly as before: their
-    // stdio is inherited so they can draw over snote's own screen. GUI
-    // editors are routed through uwsm when it's on PATH so it can silence
-    // their stderr (Qt binding-loop noise, portal errors) and manage
-    // desktop integration the same way Omarchy's own launcher does; their
-    // stdio is never inherited, so nothing leaks into snote's terminal.
-    const direct = process.env.SNOTE_EDITOR_DIRECT === '1';
-    const uwsm = direct ? null : findOnPath('uwsm', process.env.PATH);
-    // nvim additionally gets the winbar cheat-sheet, set before the temp
-    // file is loaded; every other editor's arguments stay exactly as before.
-    const hint = basename(cmd) === 'nvim' ? nvimHintArgs() : [];
-    const result = isTerminalEditor(cmd)
-      ? spawnSync(cmd, [...args, ...hint, tmpFile], { stdio: 'inherit' })
-      : uwsm
-        ? spawnSync('uwsm', ['app', '-S', 'both', '--', cmd, ...args, tmpFile], {
-            stdio: ['ignore', 'ignore', 'ignore'],
-          })
-        : spawnSync(cmd, [...args, tmpFile], { stdio: ['ignore', 'ignore', 'ignore'] });
-    if (result.error) {
-      throw new Error(
-        'editor failed: ' +
-          ((result.error as NodeJS.ErrnoException).code ?? result.error.message),
-      );
-    }
-    if (result.status !== 0) {
-      throw new Error('editor failed: exit ' + result.status);
-    }
-
-    const edited = readFileSync(tmpFile, 'utf-8');
-    return edited === initial ? null : edited;
-  } finally {
-    // always clean up the temp dir, even if the editor throws, so no
-    // 'snote-*' directory leaks into os.tmpdir() for other tests to observe.
-    rmSync(tmpDir, { recursive: true, force: true });
+  // Terminal editors (nvim, vim, ...) run inline exactly as before: their
+  // stdio is inherited so they can draw over snote's own screen. GUI
+  // editors are routed through uwsm when it's on PATH so it can silence
+  // their stderr (Qt binding-loop noise, portal errors) and manage
+  // desktop integration the same way Omarchy's own launcher does; their
+  // stdio is never inherited, so nothing leaks into snote's terminal.
+  const direct = process.env.SNOTE_EDITOR_DIRECT === '1';
+  const uwsm = direct ? null : findOnPath('uwsm', process.env.PATH);
+  // nvim additionally gets the winbar cheat-sheet, set before the temp
+  // file is loaded; every other editor's arguments stay exactly as before.
+  const hint = basename(cmd) === 'nvim' ? nvimHintArgs() : [];
+  const result = isTerminalEditor(cmd)
+    ? spawnSync(cmd, [...args, ...hint, tmpFile], { stdio: 'inherit' })
+    : uwsm
+      ? spawnSync('uwsm', ['app', '-S', 'both', '--', cmd, ...args, tmpFile], {
+          stdio: ['ignore', 'ignore', 'ignore'],
+        })
+      : spawnSync(cmd, [...args, tmpFile], { stdio: ['ignore', 'ignore', 'ignore'] });
+  const kept = '. Your text is kept in ' + tmpFile;
+  if (result.error) {
+    throw new Error(
+      'editor failed: ' +
+        ((result.error as NodeJS.ErrnoException).code ?? result.error.message) +
+        kept,
+    );
   }
+  if (result.status !== 0) {
+    throw new Error('editor failed: exit ' + result.status + kept);
+  }
+
+  const edited = readFileSync(tmpFile, 'utf-8');
+  if (edited === initial) {
+    removeDrafts([tmpDir]);
+    return null;
+  }
+  handedBack.push(tmpDir);
+  return edited;
 }

@@ -3,7 +3,7 @@ import { Store } from 'redux';
 import { basename, dirname, join } from 'node:path';
 
 import type { State } from '../core/store';
-import { editInEditor } from '../core/editor';
+import { editInEditor, releaseDraftsAfterSave } from '../core/editor';
 import { selectEditor, isTerminalEditor, editorFinishHint } from '../core/editor-select';
 import { newNoteFields } from '../core/new-note';
 import { publishLink } from '../core/note-keys';
@@ -79,6 +79,7 @@ export function editSelectedNote(ctx: EditSelectedNoteCtx): void {
           noteId: selectedEntry.id,
           changes: { content: merged.content },
         } as never);
+        releaseDraftsAfterSave(); // #65: the draft goes once state.json holds the text
         if (merged.conflict) {
           onEditorError?.('A change from another device could not be merged automatically - both versions were kept.');
         }
@@ -142,10 +143,8 @@ export function createNote(ctx: CreateNoteCtx): void {
   setRawMode(false);
   const noteId: EntityId = crypto.randomUUID() as EntityId;
   const editor = runEditor ?? editInEditor;
-  // Keep the result outside the suspend callback: it resolves to undefined.
-  // The editor is started exactly once; raw mode is restored off the editor's
-  // own completion (never off the handover's settle), so a terminal that is
-  // suspended and comes back is never mistaken for the editor failing.
+  // As in editSelectedNote: the result lives outside the suspend callback, and
+  // raw mode is restored off the editor's own completion, never the handover's.
   let result: string | null = null;
   let editorError: unknown;
   let editorFailed = false;
@@ -183,6 +182,7 @@ export function createNote(ctx: CreateNoteCtx): void {
         note: { content: result, systemTags: fields.systemTags, tags: fields.tags },
         meta: { nextNoteToOpen: noteId },
       } as never);
+      releaseDraftsAfterSave(); // #65: the draft goes once state.json holds the text
       // Select the new note: ui.openedNote (set via meta.nextNoteToOpen
       // above) moves the marker in useAppState's render.
       setSelectedIndex((i) => i);

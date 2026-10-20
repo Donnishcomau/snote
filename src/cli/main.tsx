@@ -25,6 +25,8 @@ import { FileGhostStore } from '../core/ghost-store';
 // T445 — a note the server holds but state.json lost (killed inside the
 // save debounce) is added back from the ghost file at start-up.
 import { restoreNotesFromGhosts } from '../core/ghost-restore';
+// #65: editor drafts left by a failed editor or a crash come back as notes.
+import { recoverDrafts, setDraftsDir } from '../core/editor-drafts';
 // T85 — re-queue notes newer than their ghost on start-up.
 import { requeueUnsynced } from '../core/requeue';
 // T493 — the record of local changes the server never confirmed: kept and
@@ -154,6 +156,17 @@ export function buildStore(
   // the first start-up save can run.
   const ownEchoes = trackOwnEchoes(store.client, opts.dataDir);
   const startSaving = persistOnChange(store, opts.dataDir);
+  // #65: editor drafts live in this account's folder, under its instance
+  // lock. A draft no note holds (the editor failed, or snote died before
+  // the note was saved) comes back as a new note; queued after the ghost
+  // restore above, so a note the ghost holds is not added twice.
+  setDraftsDir(path.join(opts.dataDir, 'drafts'));
+  setTimeout(() => {
+    const restored = recoverDrafts(store);
+    if (restored > 0) {
+      publishProblem(`Restored ${restored} ${restored === 1 ? 'note' : 'notes'} from an unfinished editor session`);
+    }
+  }, 0);
   // T493 — keep the unsynced record fresh: written at once whenever the
   // pending set changes, never by the debounced state.json save.
   const unsyncedTracker = trackUnsynced(store, opts.dataDir);

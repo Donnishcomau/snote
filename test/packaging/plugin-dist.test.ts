@@ -102,4 +102,14 @@ describe('T341 buildPluginDist output', () => {
   it('5: WHEN the `VERSION` file in that directory is read THEN it equals the `version` in `package.json` followed by `\\n`', () => {
     expect(readFileSync(join(dirA, 'VERSION'), 'utf8')).toBe(`${pkg.version}\n`);
   });
+
+  it('6: WHEN buildPluginDist has built into a temp directory THEN the chunk that holds `previewCache` has `previewCache = new WeakMap` (the build puts `/* @__PURE__ */` before `new`) and no `previewCache.set(note.content`', () => {
+    const holders = listFiles(dirA).filter((f) => f.rel.endsWith('.js') && readFileSync(f.abs, 'utf8').includes('var previewCache'));
+    expect(holders.length).toBeGreaterThan(0);
+    for (const f of holders) {
+      const text = readFileSync(f.abs, 'utf8');
+      expect(text).toMatch(/var previewCache = (?:\/\* @__PURE__ \*\/ )?new WeakMap\(/);
+      expect(text).not.toContain('previewCache.set(note.content');
+    }
+  });
 });

@@ -130,7 +130,8 @@ function removeIfFile(p: string): void {
  * Logout — remove only the files snote wrote, never anything else.
  * In `dir` itself: auth.json, blog.json, blog-sent.json and every file of
  * snote's set. In each direct sub-folder (symlinks never followed): every
- * file of snote's set, then the sub-folder itself when that left it empty.
+ * file of snote's set and (#65) the editor's `snote-XXXXXX` folders in its
+ * real `drafts` folder, then the sub-folder itself when that left it empty.
  * No deeper level is entered. Afterwards `dir` exists with mode 0700
  * (created when missing, as before).
  */
@@ -153,6 +154,20 @@ export async function logout(dir: string): Promise<void> {
       }
       const sub = path.join(dir, entry.name);
       let removedAny = false;
+      // #65: the account's editor drafts: inside a real `drafts` folder
+      // (lstat), only the real folders snote's editor made (`snote-` plus the
+      // 6 characters mkdtemp adds) go, then `drafts` itself when that left it
+      // empty. Anything else in a `drafts` folder stays.
+      const drafts = path.join(sub, 'drafts');
+      if (fs.lstatSync(drafts, { throwIfNoEntry: false })?.isDirectory()) {
+        for (const d of fs.readdirSync(drafts, { withFileTypes: true })) {
+          if (d.isDirectory() && /^snote-[A-Za-z0-9]{6}$/.test(d.name)) {
+            fs.rmSync(path.join(drafts, d.name), { recursive: true, force: true });
+            removedAny = true;
+          }
+        }
+        if (fs.readdirSync(drafts).length === 0) fs.rmdirSync(drafts);
+      }
       for (const child of fs.readdirSync(sub, { withFileTypes: true })) {
         if (child.isFile() && isSnoteFile(child.name)) {
           removeIfFile(path.join(sub, child.name));

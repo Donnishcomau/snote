@@ -4,6 +4,7 @@
  */
 import { WebSocketServer, type WebSocket } from 'ws';
 import * as http from 'http';
+import type { Socket } from 'net';
 import { JSONDiff } from 'simperium/lib/simperium/jsondiff/jsondiff';
 import { randomUUID } from 'node:crypto';
 
@@ -142,6 +143,18 @@ export class FakeSimperiumServer {
   /** Public record of every HTTP request (method, url, apiKey, body) */
   httpRequests: Array<{ method: string; url: string; apiKey: string | undefined; body: Record<string, unknown> | null }> = [];
 
+  /** #85: the headers of every WebSocket handshake, in order. */
+  handshakeHeaders: http.IncomingHttpHeaders[] = [];
+  /** #85: refuse (403, connection left open) a handshake with no User-Agent, like api.simperium.com since Oct 2026. */
+  refuseHandshakesWithoutUserAgent = false;
+  /** #85: refuse every handshake the same way. */
+  refuseAllHandshakes = false;
+  /** #85: how many handshakes were refused. */
+  handshakesRefused = 0;
+  /** #85: TCP connections to this server that are still open. */
+  openSockets: Set<Socket> = new Set();
+  private refusedSockets: Set<Socket> = new Set();
+
   /** Start the server, returns port and URL */
   async start(): Promise<{ port: number; url: string }> {
     return new Promise((resolve, reject) => {
@@ -155,7 +168,28 @@ export class FakeSimperiumServer {
         const port = (this.httpServer!.address() as any).port as number;
         const url = `ws://localhost:${port}`;
 
-        this.wsServer = new WebSocketServer({ server: this.httpServer });
+        // #85: handle the upgrade here so every handshake's headers are
+        // recorded and a handshake can be refused like the live server does.
+        this.wsServer = new WebSocketServer({ noServer: true });
+        this.httpServer!.on('connection', (socket: Socket) => {
+          this.openSockets.add(socket);
+          socket.on('close', () => this.openSockets.delete(socket));
+        });
+        this.httpServer!.on('upgrade', (req: http.IncomingMessage, socket: Socket, head: Buffer) => {
+          this.handshakeHeaders.push(req.headers);
+          const ua = req.headers['user-agent'];
+          if (this.refuseAllHandshakes || (this.refuseHandshakesWithoutUserAgent && !ua)) {
+            this.handshakesRefused++;
+            this.refusedSockets.add(socket);
+            // Like api.simperium.com: a 403 answer, and the connection is left open.
+            socket.write('HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: 9\r\nConnection: keep-alive\r\n\r\nForbidden');
+            // Keep reading so a client that closes is seen closing (the socket is half-open after an upgrade).
+            socket.resume();
+            socket.on('end', () => socket.end());
+            return;
+          }
+          this.wsServer!.handleUpgrade(req, socket, head, (ws) => this.wsServer!.emit('connection', ws, req));
+        });
 
         this.wsServer.on('connection', (ws: WebSocket) => {
           this.handleConnection(ws);
@@ -169,6 +203,8 @@ export class FakeSimperiumServer {
   /** Stop the server */
   stop(): void {
     this.connections.clear();
+    for (const socket of this.refusedSockets) socket.destroy();
+    this.refusedSockets.clear();
     if (this.wsServer) {
       this.wsServer.close();
       this.wsServer = null;

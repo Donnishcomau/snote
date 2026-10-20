@@ -7,7 +7,7 @@ const read = (...parts: string[]) =>
   readFileSync(join(process.cwd(), ...parts), 'utf8');
 
 describe('release 0.2.4', () => {
-  it("1: WHEN package.json, manifest.json and package-lock.json are parsed THEN `version` (and `packages[''].version`) all equal `0.2.6`, and PKGBUILD contains `pkgver=0.2.6`.", () => {
+  it("1: WHEN package.json, manifest.json and package-lock.json are parsed THEN `version` (and `packages[''].version`) all equal `0.2.7`, and PKGBUILD contains `pkgver=0.2.7`.", () => {
     const pkg = JSON.parse(read('package.json')) as { version: string };
     const manifest = JSON.parse(read('manifest.json')) as { version: string };
     const lock = JSON.parse(read('package-lock.json')) as {
@@ -15,11 +15,11 @@ describe('release 0.2.4', () => {
       packages: Record<string, { version?: string }>;
     };
     const pkgbuild = read('packaging', 'aur', 'PKGBUILD');
-    expect(pkg.version).toBe('0.2.6');
-    expect(manifest.version).toBe('0.2.6');
-    expect(lock.version).toBe('0.2.6');
-    expect(lock.packages[''].version).toBe('0.2.6');
-    expect(pkgbuild).toContain('pkgver=0.2.6');
+    expect(pkg.version).toBe('0.2.7');
+    expect(manifest.version).toBe('0.2.7');
+    expect(lock.version).toBe('0.2.7');
+    expect(lock.packages[''].version).toBe('0.2.7');
+    expect(pkgbuild).toContain('pkgver=0.2.7');
   });
 
   it("2: WHEN CHANGELOG.md is read THEN `## 0.2.4` comes before `## 0.2.3`, it contains no `## Unreleased`, and the text between `## 0.2.4` and `## 0.2.3` contains `SNOTE_UPDATE_CHECK=off`, `omarchy-restart-shell`, `--notify-new`, `inline code` and `### Fixed`.", () => {
