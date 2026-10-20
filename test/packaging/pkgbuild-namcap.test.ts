@@ -17,9 +17,9 @@ describe('pkgbuild namcap', () => {
     );
   });
 
-  it('3: WHEN packaging/aur/PKGBUILD is read THEN it still contains pkgver=0.2.6, sha256sums=(\'SKIP\') and cd "$srcdir/snote-$pkgver"', () => {
+  it('3: WHEN packaging/aur/PKGBUILD is read THEN it still contains pkgver=0.2.7, sha256sums=(\'SKIP\') and cd "$srcdir/snote-$pkgver"', () => {
     const content = pkgbuild();
-    expect(content).toContain('pkgver=0.2.6');
+    expect(content).toContain('pkgver=0.2.7');
     expect(content).toContain("sha256sums=('SKIP')");
     expect(content).toContain('cd "$srcdir/snote-$pkgver"');
   });

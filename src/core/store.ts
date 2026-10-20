@@ -15,6 +15,9 @@ import { installSimperiumReconnectFix } from './simperium-reconnect-fix';
 import { installSimperiumStaleDeleteFix } from './simperium-stale-delete-fix';
 import { installSimperiumRemovedNoteFix } from './simperium-removed-note-fix';
 import { installSimperiumAuthWatchdog } from './simperium-auth-watchdog';
+import { installSimperiumRevisionCacheFix } from './simperium-revision-cache-fix';
+// #85 — the sync socket sends a User-Agent and closes refused connections.
+import { snoteSocketOptions } from './websocket-provider';
 // T443 — a force-sync step that fails shows on the notice line instead of vanishing.
 import { problemText, publishProblem } from './problem-signal';
 
@@ -104,7 +107,23 @@ const rootReducer = (
       return state as State;
     }
   }
-  return baseReducer(state, action);
+  const next = baseReducer(state, action);
+  // T536 — a note's versions are held only while its history is open, for
+  // one note at most.
+  const wasOpen = state?.ui?.showRevisions === true;
+  if (wasOpen && !next.ui?.showRevisions && (next.data?.noteRevisions?.size ?? 0) > 0) {
+    return { ...next, data: { ...next.data, noteRevisions: new Map() } };
+  }
+  if (action.type === 'LOAD_REVISIONS') {
+    if (wasOpen && state?.ui?.openedNote !== action.noteId) {
+      return { ...next, data: { ...next.data, noteRevisions: state!.data.noteRevisions } };
+    }
+    if (next.data.noteRevisions.size > 1) {
+      const keep = next.data.noteRevisions.get(action.noteId)!;
+      return { ...next, data: { ...next.data, noteRevisions: new Map([[action.noteId, keep]]) } };
+    }
+  }
+  return next;
 };
 
 /**
@@ -155,7 +174,7 @@ export function makeStore(
       opts.sync.token,
       opts.sync.username,
       // pass onClient so the middleware hands us the constructed client (T80)
-      { ...opts.sync.clientOptions, onClient: (c) => { client = c; installSimperiumAuthWatchdog(c, opts.sync!.authWatchdogMs ?? 10000); } },
+      { ...snoteSocketOptions, ...opts.sync.clientOptions, onClient: (c) => { client = c; installSimperiumAuthWatchdog(c, opts.sync!.authWatchdogMs ?? 10000); } },
       opts.sync.ghostStoreProvider as ((bucket: { name: string }) => T.JSONSerializable) | undefined,
       opts.sync.noteEditDelayMs
     ) as (api: unknown) => (next: unknown) => (action: unknown) => unknown;
@@ -267,6 +286,7 @@ export function makeStore(
     // the REMOVE queued behind it loses to the reply, re-creating a note
     // the server deleted forever. Drop version replies for removed ids.
     installSimperiumRemovedNoteFix(client);
+    installSimperiumRevisionCacheFix(client);
 
     // expose the live client so tests can reach the channel plumbing
     // (same object onClient captured during middleware init)

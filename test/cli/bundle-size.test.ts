@@ -3,12 +3,13 @@
  * ws package it drags in (~126 KiB), while still running correctly.
  */
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { bundle } from '../../scripts/build.mjs';
+import { BUNDLE_CAP, bundleSize } from '../helpers/bundle-size';
 
 const ENTRY = 'src/cli/index.ts';
 
@@ -24,7 +25,7 @@ describe('T324 strip Ink devtools and ws from the bundle', () => {
     outfile = join(dir, 'cli.js');
     await bundle({ entry: ENTRY, outfile });
     bundled = readFileSync(outfile, 'utf8');
-    size = statSync(outfile).size;
+    size = bundleSize(bundled);
   }, 20000);
 
   afterAll(() => {
@@ -42,9 +43,11 @@ describe('T324 strip Ink devtools and ws from the bundle', () => {
   // (2026-10-09): raised to 1,540,000. Measured 1,524,492 bytes at 8204e78 (1,515,703 at 74a42ba): the 0.2.5 UI features
   // (Help scrolling, too-small screen, status truncation, inline-editor stand-ins) grew src by ~430 lines.
   // 1,537,371 bytes after the 0.2.5 arrow-key burst fix (caretMoves.ts).
-  // (2026-10-12): raised to 1,545,000 for the S8-01 fix (T529): measured 1,539,937 bytes with it.
-  it('1: WHEN the bundle is built into a temp outfile with `bundle` from `scripts/build.mjs` THEN its size from `fs.statSync` is below `1545000` bytes', () => {
-    expect(size).toBeLessThan(1545000);
+  // (2026-10-12): 1,545,000 for the S8-01 fix (T529): measured 1,539,937 bytes with it.
+  // chunk-keys slice 2 (F193): the cap and its measurement live in test/helpers/bundle-size.ts.
+  it('1: WHEN the bundle is built into a temp outfile with `bundle` from `scripts/build.mjs` THEN `bundleSize` of its text is below `BUNDLE_CAP` (`1565000`) bytes', () => {
+    expect(BUNDLE_CAP).toBe(1565000);
+    expect(size).toBeLessThan(BUNDLE_CAP);
   });
 
   it('2: WHEN that built bundle is read as text THEN it does not contain `ws/lib`', () => {

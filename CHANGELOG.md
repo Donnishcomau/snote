@@ -3,6 +3,43 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.2.7
+
+Your saved notes are not changed by the upgrade.
+
+### Fixed
+
+- Sync works again. Since about 9 October the sync server refuses
+  connections that do not name the app, so snote stayed offline and
+  retried forever, leaving a connection open on each try. snote now
+  sends `snote/<version>` when it connects (nothing else) and closes a
+  refused connection.
+- A note written in the editor is no longer lost when the editor ends
+  with an error or snote stops before saving. The editor's file is kept
+  in a private folder in your account's data folder until the note is
+  saved, brought back as a new note on the next start, and removed at
+  logout (only snote's own files).
+- snote no longer keeps old versions of your notes in memory. The list
+  remembered the title and preview of every version of a note it had
+  shown, so a long session with a shared note that someone else keeps
+  editing used memory without limit. It now keeps them only while the
+  note itself is in the list, and a note whose text changed always
+  shows its newest title. What you see and what is saved are the same
+  as before. A build check now fails if any
+  unbounded cache keyed by note text is added again.
+- Opening a note's history no longer keeps old versions in memory for
+  the rest of the session. They are released when you close history,
+  and opening it again shows them again.
+
+### Changed
+
+- Updated a development-only dependency (`source-map-js`) to 1.2.2. It
+  is used only to run the tests and is not part of the program you run.
+
+Thanks to the Omarchy marketplace review for spotting the memory growth.
+The cases listed under Known issues in 0.2.6 still apply; this release
+does not change them. A fix is planned for 0.2.8.
+
 ## 0.2.6
 
 Data-safety and polish fixes. Your saved notes are not changed by the

@@ -2,16 +2,21 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-describe('T407 bundle size cap raised to 1,545,000', () => {
-  it('1: WHEN test/cli/bundle-size.test.ts is read THEN it contains `toBeLessThan(1545000)` and `raised to 1,545,000`, does not contain the text `1500000`, and still contains `ws/lib` and `usage: snote`.', () => {
-    const content = readFileSync(
-      resolve(process.cwd(), 'test/cli/bundle-size.test.ts'),
-      'utf8'
-    );
-    expect(content).toContain('toBeLessThan(1545000)');
-    expect(content).toContain('raised to 1,545,000');
-    expect(content).not.toContain('1500000');
-    expect(content).toContain('ws/lib');
-    expect(content).toContain('usage: snote');
+const read = (file: string): string => readFileSync(resolve(process.cwd(), file), 'utf8');
+
+describe('chunk-keys slice 2: one bundle size cap, shared', () => {
+  it('1: WHEN test/helpers/bundle-size.ts, test/cli/bundle-size.test.ts and test/vendor/preview-cache-bound.test.ts are read THEN the helper contains `BUNDLE_CAP = 1565000`, each test contains `bundleSize(` and `BUNDLE_CAP` and contains neither `1545000` nor `statSync(outfile).size`, and bundle-size.test.ts still contains `ws/lib` and `usage: snote`', () => {
+    expect(read('test/helpers/bundle-size.ts')).toContain('BUNDLE_CAP = 1565000');
+    for (const file of ['test/cli/bundle-size.test.ts', 'test/vendor/preview-cache-bound.test.ts']) {
+      const content = read(file);
+      expect({ file, has: content.includes('bundleSize(') && content.includes('BUNDLE_CAP') }).toEqual({ file, has: true });
+      expect({ file, old: content.includes('1545000') || content.includes('statSync(outfile).size') }).toEqual({
+        file,
+        old: false,
+      });
+    }
+    const sizeTest = read('test/cli/bundle-size.test.ts');
+    expect(sizeTest).toContain('ws/lib');
+    expect(sizeTest).toContain('usage: snote');
   });
 });

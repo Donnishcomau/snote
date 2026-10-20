@@ -126,6 +126,18 @@ export function loadState(dir: string): Partial<State> | undefined {
   return { data: revivedData as unknown as State['data'] } as unknown as Partial<State>;
 }
 
+// #65: callbacks waiting for the next successful state.json save.
+const afterSave: Array<() => void> = [];
+
+/**
+ * Run *fn* once, after the next successful save of state.json by
+ * persistOnChange. Register it after the dispatch whose result must be on
+ * disk: that save holds the dispatched change.
+ */
+export function afterNextSave(fn: () => void): void {
+  afterSave.push(fn);
+}
+
 /**
  * Subscribe to the store and persist changes with trailing debounce.
  *
@@ -153,6 +165,9 @@ export function persistOnChange(
         // the pending state so the next save tries again.
         saveState(lastState, dir);
         lastState = null;
+        // #65: whatever waited for the text to be on disk may go now.
+        const waiting = afterSave.splice(0);
+        for (const fn of waiting) fn();
       } catch (err) {
         publishProblem(problemText('could not save notes', err));
       }

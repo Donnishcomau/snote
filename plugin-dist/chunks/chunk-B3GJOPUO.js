@@ -4098,5 +4098,7 @@ function simperium_default(...a) {
 
 export {
   require_change,
+  require_channel,
+  require_websocket2 as require_websocket,
   simperium_default
 };

@@ -113,7 +113,7 @@ const getPreview = (content: string, searchQuery?: string) => {
 const formatPreview = (stripMarkdown: boolean, s: string): string =>
   stripMarkdown ? removeMarkdownWithFix(s) || s : s;
 
-const previewCache = new Map<string, [TitleAndPreview, boolean, string?]>();
+const previewCache = new WeakMap<T.Note, [TitleAndPreview, boolean, string | undefined, string]>(); // OMARCHY: keyed by the note object, so an entry lives only as long as the note (#32)
 
 /**
  * Returns the title and excerpt for a given note
@@ -126,10 +126,10 @@ export const noteTitleAndPreview = (
   searchQuery?: string
 ): TitleAndPreview => {
   const stripMarkdown = isMarkdown(note);
-  const cached = previewCache.get(note.content);
+  const cached = previewCache.get(note); // OMARCHY: (#32)
   if (cached) {
-    const [value, wasMarkdown, savedQuery] = cached;
-    if (wasMarkdown === stripMarkdown && savedQuery === searchQuery) {
+    const [value, wasMarkdown, savedQuery, savedContent] = cached; // OMARCHY: (#32)
+    if (wasMarkdown === stripMarkdown && savedQuery === searchQuery && savedContent === note.content) { // OMARCHY: same text only (#32)
       return value;
     }
   }
@@ -142,7 +142,7 @@ export const noteTitleAndPreview = (
   );
   const result = { title, preview };
 
-  previewCache.set(note.content, [result, stripMarkdown, searchQuery]);
+  previewCache.set(note, [result, stripMarkdown, searchQuery, note.content]); // OMARCHY: (#32)
 
   return result;
 };

@@ -20,8 +20,10 @@ import {
 import "./chunks/chunk-GGREWLKO.js";
 import {
   require_change,
+  require_channel,
+  require_websocket,
   simperium_default
-} from "./chunks/chunk-TKYY3J3T.js";
+} from "./chunks/chunk-B3GJOPUO.js";
 import "./chunks/chunk-J73DZ7ZA.js";
 import {
   __commonJS,
@@ -1840,13 +1842,13 @@ var getPreview = (content, searchQuery2) => {
   return preview.trim();
 };
 var formatPreview = (stripMarkdown, s) => stripMarkdown ? removeMarkdownWithFix(s) || s : s;
-var previewCache = /* @__PURE__ */ new Map();
+var previewCache = /* @__PURE__ */ new WeakMap();
 var noteTitleAndPreview = (note, searchQuery2) => {
   const stripMarkdown = isMarkdown(note);
-  const cached = previewCache.get(note.content);
+  const cached = previewCache.get(note);
   if (cached) {
-    const [value, wasMarkdown, savedQuery] = cached;
-    if (wasMarkdown === stripMarkdown && savedQuery === searchQuery2) {
+    const [value, wasMarkdown, savedQuery, savedContent] = cached;
+    if (wasMarkdown === stripMarkdown && savedQuery === searchQuery2 && savedContent === note.content) {
       return value;
     }
   }
@@ -1857,7 +1859,7 @@ var noteTitleAndPreview = (note, searchQuery2) => {
     getPreview(content, searchQuery2)
   );
   const result = { title, preview };
-  previewCache.set(note.content, [result, stripMarkdown, searchQuery2]);
+  previewCache.set(note, [result, stripMarkdown, searchQuery2, note.content]);
   return result;
 };
 function isMarkdown(note) {
@@ -2182,13 +2184,12 @@ function onNewRequest(l) {
 }
 
 // src/tui/app-actions.ts
-import { basename as basename3, dirname, join as join6 } from "node:path";
+import { basename as basename3, dirname, join as join8 } from "node:path";
 
 // src/core/editor.ts
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, readFileSync as readFileSync3, writeFileSync as writeFileSync2 } from "node:fs";
-import { tmpdir } from "node:os";
-import { join as join5, basename as basename2 } from "node:path";
+import { mkdtempSync, readFileSync as readFileSync5 } from "node:fs";
+import { join as join7, basename as basename2 } from "node:path";
 
 // src/cli/env-check.ts
 import { delimiter, join as join2 } from "node:path";
@@ -2321,7 +2322,239 @@ async function exportNote(note, dir) {
   }
 }
 
+// src/core/editor-drafts.ts
+import { lstatSync as lstatSync2, readdirSync, readFileSync as readFileSync4, rmSync } from "node:fs";
+import { join as join6 } from "node:path";
+
+// src/core/persistence.ts
+import * as fs2 from "node:fs";
+import * as path from "node:path";
+
+// src/core/problem-signal.ts
+var current = null;
+var listeners = /* @__PURE__ */ new Set();
+function publishProblem(message) {
+  const line = message.replace(/\s+/g, " ");
+  current = line;
+  for (const listener2 of listeners) {
+    try {
+      listener2(line);
+    } catch {
+    }
+  }
+}
+function currentProblem() {
+  const taken = current;
+  current = null;
+  return taken;
+}
+function onProblem(listener2) {
+  listeners.add(listener2);
+  return () => {
+    listeners.delete(listener2);
+  };
+}
+function problemText(label, err) {
+  if (typeof err === "object" && err !== null && typeof err.code === "string") {
+    return `${label}: ${err.code}`;
+  }
+  if (err instanceof Error) {
+    return `${label}: ${err.message}`;
+  }
+  return `${label}: ${String(err)}`;
+}
+
+// src/core/persistence.ts
+function reviver(_key, value) {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    if ("__map" in value) {
+      const entries = value.__map;
+      const map = /* @__PURE__ */ new Map();
+      for (const [k, v] of entries) {
+        map.set(k, reviver("", v));
+      }
+      return map;
+    }
+    if ("__set" in value) {
+      return new Set(value.__set);
+    }
+  }
+  return value;
+}
+function replacer(_key, value) {
+  if (value instanceof Map) {
+    const entries = [];
+    value.forEach((v, k) => {
+      entries.push([String(k), v]);
+    });
+    return { __map: entries };
+  }
+  if (value instanceof Set) {
+    return { __set: [...value] };
+  }
+  return value;
+}
+function saveState(state, dir) {
+  const data = state.data;
+  const toSave = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (key === "noteRevisions") {
+      continue;
+    }
+    toSave[key] = value;
+  }
+  const file = { version: 1, data: toSave };
+  const filePath = path.join(dir, "state.json");
+  const tmpPath = filePath + ".tmp";
+  secureMkdir(dir);
+  secureWriteFileSync(tmpPath, JSON.stringify(file, replacer));
+  fs2.renameSync(tmpPath, filePath);
+}
+function loadState(dir) {
+  const filePath = path.join(dir, "state.json");
+  if (!fs2.existsSync(filePath)) {
+    return void 0;
+  }
+  let raw;
+  try {
+    raw = fs2.readFileSync(filePath, "utf8");
+  } catch {
+    return void 0;
+  }
+  let file;
+  try {
+    file = JSON.parse(raw);
+  } catch {
+    return void 0;
+  }
+  if (file.version !== 1) {
+    return void 0;
+  }
+  const revivedData = {};
+  for (const [key, value] of Object.entries(file.data)) {
+    revivedData[key] = reviver(key, value);
+  }
+  return { data: revivedData };
+}
+var afterSave = [];
+function afterNextSave(fn) {
+  afterSave.push(fn);
+}
+function persistOnChange(store, dir, delayMs = 500) {
+  let timer = null;
+  let lastState = null;
+  const flush = () => {
+    if (lastState) {
+      try {
+        saveState(lastState, dir);
+        lastState = null;
+        const waiting = afterSave.splice(0);
+        for (const fn of waiting) fn();
+      } catch (err) {
+        publishProblem(problemText("could not save notes", err));
+      }
+    }
+    timer = null;
+  };
+  const schedule = () => {
+    const state = store.getState();
+    if (lastState && lastState.data === state.data) {
+      return;
+    }
+    lastState = state;
+    if (timer !== null) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(flush, delayMs);
+  };
+  const unsubscribe = store.subscribe(schedule);
+  const unsubscribeAndFlush = () => {
+    unsubscribe();
+    flush();
+  };
+  return unsubscribeAndFlush;
+}
+
+// src/core/editor-drafts.ts
+var accountDrafts = null;
+function setDraftsDir(dir) {
+  accountDrafts = dir;
+}
+function draftsDir(env = process.env) {
+  if (accountDrafts !== null) return accountDrafts;
+  const state = env.XDG_STATE_HOME ? env.XDG_STATE_HOME : join6(env.HOME ?? "", ".local", "state");
+  return join6(state, "snote", "drafts");
+}
+function isRealDir(p) {
+  try {
+    return lstatSync2(p).isDirectory();
+  } catch {
+    return false;
+  }
+}
+function ensureDraftsDir() {
+  const dir = draftsDir();
+  let exists = true;
+  try {
+    lstatSync2(dir);
+  } catch {
+    exists = false;
+  }
+  if (exists && !isRealDir(dir)) throw new Error("drafts folder is not a folder: " + dir);
+  secureMkdir(dir);
+  return dir;
+}
+function removeDrafts(folders) {
+  for (const folder of folders) {
+    try {
+      rmSync(folder, { recursive: true, force: true });
+    } catch {
+    }
+  }
+}
+function recoverDrafts(store, dir = draftsDir()) {
+  if (!isRealDir(dir)) return 0;
+  let folders;
+  try {
+    folders = readdirSync(dir).filter((n) => n.startsWith("snote-"));
+  } catch {
+    return 0;
+  }
+  const restored = [];
+  let count = 0;
+  for (const name of folders) {
+    const folder = join6(dir, name);
+    let texts;
+    try {
+      if (!isRealDir(folder)) continue;
+      texts = readdirSync(folder).filter((f) => f.endsWith(".md") && lstatSync2(join6(folder, f)).isFile()).map((f) => readFileSync4(join6(folder, f), "utf-8"));
+    } catch {
+      continue;
+    }
+    const notes2 = [...store.getState().data.notes.values()].map((n) => n.content);
+    const fresh = texts.filter((t) => t.trim() !== "" && !notes2.includes(t));
+    for (const content of fresh) {
+      store.dispatch({
+        type: "CREATE_NOTE_WITH_ID",
+        noteId: crypto.randomUUID(),
+        note: { content, systemTags: [], tags: [] }
+      });
+    }
+    count += fresh.length;
+    if (fresh.length > 0) restored.push(folder);
+    else if (texts.length > 0) removeDrafts([folder]);
+  }
+  if (restored.length > 0) afterNextSave(() => removeDrafts(restored));
+  return count;
+}
+
 // src/core/editor.ts
+var handedBack = [];
+function releaseDraftsAfterSave() {
+  const drafts = handedBack;
+  handedBack = [];
+  if (drafts.length > 0) afterNextSave(() => removeDrafts(drafts));
+}
 var NVIM_HINT = "snote \xB7 i insert \xB7 Esc done typing \xB7 o new line \xB7 dd delete line \xB7 u undo \xB7 :wq save & return \xB7 :q! discard";
 function nvimHintLuaString() {
   const level = NVIM_HINT.includes("]") ? "=" : "";
@@ -2345,30 +2578,32 @@ async function editInEditor(initial, opts) {
   const parts = editor.split(/\s+/);
   const cmd = parts[0];
   const args = parts.slice(1);
-  const tmpDir = mkdtempSync(join5(tmpdir(), "snote-"));
-  try {
-    const stem = exportFileName(initial);
-    const tmpFile = join5(tmpDir, `${stem}.md`);
-    writeFileSync2(tmpFile, initial, "utf-8");
-    const direct = process.env.SNOTE_EDITOR_DIRECT === "1";
-    const uwsm = direct ? null : findOnPath("uwsm", process.env.PATH);
-    const hint = basename2(cmd) === "nvim" ? nvimHintArgs() : [];
-    const result = isTerminalEditor(cmd) ? spawnSync(cmd, [...args, ...hint, tmpFile], { stdio: "inherit" }) : uwsm ? spawnSync("uwsm", ["app", "-S", "both", "--", cmd, ...args, tmpFile], {
-      stdio: ["ignore", "ignore", "ignore"]
-    }) : spawnSync(cmd, [...args, tmpFile], { stdio: ["ignore", "ignore", "ignore"] });
-    if (result.error) {
-      throw new Error(
-        "editor failed: " + (result.error.code ?? result.error.message)
-      );
-    }
-    if (result.status !== 0) {
-      throw new Error("editor failed: exit " + result.status);
-    }
-    const edited = readFileSync3(tmpFile, "utf-8");
-    return edited === initial ? null : edited;
-  } finally {
-    rmSync(tmpDir, { recursive: true, force: true });
+  const tmpDir = mkdtempSync(join7(ensureDraftsDir(), "snote-"));
+  const stem = exportFileName(initial);
+  const tmpFile = join7(tmpDir, `${stem}.md`);
+  secureWriteFileSync(tmpFile, initial);
+  const direct = process.env.SNOTE_EDITOR_DIRECT === "1";
+  const uwsm = direct ? null : findOnPath("uwsm", process.env.PATH);
+  const hint = basename2(cmd) === "nvim" ? nvimHintArgs() : [];
+  const result = isTerminalEditor(cmd) ? spawnSync(cmd, [...args, ...hint, tmpFile], { stdio: "inherit" }) : uwsm ? spawnSync("uwsm", ["app", "-S", "both", "--", cmd, ...args, tmpFile], {
+    stdio: ["ignore", "ignore", "ignore"]
+  }) : spawnSync(cmd, [...args, tmpFile], { stdio: ["ignore", "ignore", "ignore"] });
+  const kept = ". Your text is kept in " + tmpFile;
+  if (result.error) {
+    throw new Error(
+      "editor failed: " + (result.error.code ?? result.error.message) + kept
+    );
   }
+  if (result.status !== 0) {
+    throw new Error("editor failed: exit " + result.status + kept);
+  }
+  const edited = readFileSync5(tmpFile, "utf-8");
+  if (edited === initial) {
+    removeDrafts([tmpDir]);
+    return null;
+  }
+  handedBack.push(tmpDir);
+  return edited;
 }
 
 // src/core/new-note.ts
@@ -2597,6 +2832,7 @@ function editSelectedNote(ctx) {
           noteId: selectedEntry.id,
           changes: { content: merged.content }
         });
+        releaseDraftsAfterSave();
         if (merged.conflict) {
           onEditorError?.("A change from another device could not be merged automatically - both versions were kept.");
         }
@@ -2655,6 +2891,7 @@ function createNote(ctx) {
         note: { content: result, systemTags: fields.systemTags, tags: fields.tags },
         meta: { nextNoteToOpen: noteId }
       });
+      releaseDraftsAfterSave();
       setSelectedIndex((i) => i);
       onNoteCreated?.();
     }
@@ -2703,7 +2940,7 @@ function exportSelectedNote(ctx) {
   const { selectedEntry, value, setNotice, setNoticeError } = ctx;
   if (!selectedEntry) return;
   const base = exportFileName(selectedEntry.note.content ?? "");
-  const target = value.trim() !== "" ? value : join6(documentsDir(), `${base}.md`);
+  const target = value.trim() !== "" ? value : join8(documentsDir(), `${base}.md`);
   const dir = dirname(target);
   exportNote(selectedEntry.note, dir).then((path13) => setNotice(`exported: ${path13}`)).catch(
     (err) => setNoticeError(`export failed: ${err instanceof Error ? err.message : String(err)}`)
@@ -5324,39 +5561,125 @@ function installSimperiumAuthWatchdog(client, timeoutMs) {
   c.on("close", clear);
 }
 
-// src/core/problem-signal.ts
-var current = null;
-var listeners = /* @__PURE__ */ new Set();
-function publishProblem(message) {
-  const line = message.replace(/\s+/g, " ");
-  current = line;
-  for (const listener2 of listeners) {
-    try {
-      listener2(line);
-    } catch {
+// src/core/simperium-revision-cache-fix.ts
+var import_channel = __toESM(require_channel(), 1);
+function usableCache() {
+  const cache = import_channel.revisionCache;
+  return cache instanceof Map ? cache : void 0;
+}
+function dropVersionsOf(id) {
+  const cache = usableCache();
+  if (!cache) {
+    return;
+  }
+  const prefix = `${id}.`;
+  for (const key of [...cache.keys()]) {
+    if (key.startsWith(prefix)) {
+      cache.delete(key);
     }
   }
 }
-function currentProblem() {
-  const taken = current;
-  current = null;
-  return taken;
-}
-function onProblem(listener2) {
-  listeners.add(listener2);
-  return () => {
-    listeners.delete(listener2);
-  };
-}
-function problemText(label, err) {
-  if (typeof err === "object" && err !== null && typeof err.code === "string") {
-    return `${label}: ${err.code}`;
+function installSimperiumRevisionCacheFix(client) {
+  if (!usableCache()) {
+    return;
   }
-  if (err instanceof Error) {
-    return `${label}: ${err.message}`;
+  const withBuckets = client ?? { buckets: [] };
+  for (const bucket of withBuckets.buckets ?? []) {
+    const channel = bucket?.channel;
+    if (!channel || typeof channel.getRevisions !== "function") {
+      continue;
+    }
+    if (channel.getRevisions.__revisionCacheFix) {
+      continue;
+    }
+    const original = channel.getRevisions.bind(channel);
+    const wrapped = (id) => original(id).then(
+      (result) => {
+        dropVersionsOf(id);
+        return result;
+      },
+      (error) => {
+        dropVersionsOf(id);
+        throw error;
+      }
+    );
+    wrapped.__revisionCacheFix = true;
+    channel.getRevisions = wrapped;
   }
-  return `${label}: ${String(err)}`;
 }
+
+// src/core/websocket-provider.ts
+var import_websocket = __toESM(require_websocket(), 1);
+import * as http from "node:http";
+import * as https from "node:https";
+
+// package.json
+var package_default = {
+  name: "snote",
+  version: "0.2.7",
+  description: "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
+  license: "GPL-2.0",
+  type: "module",
+  bin: {
+    snote: "dist/cli.js"
+  },
+  engines: {
+    node: ">=22"
+  },
+  scripts: {
+    typecheck: "tsc --noEmit",
+    lint: "eslint --max-warnings 0 src test vendor",
+    test: "vitest run",
+    "test:keymap": "vitest run test/keymap.test.ts",
+    "lint:ansi": "node scripts/lint-ansi.mjs",
+    build: "node scripts/build.mjs",
+    "build:plugin": "node scripts/build-plugin-dist.mjs",
+    pack: "node scripts/pack.mjs",
+    size: "vitest run test/packaging/size.test.ts",
+    "smoke:real": "node scripts/smoke-real.mjs",
+    dev: "tsx src/cli/index.ts"
+  },
+  dependencies: {
+    debug: "^4.4.0",
+    ink: "^7.1.1",
+    lodash: "^4.17.21",
+    react: "^19.0.0",
+    "react-ink-textarea": "0.4.0",
+    redux: "^4.2.1",
+    "remove-markdown": "^0.6.0",
+    simperium: "1.1.4"
+  },
+  devDependencies: {
+    "@types/debug": "^4.1.12",
+    "@types/lodash": "^4.17.13",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/ws": "^8.5.13",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/mocker": "4.1.11",
+    esbuild: "0.28.2",
+    eslint: "^9.0.0",
+    "ink-testing-library": "^4.0.0",
+    tsx: "^4.19.0",
+    typescript: "^5.6.0",
+    vitest: "4.1.11",
+    ws: "^8.18.0"
+  }
+};
+
+// src/cli/version.ts
+var VERSION = package_default.version;
+
+// src/core/websocket-provider.ts
+var SNOTE_USER_AGENT = `snote/${VERSION}`;
+function snoteWebsocketProvider(url) {
+  const agent = url.startsWith("wss:") ? new https.Agent() : new http.Agent();
+  const socket = new import_websocket.w3cwebsocket(url, void 0, void 0, { "User-Agent": SNOTE_USER_AGENT }, { agent });
+  socket.addEventListener("close", () => agent.destroy());
+  return socket;
+}
+var snoteSocketOptions = { websocketClientProvider: snoteWebsocketProvider };
 
 // src/core/store.ts
 var baseReducer = (0, import_redux4.combineReducers)({
@@ -5373,7 +5696,21 @@ var rootReducer = (state, action) => {
       return state;
     }
   }
-  return baseReducer(state, action);
+  const next = baseReducer(state, action);
+  const wasOpen = state?.ui?.showRevisions === true;
+  if (wasOpen && !next.ui?.showRevisions && (next.data?.noteRevisions?.size ?? 0) > 0) {
+    return { ...next, data: { ...next.data, noteRevisions: /* @__PURE__ */ new Map() } };
+  }
+  if (action.type === "LOAD_REVISIONS") {
+    if (wasOpen && state?.ui?.openedNote !== action.noteId) {
+      return { ...next, data: { ...next.data, noteRevisions: state.data.noteRevisions } };
+    }
+    if (next.data.noteRevisions.size > 1) {
+      const keep = next.data.noteRevisions.get(action.noteId);
+      return { ...next, data: { ...next.data, noteRevisions: /* @__PURE__ */ new Map([[action.noteId, keep]]) } };
+    }
+  }
+  return next;
 };
 function makeStore(opts = {}) {
   let middleware = (0, import_redux4.applyMiddleware)();
@@ -5393,7 +5730,7 @@ function makeStore(opts = {}) {
       opts.sync.token,
       opts.sync.username,
       // pass onClient so the middleware hands us the constructed client (T80)
-      { ...opts.sync.clientOptions, onClient: (c) => {
+      { ...snoteSocketOptions, ...opts.sync.clientOptions, onClient: (c) => {
         client = c;
         installSimperiumAuthWatchdog(c, opts.sync.authWatchdogMs ?? 1e4);
       } },
@@ -5454,121 +5791,15 @@ function makeStore(opts = {}) {
     installSimperiumReconnectFix(client);
     installSimperiumStaleDeleteFix(client, store);
     installSimperiumRemovedNoteFix(client);
+    installSimperiumRevisionCacheFix(client);
     store.client = client;
   }
   return store;
 }
 
-// src/core/persistence.ts
-import * as fs2 from "node:fs";
-import * as path from "node:path";
-function reviver(_key, value) {
-  if (value && typeof value === "object" && !Array.isArray(value)) {
-    if ("__map" in value) {
-      const entries = value.__map;
-      const map = /* @__PURE__ */ new Map();
-      for (const [k, v] of entries) {
-        map.set(k, reviver("", v));
-      }
-      return map;
-    }
-    if ("__set" in value) {
-      return new Set(value.__set);
-    }
-  }
-  return value;
-}
-function replacer(_key, value) {
-  if (value instanceof Map) {
-    const entries = [];
-    value.forEach((v, k) => {
-      entries.push([String(k), v]);
-    });
-    return { __map: entries };
-  }
-  if (value instanceof Set) {
-    return { __set: [...value] };
-  }
-  return value;
-}
-function saveState(state, dir) {
-  const data = state.data;
-  const toSave = {};
-  for (const [key, value] of Object.entries(data)) {
-    if (key === "noteRevisions") {
-      continue;
-    }
-    toSave[key] = value;
-  }
-  const file = { version: 1, data: toSave };
-  const filePath = path.join(dir, "state.json");
-  const tmpPath = filePath + ".tmp";
-  secureMkdir(dir);
-  secureWriteFileSync(tmpPath, JSON.stringify(file, replacer));
-  fs2.renameSync(tmpPath, filePath);
-}
-function loadState(dir) {
-  const filePath = path.join(dir, "state.json");
-  if (!fs2.existsSync(filePath)) {
-    return void 0;
-  }
-  let raw;
-  try {
-    raw = fs2.readFileSync(filePath, "utf8");
-  } catch {
-    return void 0;
-  }
-  let file;
-  try {
-    file = JSON.parse(raw);
-  } catch {
-    return void 0;
-  }
-  if (file.version !== 1) {
-    return void 0;
-  }
-  const revivedData = {};
-  for (const [key, value] of Object.entries(file.data)) {
-    revivedData[key] = reviver(key, value);
-  }
-  return { data: revivedData };
-}
-function persistOnChange(store, dir, delayMs = 500) {
-  let timer = null;
-  let lastState = null;
-  const flush = () => {
-    if (lastState) {
-      try {
-        saveState(lastState, dir);
-        lastState = null;
-      } catch (err) {
-        publishProblem(problemText("could not save notes", err));
-      }
-    }
-    timer = null;
-  };
-  const schedule = () => {
-    const state = store.getState();
-    if (lastState && lastState.data === state.data) {
-      return;
-    }
-    lastState = state;
-    if (timer !== null) {
-      clearTimeout(timer);
-    }
-    timer = setTimeout(flush, delayMs);
-  };
-  const unsubscribe = store.subscribe(schedule);
-  const unsubscribeAndFlush = () => {
-    unsubscribe();
-    flush();
-  };
-  return unsubscribeAndFlush;
-}
-
 // src/core/ghost-store.ts
-import { readFileSync as readFileSync5, renameSync as renameSync3, existsSync as existsSync4 } from "node:fs";
-import { join as join8 } from "node:path";
+import { readFileSync as readFileSync6, renameSync as renameSync3, existsSync as existsSync4 } from "node:fs";
+import { join as join9 } from "node:path";
 var COALESCE_WINDOW_MS = 100;
 var FileGhostStore = class {
   dir;
@@ -5582,13 +5813,13 @@ var FileGhostStore = class {
   // OMARCHY: boundary cast
   constructor(dir, bucketName) {
     this.dir = dir;
-    this.filePath = join8(dir, `ghosts-${bucketName}.json`);
+    this.filePath = join9(dir, `ghosts-${bucketName}.json`);
     this.cv = "";
     this.ghosts = /* @__PURE__ */ new Map();
     this._dirExists = existsSync4(this.filePath);
     if (existsSync4(this.filePath)) {
       try {
-        const raw = readFileSync5(this.filePath, "utf8");
+        const raw = readFileSync6(this.filePath, "utf8");
         const file = JSON.parse(raw);
         if (file.version !== 1) {
           return;
@@ -6444,64 +6675,6 @@ function watchStatus(store, dir, opts) {
   };
 }
 
-// package.json
-var package_default = {
-  name: "snote",
-  version: "0.2.6",
-  description: "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
-  license: "GPL-2.0",
-  type: "module",
-  bin: {
-    snote: "dist/cli.js"
-  },
-  engines: {
-    node: ">=22"
-  },
-  scripts: {
-    typecheck: "tsc --noEmit",
-    lint: "eslint --max-warnings 0 src test vendor",
-    test: "vitest run",
-    "test:keymap": "vitest run test/keymap.test.ts",
-    "lint:ansi": "node scripts/lint-ansi.mjs",
-    build: "node scripts/build.mjs",
-    "build:plugin": "node scripts/build-plugin-dist.mjs",
-    pack: "node scripts/pack.mjs",
-    size: "vitest run test/packaging/size.test.ts",
-    "smoke:real": "node scripts/smoke-real.mjs",
-    dev: "tsx src/cli/index.ts"
-  },
-  dependencies: {
-    debug: "^4.4.0",
-    ink: "^7.1.1",
-    lodash: "^4.17.21",
-    react: "^19.0.0",
-    "react-ink-textarea": "0.4.0",
-    redux: "^4.2.1",
-    "remove-markdown": "^0.6.0",
-    simperium: "1.1.4"
-  },
-  devDependencies: {
-    "@types/debug": "^4.1.12",
-    "@types/lodash": "^4.17.13",
-    "@types/node": "^22.0.0",
-    "@types/react": "^19.0.0",
-    "@types/ws": "^8.5.13",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
-    "@vitest/mocker": "4.1.11",
-    esbuild: "0.28.2",
-    eslint: "^9.0.0",
-    "ink-testing-library": "^4.0.0",
-    tsx: "^4.19.0",
-    typescript: "^5.6.0",
-    vitest: "4.1.11",
-    ws: "^8.18.0"
-  }
-};
-
-// src/cli/version.ts
-var VERSION = package_default.version;
-
 // src/core/endpoint-check.ts
 var ENDPOINT_VARS = [
   "SNOTE_AUTH_BASE",
@@ -6636,6 +6809,16 @@ async function logout2(dir) {
       }
       const sub = path6.join(dir, entry.name);
       let removedAny = false;
+      const drafts = path6.join(sub, "drafts");
+      if (fs7.lstatSync(drafts, { throwIfNoEntry: false })?.isDirectory()) {
+        for (const d of fs7.readdirSync(drafts, { withFileTypes: true })) {
+          if (d.isDirectory() && /^snote-[A-Za-z0-9]{6}$/.test(d.name)) {
+            fs7.rmSync(path6.join(drafts, d.name), { recursive: true, force: true });
+            removedAny = true;
+          }
+        }
+        if (fs7.readdirSync(drafts).length === 0) fs7.rmdirSync(drafts);
+      }
       for (const child of fs7.readdirSync(sub, { withFileTypes: true })) {
         if (child.isFile() && isSnoteFile(child.name)) {
           removeIfFile(path6.join(sub, child.name));
@@ -6971,12 +7154,12 @@ import {
   closeSync,
   existsSync as existsSync10,
   openSync,
-  readFileSync as readFileSync13,
+  readFileSync as readFileSync14,
   statSync as statSync2,
   unlinkSync as unlinkSync3,
   writeSync
 } from "node:fs";
-import { join as join16 } from "node:path";
+import { join as join17 } from "node:path";
 var LOCK_FILE2 = "instance.lock";
 var heldByProcess = /* @__PURE__ */ new Set();
 function isPidAlive2(pid) {
@@ -7000,7 +7183,7 @@ function systemBootTimeMs() {
 }
 function readBootTimeMs() {
   try {
-    for (const line of readFileSync13("/proc/stat", "utf8").split("\n")) {
+    for (const line of readFileSync14("/proc/stat", "utf8").split("\n")) {
       if (line.startsWith("btime ")) {
         const seconds = Number.parseInt(line.slice("btime ".length).trim(), 10);
         return Number.isFinite(seconds) ? seconds * 1e3 : null;
@@ -7013,7 +7196,7 @@ function readBootTimeMs() {
 }
 function processStartMs(pid) {
   try {
-    const stat = readFileSync13(`/proc/${pid}/stat`, "utf8");
+    const stat = readFileSync14(`/proc/${pid}/stat`, "utf8");
     const close = stat.lastIndexOf(")");
     const fields = stat.slice(close + 1).trim().split(/\s+/);
     const ticks = Number.parseInt(fields[19] ?? "", 10);
@@ -7045,13 +7228,13 @@ function lockMtimeMs(lockPath) {
 }
 function readLockPid(lockPath) {
   try {
-    return existsSync10(lockPath) ? readFileSync13(lockPath, "utf8").trim() : "";
+    return existsSync10(lockPath) ? readFileSync14(lockPath, "utf8").trim() : "";
   } catch {
     return "";
   }
 }
 function acquireInstanceLock(dir) {
-  const lockPath = join16(dir, LOCK_FILE2);
+  const lockPath = join17(dir, LOCK_FILE2);
   const writeLock = () => {
     const fd = openSync(lockPath, "wx", 384);
     try {
@@ -7800,7 +7983,7 @@ function Help({ width, height, entries, editor }) {
 
 // src/tui/BottomArea.tsx
 var import_react10 = __toESM(require_react(), 1);
-import { join as join20 } from "node:path";
+import { join as join21 } from "node:path";
 
 // src/tui/TagEditor.tsx
 var import_react6 = __toESM(require_react(), 1);
@@ -8578,7 +8761,7 @@ function BottomArea({
     if (kind === "rename") return sanitizeForTerminal(tagDialog.tagName);
     if (exportPathRef.current === null) {
       const base = exportFileName(selectedEntry?.note.content ?? "");
-      exportPathRef.current = join20(documentsDir(), `${base}.md`);
+      exportPathRef.current = join21(documentsDir(), `${base}.md`);
     }
     return exportPathRef.current;
   };
@@ -11997,6 +12180,13 @@ function buildStore(opts, auth, onLogout) {
   }
   const ownEchoes = trackOwnEchoes(store.client, opts.dataDir);
   const startSaving = persistOnChange(store, opts.dataDir);
+  setDraftsDir(path12.join(opts.dataDir, "drafts"));
+  setTimeout(() => {
+    const restored = recoverDrafts(store);
+    if (restored > 0) {
+      publishProblem(`Restored ${restored} ${restored === 1 ? "note" : "notes"} from an unfinished editor session`);
+    }
+  }, 0);
   const unsyncedTracker = trackUnsynced(store, opts.dataDir);
   const stopUnsynced = unsyncedTracker.stop;
   const stopStatus = opts.statusDir ? watchStatus(store, opts.statusDir, { delayMs: opts.statusDelayMs }) : () => {
