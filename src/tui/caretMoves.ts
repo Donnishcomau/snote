@@ -10,6 +10,7 @@
 // Ctrl+A/Ctrl+E line start/end, Alt+B/Alt+F word boundaries, Down on the
 // last row adding an empty line up to 3) with its default options.
 import type { Key } from 'ink';
+import { cellWidth } from '../core/cells';
 
 const AUTO_NEW_LINE_LIMIT = 3; // react-ink-textarea DEFAULT_AUTO_NEW_LINE_LIMIT
 const INITIAL_LINE_COUNT = 2; // react-ink-textarea DEFAULT_INITIAL_LINE_COUNT
@@ -17,26 +18,6 @@ const TAB_WIDTH = 4; // react-ink-textarea DEFAULT_TAB_WIDTH
 
 const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
 
-/** Terminal cells for one grapheme (string-width's rules for common text). */
-function cellWidth(g: string): number {
-  if (g.length === 0) return 0;
-  if (g === '\t') return TAB_WIDTH;
-  const c = g.codePointAt(0) ?? 0;
-  if (g.length === 1 && c >= 0x20 && c < 0x7f) return 1;
-  if (g.length === 1 && c < 0x20) return 0;
-  if (/\p{Emoji_Presentation}/u.test(g) || (g.includes('️') && /\p{Emoji}/u.test(g))) return 2;
-  if (/^\p{M}+$/u.test(g)) return 0;
-  const wide =
-    (c >= 0x1100 && c <= 0x115f) ||
-    (c >= 0x2e80 && c <= 0xa4cf && c !== 0x303f) ||
-    (c >= 0xac00 && c <= 0xd7a3) ||
-    (c >= 0xf900 && c <= 0xfaff) ||
-    (c >= 0xfe30 && c <= 0xfe4f) ||
-    (c >= 0xff00 && c <= 0xff60) ||
-    (c >= 0xffe0 && c <= 0xffe6) ||
-    (c >= 0x20000 && c <= 0x3fffd);
-  return wide ? 2 : 1;
-}
 
 const isHigh = (c: number): boolean => c >= 0xd800 && c <= 0xdbff;
 const isLow = (c: number): boolean => c >= 0xdc00 && c <= 0xdfff;

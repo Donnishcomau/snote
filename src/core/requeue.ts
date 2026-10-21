@@ -4,8 +4,11 @@ import type { EntityId, Note } from '@vendor/types';
 import type { State } from './store';
 import { notesAreEqual } from '@vendor/state/selectors';
 import { mergeEditorReturn } from './editor-conflict-merge';
+import { editIncluded, editIncludedInOrder } from './line-inclusion';
 import { holdId, releaseAll } from './held-unsynced';
 import { isUnsyncedCopy, type UnsyncedRecord } from './unsynced';
+import { tagHashOf } from '@vendor/utils/tag-hash';
+import type { TagName } from '@vendor/types';
 
 export interface GhostReader {
   get(id: string): Promise<{ data?: Partial<Note> }>;
@@ -48,6 +51,100 @@ const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.str
 
 const asSet = (items: readonly unknown[]): Set<unknown> => new Set(items);
 
+/** R1 (F203) — the note fields that are tag lists; `rebaseOfflineEdit` merges them as sets. */
+const SET_FIELDS = new Set(['tags', 'systemTags']);
+
+/** A tag's identity is Simplenote's tag hash (case and Unicode form). */
+const tagKey = (item: string): string => tagHashOf(item as TagName);
+
+/** True when the tag has a tag hash (F228: a lone surrogate makes `tagHashOf` throw). */
+const hashable = (item: string): boolean => {
+  try {
+    tagKey(item);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+/** The string entries of a tag list that have a tag hash; anything else (a hostile or broken server list) is dropped. */
+const tagList = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && hashable(item)) : [];
+
+/**
+ * `into` with the change from `from` to `to` applied, comparing by `tagKey`:
+ * items `to` dropped leave, items it added join at the end, and no tag is
+ * listed twice.
+ */
+function mergeSet(into: unknown, from: unknown, to: unknown): string[] {
+  const a = tagList(from).map(tagKey);
+  const b = tagList(to).map(tagKey);
+  const seen: string[] = [];
+  const out: string[] = [];
+  for (const item of tagList(into)) {
+    const key = tagKey(item);
+    if ((a.includes(key) && !b.includes(key)) || seen.includes(key)) continue;
+    seen.push(key);
+    out.push(item);
+  }
+  for (const item of tagList(to)) {
+    const key = tagKey(item);
+    if (a.includes(key) || seen.includes(key)) continue;
+    seen.push(key);
+    out.push(item);
+  }
+  return out;
+}
+
+/**
+ * R1 (F205) — `into` with the tags the user changed in this session applied, per
+ * tag: a tag in `now` that neither the held copy nor the server copy has joins;
+ * a tag both copies have that `now` dropped leaves. Every other tag stays.
+ */
+function sessionSet(into: unknown, held: unknown, server: unknown, now: unknown): string[] {
+  const h = tagList(held).map(tagKey);
+  const s = tagList(server).map(tagKey);
+  const n = tagList(now).map(tagKey);
+  const out = tagList(into).filter((item) => {
+    const key = tagKey(item);
+    return n.includes(key) || !h.includes(key) || !s.includes(key);
+  });
+  const seen = out.map(tagKey);
+  for (const item of tagList(now)) {
+    const key = tagKey(item);
+    if (h.includes(key) || s.includes(key) || seen.includes(key)) continue;
+    seen.push(key);
+    out.push(item);
+  }
+  return out;
+}
+
+/**
+ * R1 (F205) — `note` with what the user changed in this session: a field whose
+ * store copy at the hand-off (`now`) differs from both the held offline copy and
+ * the server copy was set in this session and wins (tag lists per tag,
+ * `sessionSet`). A store copy overwritten with the server copy is not a
+ * session change. Content keeps its own rule (the hand-off skips a note whose
+ * content moved on).
+ *
+ * Only a store copy newer than both copies holds a session change: a user
+ * action stamps the note with this machine's time, while an older server
+ * version still in the store (a remote change landing during the hand-off)
+ * is older than the server copy and must not undo another device's change.
+ */
+function withSessionChanges(note: Note, held: Note, current: Partial<Note>, now: Note): Note {
+  const newest = Math.max(Number(held.modificationDate) || 0, Number(current.modificationDate) || 0);
+  if (!(Number(now.modificationDate) > newest)) return note;
+  const merged: Record<string, unknown> = { ...note };
+  for (const key of Object.keys(held)) {
+    if (key === 'content' || key === 'modificationDate') continue;
+    const k = key as keyof Note;
+    if (SET_FIELDS.has(key)) merged[key] = sessionSet(merged[key], held[k], current[k], now[k]);
+    else if (!same(now[k], held[k]) && !same(now[k], current[k])) merged[key] = now[k];
+  }
+  return merged as unknown as Note;
+}
+
 /**
  * T479 — true when the note fields worth syncing (content, deleted, tags,
  * systemTags; tags compared as sets) are the same on both copies. Unlike the
@@ -65,46 +162,24 @@ function noteFieldsEqual(a: Note, b: Partial<Note>): boolean {
   );
 }
 
-function lineCounts(text: string): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (const line of text.split('\n')) counts.set(line, (counts.get(line) ?? 0) + 1);
-  return counts;
-}
-
-/**
- * True when `current` already holds the content change the offline edit made to
- * `base`: every line it added is present at least as often, and every line it
- * removed is present no more often. The sync library's own catch-up rebase often
- * delivers the offline edit before `requeueUnsynced` runs; merging it again then
- * duplicates it.
- */
-function offlineEditIncluded(base: string, local: string, current: string): boolean {
-  const b = lineCounts(base);
-  const l = lineCounts(local);
-  const c = lineCounts(current);
-  for (const line of new Set([...b.keys(), ...l.keys()])) {
-    const inBase = b.get(line) ?? 0;
-    const inLocal = l.get(line) ?? 0;
-    const inCurrent = c.get(line) ?? 0;
-    if (inLocal > inBase && inCurrent < inLocal) return false;
-    if (inLocal < inBase && inCurrent > inLocal) return false;
-  }
-  return true;
-}
-
 /**
  * T314 — the note to send for an edit made while snote was closed, given what it
  * was last synced as (`base`), what this client has (`local`) and what the server
  * holds now (`current`). Content is merged three-way (both sides kept on a
  * same-line conflict); every other field keeps the offline change when there was
  * one and otherwise takes the server's value.
+ *
+ * R1 (F203) — `tags` and `systemTags` are merged as sets instead: the server's
+ * list, plus what the offline copy added to `base`, minus what it removed, so a
+ * tag another device set while snote was closed is kept.
  */
 function rebaseOfflineEdit(base: Partial<Note>, local: Note, current: Partial<Note>): Note {
   const merged: Record<string, unknown> = { ...current };
   for (const key of Object.keys(local)) {
     if (key === 'content') continue;
     const k = key as keyof Note;
-    if (!same(local[k], base[k])) merged[key] = local[k];
+    if (SET_FIELDS.has(key)) merged[key] = mergeSet(merged[key], base[k], local[k]);
+    else if (!same(local[k], base[k])) merged[key] = local[k];
   }
   merged.content = mergeEditorReturn(
     String(base.content ?? ''),
@@ -138,7 +213,8 @@ export async function requeueUnsynced(
   store: Store<State, A.ActionType>,
   ghosts: GhostReader,
   whenCaughtUp?: () => Promise<void>,
-  unsynced: UnsyncedRecord = {}
+  unsynced: UnsyncedRecord = {},
+  loadedNotes?: { get(id: EntityId): Note | undefined }
 ): Promise<EntityId[]> {
   const notes = store.getState().data.notes;
   const ids = await unsyncedNoteIds(notes, ghosts, unsynced);
@@ -216,12 +292,24 @@ export async function requeueUnsynced(
         const now = store.getState().data.notes.get(id);
         if (!now) continue;
         if (now.content !== heldLocal.content && now.content !== current.content) continue;
+        // #28 — the offline edit is the note as loaded from state.json: a held
+        // copy read after an edit made at once in this session also carries
+        // that edit, which the server does not have yet.
+        const offline = String((loadedNotes?.get(id) ?? heldLocal).content ?? '');
         if (
-          heldLocal.content !== String(base.content ?? '') &&
-          offlineEditIncluded(String(base.content ?? ''), heldLocal.content, String(current.content ?? ''))
+          offline !== String(base.content ?? '') &&
+          editIncluded(String(base.content ?? ''), offline, String(current.content ?? ''))
         )
           continue;
-        const note = rebaseOfflineEdit(base, heldLocal, current);
+        // #27, #20 — a server change the offline copy already includes (our own
+        // send the server applied before the quit, with a later save on top;
+        // a re-index carries no change ids) is not merged in a second time:
+        // the offline edit is rebased from the server copy instead.
+        const serverHeld =
+          String(current.content ?? '') !== String(base.content ?? '') &&
+          editIncludedInOrder(String(base.content ?? ''), String(current.content ?? ''), String(heldLocal.content ?? ''));
+        const mergeBase = serverHeld ? { ...base, content: current.content } : base;
+        const note = withSessionChanges(rebaseOfflineEdit(mergeBase, heldLocal, current), heldLocal, current, now);
         if (same({ ...note, modificationDate: 0 }, { ...current, modificationDate: 0 })) continue;
         store.dispatch({
           type: 'IMPORT_NOTE_WITH_ID',

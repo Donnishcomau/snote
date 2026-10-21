@@ -85,7 +85,7 @@ describe('update-run', () => {
     });
 
     expect(currentUpdate()).toEqual({ kind: 'available' });
-    expect(calls.filter((args) => args[0] === 'ls-remote')).toHaveLength(1);
+    expect(calls.filter((args) => args.includes('ls-remote'))).toHaveLength(1);
   });
 
   it("3: WHEN the setup of line 2 runs with env `SNOTE_UPDATE_CHECK` set to `off` THEN `currentUpdate()` is `null` and the runner was called `0` times", async () => {

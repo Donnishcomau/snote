@@ -9,6 +9,8 @@ import { inCollection } from '../core/collection';
 import { tagRowsStored } from '../core/collection';
 import { pendingCount } from '../core/simperium-reducer';
 import { sortLabel } from '../core/note-keys';
+import { connectionWord, type ConnectionWord } from '../core/connection-word';
+import { hasOpenSocket } from '../core/websocket-provider';
 
 export function useAppState(store: Store<State>) {
   const [noteEntries, setNoteEntries] = useState<{ id: EntityId; note: Note }[]>([]);
@@ -16,6 +18,7 @@ export function useAppState(store: Store<State>) {
   const openedRef = useRef<EntityId | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [connected, setConnected] = useState(false);
+  const [word, setWord] = useState<ConnectionWord>('connecting');
   const [pending, setPending] = useState(0);
   const [allTagNames, setAllTagNames] = useState<string[]>([]);
   const [query, setQuery] = useState('');
@@ -110,6 +113,7 @@ export function useAppState(store: Store<State>) {
         }
       }
       setConnected(state.simperium.connected);
+      setWord(connectionWord(state.simperium, hasOpenSocket()));
       setPending(pendingCount(state.simperium));
       const tags: string[] = [];
       for (const [, tag] of state.data.tags) {
@@ -130,5 +134,5 @@ export function useAppState(store: Store<State>) {
     externalSelectRef.current = id;
   };
 
-  return { noteEntries, selectedIndex, setSelectedIndex, setExternalSelect, connected, pending, allTagNames, query, setQuery, tagNames, collection, inTrash, sortLabelStr };
+  return { noteEntries, selectedIndex, setSelectedIndex, setExternalSelect, connected, word, pending, allTagNames, query, setQuery, tagNames, collection, inTrash, sortLabelStr };
 }

@@ -139,4 +139,25 @@ describe('crash-redact', () => {
     expect(record.error.stack).toEqual(['    at g (/x/snote-main.js:3:4)']);
     expect(JSON.stringify(record)).not.toContain('hunter2');
   });
+
+  it('2: WHEN the error\'s `code` is an upper-case word that is not in the known vocabulary (`HUNTER2SECRET`), and in a second case the same word lower-cased (`hunter2secret`), THEN neither `record.error` has a `code` key and neither `JSON.stringify(record)` contains `HUNTER2SECRET` or `hunter2secret` (the upper-case code is redacted like the lower-case one)', () => {
+    const upper = crashReport(Object.assign(new TypeError('x'), { code: 'HUNTER2SECRET' }), ctx).record;
+    const lower = crashReport(Object.assign(new TypeError('x'), { code: 'hunter2secret' }), ctx).record;
+    expect('code' in upper.error).toBe(false);
+    expect('code' in lower.error).toBe(false);
+    expect(JSON.stringify(upper)).not.toContain('HUNTER2SECRET');
+    expect(JSON.stringify(lower)).not.toContain('hunter2secret');
+  });
+
+  it('3: WHEN the error has the known upper-case code `ENOENT` and the message `ENOENT: no such file or directory, open \'/x/a.json\'`, THEN `record.error.code` is `ENOENT` and `record.error.message` is `ENOENT: no such file or directory, open <str>`; a lower-case code `enoent` still yields no `code` key (existing redaction results unchanged)', () => {
+    const err = Object.assign(
+      new TypeError("ENOENT: no such file or directory, open '/x/a.json'"),
+      { code: 'ENOENT' },
+    );
+    const { record } = crashReport(err, ctx);
+    expect(record.error.code).toBe('ENOENT');
+    expect(record.error.message).toBe('ENOENT: no such file or directory, open <str>');
+    const lower = crashReport(Object.assign(new TypeError('x'), { code: 'enoent' }), ctx).record;
+    expect('code' in lower.error).toBe(false);
+  });
 });

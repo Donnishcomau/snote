@@ -103,3 +103,18 @@ it('6: WHEN the file holds {"n1":"c1"} THEN echoes of n1 with ccids ["c1"] is [{
   fresh.sent('n1', 'c1');
   expect(fresh.echoes(data, {})).toEqual([]);
 });
+
+it('1: WHEN the file holds {"n1":"c1"} and the tracker gets sent(n1,c5) THEN echoes of n1 with ccids ["c1"], [""] and ["c5"] are all [], and a tracker on {"n1":""} after sent(n1,c2) echoes [] for [""], ["c1"] and ["c2"]', () => {
+  writeFileContents('{"n1":"c1"}');
+  const tracker = createSentChanges(dir);
+  tracker.sent('n1', 'c5');
+  expect(tracker.echoes('[{"id":"n1","ccids":["c1"]}]', {})).toEqual([]);
+  expect(tracker.echoes('[{"id":"n1","ccids":[""]}]', {})).toEqual([]);
+  expect(tracker.echoes('[{"id":"n1","ccids":["c5"]}]', {})).toEqual([]);
+  writeFileContents('{"n1":""}');
+  const stale = createSentChanges(dir);
+  stale.sent('n1', 'c2');
+  expect(stale.echoes('[{"id":"n1","ccids":[""]}]', {})).toEqual([]);
+  expect(stale.echoes('[{"id":"n1","ccids":["c1"]}]', {})).toEqual([]);
+  expect(stale.echoes('[{"id":"n1","ccids":["c2"]}]', {})).toEqual([]);
+});

@@ -51,7 +51,7 @@ const makeRunner = (answers: {
   catFile: number | null;
 }): GitRunner => {
   return async (args) => {
-    if (args[0] === 'ls-remote') {
+    if (args.includes('ls-remote')) {
       return { code: 0, stdout: answers.lsRemote };
     }
     if (args[0] === 'rev-parse') {

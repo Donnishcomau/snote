@@ -272,8 +272,10 @@ export function installSimperiumReconnectFix(client: unknown): void {
  * sending the held edit while disconnected, or before the NEXT auth
  * succeeds, would be wrong — the edit stays safely held on disk and this
  * function keeps waiting for the next 'ready' or the next successful auth.
+ * With `fallback` false (#27) no fallback timer is armed: the promise resolves
+ * only once a catch-up has really been applied.
  */
-export function whenCatchUpApplied(client: unknown, bucketName: string): Promise<void> {
+export function whenCatchUpApplied(client: unknown, bucketName: string, fallback = true): Promise<void> {
   const buckets = ((client ?? {}) as { buckets?: Array<{ name?: string; channel?: unknown }> }).buckets ?? [];
   const channel = buckets.find((b) => b?.name === bucketName)?.channel as
     | (ChannelLike & {
@@ -324,7 +326,7 @@ export function whenCatchUpApplied(client: unknown, bucketName: string): Promise
       }
       if (isErrorReply) return; // unauthorized: stay held, do not arm the fallback
       clearFallback();
-      fallbackTimer = setTimeout(finish, FALLBACK_MS);
+      if (fallback) fallbackTimer = setTimeout(finish, FALLBACK_MS);
     };
 
     const onDisconnect = (): void => {

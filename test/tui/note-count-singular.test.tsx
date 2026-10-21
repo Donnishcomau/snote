@@ -43,7 +43,7 @@ describe('T426 status line note count is singular for 1', () => {
     }
   });
 
-  it('3: WHEN the App renders a store with exactly one live note THEN the frame contains `[offline] 1 note` and does not contain `1 notes`', async () => {
+  it('3: WHEN the App renders a store with exactly one live note THEN the frame contains `[connecting] 1 note` and does not contain `1 notes`', async () => {
     const store = makeStore({ stubClient: {} });
     store.dispatch({
       type: 'IMPORT_NOTE_WITH_ID',
@@ -59,9 +59,9 @@ describe('T426 status line note count is singular for 1', () => {
 
     const frame = await waitForFrame(
       lastFrame,
-      (f) => f.includes('[offline] 1 note') && !f.includes('1 notes'),
+      (f) => f.includes('[connecting] 1 note') && !f.includes('1 notes'),
     );
-    expect(frame).toContain('[offline] 1 note');
+    expect(frame).toContain('[connecting] 1 note');
     expect(frame).not.toContain('1 notes');
   });
 });

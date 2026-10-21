@@ -64,7 +64,7 @@ describe('T266 reading-width: cap preview and list column widths', () => {
     expect(tagPaneLinesWithDivider).toBe(20);
   });
 
-  it('6: WHEN <NoteList notes={[makeNote("n", "Title\\n" + "x".repeat(300))]} selectedIndex={0} width={60} height={26} /> is rendered THEN the frame contains a preview line of exactly 22 x characters (listColWidth(60) - 2 = 22, note-row.ts width - 2 truncation budget)', async () => {
+  it('6: WHEN <NoteList notes={[makeNote("n", "Title\\n" + "x".repeat(300))]} selectedIndex={0} width={60} height={26} /> is rendered THEN the frame contains a preview line of exactly 20 x characters (listColWidth(60) - 4 = 20, note-row.ts width - 4 budget since #75)', async () => {
     const { lastFrame } = render(
       <NoteList
         notes={[makeNote('n', 'Title\n' + 'x'.repeat(300))]}
@@ -76,8 +76,8 @@ describe('T266 reading-width: cap preview and list column widths', () => {
     await delay(0);
     const frame = lastFrame() ?? '';
     const frameStr = typeof frame === 'string' ? frame : '';
-    // note-row.ts uses width - 2 for the truncation budget
-    const previewLineMatch = frameStr.match(/^( {2})((x){22})( |\n|$)/m);
+    // note-row.ts uses width - 4 for the preview budget (#75)
+    const previewLineMatch = frameStr.match(/^( {4})((x){20})( |\n|$)/m);
     expect(previewLineMatch).not.toBeNull();
   });
 });

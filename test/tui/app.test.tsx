@@ -139,14 +139,14 @@ describe('App', () => {
     expect(frame).not.toContain('deleted');
   });
 
-  it('7: status bar shows offline and 4 notes', async () => {
+  it('7: status bar shows connecting and 4 notes', async () => {
     const { lastFrame } = render(
       <App store={store} width={80} height={24} />
     );
 
     await new Promise(r => setTimeout(r, 50));
     const frame = lastFrame();
-    expect(frame).toContain('offline');
+    expect(frame).toContain('connecting');
     expect(frame).toContain('4 notes');
   });
 

@@ -2,7 +2,7 @@
 import { createRequire as __cr } from 'node:module';
 const require = __cr(import.meta.url);
 
-// node_modules/yoga-layout/dist/binaries/yoga-wasm-base64-esm.js
+// ../../localdev/simplenote/node_modules/yoga-layout/dist/binaries/yoga-wasm-base64-esm.js
 var loadYoga = (() => {
   var _scriptDir = import.meta.url;
   return (function(loadYoga2) {
@@ -1233,7 +1233,7 @@ var loadYoga = (() => {
 })();
 var yoga_wasm_base64_esm_default = loadYoga;
 
-// node_modules/yoga-layout/dist/src/generated/YGEnums.js
+// ../../localdev/simplenote/node_modules/yoga-layout/dist/src/generated/YGEnums.js
 var Align = /* @__PURE__ */ (function(Align2) {
   Align2[Align2["Auto"] = 0] = "Auto";
   Align2[Align2["FlexStart"] = 1] = "FlexStart";
@@ -1436,7 +1436,7 @@ var constants = {
 };
 var YGEnums_default = constants;
 
-// node_modules/yoga-layout/dist/src/wrapAssembly.js
+// ../../localdev/simplenote/node_modules/yoga-layout/dist/src/wrapAssembly.js
 function wrapAssembly(lib) {
   function patch(prototype, name, fn) {
     const original = prototype[name];
@@ -1537,7 +1537,7 @@ function wrapAssembly(lib) {
   };
 }
 
-// node_modules/yoga-layout/dist/src/index.js
+// ../../localdev/simplenote/node_modules/yoga-layout/dist/src/index.js
 var Yoga = wrapAssembly(await yoga_wasm_base64_esm_default());
 var src_default = Yoga;
 

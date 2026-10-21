@@ -1,6 +1,6 @@
 {
   "name": "snote",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
   "license": "GPL-2.0",
   "type": "module",
@@ -31,7 +31,8 @@
     "react-ink-textarea": "0.4.0",
     "redux": "^4.2.1",
     "remove-markdown": "^0.6.0",
-    "simperium": "1.1.4"
+    "simperium": "1.1.4",
+    "websocket": "1.0.31"
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",

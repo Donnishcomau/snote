@@ -56,20 +56,20 @@ describe('T466 status line fits its width', () => {
     return r;
   }
 
-  it('1: WHEN Root at 20x10 shows the trash view of 3 deleted notes THEN a line is exactly `[offline] 0 notes t…` and no line is longer than `20`.', async () => {
+  it('1: WHEN Root at 20x10 shows the trash view of 3 deleted notes THEN a line is exactly `[connecting] 0 note…` and no line is longer than `20`.', async () => {
     const r = await trashAt(20);
-    const f = await waitForFrame(r.lastFrame, (fr) => lines(fr).includes('[offline] 0 notes t…'));
-    expect(lines(f)).toContain('[offline] 0 notes t…');
+    const f = await waitForFrame(r.lastFrame, (fr) => lines(fr).includes('[connecting] 0 note…'));
+    expect(lines(f)).toContain('[connecting] 0 note…');
     for (const l of lines(f)) expect(l.length).toBeLessThanOrEqual(20);
     r.unmount();
   });
 
-  it('2: WHEN the same runs at 40x10 THEN a line is exactly `[offline] 0 notes trash`.', async () => {
+  it('2: WHEN the same runs at 40x10 THEN a line is exactly `[connecting] 0 notes trash`.', async () => {
     const r = await trashAt(40);
     const f = await waitForFrame(r.lastFrame, (fr) =>
-      lines(fr).includes('[offline] 0 notes trash'),
+      lines(fr).includes('[connecting] 0 notes trash'),
     );
-    expect(lines(f)).toContain('[offline] 0 notes trash');
+    expect(lines(f)).toContain('[connecting] 0 notes trash');
     r.unmount();
   });
 

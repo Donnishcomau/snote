@@ -50,6 +50,13 @@ export const INLINE_EDIT_TOO_MANY_NON_ASCII =
 /** The fixed notice when `i` must refuse for this content, else null. */
 export function inlineEditRefusal(content: string): string | null {
   if (content.split('\n').some((l) => l.length > INLINE_EDIT_MAX_LINE)) return INLINE_EDIT_TOO_LONG;
-  const nonAscii = content.match(/[^\x00-\x7f]/gu)?.length ?? 0;
-  return nonAscii > INLINE_EDIT_MAX_NON_ASCII ? INLINE_EDIT_TOO_MANY_NON_ASCII : null;
+  // #24: count one at a time and stop the moment the cap is passed;
+  // content.match(...) builds one array entry per non-ASCII character
+  // (millions of them) before a huge note is refused.
+  const nonAsciiChar = /[^\x00-\x7f]/gu;
+  let nonAscii = 0;
+  while (nonAsciiChar.exec(content) !== null) {
+    if (++nonAscii > INLINE_EDIT_MAX_NON_ASCII) return INLINE_EDIT_TOO_MANY_NON_ASCII;
+  }
+  return null;
 }

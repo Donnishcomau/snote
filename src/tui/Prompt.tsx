@@ -2,6 +2,7 @@ import { Box, Text, useInput } from 'ink';
 import React from 'react';
 import { sanitizeForTerminal } from '../core/sanitize';
 import { splitPastedInput } from './split-input';
+import { useReadGate } from './read-gate';
 import { theme } from './theme';
 
 interface PromptProps {
@@ -107,6 +108,7 @@ interface ConfirmProps {
  * Keys: y/Y → onYes, n/N/Escape → onNo, everything else ignored.
  */
 export function Confirm({ question, onYes, onNo, destructive }: ConfirmProps): React.JSX.Element {
+  useReadGate({ confirm: true }); // T538R: only a one-key read answers (F224)
   useInput((input, key) => {
     // Escape calls onNo
     if (key.escape) {

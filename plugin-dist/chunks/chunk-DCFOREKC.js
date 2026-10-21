@@ -3,15 +3,15 @@ import { createRequire as __cr } from 'node:module';
 const require = __cr(import.meta.url);
 import {
   require_websocket
-} from "./chunk-J73DZ7ZA.js";
+} from "./chunk-OJYCEQGS.js";
 import {
   __commonJS,
   __require
 } from "./chunk-SRSFEH3H.js";
 
-// node_modules/inherits/inherits_browser.js
+// ../../localdev/simplenote/node_modules/inherits/inherits_browser.js
 var require_inherits_browser = __commonJS({
-  "node_modules/inherits/inherits_browser.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/inherits/inherits_browser.js"(exports, module) {
     if (typeof Object.create === "function") {
       module.exports = function inherits(ctor, superCtor) {
         if (superCtor) {
@@ -41,9 +41,9 @@ var require_inherits_browser = __commonJS({
   }
 });
 
-// node_modules/inherits/inherits.js
+// ../../localdev/simplenote/node_modules/inherits/inherits.js
 var require_inherits = __commonJS({
-  "node_modules/inherits/inherits.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/inherits/inherits.js"(exports, module) {
     try {
       util = __require("util");
       if (typeof util.inherits !== "function") throw "";
@@ -55,9 +55,9 @@ var require_inherits = __commonJS({
   }
 });
 
-// node_modules/uuid/lib/rng.js
+// ../../localdev/simplenote/node_modules/uuid/lib/rng.js
 var require_rng = __commonJS({
-  "node_modules/uuid/lib/rng.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/uuid/lib/rng.js"(exports, module) {
     var crypto = __require("crypto");
     module.exports = function nodeRNG() {
       return crypto.randomBytes(16);
@@ -65,9 +65,9 @@ var require_rng = __commonJS({
   }
 });
 
-// node_modules/uuid/lib/bytesToUuid.js
+// ../../localdev/simplenote/node_modules/uuid/lib/bytesToUuid.js
 var require_bytesToUuid = __commonJS({
-  "node_modules/uuid/lib/bytesToUuid.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/uuid/lib/bytesToUuid.js"(exports, module) {
     var byteToHex = [];
     for (i = 0; i < 256; ++i) {
       byteToHex[i] = (i + 256).toString(16).substr(1);
@@ -103,9 +103,9 @@ var require_bytesToUuid = __commonJS({
   }
 });
 
-// node_modules/uuid/v1.js
+// ../../localdev/simplenote/node_modules/uuid/v1.js
 var require_v1 = __commonJS({
-  "node_modules/uuid/v1.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/uuid/v1.js"(exports, module) {
     var rng = require_rng();
     var bytesToUuid = require_bytesToUuid();
     var _nodeId;
@@ -171,9 +171,9 @@ var require_v1 = __commonJS({
   }
 });
 
-// node_modules/uuid/v4.js
+// ../../localdev/simplenote/node_modules/uuid/v4.js
 var require_v4 = __commonJS({
-  "node_modules/uuid/v4.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/uuid/v4.js"(exports, module) {
     var rng = require_rng();
     var bytesToUuid = require_bytesToUuid();
     function v4(options, buf, offset) {
@@ -197,9 +197,9 @@ var require_v4 = __commonJS({
   }
 });
 
-// node_modules/uuid/index.js
+// ../../localdev/simplenote/node_modules/uuid/index.js
 var require_uuid = __commonJS({
-  "node_modules/uuid/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/uuid/index.js"(exports, module) {
     var v1 = require_v1();
     var v4 = require_v4();
     var uuid = v4;
@@ -209,9 +209,9 @@ var require_uuid = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/bucket.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/bucket.js
 var require_bucket = __commonJS({
-  "node_modules/simperium/lib/simperium/bucket.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/bucket.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -389,9 +389,9 @@ var require_bucket = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/jsondiff/diff_match_patch.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/jsondiff/diff_match_patch.js
 var require_diff_match_patch = __commonJS({
-  "node_modules/simperium/lib/simperium/jsondiff/diff_match_patch.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/jsondiff/diff_match_patch.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -1921,9 +1921,9 @@ var require_diff_match_patch = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/jsondiff/jsondiff.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/jsondiff/jsondiff.js
 var require_jsondiff = __commonJS({
-  "node_modules/simperium/lib/simperium/jsondiff/jsondiff.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/jsondiff/jsondiff.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -2533,9 +2533,9 @@ var require_jsondiff = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/jsondiff/index.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/jsondiff/index.js
 var require_jsondiff2 = __commonJS({
-  "node_modules/simperium/lib/simperium/jsondiff/index.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/jsondiff/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -2549,9 +2549,9 @@ var require_jsondiff2 = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/util/change.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/util/change.js
 var require_change = __commonJS({
-  "node_modules/simperium/lib/simperium/util/change.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/util/change.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -2638,9 +2638,9 @@ var require_change = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/util/parse_message.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/util/parse_message.js
 var require_parse_message = __commonJS({
-  "node_modules/simperium/lib/simperium/util/parse_message.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/util/parse_message.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -2656,9 +2656,9 @@ var require_parse_message = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/util/parse_version_message.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/util/parse_version_message.js
 var require_parse_version_message = __commonJS({
-  "node_modules/simperium/lib/simperium/util/parse_version_message.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/util/parse_version_message.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -2675,9 +2675,9 @@ var require_parse_version_message = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/util/index.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/util/index.js
 var require_util = __commonJS({
-  "node_modules/simperium/lib/simperium/util/index.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/util/index.js"(exports) {
     "use strict";
     function _typeof(obj) {
       if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -2754,9 +2754,9 @@ var require_util = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/util/operation.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/util/operation.js
 var require_operation = __commonJS({
-  "node_modules/simperium/lib/simperium/util/operation.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/util/operation.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -2821,9 +2821,9 @@ var require_operation = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/channel.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/channel.js
 var require_channel = __commonJS({
-  "node_modules/simperium/lib/simperium/channel.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/channel.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -3383,9 +3383,9 @@ var require_channel = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/ghost/store.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/ghost/store.js
 var require_store = __commonJS({
-  "node_modules/simperium/lib/simperium/ghost/store.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/ghost/store.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -3454,9 +3454,9 @@ var require_store = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/ghost/default.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/ghost/default.js
 var require_default = __commonJS({
-  "node_modules/simperium/lib/simperium/ghost/default.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/ghost/default.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -3472,9 +3472,9 @@ var require_default = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/storage/default.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/storage/default.js
 var require_default2 = __commonJS({
-  "node_modules/simperium/lib/simperium/storage/default.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/storage/default.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -3518,16 +3518,16 @@ var require_default2 = __commonJS({
   }
 });
 
-// node_modules/websocket/index.js
+// ../../localdev/simplenote/node_modules/websocket/index.js
 var require_websocket2 = __commonJS({
-  "node_modules/websocket/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/index.js"(exports, module) {
     module.exports = require_websocket();
   }
 });
 
-// node_modules/simperium/lib/simperium/client.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/client.js
 var require_client = __commonJS({
-  "node_modules/simperium/lib/simperium/client.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/client.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -3750,9 +3750,9 @@ var require_client = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/http-request.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/http-request.js
 var require_http_request = __commonJS({
-  "node_modules/simperium/lib/simperium/http-request.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/http-request.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -3785,9 +3785,9 @@ var require_http_request = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/auth.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/auth.js
 var require_auth = __commonJS({
-  "node_modules/simperium/lib/simperium/auth.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/auth.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
@@ -3997,9 +3997,9 @@ var require_auth = __commonJS({
   }
 });
 
-// node_modules/simperium/lib/simperium/index.js
+// ../../localdev/simplenote/node_modules/simperium/lib/simperium/index.js
 var require_simperium = __commonJS({
-  "node_modules/simperium/lib/simperium/index.js"(exports) {
+  "../../localdev/simplenote/node_modules/simperium/lib/simperium/index.js"(exports) {
     "use strict";
     function _typeof(obj) {
       if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {

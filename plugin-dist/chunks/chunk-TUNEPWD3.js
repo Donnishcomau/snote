@@ -5,9 +5,9 @@ import {
   __commonJS
 } from "./chunk-SRSFEH3H.js";
 
-// node_modules/react/cjs/react.production.js
+// ../../localdev/simplenote/node_modules/react/cjs/react.production.js
 var require_react_production = __commonJS({
-  "node_modules/react/cjs/react.production.js"(exports) {
+  "../../localdev/simplenote/node_modules/react/cjs/react.production.js"(exports) {
     "use strict";
     var REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element");
     var REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for("react.portal");
@@ -457,9 +457,9 @@ var require_react_production = __commonJS({
   }
 });
 
-// node_modules/react/index.js
+// ../../localdev/simplenote/node_modules/react/index.js
 var require_react = __commonJS({
-  "node_modules/react/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/react/index.js"(exports, module) {
     "use strict";
     if (true) {
       module.exports = require_react_production();
@@ -469,9 +469,9 @@ var require_react = __commonJS({
   }
 });
 
-// node_modules/scheduler/cjs/scheduler.production.js
+// ../../localdev/simplenote/node_modules/scheduler/cjs/scheduler.production.js
 var require_scheduler_production = __commonJS({
-  "node_modules/scheduler/cjs/scheduler.production.js"(exports) {
+  "../../localdev/simplenote/node_modules/scheduler/cjs/scheduler.production.js"(exports) {
     "use strict";
     function push(heap, node) {
       var index = heap.length;
@@ -742,9 +742,9 @@ var require_scheduler_production = __commonJS({
   }
 });
 
-// node_modules/scheduler/index.js
+// ../../localdev/simplenote/node_modules/scheduler/index.js
 var require_scheduler = __commonJS({
-  "node_modules/scheduler/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/scheduler/index.js"(exports, module) {
     "use strict";
     if (true) {
       module.exports = require_scheduler_production();
@@ -754,9 +754,9 @@ var require_scheduler = __commonJS({
   }
 });
 
-// node_modules/react-reconciler/cjs/react-reconciler.production.js
+// ../../localdev/simplenote/node_modules/react-reconciler/cjs/react-reconciler.production.js
 var require_react_reconciler_production = __commonJS({
-  "node_modules/react-reconciler/cjs/react-reconciler.production.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/react-reconciler/cjs/react-reconciler.production.js"(exports, module) {
     "use strict";
     module.exports = function($$$config) {
       function createFiber(tag, pendingProps, key, mode) {
@@ -8933,9 +8933,9 @@ var require_react_reconciler_production = __commonJS({
   }
 });
 
-// node_modules/react-reconciler/index.js
+// ../../localdev/simplenote/node_modules/react-reconciler/index.js
 var require_react_reconciler = __commonJS({
-  "node_modules/react-reconciler/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/react-reconciler/index.js"(exports, module) {
     if (true) {
       module.exports = require_react_reconciler_production();
     } else {

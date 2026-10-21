@@ -141,7 +141,7 @@ describe('update-check', () => {
     });
 
     expect(result).toEqual({ state: 'available' });
-    expect(calls.some((args) => args[0] === 'ls-remote')).toBe(false);
+    expect(calls.some((args) => args.includes('ls-remote'))).toBe(false);
     expect(calls[0]).toEqual(['rev-parse', 'HEAD']);
   });
 
@@ -179,9 +179,9 @@ describe('update-check', () => {
     const result = await checkRemoteUpdate({ cloneDir, stateDir, env: {}, now, run });
 
     expect(result).toEqual({ state: 'available' });
-    const lsRemote = calls.filter((c) => c.args[0] === 'ls-remote');
+    const lsRemote = calls.filter((c) => c.args.includes('ls-remote'));
     expect(lsRemote).toHaveLength(1);
-    expect(lsRemote[0].args).toEqual([
+    expect(lsRemote[0].args.slice(lsRemote[0].args.indexOf('ls-remote'))).toEqual([
       'ls-remote',
       'https://example.invalid/snote.git',
       'HEAD',
@@ -198,7 +198,7 @@ describe('update-check', () => {
     const calls: string[][] = [];
     const failRemote: GitRunner = async (args) => {
       calls.push(args);
-      if (args[0] === 'ls-remote') {
+      if (args.includes('ls-remote')) {
         return { code: 128, stdout: '' };
       }
       return { code: 0, stdout: 'aaa\n' };

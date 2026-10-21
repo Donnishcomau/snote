@@ -1,6 +1,7 @@
 import { isInlineEditOpen } from './inline-editor-state';
-import { Box, Text, useApp, useStdin, useStdout } from 'ink';
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Box, Text, useApp, useStdout } from 'ink';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useReadGate } from './read-gate';
 
 import { Login } from './Login';
 import { App } from './App';
@@ -43,6 +44,17 @@ function smallLines(cols: number, rows: number): string[] {
   return out;
 }
 
+// #79: a server-forced sign-out must end the old sync client, as the user's own
+// logout does (REALLY_LOG_OUT -> client.end()), or its socket keeps running.
+// Not store.stopSync(): LOGOUT can stall behind LOGOUT-CONFIRMATION.
+function endSyncClient(s: Store<State> | null): void {
+  try {
+    (s as { client?: { end?: () => void } } | null)?.client?.end?.();
+  } catch {
+    /* already ended */
+  }
+}
+
 export function Root(props: RootProps): React.JSX.Element {
   const [phase, setPhase] = useState<Phase>('loading');
   const [store, setStore] = useState<Store<State> | null>(null);
@@ -56,32 +68,21 @@ export function Root(props: RootProps): React.JSX.Element {
 
   const { stdout } = useStdout();
   const { exit } = useApp();
-  const stdin = useStdin() as unknown as {
-    internal_eventEmitter?: NodeJS.EventEmitter;
-  };
   const tooSmall = size.width < MIN_W || size.height < MIN_H;
   const roomy = useRef(size);
   if (!tooSmall) roomy.current = size;
   const quitRef = useRef<() => void>(() => {});
   quitRef.current = props.onQuit ?? exit;
 
-  // While too small, Ink's one key/paste emitter drops everything but `q`.
-  useLayoutEffect(() => {
-    const em = stdin.internal_eventEmitter;
-    if (!tooSmall || !em) return;
-    const real = em.emit;
-    em.emit = function (this: NodeJS.EventEmitter, ev: string | symbol, ...a: unknown[]) {
-      if (ev === 'input') {
-        if (a[0] === 'q' && !isInlineEditOpen()) quitRef.current(); // S6-02: keep unsaved inline text
-        return false;
-      }
-      if (ev === 'paste') return false;
-      return real.call(this, ev, ...a);
-    } as typeof em.emit;
-    return () => {
-      em.emit = real;
-    };
-  }, [tooSmall, stdin]);
+  // While too small, the read gate drops every key and paste but `q` (T538R: one wrapper, F221).
+  useReadGate({
+    onCtrlC: () => quitRef.current(), // T538R-5: Ctrl+C quits only as a read of its own
+    whileSmall: tooSmall
+      ? (input) => {
+          if (input === 'q' && !isInlineEditOpen()) quitRef.current(); // S6-02: keep unsaved inline text
+        }
+      : undefined,
+  });
 
   useEffect(() => {
     const onResize = () => {
@@ -107,7 +108,9 @@ export function Root(props: RootProps): React.JSX.Element {
           // effective one — never send it to the mismatched host.
           setPhase('login');
         } else {
+          let made: Store<State> | null = null;
           const onLogout = () => {
+            if (!userLogoutRef.current) endSyncClient(made);
             logout(props.dataDir);
             setStore(null);
             // The middleware also calls this after the user's own logout;
@@ -118,7 +121,8 @@ export function Root(props: RootProps): React.JSX.Element {
             }
             setPhase('login');
           };
-          setStore(props.makeStoreFor(auth, onLogout));
+          made = props.makeStoreFor(auth, onLogout);
+          setStore(made);
           setPhase('app');
         }
       })
@@ -149,7 +153,9 @@ export function Root(props: RootProps): React.JSX.Element {
         await saveToken(props.dataDir, { ...auth, server: props.server });
         userLogoutRef.current = false;
         setError('');
+        let made: Store<State> | null = null;
         const onLogout = () => {
+          if (!userLogoutRef.current) endSyncClient(made);
           logout(props.dataDir);
           setStore(null);
           // Same rule as the saved-token path above: a forced sign-out
@@ -159,7 +165,8 @@ export function Root(props: RootProps): React.JSX.Element {
           }
           setPhase('login');
         };
-        setStore(props.makeStoreFor(auth, onLogout));
+        made = props.makeStoreFor(auth, onLogout);
+        setStore(made);
         setPhase('app');
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);

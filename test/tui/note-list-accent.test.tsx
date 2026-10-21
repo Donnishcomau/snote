@@ -57,7 +57,7 @@ describe('Note list accent colour (T379)', () => {
     );
   });
 
-  it('2: WHEN the same render happens THEN the preview lines are exactly "  \\u001b[2mbody one line\\u001b[22m" and "  \\u001b[2mbody two\\u001b[22m".', async () => {
+  it('2: WHEN the same render happens THEN the preview lines are exactly "    \\u001b[2mbody one line\\u001b[22m" and "    \\u001b[2mbody two\\u001b[22m".', async () => {
     const frame = await withInkChalkLevel3(() => {
       const { lastFrame } = render(
         <NoteList notes={notes} selectedIndex={0} width={60} height={26} />
@@ -67,11 +67,11 @@ describe('Note list accent colour (T379)', () => {
     const lines = getLines(frame);
     const previewOne = lines.find(l => stripAnsi(l).includes('body one line'));
     const previewTwo = lines.find(l => stripAnsi(l).includes('body two'));
-    expect(previewOne).toBe('  \u001b[2mbody one line\u001b[22m');
-    expect(previewTwo).toBe('  \u001b[2mbody two\u001b[22m');
+    expect(previewOne).toBe('    \u001b[2mbody one line\u001b[22m');
+    expect(previewTwo).toBe('    \u001b[2mbody two\u001b[22m');
   });
 
-  it('3: WHEN the same render happens THEN the Note two title line is exactly " Note two".', async () => {
+  it('3: WHEN the same render happens THEN the Note two title line is exactly " Note two" in bold (#70).', async () => {
     const frame = await withInkChalkLevel3(() => {
       const { lastFrame } = render(
         <NoteList notes={notes} selectedIndex={0} width={60} height={26} />
@@ -80,10 +80,10 @@ describe('Note list accent colour (T379)', () => {
     });
     const lines = getLines(frame);
     const titleLine = lines.find(l => stripAnsi(l).match(/^(\s*)>?(?:\s*)Note two/));
-    expect(titleLine).toBe(' Note two');
+    expect(titleLine).toBe(' ' + String.fromCharCode(27) + '[1mNote two' + String.fromCharCode(27) + '[22m');
   });
 
-  it('4: WHEN the notes render with selectedIndex=1 THEN the Note one line is exactly " Note one" and the Note two line is exactly \\u001b[7m\\u001b[1m\\u001b[34m>Note two\\u001b[39m\\u001b[22m\\u001b[27m.', async () => {
+  it('4: WHEN the notes render with selectedIndex=1 THEN the Note one line is exactly " Note one" in bold (#70) and the Note two line is exactly \\u001b[7m\\u001b[1m\\u001b[34m>Note two\\u001b[39m\\u001b[22m\\u001b[27m.', async () => {
     const frame = await withInkChalkLevel3(() => {
       const { lastFrame } = render(
         <NoteList notes={notes} selectedIndex={1} width={60} height={26} />
@@ -93,7 +93,7 @@ describe('Note list accent colour (T379)', () => {
     const lines = getLines(frame);
     const lineNoteOne = lines.find(l => stripAnsi(l).match(/^(\s*)>?(?:\s*)Note one/));
     const lineNoteTwo = lines.find(l => stripAnsi(l).match(/^(\s*)>?(?:\s*)Note two/));
-    expect(lineNoteOne).toBe(' Note one');
+    expect(lineNoteOne).toBe(' ' + String.fromCharCode(27) + '[1mNote one' + String.fromCharCode(27) + '[22m');
     expect(lineNoteTwo).toBe(
       '\u001b[7m\u001b[1m\u001b[34m>Note two\u001b[39m\u001b[22m\u001b[27m',
     );

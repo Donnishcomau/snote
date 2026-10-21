@@ -6,9 +6,9 @@ import {
   __require
 } from "./chunk-SRSFEH3H.js";
 
-// node_modules/websocket/node_modules/ms/index.js
+// ../../localdev/simplenote/node_modules/websocket/node_modules/ms/index.js
 var require_ms = __commonJS({
-  "node_modules/websocket/node_modules/ms/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/node_modules/ms/index.js"(exports, module) {
     var s = 1e3;
     var m = s * 60;
     var h = m * 60;
@@ -108,9 +108,9 @@ var require_ms = __commonJS({
   }
 });
 
-// node_modules/websocket/node_modules/debug/src/debug.js
+// ../../localdev/simplenote/node_modules/websocket/node_modules/debug/src/debug.js
 var require_debug = __commonJS({
-  "node_modules/websocket/node_modules/debug/src/debug.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/node_modules/debug/src/debug.js"(exports, module) {
     exports = module.exports = createDebug.debug = createDebug["default"] = createDebug;
     exports.coerce = coerce;
     exports.disable = disable;
@@ -213,9 +213,9 @@ var require_debug = __commonJS({
   }
 });
 
-// node_modules/websocket/node_modules/debug/src/browser.js
+// ../../localdev/simplenote/node_modules/websocket/node_modules/debug/src/browser.js
 var require_browser = __commonJS({
-  "node_modules/websocket/node_modules/debug/src/browser.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/node_modules/debug/src/browser.js"(exports, module) {
     exports = module.exports = require_debug();
     exports.log = log;
     exports.formatArgs = formatArgs;
@@ -299,9 +299,9 @@ var require_browser = __commonJS({
   }
 });
 
-// node_modules/websocket/node_modules/debug/src/node.js
+// ../../localdev/simplenote/node_modules/websocket/node_modules/debug/src/node.js
 var require_node = __commonJS({
-  "node_modules/websocket/node_modules/debug/src/node.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/node_modules/debug/src/node.js"(exports, module) {
     var tty = __require("tty");
     var util = __require("util");
     exports = module.exports = require_debug();
@@ -419,9 +419,9 @@ var require_node = __commonJS({
   }
 });
 
-// node_modules/websocket/node_modules/debug/src/index.js
+// ../../localdev/simplenote/node_modules/websocket/node_modules/debug/src/index.js
 var require_src = __commonJS({
-  "node_modules/websocket/node_modules/debug/src/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/node_modules/debug/src/index.js"(exports, module) {
     if (typeof process !== "undefined" && process.type === "renderer") {
       module.exports = require_browser();
     } else {
@@ -430,9 +430,9 @@ var require_src = __commonJS({
   }
 });
 
-// node_modules/websocket/lib/utils.js
+// ../../localdev/simplenote/node_modules/websocket/lib/utils.js
 var require_utils = __commonJS({
-  "node_modules/websocket/lib/utils.js"(exports) {
+  "../../localdev/simplenote/node_modules/websocket/lib/utils.js"(exports) {
     var noop = exports.noop = function() {
     };
     exports.extend = function extend(dest, source) {
@@ -551,9 +551,9 @@ var require_BufferUtil_fallback = __commonJS({
   }
 });
 
-// node_modules/websocket/lib/WebSocketFrame.js
+// ../../localdev/simplenote/node_modules/websocket/lib/WebSocketFrame.js
 var require_WebSocketFrame = __commonJS({
-  "node_modules/websocket/lib/WebSocketFrame.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/lib/WebSocketFrame.js"(exports, module) {
     var bufferUtil = require_BufferUtil_fallback().BufferUtil;
     var bufferAllocUnsafe = require_utils().bufferAllocUnsafe;
     var DECODE_HEADER = 1;
@@ -764,9 +764,9 @@ var require_WebSocketFrame = __commonJS({
   }
 });
 
-// node_modules/websocket/vendor/FastBufferList.js
+// ../../localdev/simplenote/node_modules/websocket/vendor/FastBufferList.js
 var require_FastBufferList = __commonJS({
-  "node_modules/websocket/vendor/FastBufferList.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/vendor/FastBufferList.js"(exports, module) {
     var Buffer2 = __require("buffer").Buffer;
     var EventEmitter = __require("events").EventEmitter;
     var bufferAllocUnsafe = require_utils().bufferAllocUnsafe;
@@ -914,9 +914,9 @@ var require_Validation_fallback = __commonJS({
   }
 });
 
-// node_modules/websocket/lib/WebSocketConnection.js
+// ../../localdev/simplenote/node_modules/websocket/lib/WebSocketConnection.js
 var require_WebSocketConnection = __commonJS({
-  "node_modules/websocket/lib/WebSocketConnection.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/lib/WebSocketConnection.js"(exports, module) {
     var util = __require("util");
     var utils = require_utils();
     var EventEmitter = __require("events").EventEmitter;
@@ -1634,9 +1634,9 @@ var require_WebSocketConnection = __commonJS({
   }
 });
 
-// node_modules/websocket/lib/WebSocketRequest.js
+// ../../localdev/simplenote/node_modules/websocket/lib/WebSocketRequest.js
 var require_WebSocketRequest = __commonJS({
-  "node_modules/websocket/lib/WebSocketRequest.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/lib/WebSocketRequest.js"(exports, module) {
     var crypto = __require("crypto");
     var util = __require("util");
     var url = __require("url");
@@ -2041,9 +2041,9 @@ var require_WebSocketRequest = __commonJS({
   }
 });
 
-// node_modules/websocket/lib/WebSocketServer.js
+// ../../localdev/simplenote/node_modules/websocket/lib/WebSocketServer.js
 var require_WebSocketServer = __commonJS({
-  "node_modules/websocket/lib/WebSocketServer.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/lib/WebSocketServer.js"(exports, module) {
     var extend = require_utils().extend;
     var utils = require_utils();
     var util = __require("util");
@@ -2243,9 +2243,9 @@ var require_WebSocketServer = __commonJS({
   }
 });
 
-// node_modules/websocket/lib/WebSocketClient.js
+// ../../localdev/simplenote/node_modules/websocket/lib/WebSocketClient.js
 var require_WebSocketClient = __commonJS({
-  "node_modules/websocket/lib/WebSocketClient.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/lib/WebSocketClient.js"(exports, module) {
     var utils = require_utils();
     var extend = utils.extend;
     var util = __require("util");
@@ -2538,9 +2538,9 @@ var require_WebSocketClient = __commonJS({
   }
 });
 
-// node_modules/websocket/lib/WebSocketRouterRequest.js
+// ../../localdev/simplenote/node_modules/websocket/lib/WebSocketRouterRequest.js
 var require_WebSocketRouterRequest = __commonJS({
-  "node_modules/websocket/lib/WebSocketRouterRequest.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/lib/WebSocketRouterRequest.js"(exports, module) {
     var util = __require("util");
     var EventEmitter = __require("events").EventEmitter;
     function WebSocketRouterRequest(webSocketRequest, resolvedProtocol) {
@@ -2574,9 +2574,9 @@ var require_WebSocketRouterRequest = __commonJS({
   }
 });
 
-// node_modules/websocket/lib/WebSocketRouter.js
+// ../../localdev/simplenote/node_modules/websocket/lib/WebSocketRouter.js
 var require_WebSocketRouter = __commonJS({
-  "node_modules/websocket/lib/WebSocketRouter.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/lib/WebSocketRouter.js"(exports, module) {
     var extend = require_utils().extend;
     var util = __require("util");
     var EventEmitter = __require("events").EventEmitter;
@@ -2692,9 +2692,9 @@ var require_WebSocketRouter = __commonJS({
   }
 });
 
-// node_modules/is-typedarray/index.js
+// ../../localdev/simplenote/node_modules/is-typedarray/index.js
 var require_is_typedarray = __commonJS({
-  "node_modules/is-typedarray/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/is-typedarray/index.js"(exports, module) {
     module.exports = isTypedArray;
     isTypedArray.strict = isStrictTypedArray;
     isTypedArray.loose = isLooseTypedArray;
@@ -2722,9 +2722,9 @@ var require_is_typedarray = __commonJS({
   }
 });
 
-// node_modules/typedarray-to-buffer/index.js
+// ../../localdev/simplenote/node_modules/typedarray-to-buffer/index.js
 var require_typedarray_to_buffer = __commonJS({
-  "node_modules/typedarray-to-buffer/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/typedarray-to-buffer/index.js"(exports, module) {
     var isTypedArray = require_is_typedarray().strict;
     module.exports = function typedarrayToBuffer(arr) {
       if (isTypedArray(arr)) {
@@ -2740,9 +2740,9 @@ var require_typedarray_to_buffer = __commonJS({
   }
 });
 
-// node_modules/yaeti/lib/EventTarget.js
+// ../../localdev/simplenote/node_modules/yaeti/lib/EventTarget.js
 var require_EventTarget = __commonJS({
-  "node_modules/yaeti/lib/EventTarget.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/yaeti/lib/EventTarget.js"(exports, module) {
     module.exports = _EventTarget;
     function _EventTarget() {
       if (typeof this.addEventListener === "function") {
@@ -2827,9 +2827,9 @@ var require_EventTarget = __commonJS({
   }
 });
 
-// node_modules/yaeti/lib/Event.js
+// ../../localdev/simplenote/node_modules/yaeti/lib/Event.js
 var require_Event = __commonJS({
-  "node_modules/yaeti/lib/Event.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/yaeti/lib/Event.js"(exports, module) {
     module.exports = _Event;
     function _Event(type) {
       this.type = type;
@@ -2839,9 +2839,9 @@ var require_Event = __commonJS({
   }
 });
 
-// node_modules/yaeti/index.js
+// ../../localdev/simplenote/node_modules/yaeti/index.js
 var require_yaeti = __commonJS({
-  "node_modules/yaeti/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/yaeti/index.js"(exports, module) {
     module.exports = {
       EventTarget: require_EventTarget(),
       Event: require_Event()
@@ -2849,9 +2849,9 @@ var require_yaeti = __commonJS({
   }
 });
 
-// node_modules/websocket/lib/W3CWebSocket.js
+// ../../localdev/simplenote/node_modules/websocket/lib/W3CWebSocket.js
 var require_W3CWebSocket = __commonJS({
-  "node_modules/websocket/lib/W3CWebSocket.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/lib/W3CWebSocket.js"(exports, module) {
     var WebSocketClient = require_WebSocketClient();
     var toBuffer = require_typedarray_to_buffer();
     var yaeti = require_yaeti();
@@ -3031,9 +3031,9 @@ var require_W3CWebSocket = __commonJS({
   }
 });
 
-// node_modules/websocket/lib/Deprecation.js
+// ../../localdev/simplenote/node_modules/websocket/lib/Deprecation.js
 var require_Deprecation = __commonJS({
-  "node_modules/websocket/lib/Deprecation.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/lib/Deprecation.js"(exports, module) {
     var Deprecation = {
       disableWarnings: false,
       deprecationWarningMap: {},
@@ -3048,9 +3048,9 @@ var require_Deprecation = __commonJS({
   }
 });
 
-// node_modules/websocket/package.json
+// ../../localdev/simplenote/node_modules/websocket/package.json
 var require_package = __commonJS({
-  "node_modules/websocket/package.json"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/package.json"(exports, module) {
     module.exports = {
       name: "websocket",
       description: "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.",
@@ -3113,16 +3113,16 @@ var require_package = __commonJS({
   }
 });
 
-// node_modules/websocket/lib/version.js
+// ../../localdev/simplenote/node_modules/websocket/lib/version.js
 var require_version = __commonJS({
-  "node_modules/websocket/lib/version.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/lib/version.js"(exports, module) {
     module.exports = require_package().version;
   }
 });
 
-// node_modules/websocket/lib/websocket.js
+// ../../localdev/simplenote/node_modules/websocket/lib/websocket.js
 var require_websocket = __commonJS({
-  "node_modules/websocket/lib/websocket.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/websocket/lib/websocket.js"(exports, module) {
     module.exports = {
       "server": require_WebSocketServer(),
       "client": require_WebSocketClient(),

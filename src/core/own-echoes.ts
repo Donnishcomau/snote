@@ -47,7 +47,9 @@
 
 import { apply } from 'simperium/lib/simperium/util/change';
 
+import { editIncluded } from './line-inclusion';
 import { createSentChanges } from './sent-changes';
+import { loadTombstones } from './tombstones';
 
 // Boundary types of the vendored channel — copied from the verified
 // shapes, not derived from the (untyped) library.
@@ -63,13 +65,16 @@ interface NoteChannel {
   };
   localQueue: {
     sent: Record<string, unknown>;
+    queue?(change: { type: 'modify'; id: string; object: Record<string, unknown> }): void;
     on(event: string, fn: (change: WireChange) => void): void;
     removeListener(event: string, fn: (change: WireChange) => void): void;
   };
   on(event: string, fn: (id: string, change: WireChange) => void): void;
   removeListener(event: string, fn: (id: string, change: WireChange) => void): void;
   store?: {
-    eachGhost(fn: (ghost: { key: string; data: Record<string, unknown> }) => void): void;
+    eachGhost(
+      fn: (ghost: { key: string; version?: number; data: Record<string, unknown> }) => void
+    ): void;
   };
 }
 
@@ -88,7 +93,8 @@ type Note = Record<string, unknown>;
  */
 export function trackOwnEchoes(
   client: unknown,
-  dir: string
+  dir: string,
+  loadedNotes?: { get(id: string): unknown }
 ): { settle: () => void; stop: () => void } {
   const record = createSentChanges(dir);
   // After `stop` the library can still send and acknowledge for a
@@ -113,24 +119,93 @@ export function trackOwnEchoes(
     | { get(id: string, cb: (e: unknown, o?: { data?: Note }) => void): void }
     | undefined;
 
-  // True when the local note already holds the echoed change: every field
-  // the echo changes has, locally, the value the echo gives it on top of
-  // the ghost. An empty change holds trivially.
-  const holds = (change: { id: string; v?: Note }): boolean => {
-    const keys = Object.keys(change.v ?? {});
-    if (keys.length === 0) return true;
-    let ghost: Note | undefined;
-    channel?.store?.eachGhost((g) => {
-      if (g.key === change.id) ghost = g.data;
-    });
+  const localCopy = (id: string): Note | undefined => {
     let local: Note | undefined;
-    notes?.get(change.id, (_e, o) => {
+    notes?.get(id, (_e, o) => {
       local = o?.data;
     });
+    return local;
+  };
+  const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
+
+  // The fields the echo changes whose local value is not the value the echo
+  // gives them on top of the ghost (none: the local note already holds the
+  // echo); undefined when the echo cannot be applied.
+  // #28 — with `alone` (no later change for the note in the same frame), a
+  // local modificationDate later than the echo's is held too: a session
+  // action stamped it.
+  const notHeld = (
+    change: { id: string; v?: Note },
+    ghost: Note,
+    alone: boolean
+  ): string[] | undefined => {
+    const keys = Object.keys(change.v ?? {});
+    if (keys.length === 0) return [];
+    const local = localCopy(change.id);
     try {
-      const target = apply(change.v, ghost ?? {}) as Note;
-      return keys.every(
-        (k) => JSON.stringify(local?.[k]) === JSON.stringify(target[k])
+      const target = apply(change.v, ghost) as Note;
+      return keys.filter(
+        (k) =>
+          !same(local?.[k], target[k]) &&
+          !(alone && k === 'modificationDate' && Number(local?.[k]) > Number(target[k]))
+      );
+    } catch {
+      return undefined;
+    }
+  };
+
+  // #28 — true when the local note differs from the echo applied to the ghost
+  // in a field other than modificationDate: a change made on top of the
+  // pre-quit one, which must go out on its own send.
+  const changedOnTop = (change: { v?: Note }, ghost: Note, local: Note): boolean => {
+    try {
+      const target = apply(change.v ?? {}, ghost) as Note;
+      return Object.keys({ ...local, ...target }).some(
+        (k) => k !== 'modificationDate' && !same(local[k], target[k])
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  // F206 — true when the user set every field the local note does not hold
+  // in this session: the local copy is newer than both the note as loaded
+  // from state.json (`loadedNotes`, read-only) and the ghost (a user action
+  // stamps this machine's time; a start-up write such as a ghost restored
+  // over the loaded copy does not), and each of those fields differs from
+  // the loaded copy. Then the echo only confirms the pre-quit send, and the
+  // user's edit goes out on its own send against the confirmed copy.
+  // Otherwise today's rule stands (the F198 crash-before-save rows: the
+  // echo is applied as before).
+  const setThisSession = (id: string, keys: string[], ghost: Note): boolean => {
+    const loaded = loadedNotes?.get(id) as Note | undefined;
+    const local = localCopy(id);
+    if (!loaded || !local) return false;
+    const newest = Math.max(Number(loaded.modificationDate) || 0, Number(ghost.modificationDate) || 0);
+    if (!(Number(local.modificationDate) > newest)) return false;
+    const fields = keys.filter((k) => k !== 'modificationDate');
+    return fields.length > 0 && fields.every((k) => !same(local[k], loaded[k]));
+  };
+
+  // #27 — true when the note as loaded from state.json holds the echo plus a
+  // later save made before the quit (queued behind the unconfirmed send): it
+  // is newer than the echo, and the only field it does not hold as the echo
+  // gives it is content whose change from the ghost includes the echo's.
+  const savedOnTop = (change: { id: string; v?: Note }, keys: string[], ghost: Note): boolean => {
+    const loaded = loadedNotes?.get(change.id) as Note | undefined;
+    const local = localCopy(change.id);
+    if (!loaded || !local) return false;
+    try {
+      const target = apply(change.v ?? {}, ghost) as Note;
+      if (!(Number(loaded.modificationDate) > Number(target.modificationDate))) return false;
+      const fields = keys.filter((k) => k !== 'modificationDate');
+      return (
+        fields.length > 0 &&
+        fields.every(
+          (k) =>
+            k === 'content' &&
+            editIncluded(String(ghost.content ?? ''), String(target.content ?? ''), String(local.content ?? ''))
+        )
       );
     } catch {
       return false;
@@ -154,12 +229,44 @@ export function trackOwnEchoes(
       // for that note — that entry is its only handle on the change.
       const inFlight = channel.localQueue.sent;
       for (const { id, ccid } of record.echoes(data, inFlight)) {
-        const change = (JSON.parse(data) as Array<{ id: string; v?: Note }>).find(
-          (c) => c?.id === id
-        );
-        if (change && holds(change)) {
-          channel.localQueue.sent[id] = { id, ccid, o: 'M', v: {} };
-        }
+        const changes = JSON.parse(data) as Array<{ id: string; v?: Note; sv?: number }>;
+        const at = changes.findIndex((c) => c?.id === id);
+        const change = changes[at];
+        // #28 — `echoes` also returns an echo whose note has a change in
+        // flight from the same version: the server already holds the
+        // pre-quit change, so it rejects that change (405). Seed over it only
+        // when no later change for the note follows in this frame (until the
+        // frame is applied the user's change lives only in the local copy),
+        // and queue the local copy so the user's change goes out against
+        // the confirmed copy.
+        const alone = !changes.slice(at + 1).some((c) => c?.id === id);
+        if (inFlight[id] !== undefined && !alone) continue;
+        let ghost: { version?: number; data: Note } | undefined;
+        channel.store?.eachGhost((g) => {
+          if (g.key === id) ghost = g;
+        });
+        // F190 (#23) — the library defers an echo whose `sv` is not the
+        // ghost's version (channel.js:210-218), so a seed for it would wait
+        // in `sent` and `resendSentChanges` would re-send it after a
+        // reconnect: seed only an echo that applies at once, with that `sv`.
+        const version = ghost?.version;
+        if (!change || (version !== undefined && change.sv !== version)) continue;
+        // #93 (F226) — a note deleted forever on this machine (tombstones.json
+        // names it; its local copy may not be removed yet) only confirms the
+        // pre-quit send: applied, the echo would re-create the note and drop
+        // the remove. Nothing is queued for it.
+        const removing = loadTombstones(dir).includes(id);
+        const keys = removing ? [] : notHeld(change, ghost?.data ?? {}, alone);
+        if (keys === undefined) continue;
+        const newer =
+          keys.length > 0 && (setThisSession(id, keys, ghost?.data ?? {}) || savedOnTop(change, keys, ghost?.data ?? {}));
+        if (keys.length > 0 && !newer) continue;
+        const seed: Record<string, unknown> = { id, ccid, o: 'M', v: {} };
+        if (version !== undefined) seed.sv = version;
+        channel.localQueue.sent[id] = seed;
+        const local = localCopy(id);
+        if (alone && local && !removing && changedOnTop(change, ghost?.data ?? {}, local))
+          channel.localQueue.queue?.({ type: 'modify', id, object: local });
       }
     };
     channel.message.prependListener('c', seedEcho);

@@ -55,7 +55,7 @@ describe('Note list selected style (T247)', () => {
     expect(titleLine).toBe('\u001b[7m\u001b[1m\u001b[34m>Note one\u001b[39m\u001b[22m\u001b[27m');
   });
 
-  it('2: WHEN the same 2 notes are rendered with selectedIndex=0 THEN the frame line for Note two is exactly " Note two".', async () => {
+  it('2: WHEN the same 2 notes are rendered with selectedIndex=0 THEN the frame line for Note two is exactly " Note two" in bold (#70).', async () => {
     const frame = await withInkChalkLevel3(() => {
       const { lastFrame } = render(
         <NoteList notes={notes} selectedIndex={0} width={60} height={26} />
@@ -64,10 +64,10 @@ describe('Note list selected style (T247)', () => {
     });
     const lines = getLines(frame);
     const titleLine = lines.find(l => stripAnsi(l).match(/^(\s*)>?(?:\s*)Note two/));
-    expect(titleLine).toBe(' Note two');
+    expect(titleLine).toBe(' ' + String.fromCharCode(27) + '[1mNote two' + String.fromCharCode(27) + '[22m');
   });
 
-  it('3: WHEN the same 2 notes are rendered with selectedIndex=1 THEN the line for Note one is exactly " Note one" and the line for Note two is exactly \\u001b[7m\\u001b[1m>Note two\\u001b[22m\\u001b[27m.', async () => {
+  it('3: WHEN the same 2 notes are rendered with selectedIndex=1 THEN the line for Note one is exactly " Note one" in bold (#70) and the line for Note two is exactly \\u001b[7m\\u001b[1m>Note two\\u001b[22m\\u001b[27m.', async () => {
     const frame = await withInkChalkLevel3(() => {
       const { lastFrame } = render(
         <NoteList notes={notes} selectedIndex={1} width={60} height={26} />
@@ -77,11 +77,11 @@ describe('Note list selected style (T247)', () => {
     const lines = getLines(frame);
     const lineNoteOne = lines.find(l => stripAnsi(l).match(/^(\s*)>?(?:\s*)Note one/));
     const lineNoteTwo = lines.find(l => stripAnsi(l).match(/^(\s*)>?(?:\s*)Note two/));
-    expect(lineNoteOne).toBe(' Note one');
+    expect(lineNoteOne).toBe(' ' + String.fromCharCode(27) + '[1mNote one' + String.fromCharCode(27) + '[22m');
     expect(lineNoteTwo).toBe('\u001b[7m\u001b[1m\u001b[34m>Note two\u001b[39m\u001b[22m\u001b[27m');
   });
 
-  it('4: WHEN the same 2 notes are rendered with selectedIndex=0 THEN lastFrame() is exactly "Notes\\n>Note one\\n  body one line\\n\\n Note two\\n  body two\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n".', async () => {
+  it('4: WHEN the same 2 notes are rendered with selectedIndex=0 THEN lastFrame() is exactly "Notes\\n>Note one\\n    body one line\\n\\n Note two\\n    body two\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n".', async () => {
     const { lastFrame } = render(
       <NoteList notes={notes} selectedIndex={0} width={60} height={26} />
     );
@@ -89,10 +89,10 @@ describe('Note list selected style (T247)', () => {
     const expected =
       'Notes\n' +
       '>Note one\n' +
-      '  body one line\n' +
+      '    body one line\n' +
       '\n' +
       ' Note two\n' +
-      '  body two\n' +
+      '    body two\n' +
       '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n';
     expect(frame).toBe(expected);
   });

@@ -8,7 +8,8 @@
  */
 
 let current: string | null = null;
-const listeners = new Set<(message: string) => void>();
+let currentInfo = false;
+const listeners = new Set<(message: string, info: boolean) => void>();
 
 /**
  * Publish a problem message. Every listener is notified on every
@@ -18,11 +19,25 @@ const listeners = new Set<(message: string) => void>();
  * so the notice line stays on a single row.
  */
 export function publishProblem(message: string): void {
+  emit(message, false);
+}
+
+/**
+ * #89: publish a message that is not a failure (a draft was restored). Same
+ * slot and listeners as publishProblem; listeners get `info` = true and the
+ * notice line draws it in the info style, not the error style.
+ */
+export function publishInfo(message: string): void {
+  emit(message, true);
+}
+
+function emit(message: string, info: boolean): void {
   const line = message.replace(/\s+/g, ' ');
   current = line;
+  currentInfo = info;
   for (const listener of listeners) {
     try {
-      listener(line);
+      listener(line, info);
     } catch {
       // one bad listener must not stop the rest
     }
@@ -36,11 +51,17 @@ export function publishProblem(message: string): void {
 export function currentProblem(): string | null {
   const taken = current;
   current = null;
+  currentInfo = false;
   return taken;
 }
 
+/** #89: true when the stored message was published with publishInfo. Read it before currentProblem(). */
+export function currentProblemIsInfo(): boolean {
+  return current !== null && currentInfo;
+}
+
 /** Subscribe to problems; returns the unsubscribe function. */
-export function onProblem(listener: (message: string) => void): () => void {
+export function onProblem(listener: (message: string, info: boolean) => void): () => void {
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
@@ -50,6 +71,7 @@ export function onProblem(listener: (message: string) => void): () => void {
 /** Tests only: clear the stored value and every listener. */
 export function resetProblemSignal(): void {
   current = null;
+  currentInfo = false;
   listeners.clear();
 }
 

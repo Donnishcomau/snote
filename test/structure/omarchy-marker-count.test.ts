@@ -5,12 +5,12 @@ import { describe, expect, it } from 'vitest';
 const read = (p: string) => readFileSync(resolve(process.cwd(), p), 'utf8');
 
 describe('omarchy-marker-count', () => {
-  it('1: WHEN src/cli/main.tsx is read THEN exactly `3` lines contain `OMARCHY`, and no line containing `guardOutputStream` or `T402` contains `OMARCHY`.', () => {
+  it('1: WHEN src/cli/main.tsx is read THEN exactly `3` lines contain `OMARCHY`, and no line containing `guardOutputStream`, `output guard` or `screen-reader output` contains `OMARCHY`.', () => {
     const lines = read('src/cli/main.tsx').split('\n');
     const markerLines = lines.filter((l) => l.includes('OMARCHY'));
     expect(markerLines.length).toBe(3);
     for (const line of lines) {
-      if (line.includes('guardOutputStream') || line.includes('T402')) {
+      if (line.includes('guardOutputStream') || line.includes('output guard') || line.includes('screen-reader output')) {
         expect(line).not.toContain('OMARCHY');
       }
     }

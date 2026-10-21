@@ -172,7 +172,7 @@ describe('update-check-hardening', () => {
     });
 
     expect(result).toEqual({ state: 'unknown' });
-    expect(calls.filter((args) => args[0] === 'ls-remote')).toHaveLength(0);
+    expect(calls.filter((args) => args.includes('ls-remote'))).toHaveLength(0);
     expect(fs.existsSync(path.join(tmpRoot, 'marker'))).toBe(false);
   });
 
@@ -202,9 +202,9 @@ describe('update-check-hardening', () => {
     });
 
     expect(result).toEqual({ state: 'available' });
-    const lsRemote = calls.filter((c) => c.args[0] === 'ls-remote');
+    const lsRemote = calls.filter((c) => c.args.includes('ls-remote'));
     expect(lsRemote).toHaveLength(1);
-    expect(lsRemote[0].args).toEqual([
+    expect(lsRemote[0].args.slice(lsRemote[0].args.indexOf('ls-remote'))).toEqual([
       'ls-remote',
       'https://example.invalid/snote.git',
       'HEAD',
@@ -214,7 +214,8 @@ describe('update-check-hardening', () => {
     for (const call of calls) {
       expect(call.env.HOME).toBe('/h');
       expect(call.env.GIT_TERMINAL_PROMPT).toBe('0');
-      expect(Object.keys(call.env).filter((k) => k.startsWith('GIT_'))).toEqual([
+      expect(Object.keys(call.env).filter((k) => k.startsWith('GIT_')).sort()).toEqual([
+        'GIT_CONFIG_NOSYSTEM',
         'GIT_TERMINAL_PROMPT',
       ]);
     }

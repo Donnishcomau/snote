@@ -10,6 +10,8 @@ export interface SimperiumState {
   syncing: boolean;
   // real connection status reported by the sync engine (T82)
   connectionStatus: T.ConnectionState;
+  // #79: true once this session has been green (a frame arrived); a new store starts false
+  everConnected: boolean;
   // only stores that really sync count pending notes (T82)
   tracking: boolean;
   // notes with local changes the server has not confirmed yet (T82)
@@ -23,6 +25,7 @@ export const initialState: SimperiumState = {
   connected: false,
   syncing: false,
   connectionStatus: 'red',
+  everConnected: false,
   tracking: false,
   pendingNotes: {},
   ghosts: [new Map(), new Map()],
@@ -64,7 +67,7 @@ export default function simperiumReducer(
       if (state.connectionStatus === action.status) {
         return state;
       }
-      return { ...state, connected: action.status === 'green', connectionStatus: action.status };
+      return { ...state, connected: action.status === 'green', connectionStatus: action.status, everConnected: state.everConnected || action.status === 'green' };
     }
 
     case 'SUBMIT_PENDING_CHANGE': {

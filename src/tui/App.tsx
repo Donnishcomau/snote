@@ -11,10 +11,10 @@ import { MainPanes } from './MainPanes';
 import { shouldAutoOpenTags } from '../core/layout';
 import { noteKeyAction, emptyTrashActions } from '../core/note-keys';
 import { checklistItems } from '../core/checklist';
-import { useAppState } from './useAppState'; import { useNotice, noticeColor } from './notice';
+import { useAppState } from './useAppState'; import { useNotice, noticeColor } from './notice'; import { BannerRow, dismissOnEscape } from './banner';
 import { handleSearchKey, handleSearchClearKey, handleTagsKey, handleHistoryKey, handleIdleKey, useAppEffects, recordKeyEvent, openHistory, EXTERNAL_KEY } from './app-keys';
 import { handleNoteKey } from './note-focus'; import { handlePaneArrow } from './pane-arrows';
-import { useReselect } from './use-reselect';
+import { useReselect } from './use-reselect'; import { useReadGate, SEVERAL_KEYS } from './read-gate';
 import { splitPastedInput } from './split-input'; import { sanitizeForTerminal } from '../core/sanitize';
 import { editSelectedNote, createNote, copyLink, forceSyncNow, saveInlineEdit } from './app-actions'; import { useInlineEditorState, inlineEditRefusal } from './inline-editor-state';
 import type { EntityId } from '@vendor/types';
@@ -138,7 +138,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
       if (handleNoteKey(input, keyName, noteKeyCtx)) return;
     }
 
-    const action = noteKeyAction(input, selectedEntry?.id ?? null, store.getState());
+    const action = dismissOnEscape(keyName) ? null : noteKeyAction(input, selectedEntry?.id ?? null, store.getState());
     if (action) {
       store.dispatch(action);
       // T283: keep the tags-pane marker in sync when `T` toggles the trash
@@ -194,9 +194,9 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   // T300: after a search clear, keep the same note selected by id
   const remember = useReselect({ store, setExternalSelect: view.setExternalSelect });
 
-  useInput((input, key) => {
-    for (const ch of splitPastedInput(input) ?? [input]) handleKey(ch, key);
-  }, { isActive: emptyAsk === 0 });
+  // T538R-3 (F217, F220): the per-read rule; the text-entry mode on screen and its closing key
+  useReadGate({ entry: () => (inlineEditOpen ? '\x13' : searchOpen || tagDialog || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen ? '\r' : tagEditorOpen ? 'whole' : null), onDropped: () => setNotice(SEVERAL_KEYS) });
+  useInput((input, key) => { for (const ch of splitPastedInput(input) ?? [input]) handleKey(ch, key); }, { isActive: emptyAsk === 0 });
 
   // View-order count of the list for the status bar (see app-model).
   const listCount = React.useMemo(() => {
@@ -220,7 +220,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
         <Help width={width} height={height} editor={selectEditor(process.env)} />
       ) : (
         <>
-          <MainPanes store={store} view={view} width={width} height={height} tagsOpen={tagsOpen} tagsFocused={tagsFocused}
+          <BannerRow /><MainPanes store={store} view={view} width={width} height={height} tagsOpen={tagsOpen} tagsFocused={tagsFocused}
             tagIndex={tagIndex} rendered={rendered} searchOpen={searchOpen} selectedNote={selectedNote}
             historyOpen={historyOpen} historyIndex={historyIndex} reading={reading}
             noteFocused={noteFocused} cursorLine={cursorLine} inlineEditOpen={inlineEditOpen} onCloseEdit={closeInlineEdit} inlineEditBase={inlineEditBase} onSaveEdit={(value: string) => { saveInlineEdit({ store, selectedEntry, base: inlineEditBase, local: value, onEditorError: setNoticeError }); closeInlineEdit(); }} />
@@ -230,7 +230,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
             view={{
               ...view,
               noteEntries: view.noteEntries.slice(0, listCount),
-              sortLabelStr: syncedAt ? 'synced ' + syncedAt : view.sortLabelStr,
+              sortLabelStr: syncedAt ? syncedAt : view.sortLabelStr,
             }}
             selectedEntry={selectedEntry}
             width={width}

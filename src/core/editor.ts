@@ -5,13 +5,20 @@ import { join, basename } from 'node:path';
 import { selectEditor, isTerminalEditor } from './editor-select.js';
 import { findOnPath } from '../cli/env-check.js';
 import { exportFileName } from './export-note.js';
-import { ensureDraftsDir, removeDrafts } from './editor-drafts.js';
+import { ensureDraftsDir, removeDrafts, writeSource } from './editor-drafts.js';
 import { secureWriteFileSync } from './secure-fs.js';
 import { afterNextSave } from './persistence.js';
 
 // #65: draft folders whose text went back to snote and may not be saved to
 // disk yet; the caller releases them once it has dispatched the text.
 let handedBack: string[] = [];
+
+// #89: the note the NEXT editInEditor call edits (null = a new note). Set by
+// expectNote right before the call, taken (and cleared) by editInEditor.
+let editing: string | null = null;
+export function expectNote(noteId: string | null): void {
+  editing = noteId;
+}
 
 /**
  * Call right after the editor's text is dispatched: the draft folders handed
@@ -90,6 +97,8 @@ export async function editInEditor(
   opts?: { editor?: string },
 ): Promise<string | null> {
   const editor = opts?.editor ?? selectEditor(process.env);
+  const noteId = editing;
+  editing = null;
   const parts = editor.split(/\s+/);
   const cmd = parts[0];
   const args = parts.slice(1);
@@ -102,6 +111,7 @@ export async function editInEditor(
   const stem = exportFileName(initial);
   const tmpFile = join(tmpDir, `${stem}.md`);
   secureWriteFileSync(tmpFile, initial);
+  if (noteId !== null) writeSource(tmpDir, noteId, initial); // #89: an edit of an existing note names it
 
   // Terminal editors (nvim, vim, ...) run inline exactly as before: their
   // stdio is inherited so they can draw over snote's own screen. GUI

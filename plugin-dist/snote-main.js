@@ -13,18 +13,18 @@ import {
   use_paste_default,
   use_stdin_default,
   use_stdout_default
-} from "./chunks/chunk-MRAMNRR7.js";
+} from "./chunks/chunk-GF6EF3C5.js";
 import {
   require_react
-} from "./chunks/chunk-CT7MGM3M.js";
-import "./chunks/chunk-GGREWLKO.js";
+} from "./chunks/chunk-TUNEPWD3.js";
+import "./chunks/chunk-U3ANDNGC.js";
 import {
   require_change,
   require_channel,
   require_websocket,
   simperium_default
-} from "./chunks/chunk-B3GJOPUO.js";
-import "./chunks/chunk-J73DZ7ZA.js";
+} from "./chunks/chunk-DCFOREKC.js";
+import "./chunks/chunk-OJYCEQGS.js";
 import {
   __commonJS,
   __export,
@@ -32,9 +32,9 @@ import {
   __toESM
 } from "./chunks/chunk-SRSFEH3H.js";
 
-// node_modules/remove-markdown/index.js
+// ../../localdev/simplenote/node_modules/remove-markdown/index.js
 var require_remove_markdown = __commonJS({
-  "node_modules/remove-markdown/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/remove-markdown/index.js"(exports, module) {
     module.exports = function(md, options) {
       options = options || {};
       options.listUnicodeChar = options.hasOwnProperty("listUnicodeChar") ? options.listUnicodeChar : false;
@@ -83,17 +83,17 @@ var require_remove_markdown = __commonJS({
   }
 });
 
-// node_modules/lodash/_freeGlobal.js
+// ../../localdev/simplenote/node_modules/lodash/_freeGlobal.js
 var require_freeGlobal = __commonJS({
-  "node_modules/lodash/_freeGlobal.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/_freeGlobal.js"(exports, module) {
     var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
     module.exports = freeGlobal;
   }
 });
 
-// node_modules/lodash/_root.js
+// ../../localdev/simplenote/node_modules/lodash/_root.js
 var require_root = __commonJS({
-  "node_modules/lodash/_root.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/_root.js"(exports, module) {
     var freeGlobal = require_freeGlobal();
     var freeSelf = typeof self == "object" && self && self.Object === Object && self;
     var root2 = freeGlobal || freeSelf || Function("return this")();
@@ -101,18 +101,18 @@ var require_root = __commonJS({
   }
 });
 
-// node_modules/lodash/_Symbol.js
+// ../../localdev/simplenote/node_modules/lodash/_Symbol.js
 var require_Symbol = __commonJS({
-  "node_modules/lodash/_Symbol.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/_Symbol.js"(exports, module) {
     var root2 = require_root();
     var Symbol2 = root2.Symbol;
     module.exports = Symbol2;
   }
 });
 
-// node_modules/lodash/_arrayMap.js
+// ../../localdev/simplenote/node_modules/lodash/_arrayMap.js
 var require_arrayMap = __commonJS({
-  "node_modules/lodash/_arrayMap.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/_arrayMap.js"(exports, module) {
     function arrayMap(array, iteratee) {
       var index = -1, length = array == null ? 0 : array.length, result = Array(length);
       while (++index < length) {
@@ -124,17 +124,17 @@ var require_arrayMap = __commonJS({
   }
 });
 
-// node_modules/lodash/isArray.js
+// ../../localdev/simplenote/node_modules/lodash/isArray.js
 var require_isArray = __commonJS({
-  "node_modules/lodash/isArray.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/isArray.js"(exports, module) {
     var isArray = Array.isArray;
     module.exports = isArray;
   }
 });
 
-// node_modules/lodash/_getRawTag.js
+// ../../localdev/simplenote/node_modules/lodash/_getRawTag.js
 var require_getRawTag = __commonJS({
-  "node_modules/lodash/_getRawTag.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/_getRawTag.js"(exports, module) {
     var Symbol2 = require_Symbol();
     var objectProto = Object.prototype;
     var hasOwnProperty = objectProto.hasOwnProperty;
@@ -161,9 +161,9 @@ var require_getRawTag = __commonJS({
   }
 });
 
-// node_modules/lodash/_objectToString.js
+// ../../localdev/simplenote/node_modules/lodash/_objectToString.js
 var require_objectToString = __commonJS({
-  "node_modules/lodash/_objectToString.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/_objectToString.js"(exports, module) {
     var objectProto = Object.prototype;
     var nativeObjectToString = objectProto.toString;
     function objectToString(value) {
@@ -173,9 +173,9 @@ var require_objectToString = __commonJS({
   }
 });
 
-// node_modules/lodash/_baseGetTag.js
+// ../../localdev/simplenote/node_modules/lodash/_baseGetTag.js
 var require_baseGetTag = __commonJS({
-  "node_modules/lodash/_baseGetTag.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/_baseGetTag.js"(exports, module) {
     var Symbol2 = require_Symbol();
     var getRawTag = require_getRawTag();
     var objectToString = require_objectToString();
@@ -192,9 +192,9 @@ var require_baseGetTag = __commonJS({
   }
 });
 
-// node_modules/lodash/isObjectLike.js
+// ../../localdev/simplenote/node_modules/lodash/isObjectLike.js
 var require_isObjectLike = __commonJS({
-  "node_modules/lodash/isObjectLike.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/isObjectLike.js"(exports, module) {
     function isObjectLike(value) {
       return value != null && typeof value == "object";
     }
@@ -202,9 +202,9 @@ var require_isObjectLike = __commonJS({
   }
 });
 
-// node_modules/lodash/isSymbol.js
+// ../../localdev/simplenote/node_modules/lodash/isSymbol.js
 var require_isSymbol = __commonJS({
-  "node_modules/lodash/isSymbol.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/isSymbol.js"(exports, module) {
     var baseGetTag = require_baseGetTag();
     var isObjectLike = require_isObjectLike();
     var symbolTag = "[object Symbol]";
@@ -215,9 +215,9 @@ var require_isSymbol = __commonJS({
   }
 });
 
-// node_modules/lodash/_baseToString.js
+// ../../localdev/simplenote/node_modules/lodash/_baseToString.js
 var require_baseToString = __commonJS({
-  "node_modules/lodash/_baseToString.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/_baseToString.js"(exports, module) {
     var Symbol2 = require_Symbol();
     var arrayMap = require_arrayMap();
     var isArray = require_isArray();
@@ -242,9 +242,9 @@ var require_baseToString = __commonJS({
   }
 });
 
-// node_modules/lodash/toString.js
+// ../../localdev/simplenote/node_modules/lodash/toString.js
 var require_toString = __commonJS({
-  "node_modules/lodash/toString.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/toString.js"(exports, module) {
     var baseToString = require_baseToString();
     function toString(value) {
       return value == null ? "" : baseToString(value);
@@ -253,9 +253,9 @@ var require_toString = __commonJS({
   }
 });
 
-// node_modules/lodash/escapeRegExp.js
+// ../../localdev/simplenote/node_modules/lodash/escapeRegExp.js
 var require_escapeRegExp = __commonJS({
-  "node_modules/lodash/escapeRegExp.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/lodash/escapeRegExp.js"(exports, module) {
     var toString = require_toString();
     var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
     var reHasRegExpChar = RegExp(reRegExpChar.source);
@@ -267,9 +267,9 @@ var require_escapeRegExp = __commonJS({
   }
 });
 
-// node_modules/@babel/runtime/helpers/typeof.js
+// ../../localdev/simplenote/node_modules/@babel/runtime/helpers/typeof.js
 var require_typeof = __commonJS({
-  "node_modules/@babel/runtime/helpers/typeof.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/@babel/runtime/helpers/typeof.js"(exports, module) {
     function _typeof(o) {
       "@babel/helpers - typeof";
       return module.exports = _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o2) {
@@ -282,9 +282,9 @@ var require_typeof = __commonJS({
   }
 });
 
-// node_modules/@babel/runtime/helpers/toPrimitive.js
+// ../../localdev/simplenote/node_modules/@babel/runtime/helpers/toPrimitive.js
 var require_toPrimitive = __commonJS({
-  "node_modules/@babel/runtime/helpers/toPrimitive.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/@babel/runtime/helpers/toPrimitive.js"(exports, module) {
     var _typeof = require_typeof()["default"];
     function toPrimitive(t, r) {
       if ("object" != _typeof(t) || !t) return t;
@@ -300,9 +300,9 @@ var require_toPrimitive = __commonJS({
   }
 });
 
-// node_modules/@babel/runtime/helpers/toPropertyKey.js
+// ../../localdev/simplenote/node_modules/@babel/runtime/helpers/toPropertyKey.js
 var require_toPropertyKey = __commonJS({
-  "node_modules/@babel/runtime/helpers/toPropertyKey.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/@babel/runtime/helpers/toPropertyKey.js"(exports, module) {
     var _typeof = require_typeof()["default"];
     var toPrimitive = require_toPrimitive();
     function toPropertyKey(t) {
@@ -313,9 +313,9 @@ var require_toPropertyKey = __commonJS({
   }
 });
 
-// node_modules/@babel/runtime/helpers/defineProperty.js
+// ../../localdev/simplenote/node_modules/@babel/runtime/helpers/defineProperty.js
 var require_defineProperty = __commonJS({
-  "node_modules/@babel/runtime/helpers/defineProperty.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/@babel/runtime/helpers/defineProperty.js"(exports, module) {
     var toPropertyKey = require_toPropertyKey();
     function _defineProperty(e, r, t) {
       return (r = toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
@@ -329,9 +329,9 @@ var require_defineProperty = __commonJS({
   }
 });
 
-// node_modules/@babel/runtime/helpers/objectSpread2.js
+// ../../localdev/simplenote/node_modules/@babel/runtime/helpers/objectSpread2.js
 var require_objectSpread2 = __commonJS({
-  "node_modules/@babel/runtime/helpers/objectSpread2.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/@babel/runtime/helpers/objectSpread2.js"(exports, module) {
     var defineProperty = require_defineProperty();
     function ownKeys(e, r) {
       var t = Object.keys(e);
@@ -358,9 +358,9 @@ var require_objectSpread2 = __commonJS({
   }
 });
 
-// node_modules/redux/lib/redux.js
+// ../../localdev/simplenote/node_modules/redux/lib/redux.js
 var require_redux = __commonJS({
-  "node_modules/redux/lib/redux.js"(exports) {
+  "../../localdev/simplenote/node_modules/redux/lib/redux.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var _objectSpread = require_objectSpread2();
@@ -466,9 +466,9 @@ var require_redux = __commonJS({
         } finally {
           isDispatching = false;
         }
-        var listeners3 = currentListeners = nextListeners;
-        for (var i = 0; i < listeners3.length; i++) {
-          var listener2 = listeners3[i];
+        var listeners4 = currentListeners = nextListeners;
+        for (var i = 0; i < listeners4.length; i++) {
+          var listener2 = listeners4[i];
           listener2();
         }
         return action;
@@ -671,9 +671,9 @@ var require_redux = __commonJS({
   }
 });
 
-// node_modules/ms/index.js
+// ../../localdev/simplenote/node_modules/ms/index.js
 var require_ms = __commonJS({
-  "node_modules/ms/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/ms/index.js"(exports, module) {
     var s = 1e3;
     var m = s * 60;
     var h = m * 60;
@@ -787,9 +787,9 @@ var require_ms = __commonJS({
   }
 });
 
-// node_modules/debug/src/common.js
+// ../../localdev/simplenote/node_modules/debug/src/common.js
 var require_common = __commonJS({
-  "node_modules/debug/src/common.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/debug/src/common.js"(exports, module) {
     function setup(env) {
       createDebug.debug = createDebug;
       createDebug.default = createDebug;
@@ -964,9 +964,9 @@ var require_common = __commonJS({
   }
 });
 
-// node_modules/debug/src/browser.js
+// ../../localdev/simplenote/node_modules/debug/src/browser.js
 var require_browser = __commonJS({
-  "node_modules/debug/src/browser.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/debug/src/browser.js"(exports, module) {
     exports.formatArgs = formatArgs;
     exports.save = save;
     exports.load = load;
@@ -1134,9 +1134,9 @@ var require_browser = __commonJS({
   }
 });
 
-// node_modules/has-flag/index.js
+// ../../localdev/simplenote/node_modules/has-flag/index.js
 var require_has_flag = __commonJS({
-  "node_modules/has-flag/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/has-flag/index.js"(exports, module) {
     "use strict";
     module.exports = (flag, argv = process.argv) => {
       const prefix = flag.startsWith("-") ? "" : flag.length === 1 ? "-" : "--";
@@ -1147,9 +1147,9 @@ var require_has_flag = __commonJS({
   }
 });
 
-// node_modules/supports-color/index.js
+// ../../localdev/simplenote/node_modules/supports-color/index.js
 var require_supports_color = __commonJS({
-  "node_modules/supports-color/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/supports-color/index.js"(exports, module) {
     "use strict";
     var os3 = __require("os");
     var tty = __require("tty");
@@ -1249,9 +1249,9 @@ var require_supports_color = __commonJS({
   }
 });
 
-// node_modules/debug/src/node.js
+// ../../localdev/simplenote/node_modules/debug/src/node.js
 var require_node = __commonJS({
-  "node_modules/debug/src/node.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/debug/src/node.js"(exports, module) {
     var tty = __require("tty");
     var util = __require("util");
     exports.init = init;
@@ -1423,9 +1423,9 @@ var require_node = __commonJS({
   }
 });
 
-// node_modules/debug/src/index.js
+// ../../localdev/simplenote/node_modules/debug/src/index.js
 var require_src = __commonJS({
-  "node_modules/debug/src/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/debug/src/index.js"(exports, module) {
     if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
       module.exports = require_browser();
     } else {
@@ -1434,9 +1434,9 @@ var require_src = __commonJS({
   }
 });
 
-// node_modules/react/cjs/react-jsx-runtime.production.js
+// ../../localdev/simplenote/node_modules/react/cjs/react-jsx-runtime.production.js
 var require_react_jsx_runtime_production = __commonJS({
-  "node_modules/react/cjs/react-jsx-runtime.production.js"(exports) {
+  "../../localdev/simplenote/node_modules/react/cjs/react-jsx-runtime.production.js"(exports) {
     "use strict";
     var REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element");
     var REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment");
@@ -1464,9 +1464,9 @@ var require_react_jsx_runtime_production = __commonJS({
   }
 });
 
-// node_modules/react/jsx-runtime.js
+// ../../localdev/simplenote/node_modules/react/jsx-runtime.js
 var require_jsx_runtime = __commonJS({
-  "node_modules/react/jsx-runtime.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/react/jsx-runtime.js"(exports, module) {
     "use strict";
     if (true) {
       module.exports = require_react_jsx_runtime_production();
@@ -1481,14 +1481,14 @@ process.noDeprecation = true;
 process.removeAllListeners("warning");
 
 // src/cli/main.tsx
-var import_react21 = __toESM(require_react(), 1);
+var import_react23 = __toESM(require_react(), 1);
 import fs13 from "node:fs";
 import os2 from "node:os";
 import path12 from "node:path";
 
 // src/core/crash-redact.ts
 var KNOWN_WORDS = new Set(
-  "a an and are as at be before by cannot could not is it of on or to the in for from with within no such file directory open read write stat unlink rename scandir mkdir permission denied operation permitted already exists exist too many files connection refused reset timed out undefined null reading properties property function defined object iterable constructor unexpected token json position end input string number invalid valid hook call maximum update depth exceeded stack size access initialization assignment constant variable raw mode supported enoent eacces eexist eperm enotdir eisdir emfile econnrefused econnreset etimedout enotfound epipe eaddrinuse err http blog origin configured unauthorized rate limited title required long editor failed exit timeout waiting notes load another snote using pid holds instance lock answer reach must start https got non empty".split(" ")
+  "a an and are as at be before by cannot could not is it of on or to the in for from with within no such file directory open read write stat unlink rename scandir mkdir permission denied operation permitted already exists exist too many files connection refused reset timed out undefined null reading properties property function defined object iterable constructor unexpected token json position end input string number invalid valid hook call maximum update depth exceeded stack size access initialization assignment constant variable raw mode supported enoent eacces eexist eperm enotdir eisdir emfile econnrefused econnreset etimedout enotfound epipe eaddrinuse err http blog origin configured unauthorized rate limited title required long editor failed exit timeout waiting notes load another snote using pid holds enospc enotempty eai_again ebusy einval exdev erofs enfile err_invalid_arg_type err_invalid_arg_value err_out_of_range err_stream_destroyed err_stream_premature_close err_socket_closed err_unhandled_rejection err_module_not_found err_require_esm instance lock answer reach must start https got non empty".split(" ")
 );
 var MARK = "";
 var QUOTED = /"[^"]*"|'[^']*'|`[^`]*`/g;
@@ -1509,8 +1509,11 @@ function redactStack(stack, home, name, message) {
   } else {
     return [];
   }
-  return frameLines(body.split("\n"), home);
+  const lines = body.split("\n");
+  const cut = lines.findIndex((line) => CAUSE_MARKER.test(line));
+  return frameLines(cut < 0 ? lines : lines.slice(0, cut), home);
 }
+var CAUSE_MARKER = /^\s*(?:caused by:|\[cause\]:|\[errors\]:)/i;
 var FRAME = /^ {4}at (?:(?:async |new )?[^\s()]+ \()?(?:[^\s()]+:\d+:\d+|<anonymous>|native)\)?$/;
 function frameLines(lines, home) {
   return lines.filter((line) => FRAME.test(line)).map((line) => home ? line.replaceAll(home, "~") : line).map((line) => line.replace(/[^\s/()]*@[^\s/()]*/g, "<w>")).slice(0, 12);
@@ -1519,7 +1522,12 @@ function safeName(name) {
   return typeof name === "string" && /^[A-Za-z][A-Za-z0-9]{0,40}$/.test(name) ? name : "Error";
 }
 function safeCode(code) {
-  return typeof code === "string" && /^[A-Z][A-Z0-9_]{1,40}$/.test(code) ? code : void 0;
+  return typeof code === "string" && /^[A-Z][A-Z0-9_]{1,40}$/.test(code) && KNOWN_WORDS.has(code.toLowerCase()) ? code : void 0;
+}
+function storedFrames(e, home) {
+  const lines = e.stack.filter((l) => typeof l === "string");
+  if (lines.every((line) => FRAME.test(line))) return frameLines(lines, home);
+  return typeof e.message === "string" ? redactStack(lines.join("\n"), home, String(e.name), e.message) : [];
 }
 function redactStoredError(error, home) {
   if (typeof error !== "object" || error === null) return void 0;
@@ -1529,13 +1537,44 @@ function redactStoredError(error, home) {
     name: safeName(e.name),
     message: typeof e.message === "string" ? redactMessage(e.message) : "Unknown",
     ...code === void 0 ? {} : { code },
-    stack: Array.isArray(e.stack) ? frameLines(
-      e.stack.filter((l) => typeof l === "string"),
-      home
-    ) : []
+    stack: Array.isArray(e.stack) ? storedFrames(e, home) : []
   };
 }
 var COMMAND_KEYS = new Set("/?abcegEhijJkKLnNqrRstvwxyY".split(""));
+var KEY_FLAG_NAMES = [
+  "upArrow",
+  "downArrow",
+  "leftArrow",
+  "rightArrow",
+  "pageDown",
+  "pageUp",
+  "home",
+  "end",
+  "return",
+  "escape",
+  "ctrl",
+  "shift",
+  "tab",
+  "backspace",
+  "delete",
+  "meta",
+  "super",
+  "hyper",
+  "capsLock",
+  "numLock"
+];
+var KEY_EVENT_TYPES = /* @__PURE__ */ new Set(["press", "repeat", "release"]);
+function safeKey(key) {
+  if (typeof key !== "object" || key === null) return {};
+  const k = key;
+  const out = {};
+  for (const name of KEY_FLAG_NAMES) {
+    if (typeof k[name] === "boolean") out[name] = k[name];
+  }
+  const eventType = k.eventType;
+  if (typeof eventType === "string" && KEY_EVENT_TYPES.has(eventType)) out.eventType = eventType;
+  return out;
+}
 function redactStoredKeys(keys) {
   if (!Array.isArray(keys)) return [];
   const out = [];
@@ -1545,7 +1584,7 @@ function redactStoredKeys(keys) {
     const keep = input === "" || typeof input === "string" && COMMAND_KEYS.has(input);
     out.push({
       input: keep ? input : "<text>",
-      key: typeof key === "object" && key !== null ? key : {}
+      key: safeKey(key)
     });
   }
   return out;
@@ -1597,6 +1636,60 @@ function crashReport(err, ctx) {
     "Hand that file to your coding agent, or read it before you attach it to an issue."
   ].join("\n");
   return { record, message: messageText };
+}
+
+// src/core/crash-bundle.ts
+var TOP_TEXT = ["version", "when", "terminal"];
+var SESSION_TEXT = ["version", "terminal", "collectionType"];
+var SESSION_COUNTS = ["noteCount", "tagCount"];
+function isCount(value) {
+  return typeof value === "number" && Number.isFinite(value);
+}
+function storedSession(raw) {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    return void 0;
+  }
+  const old = raw;
+  const session = {};
+  for (const name of SESSION_TEXT) {
+    if (typeof old[name] === "string") {
+      session[name] = old[name];
+    }
+  }
+  for (const name of SESSION_COUNTS) {
+    if (isCount(old[name])) {
+      session[name] = old[name];
+    }
+  }
+  if (Array.isArray(old.noteLengths) && old.noteLengths.every(isCount)) {
+    session.noteLengths = old.noteLengths;
+  }
+  if (old.keysMasked === true) {
+    session.keys = redactStoredKeys(old.keys);
+    session.keysMasked = true;
+  } else {
+    session.keys = [];
+    session.keysDropped = "older version";
+  }
+  return session;
+}
+function storedCrashBundle(old, home) {
+  const bundle = {};
+  for (const name of TOP_TEXT) {
+    if (typeof old[name] === "string") {
+      bundle[name] = old[name];
+    }
+  }
+  const error = redactStoredError(old.error, home);
+  if (error !== void 0) {
+    bundle.error = error;
+  }
+  const session = storedSession(old.session);
+  if (session !== void 0) {
+    bundle.session = session;
+  }
+  bundle.source = "crash";
+  return bundle;
 }
 
 // src/core/secure-fs.ts
@@ -1878,14 +1971,15 @@ function revisionsOf(state, noteId) {
   }
   const result = [];
   revisions.forEach((note, version) => {
-    result.push({ version, note });
+    if (typeof note?.content === "string") result.push({ version, note });
   });
   result.sort((a, b) => b.version - a.version);
   return result;
 }
 function revisionLabel(rev) {
   const title = sanitizeForTerminal(noteTitleAndPreview(rev.note).title);
-  const dateStr = new Date(rev.note.modificationDate * 1e3).toISOString().slice(0, 16).replace("T", " ");
+  const when = new Date(Number(rev.note.modificationDate) * 1e3);
+  const dateStr = Number.isNaN(when.getTime()) ? "unknown date" : when.toISOString().slice(0, 16).replace("T", " ");
   return `v${rev.version}  ${dateStr}  ${title}`;
 }
 function restoreRevisionAction(state, noteId, version) {
@@ -2188,7 +2282,7 @@ import { basename as basename3, dirname, join as join8 } from "node:path";
 
 // src/core/editor.ts
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync as readFileSync5 } from "node:fs";
+import { mkdtempSync, readFileSync as readFileSync4 } from "node:fs";
 import { join as join7, basename as basename2 } from "node:path";
 
 // src/cli/env-check.ts
@@ -2323,7 +2417,8 @@ async function exportNote(note, dir) {
 }
 
 // src/core/editor-drafts.ts
-import { lstatSync as lstatSync2, readdirSync, readFileSync as readFileSync4, rmSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { closeSync, constants, fstatSync, lstatSync as lstatSync2, openSync, readdirSync, readSync, rmSync } from "node:fs";
 import { join as join6 } from "node:path";
 
 // src/core/persistence.ts
@@ -2332,13 +2427,21 @@ import * as path from "node:path";
 
 // src/core/problem-signal.ts
 var current = null;
+var currentInfo = false;
 var listeners = /* @__PURE__ */ new Set();
 function publishProblem(message) {
+  emit(message, false);
+}
+function publishInfo(message) {
+  emit(message, true);
+}
+function emit(message, info) {
   const line = message.replace(/\s+/g, " ");
   current = line;
+  currentInfo = info;
   for (const listener2 of listeners) {
     try {
-      listener2(line);
+      listener2(line, info);
     } catch {
     }
   }
@@ -2346,7 +2449,11 @@ function publishProblem(message) {
 function currentProblem() {
   const taken = current;
   current = null;
+  currentInfo = false;
   return taken;
+}
+function currentProblemIsInfo() {
+  return current !== null && currentInfo;
 }
 function onProblem(listener2) {
   listeners.add(listener2);
@@ -2476,6 +2583,31 @@ function persistOnChange(store, dir, delayMs = 500) {
 }
 
 // src/core/editor-drafts.ts
+var MAX_DRAFT_BYTES = 1048576;
+var SOURCE_FILE = "source.json";
+var SOURCE_MAX_BYTES = 4096;
+var NOTE_ID_SHAPE = /^[A-Za-z0-9_-]{1,64}$/;
+var SHA256_SHAPE = /^[0-9a-f]{64}$/;
+var sha256 = (text) => createHash("sha256").update(text, "utf8").digest("hex");
+function writeSource(folder, noteId, text) {
+  try {
+    secureWriteFileSync(join6(folder, SOURCE_FILE), JSON.stringify({ v: 1, noteId, sha256: sha256(text) }));
+  } catch {
+  }
+}
+function readSource(folder) {
+  const read = readDraft(join6(folder, SOURCE_FILE), SOURCE_MAX_BYTES);
+  if (read === null || !("text" in read)) return null;
+  try {
+    const j = JSON.parse(read.text);
+    if (typeof j !== "object" || j === null) return null;
+    const { v, noteId, sha256: hash } = j;
+    if (v !== 1 || typeof noteId !== "string" || typeof hash !== "string") return null;
+    return NOTE_ID_SHAPE.test(noteId) && SHA256_SHAPE.test(hash) ? { noteId, sha256: hash } : null;
+  } catch {
+    return null;
+  }
+}
 var accountDrafts = null;
 function setDraftsDir(dir) {
   accountDrafts = dir;
@@ -2504,6 +2636,28 @@ function ensureDraftsDir() {
   secureMkdir(dir);
   return dir;
 }
+function readDraft(path13, cap = MAX_DRAFT_BYTES) {
+  let fd;
+  try {
+    fd = openSync(path13, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+  } catch {
+    const st = lstatSync2(path13, { throwIfNoEntry: false });
+    return st && !st.isSymbolicLink() ? { unreadable: true } : null;
+  }
+  try {
+    const st = fstatSync(fd);
+    if (!st.isFile()) return null;
+    if (st.size > cap) return { tooLarge: st.size };
+    const buf = Buffer.alloc(st.size + 1);
+    const n = readSync(fd, buf, 0, buf.length, 0);
+    if (n > st.size) return { tooLarge: n };
+    return { text: buf.toString("utf-8", 0, n) };
+  } catch {
+    return { unreadable: true };
+  } finally {
+    closeSync(fd);
+  }
+}
 function removeDrafts(folders) {
   for (const folder of folders) {
     try {
@@ -2512,7 +2666,7 @@ function removeDrafts(folders) {
     }
   }
 }
-function recoverDrafts(store, dir = draftsDir()) {
+function recoverDrafts(store, dir = draftsDir(), tooLarge, report) {
   if (!isRealDir(dir)) return 0;
   let folders;
   try {
@@ -2524,32 +2678,64 @@ function recoverDrafts(store, dir = draftsDir()) {
   let count = 0;
   for (const name of folders) {
     const folder = join6(dir, name);
-    let texts;
+    const texts = [];
+    let kept = 0;
     try {
       if (!isRealDir(folder)) continue;
-      texts = readdirSync(folder).filter((f) => f.endsWith(".md") && lstatSync2(join6(folder, f)).isFile()).map((f) => readFileSync4(join6(folder, f), "utf-8"));
+      for (const f of readdirSync(folder).filter((n) => n.endsWith(".md"))) {
+        const draft = readDraft(join6(folder, f));
+        if (draft === null) continue;
+        if ("text" in draft) texts.push(draft.text);
+        else {
+          kept++;
+          if ("tooLarge" in draft) tooLarge?.push({ folder, bytes: draft.tooLarge });
+        }
+      }
     } catch {
       continue;
     }
     const notes2 = [...store.getState().data.notes.values()].map((n) => n.content);
     const fresh = texts.filter((t) => t.trim() !== "" && !notes2.includes(t));
-    for (const content of fresh) {
-      store.dispatch({
-        type: "CREATE_NOTE_WITH_ID",
-        noteId: crypto.randomUUID(),
-        note: { content, systemTags: [], tags: [] }
-      });
+    const source = fresh.length === 1 && texts.length === 1 && kept === 0 ? readSource(folder) : null;
+    const target = source ? store.getState().data.notes.get(source.noteId) : void 0;
+    if (source && target && !target.deleted && sha256(target.content ?? "") === source.sha256) {
+      store.dispatch({ type: "EDIT_NOTE", noteId: source.noteId, changes: { content: fresh[0] } });
+    } else {
+      if (source && report) report.changed++;
+      for (const content of fresh) {
+        store.dispatch({
+          type: "CREATE_NOTE_WITH_ID",
+          noteId: crypto.randomUUID(),
+          note: { content, systemTags: [], tags: [] }
+        });
+      }
     }
     count += fresh.length;
-    if (fresh.length > 0) restored.push(folder);
-    else if (texts.length > 0) removeDrafts([folder]);
+    if (fresh.length > 0 && kept === 0) restored.push(folder);
+    else if (texts.length > 0 && kept === 0) removeDrafts([folder]);
   }
   if (restored.length > 0) afterNextSave(() => removeDrafts(restored));
   return count;
 }
+function recoveryNotice(restored, tooLarge, changed = 0) {
+  const parts = [];
+  const plain = restored - changed;
+  if (plain > 0) parts.push(`Restored ${plain} ${plain === 1 ? "note" : "notes"} from an unfinished editor session`);
+  if (changed > 0) parts.push(`Restored ${changed} ${changed === 1 ? "note as a new note" : "notes as new notes"}: the original changed meanwhile`);
+  if (tooLarge.length === 1) {
+    parts.push(`Draft too large to restore (${Math.ceil(tooLarge[0].bytes / 1024)} KB), kept on disk: ${tooLarge[0].folder}`);
+  } else if (tooLarge.length > 1) {
+    parts.push(`${tooLarge.length} drafts too large to restore, kept on disk in ${draftsDir()}`);
+  }
+  return parts.length > 0 ? parts.join(". ") : null;
+}
 
 // src/core/editor.ts
 var handedBack = [];
+var editing = null;
+function expectNote(noteId) {
+  editing = noteId;
+}
 function releaseDraftsAfterSave() {
   const drafts = handedBack;
   handedBack = [];
@@ -2575,6 +2761,8 @@ function nvimHintArgs() {
 }
 async function editInEditor(initial, opts) {
   const editor = opts?.editor ?? selectEditor(process.env);
+  const noteId = editing;
+  editing = null;
   const parts = editor.split(/\s+/);
   const cmd = parts[0];
   const args = parts.slice(1);
@@ -2582,6 +2770,7 @@ async function editInEditor(initial, opts) {
   const stem = exportFileName(initial);
   const tmpFile = join7(tmpDir, `${stem}.md`);
   secureWriteFileSync(tmpFile, initial);
+  if (noteId !== null) writeSource(tmpDir, noteId, initial);
   const direct = process.env.SNOTE_EDITOR_DIRECT === "1";
   const uwsm = direct ? null : findOnPath("uwsm", process.env.PATH);
   const hint = basename2(cmd) === "nvim" ? nvimHintArgs() : [];
@@ -2597,7 +2786,7 @@ async function editInEditor(initial, opts) {
   if (result.status !== 0) {
     throw new Error("editor failed: exit " + result.status + kept);
   }
-  const edited = readFileSync5(tmpFile, "utf-8");
+  const edited = readFileSync4(tmpFile, "utf-8");
   if (edited === initial) {
     removeDrafts([tmpDir]);
     return null;
@@ -2698,17 +2887,17 @@ function insertChecklistItem(content, afterIndex, text) {
 
 // src/core/editor-conflict-merge.ts
 var import_change = __toESM(require_change(), 1);
-function mergeEditorReturn(base, local, current3) {
-  if (current3 === base) {
+function mergeEditorReturn(base, local, current4) {
+  if (current4 === base) {
     return { content: local, conflict: false };
   }
   const b = { content: base };
   const l = { content: local };
-  const c = { content: current3 };
+  const c = { content: current4 };
   const localDiff = (0, import_change.diff)(b, l);
   const remoteDiff = (0, import_change.diff)(b, c);
   if (local === base) {
-    return { content: current3, conflict: false };
+    return { content: current4, conflict: false };
   }
   let merged;
   try {
@@ -2726,7 +2915,7 @@ function mergeEditorReturn(base, local, current3) {
     content: `${local}
 
 --- conflicting change from another device ---
-${current3}`,
+${current4}`,
     conflict: true
   };
 }
@@ -2809,6 +2998,7 @@ function editSelectedNote(ctx) {
     const run = async () => {
       try {
         announceEditorIfGui();
+        expectNote(selectedEntry.id);
         result = await editor(selectedEntry.note.content ?? "");
       } catch (err) {
         editorError = err;
@@ -2825,8 +3015,8 @@ function editSelectedNote(ctx) {
         return;
       }
       if (result !== null) {
-        const current3 = store.getState().data.notes.get(selectedEntry.id)?.content ?? "";
-        const merged = mergeEditorReturn(selectedEntry.note.content ?? "", result, current3);
+        const current4 = store.getState().data.notes.get(selectedEntry.id)?.content ?? "";
+        const merged = mergeEditorReturn(selectedEntry.note.content ?? "", result, current4);
         store.dispatch({
           type: "EDIT_NOTE",
           noteId: selectedEntry.id,
@@ -2844,8 +3034,8 @@ function editSelectedNote(ctx) {
 function saveInlineEdit(ctx) {
   const { store, selectedEntry, base, local, onEditorError } = ctx;
   if (!selectedEntry) return;
-  const current3 = store.getState().data.notes.get(selectedEntry.id)?.content ?? "";
-  const merged = mergeEditorReturn(base, local, current3);
+  const current4 = store.getState().data.notes.get(selectedEntry.id)?.content ?? "";
+  const merged = mergeEditorReturn(base, local, current4);
   store.dispatch(editNote(selectedEntry.id, { content: merged.content }));
   if (merged.conflict) {
     onEditorError?.("A change from another device could not be merged automatically - both versions were kept.");
@@ -2868,6 +3058,7 @@ function createNote(ctx) {
   const run = async () => {
     try {
       announceEditorIfGui();
+      expectNote(null);
       result = await editor("");
     } catch (err) {
       editorError = err;
@@ -2913,8 +3104,8 @@ function forceSyncNow(ctx) {
   const fn = onForceSync ?? store.forceSync;
   if (fn) fn.call(store);
   if (timerRef.current) clearTimeout(timerRef.current);
-  const hhmm = (/* @__PURE__ */ new Date()).toTimeString().slice(0, 5);
-  setSyncedAt(hhmm);
+  const green = store.getState().simperium.connected;
+  setSyncedAt(green ? "synced " + (/* @__PURE__ */ new Date()).toTimeString().slice(0, 5) : "sync requested");
   timerRef.current = setTimeout(() => {
     setSyncedAt(null);
     timerRef.current = null;
@@ -4122,6 +4313,7 @@ var initialState = {
   connected: false,
   syncing: false,
   connectionStatus: "red",
+  everConnected: false,
   tracking: false,
   pendingNotes: {},
   ghosts: [/* @__PURE__ */ new Map(), /* @__PURE__ */ new Map()]
@@ -4152,7 +4344,7 @@ function simperiumReducer(state = initialState, action) {
       if (state.connectionStatus === action.status) {
         return state;
       }
-      return { ...state, connected: action.status === "green", connectionStatus: action.status };
+      return { ...state, connected: action.status === "green", connectionStatus: action.status, everConnected: state.everConnected || action.status === "green" };
     }
     case "SUBMIT_PENDING_CHANGE": {
       if (!state.tracking) {
@@ -4825,8 +5017,9 @@ var getUnconfirmedChanges = (state) => {
 // vendor/simplenote/state/simperium/functions/connection-monitor.ts
 var start = (client, { dispatch, getState }) => {
   let lastMessageAt = -Infinity;
-  client.on("message", () => {
+  client.on("message", (data) => {
     lastMessageAt = Date.now();
+    if (!/^\d+:/.test(data)) return;
     if (getState().simperium.connectionStatus !== "green") {
       dispatch({ type: "CHANGE_CONNECTION_STATUS", status: "green" });
     }
@@ -5352,7 +5545,7 @@ function installSimperiumReconnectFix(client) {
     installOnChannel(bucket?.channel);
   }
 }
-function whenCatchUpApplied(client, bucketName) {
+function whenCatchUpApplied(client, bucketName, fallback = true) {
   const buckets = (client ?? {}).buckets ?? [];
   const channel = buckets.find((b) => b?.name === bucketName)?.channel;
   if (!channel || typeof channel.once !== "function") {
@@ -5386,7 +5579,7 @@ function whenCatchUpApplied(client, bucketName) {
       }
       if (isErrorReply) return;
       clearFallback();
-      fallbackTimer = setTimeout(finish, FALLBACK_MS);
+      if (fallback) fallbackTimer = setTimeout(finish, FALLBACK_MS);
     };
     const onDisconnect = () => {
       clearFallback();
@@ -5525,6 +5718,7 @@ function installSimperiumAuthWatchdog(client, timeoutMs) {
   let timer;
   let inits = 0;
   let auths = 0;
+  let ignoredLogins = 0;
   const clear = () => {
     if (timer !== void 0) {
       clearTimeout(timer);
@@ -5543,6 +5737,10 @@ function installSimperiumAuthWatchdog(client, timeoutMs) {
       if (c.reconnect === false) {
         return;
       }
+      ignoredLogins++;
+      if (ignoredLogins >= 2) {
+        publishProblem(`sync server ignored sign-in, retrying (attempt ${ignoredLogins})`);
+      }
       c.disconnect();
     }, timeoutMs);
   };
@@ -5555,6 +5753,7 @@ function installSimperiumAuthWatchdog(client, timeoutMs) {
   c.on("message", (data) => {
     if (typeof data === "string" && AUTH.test(data)) {
       auths++;
+      ignoredLogins = 0;
     }
   });
   c.on("disconnect", clear);
@@ -5616,7 +5815,7 @@ import * as https from "node:https";
 // package.json
 var package_default = {
   name: "snote",
-  version: "0.2.7",
+  version: "0.2.8",
   description: "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
   license: "GPL-2.0",
   type: "module",
@@ -5647,7 +5846,8 @@ var package_default = {
     "react-ink-textarea": "0.4.0",
     redux: "^4.2.1",
     "remove-markdown": "^0.6.0",
-    simperium: "1.1.4"
+    simperium: "1.1.4",
+    websocket: "1.0.31"
   },
   devDependencies: {
     "@types/debug": "^4.1.12",
@@ -5673,10 +5873,19 @@ var VERSION = package_default.version;
 
 // src/core/websocket-provider.ts
 var SNOTE_USER_AGENT = `snote/${VERSION}`;
+var sockets = /* @__PURE__ */ new Set();
+function hasOpenSocket() {
+  for (const s of sockets) if (s.readyState === s.OPEN) return true;
+  return false;
+}
 function snoteWebsocketProvider(url) {
   const agent = url.startsWith("wss:") ? new https.Agent() : new http.Agent();
   const socket = new import_websocket.w3cwebsocket(url, void 0, void 0, { "User-Agent": SNOTE_USER_AGENT }, { agent });
-  socket.addEventListener("close", () => agent.destroy());
+  sockets.add(socket);
+  socket.addEventListener("close", () => {
+    agent.destroy();
+    sockets.delete(socket);
+  });
   return socket;
 }
 var snoteSocketOptions = { websocketClientProvider: snoteWebsocketProvider };
@@ -5798,7 +6007,7 @@ function makeStore(opts = {}) {
 }
 
 // src/core/ghost-store.ts
-import { readFileSync as readFileSync6, renameSync as renameSync3, existsSync as existsSync4 } from "node:fs";
+import { readFileSync as readFileSync5, renameSync as renameSync3, existsSync as existsSync4 } from "node:fs";
 import { join as join9 } from "node:path";
 var COALESCE_WINDOW_MS = 100;
 var FileGhostStore = class {
@@ -5819,7 +6028,7 @@ var FileGhostStore = class {
     this._dirExists = existsSync4(this.filePath);
     if (existsSync4(this.filePath)) {
       try {
-        const raw = readFileSync6(this.filePath, "utf8");
+        const raw = readFileSync5(this.filePath, "utf8");
         const file = JSON.parse(raw);
         if (file.version !== 1) {
           return;
@@ -6052,6 +6261,39 @@ function restoreNotesFromGhosts(store, ghosts, unsynced = {}) {
   return restored;
 }
 
+// src/core/line-inclusion.ts
+function lineCounts(text) {
+  const counts = /* @__PURE__ */ new Map();
+  for (const line of text.split("\n")) counts.set(line, (counts.get(line) ?? 0) + 1);
+  return counts;
+}
+function inOrder(edited, current4) {
+  const have = current4.split("\n");
+  let at = 0;
+  for (const line of edited.split("\n")) {
+    while (at < have.length && have[at] !== line) at++;
+    if (at === have.length) return false;
+    at++;
+  }
+  return true;
+}
+function editIncluded(base, edited, current4) {
+  const b = lineCounts(base);
+  const l = lineCounts(edited);
+  const c = lineCounts(current4);
+  for (const line of /* @__PURE__ */ new Set([...b.keys(), ...l.keys()])) {
+    const inBase = b.get(line) ?? 0;
+    const inEdited = l.get(line) ?? 0;
+    const inCurrent = c.get(line) ?? 0;
+    if (inEdited > inBase && inCurrent < inEdited) return false;
+    if (inEdited < inBase && inCurrent > inEdited) return false;
+  }
+  return true;
+}
+function editIncludedInOrder(base, edited, current4) {
+  return inOrder(edited, current4) && editIncluded(base, edited, current4);
+}
+
 // src/core/requeue.ts
 async function unsyncedNoteIds2(notes2, ghosts, unsynced = {}) {
   const result = [];
@@ -6073,43 +6315,85 @@ async function unsyncedNoteIds2(notes2, ghosts, unsynced = {}) {
 }
 var same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 var asSet = (items) => new Set(items);
+var SET_FIELDS = /* @__PURE__ */ new Set(["tags", "systemTags"]);
+var tagKey = (item) => tagHashOf(item);
+var hashable = (item) => {
+  try {
+    tagKey(item);
+    return true;
+  } catch {
+    return false;
+  }
+};
+var tagList = (value) => Array.isArray(value) ? value.filter((item) => typeof item === "string" && hashable(item)) : [];
+function mergeSet(into, from, to) {
+  const a = tagList(from).map(tagKey);
+  const b = tagList(to).map(tagKey);
+  const seen = [];
+  const out = [];
+  for (const item of tagList(into)) {
+    const key = tagKey(item);
+    if (a.includes(key) && !b.includes(key) || seen.includes(key)) continue;
+    seen.push(key);
+    out.push(item);
+  }
+  for (const item of tagList(to)) {
+    const key = tagKey(item);
+    if (a.includes(key) || seen.includes(key)) continue;
+    seen.push(key);
+    out.push(item);
+  }
+  return out;
+}
+function sessionSet(into, held2, server, now) {
+  const h = tagList(held2).map(tagKey);
+  const s = tagList(server).map(tagKey);
+  const n = tagList(now).map(tagKey);
+  const out = tagList(into).filter((item) => {
+    const key = tagKey(item);
+    return n.includes(key) || !h.includes(key) || !s.includes(key);
+  });
+  const seen = out.map(tagKey);
+  for (const item of tagList(now)) {
+    const key = tagKey(item);
+    if (h.includes(key) || s.includes(key) || seen.includes(key)) continue;
+    seen.push(key);
+    out.push(item);
+  }
+  return out;
+}
+function withSessionChanges(note, held2, current4, now) {
+  const newest = Math.max(Number(held2.modificationDate) || 0, Number(current4.modificationDate) || 0);
+  if (!(Number(now.modificationDate) > newest)) return note;
+  const merged = { ...note };
+  for (const key of Object.keys(held2)) {
+    if (key === "content" || key === "modificationDate") continue;
+    const k = key;
+    if (SET_FIELDS.has(key)) merged[key] = sessionSet(merged[key], held2[k], current4[k], now[k]);
+    else if (!same(now[k], held2[k]) && !same(now[k], current4[k])) merged[key] = now[k];
+  }
+  return merged;
+}
 function noteFieldsEqual(a, b) {
   return a.content === b.content && !!a.deleted === !!b.deleted && asSet(a.tags).size === asSet(b.tags ?? []).size && [...a.tags].every((tag) => asSet(b.tags ?? []).has(tag)) && asSet(a.systemTags).size === asSet(b.systemTags ?? []).size && [...a.systemTags].every((tag) => asSet(b.systemTags ?? []).has(tag));
 }
-function lineCounts(text) {
-  const counts = /* @__PURE__ */ new Map();
-  for (const line of text.split("\n")) counts.set(line, (counts.get(line) ?? 0) + 1);
-  return counts;
-}
-function offlineEditIncluded(base, local, current3) {
-  const b = lineCounts(base);
-  const l = lineCounts(local);
-  const c = lineCounts(current3);
-  for (const line of /* @__PURE__ */ new Set([...b.keys(), ...l.keys()])) {
-    const inBase = b.get(line) ?? 0;
-    const inLocal = l.get(line) ?? 0;
-    const inCurrent = c.get(line) ?? 0;
-    if (inLocal > inBase && inCurrent < inLocal) return false;
-    if (inLocal < inBase && inCurrent > inLocal) return false;
-  }
-  return true;
-}
-function rebaseOfflineEdit(base, local, current3) {
-  const merged = { ...current3 };
+function rebaseOfflineEdit(base, local, current4) {
+  const merged = { ...current4 };
   for (const key of Object.keys(local)) {
     if (key === "content") continue;
     const k = key;
-    if (!same(local[k], base[k])) merged[key] = local[k];
+    if (SET_FIELDS.has(key)) merged[key] = mergeSet(merged[key], base[k], local[k]);
+    else if (!same(local[k], base[k])) merged[key] = local[k];
   }
   merged.content = mergeEditorReturn(
     String(base.content ?? ""),
     String(local.content ?? ""),
-    String(current3.content ?? "")
+    String(current4.content ?? "")
   ).content;
   merged.modificationDate = Math.max(Number(local.modificationDate) || 0, Date.now() / 1e3);
   return merged;
 }
-async function requeueUnsynced(store, ghosts, whenCaughtUp, unsynced = {}) {
+async function requeueUnsynced(store, ghosts, whenCaughtUp, unsynced = {}, loadedNotes) {
   const notes2 = store.getState().data.notes;
   const ids = await unsyncedNoteIds2(notes2, ghosts, unsynced);
   const held2 = [];
@@ -6137,10 +6421,10 @@ async function requeueUnsynced(store, ghosts, whenCaughtUp, unsynced = {}) {
     await whenCaughtUp();
     try {
       for (const { id, base, local: heldLocal, hadGhost } of held2) {
-        const current3 = (await ghosts.get(id)).data ?? base;
+        const current4 = (await ghosts.get(id)).data ?? base;
         if (!hadGhost) {
-          if (current3.modificationDate) {
-            if (!noteFieldsEqual(heldLocal, current3) && heldLocal.modificationDate > current3.modificationDate) {
+          if (current4.modificationDate) {
+            if (!noteFieldsEqual(heldLocal, current4) && heldLocal.modificationDate > current4.modificationDate) {
               store.dispatch({
                 type: "IMPORT_NOTE_WITH_ID",
                 noteId: id,
@@ -6158,11 +6442,14 @@ async function requeueUnsynced(store, ghosts, whenCaughtUp, unsynced = {}) {
         }
         const now = store.getState().data.notes.get(id);
         if (!now) continue;
-        if (now.content !== heldLocal.content && now.content !== current3.content) continue;
-        if (heldLocal.content !== String(base.content ?? "") && offlineEditIncluded(String(base.content ?? ""), heldLocal.content, String(current3.content ?? "")))
+        if (now.content !== heldLocal.content && now.content !== current4.content) continue;
+        const offline = String((loadedNotes?.get(id) ?? heldLocal).content ?? "");
+        if (offline !== String(base.content ?? "") && editIncluded(String(base.content ?? ""), offline, String(current4.content ?? "")))
           continue;
-        const note = rebaseOfflineEdit(base, heldLocal, current3);
-        if (same({ ...note, modificationDate: 0 }, { ...current3, modificationDate: 0 })) continue;
+        const serverHeld = String(current4.content ?? "") !== String(base.content ?? "") && editIncludedInOrder(String(base.content ?? ""), String(current4.content ?? ""), String(heldLocal.content ?? ""));
+        const mergeBase = serverHeld ? { ...base, content: current4.content } : base;
+        const note = withSessionChanges(rebaseOfflineEdit(mergeBase, heldLocal, current4), heldLocal, current4, now);
+        if (same({ ...note, modificationDate: 0 }, { ...current4, modificationDate: 0 })) continue;
         store.dispatch({
           type: "IMPORT_NOTE_WITH_ID",
           noteId: id,
@@ -6218,26 +6505,31 @@ var writeRecord2 = (dir, record) => {
 function createSentChanges(dir) {
   const loaded = loadSentChanges(dir);
   const fresh = {};
-  const current3 = () => ({ ...loaded, ...fresh });
+  const superseded = {};
+  const current4 = () => ({ ...loaded, ...fresh });
   return {
     sent(id, ccid) {
       fresh[id] = ccid;
+      if (loaded[id] !== void 0) superseded[id] = loaded[id];
       delete loaded[id];
-      writeRecord2(dir, current3());
+      writeRecord2(dir, current4());
     },
     acknowledged(id, ccid) {
-      const record = current3();
+      const record = current4();
       if (record[id] === ccid) {
         delete loaded[id];
         delete fresh[id];
       }
-      writeRecord2(dir, current3());
+      writeRecord2(dir, current4());
     },
     settle() {
       for (const id of Object.keys(loaded)) {
         delete loaded[id];
       }
-      writeRecord2(dir, current3());
+      for (const id of Object.keys(superseded)) {
+        delete superseded[id];
+      }
+      writeRecord2(dir, current4());
     },
     echoes(data, inFlight) {
       let changes;
@@ -6258,8 +6550,10 @@ function createSentChanges(dir) {
         if (typeof id !== "string" || "error" in change) {
           continue;
         }
-        const ccid = loaded[id];
-        if (ccid === void 0 || inFlight[id]) {
+        const flying = inFlight[id];
+        const stale = typeof flying?.sv === "number" && flying.sv === change.sv || flying?.o === "-";
+        const ccid = flying ? stale ? loaded[id] ?? superseded[id] : void 0 : loaded[id];
+        if (ccid === void 0) {
           continue;
         }
         const { ccids } = change;
@@ -6268,83 +6562,6 @@ function createSentChanges(dir) {
         }
       }
       return found;
-    }
-  };
-}
-
-// src/core/own-echoes.ts
-function trackOwnEchoes(client, dir) {
-  const record = createSentChanges(dir);
-  let stopped = false;
-  const sent = (id, ccid) => {
-    if (!stopped) record.sent(id, ccid);
-  };
-  const acknowledged = (id, ccid) => {
-    if (!stopped) record.acknowledged(id, ccid);
-  };
-  const buckets = client?.buckets ?? [];
-  const bucket = buckets.find((b) => b?.name === "note");
-  const channel = bucket?.channel ?? void 0;
-  const notes2 = bucket?.store;
-  const holds = (change) => {
-    const keys = Object.keys(change.v ?? {});
-    if (keys.length === 0) return true;
-    let ghost;
-    channel?.store?.eachGhost((g) => {
-      if (g.key === change.id) ghost = g.data;
-    });
-    let local;
-    notes2?.get(change.id, (_e, o) => {
-      local = o?.data;
-    });
-    try {
-      const target = (0, import_change2.apply)(change.v, ghost ?? {});
-      return keys.every(
-        (k) => JSON.stringify(local?.[k]) === JSON.stringify(target[k])
-      );
-    } catch {
-      return false;
-    }
-  };
-  let seedEcho;
-  let recordSend;
-  let dropAck;
-  if (channel?.message && channel.localQueue && channel.on) {
-    seedEcho = (data) => {
-      const inFlight = channel.localQueue.sent;
-      for (const { id, ccid } of record.echoes(data, inFlight)) {
-        const change = JSON.parse(data).find(
-          (c) => c?.id === id
-        );
-        if (change && holds(change)) {
-          channel.localQueue.sent[id] = { id, ccid, o: "M", v: {} };
-        }
-      }
-    };
-    channel.message.prependListener("c", seedEcho);
-    recordSend = (change) => {
-      if (change && typeof change === "object" && change.id && change.ccid) {
-        sent(change.id, change.ccid);
-      }
-    };
-    channel.localQueue.on("send", recordSend);
-    dropAck = (id, change) => {
-      if (change?.ccid) {
-        acknowledged(id, change.ccid);
-      }
-    };
-    channel.on("acknowledge", dropAck);
-  }
-  return {
-    settle: () => {
-      if (!stopped) record.settle();
-    },
-    stop: () => {
-      stopped = true;
-      if (channel?.message && seedEcho) channel.message.removeListener("c", seedEcho);
-      if (channel?.localQueue && recordSend)
-        channel.localQueue.removeListener("send", recordSend);
-      if (channel?.on && dropAck) channel.removeListener("acknowledge", dropAck);
     }
   };
 }
@@ -6439,6 +6656,134 @@ function dropTombstonedNotes(dir, loaded) {
     publishProblem(problemText("could not save notes", err));
   }
   return next;
+}
+
+// src/core/own-echoes.ts
+function trackOwnEchoes(client, dir, loadedNotes) {
+  const record = createSentChanges(dir);
+  let stopped = false;
+  const sent = (id, ccid) => {
+    if (!stopped) record.sent(id, ccid);
+  };
+  const acknowledged = (id, ccid) => {
+    if (!stopped) record.acknowledged(id, ccid);
+  };
+  const buckets = client?.buckets ?? [];
+  const bucket = buckets.find((b) => b?.name === "note");
+  const channel = bucket?.channel ?? void 0;
+  const notes2 = bucket?.store;
+  const localCopy = (id) => {
+    let local;
+    notes2?.get(id, (_e, o) => {
+      local = o?.data;
+    });
+    return local;
+  };
+  const same2 = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const notHeld = (change, ghost, alone) => {
+    const keys = Object.keys(change.v ?? {});
+    if (keys.length === 0) return [];
+    const local = localCopy(change.id);
+    try {
+      const target = (0, import_change2.apply)(change.v, ghost);
+      return keys.filter(
+        (k) => !same2(local?.[k], target[k]) && !(alone && k === "modificationDate" && Number(local?.[k]) > Number(target[k]))
+      );
+    } catch {
+      return void 0;
+    }
+  };
+  const changedOnTop = (change, ghost, local) => {
+    try {
+      const target = (0, import_change2.apply)(change.v ?? {}, ghost);
+      return Object.keys({ ...local, ...target }).some(
+        (k) => k !== "modificationDate" && !same2(local[k], target[k])
+      );
+    } catch {
+      return false;
+    }
+  };
+  const setThisSession = (id, keys, ghost) => {
+    const loaded = loadedNotes?.get(id);
+    const local = localCopy(id);
+    if (!loaded || !local) return false;
+    const newest = Math.max(Number(loaded.modificationDate) || 0, Number(ghost.modificationDate) || 0);
+    if (!(Number(local.modificationDate) > newest)) return false;
+    const fields = keys.filter((k) => k !== "modificationDate");
+    return fields.length > 0 && fields.every((k) => !same2(local[k], loaded[k]));
+  };
+  const savedOnTop = (change, keys, ghost) => {
+    const loaded = loadedNotes?.get(change.id);
+    const local = localCopy(change.id);
+    if (!loaded || !local) return false;
+    try {
+      const target = (0, import_change2.apply)(change.v ?? {}, ghost);
+      if (!(Number(loaded.modificationDate) > Number(target.modificationDate))) return false;
+      const fields = keys.filter((k) => k !== "modificationDate");
+      return fields.length > 0 && fields.every(
+        (k) => k === "content" && editIncluded(String(ghost.content ?? ""), String(target.content ?? ""), String(local.content ?? ""))
+      );
+    } catch {
+      return false;
+    }
+  };
+  let seedEcho;
+  let recordSend;
+  let dropAck;
+  if (channel?.message && channel.localQueue && channel.on) {
+    seedEcho = (data) => {
+      const inFlight = channel.localQueue.sent;
+      for (const { id, ccid } of record.echoes(data, inFlight)) {
+        const changes = JSON.parse(data);
+        const at = changes.findIndex((c) => c?.id === id);
+        const change = changes[at];
+        const alone = !changes.slice(at + 1).some((c) => c?.id === id);
+        if (inFlight[id] !== void 0 && !alone) continue;
+        let ghost;
+        channel.store?.eachGhost((g) => {
+          if (g.key === id) ghost = g;
+        });
+        const version = ghost?.version;
+        if (!change || version !== void 0 && change.sv !== version) continue;
+        const removing = loadTombstones(dir).includes(id);
+        const keys = removing ? [] : notHeld(change, ghost?.data ?? {}, alone);
+        if (keys === void 0) continue;
+        const newer = keys.length > 0 && (setThisSession(id, keys, ghost?.data ?? {}) || savedOnTop(change, keys, ghost?.data ?? {}));
+        if (keys.length > 0 && !newer) continue;
+        const seed = { id, ccid, o: "M", v: {} };
+        if (version !== void 0) seed.sv = version;
+        channel.localQueue.sent[id] = seed;
+        const local = localCopy(id);
+        if (alone && local && !removing && changedOnTop(change, ghost?.data ?? {}, local))
+          channel.localQueue.queue?.({ type: "modify", id, object: local });
+      }
+    };
+    channel.message.prependListener("c", seedEcho);
+    recordSend = (change) => {
+      if (change && typeof change === "object" && change.id && change.ccid) {
+        sent(change.id, change.ccid);
+      }
+    };
+    channel.localQueue.on("send", recordSend);
+    dropAck = (id, change) => {
+      if (change?.ccid) {
+        acknowledged(id, change.ccid);
+      }
+    };
+    channel.on("acknowledge", dropAck);
+  }
+  return {
+    settle: () => {
+      if (!stopped) record.settle();
+    },
+    stop: () => {
+      stopped = true;
+      if (channel?.message && seedEcho) channel.message.removeListener("c", seedEcho);
+      if (channel?.localQueue && recordSend)
+        channel.localQueue.removeListener("send", recordSend);
+      if (channel?.on && dropAck) channel.removeListener("acknowledge", dropAck);
+    }
+  };
 }
 
 // src/cli/args.ts
@@ -6673,6 +7018,18 @@ function watchStatus(store, dir, opts) {
       flush();
     }
   };
+}
+
+// src/core/shown-version.ts
+var shown;
+function setShownVersion(version) {
+  shown = version;
+}
+function withVersion(title) {
+  return shown === void 0 ? title : `${title}  snote ${shown}`;
+}
+function statusTag() {
+  return shown === void 0 ? "" : `v${shown}`;
 }
 
 // src/core/endpoint-check.ts
@@ -6951,6 +7308,7 @@ function updateCheckEnabled(env) {
 }
 var GIT_TIMEOUT_MS = 5e3;
 var CACHE_TTL_MS = 24 * 60 * 60 * 1e3;
+var TAG_CACHE_FILE = "update-tag-check.json";
 function gitEnv(env) {
   const out = {};
   for (const [key, value] of Object.entries(env)) {
@@ -6959,7 +7317,23 @@ function gitEnv(env) {
     }
   }
   out.GIT_TERMINAL_PROMPT = "0";
+  out.GIT_CONFIG_NOSYSTEM = "1";
   return out;
+}
+var REMOTE_GIT_FLAGS = [
+  "-c",
+  "credential.helper=",
+  "-c",
+  "core.hooksPath=/dev/null",
+  "-c",
+  "core.fsmonitor=false",
+  "-c",
+  "protocol.allow=never",
+  "-c",
+  "protocol.https.allow=always"
+];
+function remoteGitFlags(url) {
+  return url.startsWith("/") ? [...REMOTE_GIT_FLAGS, "-c", "protocol.file.allow=always"] : REMOTE_GIT_FLAGS;
 }
 function readOriginUrl(cloneDir) {
   let text;
@@ -7078,7 +7452,7 @@ async function checkRemoteUpdate(o) {
     }
     let res;
     try {
-      res = await run(["ls-remote", url, "HEAD"], {
+      res = await run([...remoteGitFlags(url), "ls-remote", url, "HEAD"], {
         cwd: "/",
         timeoutMs: GIT_TIMEOUT_MS,
         env: gitEnv(o.env)
@@ -7125,6 +7499,75 @@ async function checkRemoteUpdate(o) {
     return { state: "unknown" };
   }
 }
+var RELEASE_TAG_LINE = /^([0-9a-f]{1,64})\s+refs\/tags\/v(\d{1,6}\.\d{1,6}\.\d{1,6}(?:\.\d{1,6})?)(\^\{\})?$/;
+var TAG_VERSION = /^\d{1,6}\.\d{1,6}\.\d{1,6}(?:\.\d{1,6})?$/;
+var TAG_CACHE_MAX_BYTES = 4096;
+function readTagCache(file, now) {
+  try {
+    if (fs9.statSync(file).size > TAG_CACHE_MAX_BYTES) {
+      return null;
+    }
+    const parsed = JSON.parse(fs9.readFileSync(file, "utf8"));
+    if (parsed !== null && typeof parsed === "object" && typeof parsed.checkedAt === "number" && Number.isFinite(parsed.checkedAt) && parsed.checkedAt <= now && now - parsed.checkedAt < CACHE_TTL_MS && typeof parsed.version === "string" && TAG_VERSION.test(parsed.version) && typeof parsed.commit === "string" && isValidCommitId(parsed.commit)) {
+      return { version: parsed.version, commit: parsed.commit };
+    }
+  } catch {
+  }
+  return null;
+}
+async function checkRemoteVersion(o) {
+  if (!updateCheckEnabled(o.env)) {
+    return null;
+  }
+  const clock = o.now ?? Date.now;
+  const startedAt = clock();
+  const cacheFile = o.stateDir === void 0 ? null : path8.join(o.stateDir, TAG_CACHE_FILE);
+  if (cacheFile !== null) {
+    const cached = readTagCache(cacheFile, startedAt);
+    if (cached !== null) {
+      return cached;
+    }
+  }
+  const url = readOriginUrl(o.cloneDir);
+  if (url === null || !isSafeRemoteUrl(url)) {
+    return null;
+  }
+  try {
+    const res = await (o.run ?? defaultGitRunner)([...remoteGitFlags(url), "ls-remote", "--tags", url], {
+      cwd: "/",
+      timeoutMs: GIT_TIMEOUT_MS,
+      env: gitEnv(o.env)
+    });
+    if (res.code !== 0) {
+      return null;
+    }
+    let newest = null;
+    for (const line of res.stdout.split("\n")) {
+      const match = RELEASE_TAG_LINE.exec(line.trim());
+      if (match === null) {
+        continue;
+      }
+      const [, commit, version, peeled] = match;
+      const cmp = newest === null ? 1 : compareVersions(version, newest.version);
+      if (cmp > 0 || cmp === 0 && peeled !== void 0) {
+        newest = { version, commit };
+      }
+    }
+    if (newest !== null && cacheFile !== null) {
+      try {
+        fs9.mkdirSync(o.stateDir, { recursive: true });
+        secureWriteFileSync(
+          cacheFile,
+          JSON.stringify({ checkedAt: startedAt, version: newest.version, commit: newest.commit }) + "\n"
+        );
+      } catch {
+      }
+    }
+    return newest;
+  } catch {
+    return null;
+  }
+}
 
 // src/core/update-run.ts
 async function runUpdateChecks(o) {
@@ -7149,13 +7592,97 @@ async function runUpdateChecks(o) {
   }
 }
 
+// src/core/update-banner.ts
+var current3 = null;
+var dismissed = null;
+var listeners3 = /* @__PURE__ */ new Set();
+function notify() {
+  for (const listener2 of listeners3) {
+    try {
+      listener2();
+    } catch {
+    }
+  }
+}
+function publishBanner(running, available) {
+  if (current3 !== null && current3.running === running && current3.available === available) {
+    return;
+  }
+  current3 = { running, available };
+  if (dismissed === available) {
+    return;
+  }
+  notify();
+}
+function currentBanner() {
+  return current3 !== null && current3.available !== dismissed ? current3 : null;
+}
+function dismissBanner() {
+  if (current3 === null) {
+    return;
+  }
+  dismissed = current3.available;
+  notify();
+}
+function onBanner(listener2) {
+  listeners3.add(listener2);
+  return () => {
+    listeners3.delete(listener2);
+  };
+}
+
+// src/core/update-watch.ts
+var WATCH_INTERVAL_MS = 24 * 60 * 60 * 1e3;
+var realSchedule = (fn, ms) => {
+  const timer = setInterval(fn, ms);
+  timer.unref();
+  return () => clearInterval(timer);
+};
+var stopActive = null;
+function startUpdateWatch(o) {
+  stopActive?.();
+  stopActive = null;
+  if (!updateCheckEnabled(o.env)) {
+    return () => {
+    };
+  }
+  const cloneDir = pluginCloneDir(o.home);
+  const check = async () => {
+    try {
+      const newest = await checkRemoteVersion({
+        cloneDir,
+        env: o.env,
+        run: o.run,
+        stateDir: o.stateDir,
+        now: o.now
+      });
+      if (newest !== null && compareVersions(newest.version, o.version) > 0) {
+        publishBanner(o.version, newest.version);
+      }
+    } catch {
+    }
+  };
+  void check();
+  const cancel = (o.schedule ?? realSchedule)(() => {
+    void check();
+  }, WATCH_INTERVAL_MS);
+  const stop = () => {
+    cancel();
+    if (stopActive === stop) {
+      stopActive = null;
+    }
+  };
+  stopActive = stop;
+  return stop;
+}
+
 // src/core/instance-lock.ts
 import {
-  closeSync,
+  closeSync as closeSync2,
   existsSync as existsSync10,
-  openSync,
-  readFileSync as readFileSync14,
-  statSync as statSync2,
+  openSync as openSync2,
+  readFileSync as readFileSync13,
+  statSync as statSync3,
   unlinkSync as unlinkSync3,
   writeSync
 } from "node:fs";
@@ -7183,7 +7710,7 @@ function systemBootTimeMs() {
 }
 function readBootTimeMs() {
   try {
-    for (const line of readFileSync14("/proc/stat", "utf8").split("\n")) {
+    for (const line of readFileSync13("/proc/stat", "utf8").split("\n")) {
       if (line.startsWith("btime ")) {
         const seconds = Number.parseInt(line.slice("btime ".length).trim(), 10);
         return Number.isFinite(seconds) ? seconds * 1e3 : null;
@@ -7196,7 +7723,7 @@ function readBootTimeMs() {
 }
 function processStartMs(pid) {
   try {
-    const stat = readFileSync14(`/proc/${pid}/stat`, "utf8");
+    const stat = readFileSync13(`/proc/${pid}/stat`, "utf8");
     const close = stat.lastIndexOf(")");
     const fields = stat.slice(close + 1).trim().split(/\s+/);
     const ticks = Number.parseInt(fields[19] ?? "", 10);
@@ -7221,14 +7748,14 @@ function startedAfterLockWrite(pid, lockMtimeMs2) {
 }
 function lockMtimeMs(lockPath) {
   try {
-    return statSync2(lockPath).mtimeMs;
+    return statSync3(lockPath).mtimeMs;
   } catch {
     return null;
   }
 }
 function readLockPid(lockPath) {
   try {
-    return existsSync10(lockPath) ? readFileSync14(lockPath, "utf8").trim() : "";
+    return existsSync10(lockPath) ? readFileSync13(lockPath, "utf8").trim() : "";
   } catch {
     return "";
   }
@@ -7236,11 +7763,11 @@ function readLockPid(lockPath) {
 function acquireInstanceLock(dir) {
   const lockPath = join17(dir, LOCK_FILE2);
   const writeLock = () => {
-    const fd = openSync(lockPath, "wx", 384);
+    const fd = openSync2(lockPath, "wx", 384);
     try {
       writeSync(fd, String(process.pid));
     } finally {
-      closeSync(fd);
+      closeSync2(fd);
     }
   };
   let acquired = false;
@@ -7443,15 +7970,155 @@ var INLINE_EDIT_MAX_NON_ASCII = 2e4;
 var INLINE_EDIT_TOO_MANY_NON_ASCII = "The note has over 20,000 non-ASCII characters: press e to edit in your editor";
 function inlineEditRefusal(content) {
   if (content.split("\n").some((l) => l.length > INLINE_EDIT_MAX_LINE)) return INLINE_EDIT_TOO_LONG;
-  const nonAscii = content.match(/[^\x00-\x7f]/gu)?.length ?? 0;
-  return nonAscii > INLINE_EDIT_MAX_NON_ASCII ? INLINE_EDIT_TOO_MANY_NON_ASCII : null;
+  const nonAsciiChar = /[^\x00-\x7f]/gu;
+  let nonAscii = 0;
+  while (nonAsciiChar.exec(content) !== null) {
+    if (++nonAscii > INLINE_EDIT_MAX_NON_ASCII) return INLINE_EDIT_TOO_MANY_NON_ASCII;
+  }
+  return null;
 }
 
 // src/tui/Root.tsx
-var import_react20 = __toESM(require_react(), 1);
+var import_react22 = __toESM(require_react(), 1);
+
+// src/tui/read-gate.ts
+var import_react4 = __toESM(require_react(), 1);
+var SEVERAL_KEYS = "Several keys at once: only the first was used";
+var gates = /* @__PURE__ */ new WeakMap();
+function wholeKey(read, input) {
+  if (read.delivered > 0 || input !== read.text) return false;
+  return [...input].length === 1 || input.startsWith("\x1B[") || input.startsWith("\x1BO");
+}
+function readOf(gate, data) {
+  if (gate.read) return gate.read;
+  const last = gate.last;
+  gate.last = null;
+  if (last && last.text.endsWith(data)) return last;
+  return { text: data, delivered: 0, ended: false, reported: false };
+}
+function install(stdin, em) {
+  const realEmit = em.emit;
+  const realRead = stdin.read;
+  const ownRead = Object.prototype.hasOwnProperty.call(stdin, "read");
+  const gate = { users: 0, read: null, last: null, roles: /* @__PURE__ */ new Set(), queue: [], pumping: false, restore: () => {
+  } };
+  stdin.read = function(...args) {
+    const chunk = realRead.apply(this, args);
+    gate.read = chunk === null || chunk === void 0 ? null : { text: String(chunk), delivered: 0, ended: false, reported: false };
+    if (gate.read) gate.last = gate.read;
+    return chunk;
+  };
+  const roles = () => [...gate.roles].map((r) => r.current);
+  const emit2 = (ev, data, read) => {
+    read.delivered += 1;
+    realEmit.call(em, ev === "paste" && em.listenerCount("paste") === 0 ? "input" : ev, data);
+  };
+  const drop = (read) => {
+    read.ended = true;
+    if (read.reported) return;
+    read.reported = true;
+    roles().find((r) => r.onDropped)?.onDropped?.();
+  };
+  const step = (item, entry) => {
+    const { ev, data, read } = item;
+    if (read.ended) return drop(read);
+    if (roles().some((r) => r.confirm)) {
+      read.ended = true;
+      return;
+    }
+    const mode = entry();
+    if (ev === "paste") return read.delivered === 0 || mode !== null ? emit2(ev, data, read) : drop(read);
+    if (read.text.includes(`\x1B[200~${data}\x1B[201~`)) return mode !== null ? emit2(ev, data, read) : drop(read);
+    if (mode === "whole" || data.startsWith("\x1B")) {
+      if (read.delivered > 0 && mode === null) return drop(read);
+      return emit2(ev, data, read);
+    }
+    if (mode === null) {
+      if (read.delivered > 0) return drop(read);
+      const first = [...data][0];
+      emit2(ev, first, read);
+      if (data.length > first.length) gate.queue.unshift({ ev, data: data.slice(first.length), read });
+      return;
+    }
+    const at = data.indexOf(mode);
+    if (at === -1) return emit2(ev, data, read);
+    if (at > 0) {
+      emit2(ev, data.slice(0, at), read);
+      gate.queue.unshift({ ev, data: data.slice(at), read });
+      return;
+    }
+    emit2(ev, mode, read);
+    read.ended = true;
+    if (data.length > mode.length) drop(read);
+  };
+  const pump = () => {
+    const entry = roles().find((r) => r.entry)?.entry;
+    const item = gate.queue.shift();
+    if (item && entry) step(item, entry);
+    else if (item) emit2(item.ev, item.data, item.read);
+    if (gate.queue.length > 0) queueMicrotask(pump);
+    else gate.pumping = false;
+  };
+  em.emit = function(ev, ...a) {
+    if (ev !== "input" && ev !== "paste") return realEmit.call(this, ev, ...a);
+    const data = String(a[0]);
+    const read = readOf(gate, data);
+    const all = roles();
+    const ctrlC = all.find((r) => r.onCtrlC)?.onCtrlC;
+    if (ctrlC && ev === "input" && /^\x03+$/.test(data)) {
+      if (/^\x03+$/.test(read.text)) ctrlC();
+      read.ended = true;
+      return false;
+    }
+    const small = all.find((r) => r.whileSmall)?.whileSmall;
+    if (small) {
+      if (ev === "input") small(data);
+      return false;
+    }
+    if (all.some((r) => r.confirm)) {
+      if (ev === "input" && wholeKey(read, data)) emit2(ev, data, read);
+      else read.ended = true;
+      return false;
+    }
+    const entry = all.find((r) => r.entry)?.entry;
+    if (!entry) return realEmit.call(this, ev, ...a);
+    gate.queue.push({ ev, data, read });
+    if (gate.pumping) return false;
+    gate.pumping = true;
+    if (read.delivered > 0) queueMicrotask(pump);
+    else pump();
+    return false;
+  };
+  gate.restore = () => {
+    em.emit = realEmit;
+    if (ownRead) stdin.read = realRead;
+    else delete stdin.read;
+  };
+  return gate;
+}
+function useReadGate(role) {
+  const { stdin, internal_eventEmitter: em } = use_stdin_default();
+  const roleRef = (0, import_react4.useRef)(role);
+  roleRef.current = role;
+  (0, import_react4.useLayoutEffect)(() => {
+    if (!stdin || !em) return;
+    const gate = gates.get(em) ?? install(stdin, em);
+    gates.set(em, gate);
+    gate.users += 1;
+    gate.roles.add(roleRef);
+    return () => {
+      gate.roles.delete(roleRef);
+      gate.users -= 1;
+      if (gate.users === 0) {
+        gate.restore();
+        gates.delete(em);
+      }
+    };
+  }, [stdin, em]);
+}
 
 // src/tui/Login.tsx
-var import_react4 = __toESM(require_react(), 1);
+var import_react5 = __toESM(require_react(), 1);
 
 // src/tui/theme.ts
 var theme2 = {
@@ -7479,12 +8146,12 @@ function Login({
   onLoggedIn,
   passwordLogin
 }) {
-  const [step, setStep] = (0, import_react4.useState)("email");
-  const [email, setEmail] = (0, import_react4.useState)("");
-  const [code, setCode] = (0, import_react4.useState)("");
-  const [password, setPassword] = (0, import_react4.useState)("");
-  const [error, setError] = (0, import_react4.useState)("");
-  const [pending, setPending] = (0, import_react4.useState)(false);
+  const [step, setStep] = (0, import_react5.useState)("email");
+  const [email, setEmail] = (0, import_react5.useState)("");
+  const [code, setCode] = (0, import_react5.useState)("");
+  const [password, setPassword] = (0, import_react5.useState)("");
+  const [error, setError] = (0, import_react5.useState)("");
+  const [pending, setPending] = (0, import_react5.useState)(false);
   use_input_default((input, key) => {
     if (key.return) {
       if (step === "email") {
@@ -7619,7 +8286,7 @@ function Login({
 }
 
 // src/tui/App.tsx
-var import_react19 = __toESM(require_react(), 1);
+var import_react21 = __toESM(require_react(), 1);
 
 // src/core/keymap.ts
 var keymap = [
@@ -7672,7 +8339,7 @@ function keyNameFromEvent(key) {
 }
 
 // src/tui/Help.tsx
-var import_react5 = __toESM(require_react(), 1);
+var import_react6 = __toESM(require_react(), 1);
 
 // src/core/help-sections.ts
 var SECTIONS = [
@@ -7817,10 +8484,10 @@ function helpListLines(editor = "nvim") {
 function helpListWindow(lines, offset, innerWidth, innerHeight) {
   const visible = Math.max(1, innerHeight - 1);
   const start2 = Math.min(Math.max(0, offset), Math.max(0, lines.length - visible));
-  const shown = lines.slice(start2, start2 + visible).map((l) => ({ ...l, text: cutLine(l.text, innerWidth) }));
-  const last = start2 + shown.length;
+  const shown2 = lines.slice(start2, start2 + visible).map((l) => ({ ...l, text: cutLine(l.text, innerWidth) }));
+  const last = start2 + shown2.length;
   const counter = cutLine(`${start2 + 1}-${last}/${lines.length} j/k scroll`, innerWidth);
-  return { shown, counter, offset: start2 };
+  return { shown: shown2, counter, offset: start2 };
 }
 
 // src/core/help-fit.ts
@@ -7851,7 +8518,7 @@ function Section({
     /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 1, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: name }) }),
     /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", children: subCols.map((colEntries, ci) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "column", width: subColWidth, children: colEntries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", children: (() => {
       const full = entry.key.padEnd(8) + "  " + entry.description;
-      const sliced = cutLine(full, subColWidth - 1);
+      const sliced = cutLine(full, full.length === subColWidth - 1 ? subColWidth - 2 : subColWidth - 1);
       const keyLen = Math.min(8, sliced.length);
       const keyPart = sliced.slice(0, keyLen);
       const restPart = sliced.slice(keyLen);
@@ -7863,7 +8530,7 @@ function Section({
   ] });
 }
 function Help({ width, height, entries, editor }) {
-  const [scroll, setScroll] = (0, import_react5.useState)(0);
+  const [scroll, setScroll] = (0, import_react6.useState)(0);
   const contentRows = Math.max(1, height - 4);
   const displayEntries = entries ?? keymap;
   const columns = helpColumns(displayEntries, contentRows);
@@ -7891,7 +8558,7 @@ function Help({ width, height, entries, editor }) {
   const sectionRowWidth = twoCols ? width - 4 : innerWidth;
   const sectioned = width >= 100 && height >= 30 || width >= 80 && height >= 24 || width >= 50 && width < 100 && height >= 30 && sectionCols <= maxFitColumns(width);
   const list = entries === void 0 && !sectioned;
-  const listLines = list ? helpListLines(editor ?? "nvim") : [];
+  const listLines = list ? helpListLines(editor ?? "nvim").map((l, i) => i === 0 ? { ...l, text: withVersion(l.text) } : l) : [];
   const win = helpListWindow(listLines, scroll, Math.max(1, width - 2), Math.max(1, height - 2));
   use_input_default(
     (input, key) => {
@@ -7904,7 +8571,7 @@ function Help({ width, height, entries, editor }) {
   const wide = entries === void 0 && !list && width >= 100 && height >= 30;
   const wideLines = wide ? layoutHelp(width, height, editor ?? "nvim") : [];
   const flatContent = /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(Box_default, { flexDirection: "column", width, height, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: "Help - Keyboard Shortcuts" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: withVersion("Help - Keyboard Shortcuts") }) }),
     /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", paddingX: 2, children: columns.map((colEntries, ci) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "column", width: colWidth, children: colEntries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", children: (() => {
       const full = entry.key.padEnd(8) + "  " + entry.description;
       const sliced = full.slice(0, colWidth - 1);
@@ -7936,8 +8603,8 @@ function Help({ width, height, entries, editor }) {
           l.text.slice(l.keyLen)
         ] }, i)),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: win.counter })
-      ] }) : wide ? wideLines.map((line, i) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: line }, i)) : narrow ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: "Help - Keyboard Shortcuts" }) }),
+      ] }) : wide ? wideLines.map((line, i) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: i === 0 ? withVersion(line) : line }, i)) : narrow ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: withVersion("Help - Keyboard Shortcuts") }) }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", paddingX: 2, children: narrowCols.map((colEntries, ci) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "column", width: narrowColWidth, children: colEntries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(Box_default, { flexDirection: "row", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { ...theme2.accent, children: entry.key.padEnd(8) }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: cutLine(entry.description, narrowColWidth - 9) })
@@ -7948,7 +8615,7 @@ function Help({ width, height, entries, editor }) {
           editorHint
         ] }) })
       ] }) : entries !== void 0 ? flatContent : /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: "Help - Keyboard Shortcuts" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: withVersion("Help - Keyboard Shortcuts") }) }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(Box_default, { flexDirection: twoCols ? "row" : "column", paddingX: 2, children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "column", children: leftSections.map((sec, i) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
             Section,
@@ -7982,11 +8649,11 @@ function Help({ width, height, entries, editor }) {
 }
 
 // src/tui/BottomArea.tsx
-var import_react10 = __toESM(require_react(), 1);
+var import_react11 = __toESM(require_react(), 1);
 import { join as join21 } from "node:path";
 
 // src/tui/TagEditor.tsx
-var import_react6 = __toESM(require_react(), 1);
+var import_react7 = __toESM(require_react(), 1);
 
 // src/tui/tag-input.ts
 function suggestTag(input, allTags, tags2) {
@@ -8043,7 +8710,7 @@ function tagInputStep(text, input, key, tags2, allTags) {
 // src/tui/TagEditor.tsx
 var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
 function TagEditor({ tags: tags2, allTags, onAdd, onRemove, onClose }) {
-  const [text, setText] = (0, import_react6.useState)("");
+  const [text, setText] = (0, import_react7.useState)("");
   const suggestion = suggestTag(text, allTags, tags2);
   use_input_default((input, key) => {
     const pasted = splitPastedInput(input);
@@ -8112,25 +8779,29 @@ function fit(parts, width) {
   else out.push({ text: "\u2026" });
   return out;
 }
-function StatusBar({ connected, count, width, label, pending }) {
+function StatusBar({ connected, word, count, width, label, pending }) {
+  const shown2 = connected ? "connected" : word && word !== "connected" ? word : "offline";
   const parts = [
     { text: "[", role: theme2.muted },
-    { text: connected ? "connected" : "offline", role: connected ? theme2.success : theme2.error },
+    { text: shown2, role: connected ? theme2.success : theme2.error },
     { text: "]", role: theme2.muted },
     { text: " " },
     { text: `${count} ${count === 1 ? "note" : "notes"}`, role: theme2.muted }
   ];
   if (pending && pending > 0) parts.push({ text: ` ${pending} pending`, role: theme2.warning });
   if (label) parts.push({ text: ` ${label}`, role: theme2.warning });
+  const tag = statusTag();
+  const gap = width - parts.reduce((n, p) => n + p.text.length, 0) - tag.length;
+  if (tag && width >= 80 && gap >= 1) parts.push({ text: " ".repeat(gap) }, { text: tag });
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Box_default, { children: fit(parts, width).map((p, i) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text, { ...p.role, children: p.text }, i)) });
 }
 
 // src/tui/Prompt.tsx
-var import_react7 = __toESM(require_react(), 1);
+var import_react8 = __toESM(require_react(), 1);
 var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
 function Prompt({ label, initial, onSubmit, onCancel }) {
-  const [text, setText] = import_react7.default.useState(initial);
-  const textRef = import_react7.default.useRef(text);
+  const [text, setText] = import_react8.default.useState(initial);
+  const textRef = import_react8.default.useRef(text);
   const write = (next) => {
     textRef.current = next;
     setText(next);
@@ -8183,6 +8854,7 @@ function Prompt({ label, initial, onSubmit, onCancel }) {
   ] });
 }
 function Confirm({ question, onYes, onNo, destructive }) {
+  useReadGate({ confirm: true });
   use_input_default((input, key) => {
     if (key.escape) {
       onNo();
@@ -8263,7 +8935,7 @@ var deleteTagHandlers = (store, tagDialog, setTagDialog) => {
 };
 
 // src/tui/blog-send-ask.ts
-var import_react8 = __toESM(require_react(), 1);
+var import_react9 = __toESM(require_react(), 1);
 import * as fs12 from "node:fs";
 import * as path11 from "node:path";
 
@@ -8522,14 +9194,14 @@ function useBlogSendAsk() {
   return cell.current;
 }
 function useBlogSendAskState(noteId, content, setNotice, setNoticeError) {
-  const [phase, setPhase] = (0, import_react8.useState)(null);
-  const pending = (0, import_react8.useRef)(null);
-  const [tick, setTick] = (0, import_react8.useState)(0);
-  const noteIdRef = (0, import_react8.useRef)(noteId);
+  const [phase, setPhase] = (0, import_react9.useState)(null);
+  const pending = (0, import_react9.useRef)(null);
+  const [tick, setTick] = (0, import_react9.useState)(0);
+  const noteIdRef = (0, import_react9.useRef)(noteId);
   noteIdRef.current = noteId;
-  const contentRef = (0, import_react8.useRef)(content);
+  const contentRef = (0, import_react9.useRef)(content);
   contentRef.current = content;
-  import_react8.default.useLayoutEffect(() => {
+  import_react9.default.useLayoutEffect(() => {
     if (tick === 0) return;
     const next = pending.current;
     if (next === null) return;
@@ -8540,6 +9212,7 @@ function useBlogSendAskState(noteId, content, setNotice, setNoticeError) {
     pending.current = next;
     setTick((t) => t + 1);
   };
+  useReadGate({ confirm: phase?.kind === "send" || phase?.kind === "resend" });
   use_input_default((input, key) => {
     if (phase?.kind !== "send" && phase?.kind !== "resend") return;
     const resend = phase.kind === "resend";
@@ -8639,7 +9312,7 @@ function BlogSendDialog({
 }
 
 // src/tui/KeyHints.tsx
-var import_react9 = __toESM(require_react(), 1);
+var import_react10 = __toESM(require_react(), 1);
 var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
 var LIST_HINTS = [
   { key: "?", label: "Help" },
@@ -8682,9 +9355,10 @@ function visibleHints(entries, width) {
   }
   return list;
 }
-function KeyHints({ context, width }) {
-  const hints = visibleHints(hintsForContext(context), width);
-  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Box_default, { children: hints.map((h, i) => /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_react9.default.Fragment, { children: [
+function KeyHints({ context, width, pin }) {
+  const base = hintsForContext(context);
+  const hints = visibleHints(context === "list" && pin ? [...base.slice(0, -1), { key: "p", label: pin }, ...base.slice(-1)] : base, width);
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Box_default, { children: hints.map((h, i) => /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_react10.default.Fragment, { children: [
     i > 0 && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Text, { children: "  " }),
     /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Text, { ...theme2.accent, children: h.key }),
     /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(Text, { children: [
@@ -8732,13 +9406,13 @@ function BottomArea({
   setNotice,
   setNoticeError
 }) {
-  const { allTagNames, connected, noteEntries, inTrash, sortLabelStr, pending } = view;
+  const { allTagNames, connected, word, noteEntries, inTrash, sortLabelStr, pending } = view;
   const blogLine = selectedEntry ? blogStatusLine(loadBlogSend(dataRoot(), String(selectedEntry.id))) : null;
-  const [itemAsk, setItemAsk] = (0, import_react10.useState)(false);
+  const [itemAsk, setItemAsk] = (0, import_react11.useState)(false);
   itemAskRef.current = { itemAsk, setItemAsk, itemIndex };
-  const [exportAsk, setExportAsk] = (0, import_react10.useState)(false);
+  const [exportAsk, setExportAsk] = (0, import_react11.useState)(false);
   exportAskRef.current = { exportAsk, setExportAsk };
-  const exportPathRef = (0, import_react10.useRef)(null);
+  const exportPathRef = (0, import_react11.useRef)(null);
   const { phase, request } = useBlogSendAskState(
     selectedEntry ? String(selectedEntry.id) : null,
     selectedEntry?.note.content ?? "",
@@ -8885,8 +9559,8 @@ function BottomArea({
       "published: " + (publishLink(selectedEntry.note) ?? "waiting for link"),
       copyResult?.noteId === selectedEntry.id ? copyResult.ok ? " (copied)" : " (copy failed)" : ""
     ] }) : null,
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(KeyHints, { context: tagsFocused ? "tags" : inTrash ? "trash" : "list", width }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(StatusBar, { connected, count: noteEntries.length, width, label: inTrash ? sortLabelStr && sortLabelStr !== "sort: modified" ? "trash  " + sortLabelStr : "trash" : sortLabelStr && sortLabelStr !== "sort: modified" ? sortLabelStr : void 0, pending })
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(KeyHints, { context: tagsFocused ? "tags" : inTrash ? "trash" : "list", width, pin: selectedEntry ? selectedEntry.note.systemTags.includes("pinned") ? "Unpin" : "Pin" : void 0 }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(StatusBar, { connected, word, count: noteEntries.length, width, label: inTrash ? sortLabelStr && sortLabelStr !== "sort: modified" ? "trash  " + sortLabelStr : "trash" : sortLabelStr && sortLabelStr !== "sort: modified" ? sortLabelStr : void 0, pending })
   ] }) });
 }
 
@@ -8948,7 +9622,30 @@ function TagPane({
   return content;
 }
 
+// src/core/cells.ts
+var TAB_WIDTH = 4;
+function cellWidth(g) {
+  if (g.length === 0) return 0;
+  if (g === "	") return TAB_WIDTH;
+  const c = g.codePointAt(0) ?? 0;
+  if (g.length === 1 && c >= 32 && c < 127) return 1;
+  if (g.length === 1 && c < 32) return 0;
+  if (new RegExp("\\p{Emoji_Presentation}", "u").test(g) || g.includes("\uFE0F") && new RegExp("\\p{Emoji}", "u").test(g)) return 2;
+  if (new RegExp("^\\p{M}+$", "u").test(g)) return 0;
+  const wide = c >= 4352 && c <= 4447 || c >= 11904 && c <= 42191 && c !== 12351 || c >= 44032 && c <= 55203 || c >= 63744 && c <= 64255 || c >= 65072 && c <= 65103 || c >= 65280 && c <= 65376 || c >= 65504 && c <= 65510 || c >= 131072 && c <= 262141;
+  return wide ? 2 : 1;
+}
+
 // src/core/wrap.ts
+var segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
+function cellCut(text, w) {
+  let cells = 0;
+  for (const { segment, index } of segmenter.segment(text)) {
+    cells += cellWidth(segment);
+    if (cells > w) return index > 0 ? index : segment.length < text.length ? segment.length : -1;
+  }
+  return -1;
+}
 function wrapLines(content, width) {
   const w = Math.max(1, width);
   const lines = content.split("\n");
@@ -8959,11 +9656,13 @@ function wrapLines(content, width) {
       result.push({ text: "", line: i });
     } else {
       let rest = line;
-      while (rest.length > w) {
-        const cut = rest.lastIndexOf(" ", w);
+      const ascii = /^[\x20-\x7e]*$/.test(line);
+      const rowEnd = (text) => ascii ? text.length > w ? w : -1 : cellCut(text, w);
+      for (let end = rowEnd(rest); end !== -1; end = rowEnd(rest)) {
+        const cut = rest.lastIndexOf(" ", end);
         if (cut <= 0) {
-          result.push({ text: rest.slice(0, w).trimEnd(), line: i });
-          rest = rest.slice(w).replace(/^ +/, "");
+          result.push({ text: rest.slice(0, end).trimEnd(), line: i });
+          rest = rest.slice(end).replace(/^ +/, "");
         } else {
           result.push({ text: rest.slice(0, cut).trimEnd(), line: i });
           rest = rest.slice(cut).replace(/^ +/, "");
@@ -8982,7 +9681,7 @@ function noteRow(note, width, query) {
   const preview = sanitizeForTerminal(rawPreview);
   const truncatedTitle = title.length > width - 2 ? wrapLines(title, width - 4)[0].text + ".." : title;
   const marker = "";
-  const rows = wrapLines(preview, width - 2);
+  const rows = wrapLines(preview, width - 4);
   const previewLines = rows.slice(0, 2).map((r) => r.text).filter((t) => t !== "");
   return { title: truncatedTitle, marker, previewLines };
 }
@@ -9033,7 +9732,7 @@ function NoteList({
       lines.push(
         /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Box_default, { children: [
           isSelected ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { ...theme2.selection, ...theme2.accent, children: ">" }) : /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { children: " " }),
-          /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Text, { ...isSelected ? theme2.selection : {}, ...isSelected ? theme2.accent : {}, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Text, { ...isSelected ? theme2.selection : theme2.heading, ...isSelected ? theme2.accent : {}, children: [
             title,
             marker
           ] })
@@ -9041,7 +9740,7 @@ function NoteList({
       );
       for (let p = 0; p < previewLines.length; p++) {
         lines.push(
-          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Box_default, { marginLeft: 2, children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { ...theme2.muted, children: previewLines[p] }) }, `preview-${idx}-${p}`)
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Box_default, { marginLeft: 4, children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { ...theme2.muted, children: previewLines[p] }) }, `preview-${idx}-${p}`)
         );
       }
       lines.push(/* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { children: " " }, `blank-${idx}`));
@@ -9345,13 +10044,13 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
 }
 
 // src/tui/InlineEditor.tsx
+var import_react17 = __toESM(require_react(), 1);
+
+// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/TextArea.js
+var import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
 var import_react16 = __toESM(require_react(), 1);
 
-// node_modules/react-ink-textarea/dist/TextArea.js
-var import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
-var import_react15 = __toESM(require_react(), 1);
-
-// node_modules/react-ink-textarea/dist/constants.js
+// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/constants.js
 var DEFAULT_CURSOR_INTERVAL = 500;
 var DEFAULT_TYPING_PAUSE = 450;
 var DEFAULT_MAX_UNDO = 128;
@@ -9393,7 +10092,7 @@ var NAV_KEYBINDINGS = [
   "Ctrl+E"
 ];
 
-// node_modules/react-ink-textarea/node_modules/ansi-styles/index.js
+// ../../localdev/simplenote/node_modules/react-ink-textarea/node_modules/ansi-styles/index.js
 var ANSI_BACKGROUND_OFFSET = 10;
 var wrapAnsi16 = (offset = 0) => (code) => `\x1B[${code + offset}m`;
 var wrapAnsi256 = (offset = 0) => (code) => `\x1B[${38 + offset};5;${code}m`;
@@ -9578,8 +10277,8 @@ function assembleStyles() {
 }
 var ansiStyles = assembleStyles();
 
-// node_modules/react-ink-textarea/dist/textUtils.js
-var segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
+// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/textUtils.js
+var segmenter2 = new Intl.Segmenter("en", { granularity: "grapheme" });
 var graphemeWidth = (g, tabWidth = 1) => {
   if (g.length === 0)
     return 0;
@@ -9620,7 +10319,7 @@ var prevGraphemeOffset = (value, cursor) => {
     return cursor - 1;
   }
   let lastStart = 0;
-  for (const seg of segmenter.segment(value)) {
+  for (const seg of segmenter2.segment(value)) {
     if (seg.index >= cursor)
       break;
     lastStart = seg.index;
@@ -9637,7 +10336,7 @@ var nextGraphemeOffset = (value, cursor) => {
   if (here < 128 && !isHighSurrogate(here) && (next === -1 || !isLikelyCombining(next))) {
     return cursor + 1;
   }
-  for (const seg of segmenter.segment(value)) {
+  for (const seg of segmenter2.segment(value)) {
     const segEnd = seg.index + seg.segment.length;
     if (segEnd > cursor)
       return segEnd;
@@ -9865,7 +10564,7 @@ var buildVisualRows = (lines, lineWidthAt, cursorLine, cursorColumn, initialLine
           flushChunk(i >= lineText.length);
         }
       } else {
-        for (const seg of segmenter.segment(lineText)) {
+        for (const seg of segmenter2.segment(lineText)) {
           const g = seg.segment;
           const gw = graphemeWidth(g, tabWidth);
           if (chunkVisualWidth + gw > widthForCurrentChunk() && chunkBuf.length > 0) {
@@ -9955,17 +10654,17 @@ var getCursorFromLineColumn = (value, line, column) => {
   return { cursor, clampedLine, clampedCol };
 };
 
-// node_modules/react-ink-textarea/dist/hooks/useCursorState.js
-var import_react11 = __toESM(require_react(), 1);
+// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/hooks/useCursorState.js
+var import_react12 = __toESM(require_react(), 1);
 var normalizeNewlines = (s) => s.indexOf("\r") === -1 ? s : s.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 var useCursorState = ({ controlledValue, controlledPosition, onChange, onCursorAttempt }) => {
   const isControlled = controlledValue !== void 0;
-  const [internalValue, setInternalValue] = (0, import_react11.useState)("");
-  const [internalCursor, setInternalCursor] = (0, import_react11.useState)(0);
+  const [internalValue, setInternalValue] = (0, import_react12.useState)("");
+  const [internalCursor, setInternalCursor] = (0, import_react12.useState)(0);
   const rawValue = isControlled ? controlledValue : internalValue;
   const value = normalizeNewlines(rawValue);
-  const valueRef = (0, import_react11.useRef)(value);
-  (0, import_react11.useEffect)(() => {
+  const valueRef = (0, import_react12.useRef)(value);
+  (0, import_react12.useEffect)(() => {
     valueRef.current = value;
   }, [value]);
   const processExternalPosition = () => {
@@ -9981,8 +10680,8 @@ var useCursorState = ({ controlledValue, controlledPosition, onChange, onCursorA
     };
   };
   const { cursor, wasClamped } = processExternalPosition();
-  const lastClampDispatchRef = (0, import_react11.useRef)(null);
-  (0, import_react11.useEffect)(() => {
+  const lastClampDispatchRef = (0, import_react12.useRef)(null);
+  (0, import_react12.useEffect)(() => {
     if (!wasClamped)
       return;
     if (lastClampDispatchRef.current === cursor)
@@ -10010,13 +10709,13 @@ var useCursorState = ({ controlledValue, controlledPosition, onChange, onCursorA
   return { value, cursor, setValue, setCursor };
 };
 
-// node_modules/react-ink-textarea/dist/hooks/useUndo.js
-var import_react12 = __toESM(require_react(), 1);
+// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/hooks/useUndo.js
+var import_react13 = __toESM(require_react(), 1);
 var useUndo = ({ maxUndo, undoGroupDelay }) => {
-  const undoStack = (0, import_react12.useRef)([]);
-  const redoStack = (0, import_react12.useRef)([]);
-  const lastMutationTime = (0, import_react12.useRef)(0);
-  const lastMutationType = (0, import_react12.useRef)(null);
+  const undoStack = (0, import_react13.useRef)([]);
+  const redoStack = (0, import_react13.useRef)([]);
+  const lastMutationTime = (0, import_react13.useRef)(0);
+  const lastMutationType = (0, import_react13.useRef)(null);
   const pushCapped = (stack, entry) => {
     if (stack.length >= maxUndo) {
       stack.shift();
@@ -10056,14 +10755,14 @@ var useUndo = ({ maxUndo, undoGroupDelay }) => {
   return { pushUndo, undo, redo, resetMutationTracking };
 };
 
-// node_modules/react-ink-textarea/dist/hooks/useCursorBlink.js
-var import_react13 = __toESM(require_react(), 1);
+// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/hooks/useCursorBlink.js
+var import_react14 = __toESM(require_react(), 1);
 var useCursorBlink = ({ isActive, cursorInterval, typingPause, disableCursorBlink }) => {
-  const [cursorVisible, setCursorVisible] = (0, import_react13.useState)(true);
-  const blinkIntervalRef = (0, import_react13.useRef)(null);
-  const typingTimeoutRef = (0, import_react13.useRef)(null);
-  const isActiveRef = (0, import_react13.useRef)(isActive);
-  (0, import_react13.useEffect)(() => {
+  const [cursorVisible, setCursorVisible] = (0, import_react14.useState)(true);
+  const blinkIntervalRef = (0, import_react14.useRef)(null);
+  const typingTimeoutRef = (0, import_react14.useRef)(null);
+  const isActiveRef = (0, import_react14.useRef)(isActive);
+  (0, import_react14.useEffect)(() => {
     isActiveRef.current = isActive;
   }, [isActive]);
   const clearAll = () => {
@@ -10076,7 +10775,7 @@ var useCursorBlink = ({ isActive, cursorInterval, typingPause, disableCursorBlin
       typingTimeoutRef.current = null;
     }
   };
-  (0, import_react13.useEffect)(() => {
+  (0, import_react14.useEffect)(() => {
     if (!isActive || disableCursorBlink) {
       clearAll();
       setCursorVisible(true);
@@ -10104,7 +10803,7 @@ var useCursorBlink = ({ isActive, cursorInterval, typingPause, disableCursorBlin
   return { cursorVisible, resetBlink };
 };
 
-// node_modules/react-ink-textarea/dist/hooks/useKeyboardInput.js
+// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/hooks/useKeyboardInput.js
 var useKeyboardInput = ({ isActive, value, cursor, keybindings, autoNewLineLimit, onSubmit, onFirstLineUp, onLastLineDown, onFirstCharacterLeft, onLastCharacterRight, onTab, setValue, setCursor, pushUndo, undo, redo, resetMutationTracking, resetBlink, lineWidth, visualRows: visualRows2 }) => {
   use_paste_default((text) => {
     const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
@@ -10400,12 +11099,12 @@ var useKeyboardInput = ({ isActive, value, cursor, keybindings, autoNewLineLimit
   }, { isActive });
 };
 
-// node_modules/react-ink-textarea/dist/hooks/useViewport.js
-var import_react14 = __toESM(require_react(), 1);
+// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/hooks/useViewport.js
+var import_react15 = __toESM(require_react(), 1);
 var useViewport = ({ rowCount, viewportLines, cursorRowIndex }) => {
-  const [scrollOffset, setScrollOffset] = (0, import_react14.useState)(0);
+  const [scrollOffset, setScrollOffset] = (0, import_react15.useState)(0);
   const cap = Number.isFinite(viewportLines) ? Math.max(1, viewportLines) : Number.POSITIVE_INFINITY;
-  (0, import_react14.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     if (!Number.isFinite(cap)) {
       if (scrollOffset !== 0)
         setScrollOffset(0);
@@ -10430,7 +11129,7 @@ var useViewport = ({ rowCount, viewportLines, cursorRowIndex }) => {
   return { visibleRowStart: start2, visibleRowEnd: end };
 };
 
-// node_modules/react-ink-textarea/dist/TextArea.js
+// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/TextArea.js
 var MAX_MEASURE_PASSES = 24;
 var DEFAULT_TEXT_STYLE = {};
 var DEFAULT_INVISIBLE_STYLE = { color: "gray", dim: true };
@@ -10538,7 +11237,7 @@ var renderRowBody = ({ chunk, chunkAbsStart, cursorPos, cursorVisible, isCursorA
   return nodes;
 };
 var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineSuffix, cursorInterval = DEFAULT_CURSOR_INTERVAL, typingPause = DEFAULT_TYPING_PAUSE, maxUndo = DEFAULT_MAX_UNDO, undoGroupDelay = DEFAULT_UNDO_GROUP_DELAY, autoNewLineLimit = DEFAULT_AUTO_NEW_LINE_LIMIT, highlightActiveLine = false, activeLineColor = void 0, disableArrowNavigation = false, disableCursorBlink = false, value: controlledValue, cursorPosition: controlledPosition, onChange, onCursorChange, onFirstLineUp, onLastLineDown, onFirstCharacterLeft, onLastCharacterRight, onTab, initialLineCount = DEFAULT_INITIAL_LINE_COUNT, viewportLines, tabWidth = DEFAULT_TAB_WIDTH, onDimensions, showInvisibles = false, styles: styles2, labels, keybindings }) => {
-  const resolvedKeybindings = (0, import_react15.useMemo)(() => {
+  const resolvedKeybindings = (0, import_react16.useMemo)(() => {
     const merged = {
       ...DEFAULT_KEYBINDINGS,
       ...keybindings ?? {}
@@ -10549,10 +11248,10 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
     }
     return merged;
   }, [keybindings, disableArrowNavigation]);
-  const resolvedStyles = (0, import_react15.useMemo)(() => resolveStyles(styles2), [styles2]);
-  const textProps = (0, import_react15.useMemo)(() => styleToTextProps(resolvedStyles.text), [resolvedStyles.text]);
-  const invisibleProps = (0, import_react15.useMemo)(() => styleToTextProps(resolvedStyles.invisibleCharacter), [resolvedStyles.invisibleCharacter]);
-  const labelTextProps = (0, import_react15.useMemo)(() => {
+  const resolvedStyles = (0, import_react16.useMemo)(() => resolveStyles(styles2), [styles2]);
+  const textProps = (0, import_react16.useMemo)(() => styleToTextProps(resolvedStyles.text), [resolvedStyles.text]);
+  const invisibleProps = (0, import_react16.useMemo)(() => styleToTextProps(resolvedStyles.invisibleCharacter), [resolvedStyles.invisibleCharacter]);
+  const labelTextProps = (0, import_react16.useMemo)(() => {
     const out = {};
     for (const [k, v] of Object.entries(resolvedStyles.byLabel)) {
       out[k] = styleToTextProps(v);
@@ -10569,7 +11268,7 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
     newline: !!showInvisibles.newline
   };
   const showAnyInvisible = inv.space || inv.tab || inv.newline;
-  const dispatchCursorRef = (0, import_react15.useRef)(null);
+  const dispatchCursorRef = (0, import_react16.useRef)(null);
   const { value, cursor, setValue, setCursor } = useCursorState({
     controlledValue,
     controlledPosition,
@@ -10578,7 +11277,7 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
       dispatchCursorRef.current?.(newCursor, valueForCalc);
     }
   });
-  (0, import_react15.useImperativeHandle)(ref, () => ({
+  (0, import_react16.useImperativeHandle)(ref, () => ({
     insert: (text) => {
       if (!text)
         return;
@@ -10587,9 +11286,9 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
       setCursor(cursor + text.length, newValue);
     }
   }), [value, cursor, setValue, setCursor]);
-  const lines = (0, import_react15.useMemo)(() => value.split("\n"), [value]);
-  const placeholderLines = (0, import_react15.useMemo)(() => placeholder ? placeholder.split("\n") : [], [placeholder]);
-  const placeholderLineStartOffsets = (0, import_react15.useMemo)(() => {
+  const lines = (0, import_react16.useMemo)(() => value.split("\n"), [value]);
+  const placeholderLines = (0, import_react16.useMemo)(() => placeholder ? placeholder.split("\n") : [], [placeholder]);
+  const placeholderLineStartOffsets = (0, import_react16.useMemo)(() => {
     const offsets = new Array(placeholderLines.length);
     let offset = 0;
     for (let i = 0; i < placeholderLines.length; i++) {
@@ -10598,22 +11297,22 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
     }
     return offsets;
   }, [placeholderLines]);
-  const contentRef = (0, import_react15.useRef)(null);
+  const contentRef = (0, import_react16.useRef)(null);
   const { width: measuredWidth } = use_box_metrics_default(contentRef);
-  const [lineWidth, setLineWidth] = (0, import_react15.useState)(0);
-  (0, import_react15.useEffect)(() => {
+  const [lineWidth, setLineWidth] = (0, import_react16.useState)(0);
+  (0, import_react16.useEffect)(() => {
     if (measuredWidth > 0) {
       setLineWidth((prev) => prev === measuredWidth ? prev : measuredWidth);
     }
   }, [measuredWidth]);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react16.useEffect)(() => {
     if (measuredWidth > 0) {
       onDimensions?.(measuredWidth);
     }
   }, [measuredWidth, onDimensions]);
   const measurePerLine = linePrefix != null || lineSuffix != null;
   const chunkKey = (lineIdx, chunkIdx) => `${lineIdx}:${chunkIdx}`;
-  const chunkRefs = (0, import_react15.useRef)(/* @__PURE__ */ new Map());
+  const chunkRefs = (0, import_react16.useRef)(/* @__PURE__ */ new Map());
   const getChunkRef = (lineIdx, chunkIdx) => {
     const key = chunkKey(lineIdx, chunkIdx);
     let r = chunkRefs.current.get(key);
@@ -10623,10 +11322,10 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
     }
     return r;
   };
-  const [chunkWidths, setChunkWidths] = (0, import_react15.useState)({});
-  const [baseLineWidth, setBaseLineWidth] = (0, import_react15.useState)(0);
-  const recentLayoutsRef = (0, import_react15.useRef)([]);
-  const measureHardCapRef = (0, import_react15.useRef)(0);
+  const [chunkWidths, setChunkWidths] = (0, import_react16.useState)({});
+  const [baseLineWidth, setBaseLineWidth] = (0, import_react16.useState)(0);
+  const recentLayoutsRef = (0, import_react16.useRef)([]);
+  const measureHardCapRef = (0, import_react16.useRef)(0);
   const getChunkWidth = (lineIdx, chunkIdx) => {
     if (!measurePerLine)
       return lineWidth;
@@ -10635,7 +11334,7 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
       return w;
     return baseLineWidth > 0 ? baseLineWidth : lineWidth;
   };
-  (0, import_react15.useEffect)(() => {
+  (0, import_react16.useEffect)(() => {
     if (!measurePerLine) {
       if (baseLineWidth !== 0)
         setBaseLineWidth(0);
@@ -10688,7 +11387,7 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
     disableCursorBlink
   });
   const { line: cursorLine, column: cursorColumn } = getCursorLineAndColumn(value, cursor);
-  const visualRows2 = (0, import_react15.useMemo)(
+  const visualRows2 = (0, import_react16.useMemo)(
     () => buildVisualRows(lines, getChunkWidth, isActive ? cursorLine : -1, isActive ? cursorColumn : 0, initialLineCount, tabWidth),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -10728,9 +11427,9 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
   });
   const totalLines = Math.max(lines.length, initialLineCount);
   const hasContent = value.length > 0;
-  const labelByChar = (0, import_react15.useMemo)(() => computeLabels(value, labels ?? []), [value, labels]);
-  const segments = (0, import_react15.useMemo)(() => computeSegments(labelByChar), [labelByChar]);
-  const placeholderLabelByChar = (0, import_react15.useMemo)(() => computeLabels(placeholder ?? "", labels ?? []), [placeholder, labels]);
+  const labelByChar = (0, import_react16.useMemo)(() => computeLabels(value, labels ?? []), [value, labels]);
+  const segments = (0, import_react16.useMemo)(() => computeSegments(labelByChar), [labelByChar]);
+  const placeholderLabelByChar = (0, import_react16.useMemo)(() => computeLabels(placeholder ?? "", labels ?? []), [placeholder, labels]);
   const renderPlaceholderLine = (lineText, absStart, keyPrefix) => {
     if (lineText.length === 0) {
       return [
@@ -10759,8 +11458,8 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
     flush();
     return nodes;
   };
-  const lastDispatchRef = (0, import_react15.useRef)(null);
-  const prevCursorRef = (0, import_react15.useRef)(cursor);
+  const lastDispatchRef = (0, import_react16.useRef)(null);
+  const prevCursorRef = (0, import_react16.useRef)(cursor);
   const dispatchCursor = (targetCursor, valueForCalc) => {
     if (!onCursorChange)
       return;
@@ -10776,7 +11475,7 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
     onCursorChange([line, column], type, idx);
   };
   dispatchCursorRef.current = dispatchCursor;
-  (0, import_react15.useEffect)(() => {
+  (0, import_react16.useEffect)(() => {
     if (prevCursorRef.current !== cursor) {
       dispatchCursorRef.current?.(cursor);
     }
@@ -10805,8 +11504,8 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
   };
   const cursorRowIndex = isActive ? visualRowForCursor(visualRows2, cursorLine, cursorColumn, getChunkWidth(cursorLine, 0)) : -1;
   const { stdout } = use_stdout_default();
-  const [terminalRows, setTerminalRows] = (0, import_react15.useState)(stdout?.rows ?? 0);
-  (0, import_react15.useEffect)(() => {
+  const [terminalRows, setTerminalRows] = (0, import_react16.useState)(stdout?.rows ?? 0);
+  (0, import_react16.useEffect)(() => {
     if (!stdout)
       return;
     const onResize = () => setTerminalRows(stdout.rows);
@@ -10907,19 +11606,7 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
 // src/tui/caretMoves.ts
 var AUTO_NEW_LINE_LIMIT = 3;
 var INITIAL_LINE_COUNT = 2;
-var TAB_WIDTH = 4;
-var segmenter2 = new Intl.Segmenter("en", { granularity: "grapheme" });
-function cellWidth(g) {
-  if (g.length === 0) return 0;
-  if (g === "	") return TAB_WIDTH;
-  const c = g.codePointAt(0) ?? 0;
-  if (g.length === 1 && c >= 32 && c < 127) return 1;
-  if (g.length === 1 && c < 32) return 0;
-  if (new RegExp("\\p{Emoji_Presentation}", "u").test(g) || g.includes("\uFE0F") && new RegExp("\\p{Emoji}", "u").test(g)) return 2;
-  if (new RegExp("^\\p{M}+$", "u").test(g)) return 0;
-  const wide = c >= 4352 && c <= 4447 || c >= 11904 && c <= 42191 && c !== 12351 || c >= 44032 && c <= 55203 || c >= 63744 && c <= 64255 || c >= 65072 && c <= 65103 || c >= 65280 && c <= 65376 || c >= 65504 && c <= 65510 || c >= 131072 && c <= 262141;
-  return wide ? 2 : 1;
-}
+var segmenter3 = new Intl.Segmenter("en", { granularity: "grapheme" });
 var isHigh = (c) => c >= 55296 && c <= 56319;
 var isLow = (c) => c >= 56320 && c <= 57343;
 var isCombining = (c) => c >= 768 && c <= 879 || c >= 6832 && c <= 6911 || c >= 7616 && c <= 7679 || c >= 8400 && c <= 8447 || c >= 65056 && c <= 65071;
@@ -10929,7 +11616,7 @@ function prevGrapheme(value, caret) {
   const prev = value.charCodeAt(at - 1);
   if (prev < 128 && !isLow(prev)) return at - 1;
   let last = 0;
-  for (const seg of segmenter2.segment(value)) {
+  for (const seg of segmenter3.segment(value)) {
     if (seg.index >= at) break;
     last = seg.index;
   }
@@ -10941,7 +11628,7 @@ function nextGrapheme(value, caret) {
   const here = value.charCodeAt(at);
   const next = at + 1 < value.length ? value.charCodeAt(at + 1) : -1;
   if (here < 128 && !isHigh(here) && (next === -1 || !isCombining(next))) return at + 1;
-  for (const seg of segmenter2.segment(value)) {
+  for (const seg of segmenter3.segment(value)) {
     const end = seg.index + seg.segment.length;
     if (end > at) return end;
   }
@@ -10998,7 +11685,7 @@ function visualRows(lines, width, caretLine, caretColumn) {
           flush();
         }
       } else {
-        for (const seg of segmenter2.segment(text)) {
+        for (const seg of segmenter3.segment(text)) {
           const w = cellWidth(seg.segment);
           if (bufWidth + w > Math.max(1, width) && buf.length > 0) flush();
           buf += seg.segment;
@@ -11153,17 +11840,18 @@ function InlineEditor({ width, height, base, onClose, onSave }) {
   const rows = Math.max(1, height - 2);
   const discardPrompt = colWidth >= DISCARD_PROMPT_LONG.length ? DISCARD_PROMPT_LONG : DISCARD_PROMPT_SHORT;
   const footerRows = Math.max(1, Math.ceil(FOOTER_HINT.length / Math.max(1, colWidth)));
-  const [cursorPosition, setCursorPosition] = (0, import_react16.useState)(() => endPosition(base));
-  const [confirmDiscard, setConfirmDiscard] = (0, import_react16.useState)(false);
-  const ref = (0, import_react16.useRef)(null);
-  const realRef = (0, import_react16.useRef)(base);
-  const shownRef = (0, import_react16.useRef)(standInText(base));
-  const [value, setValueState] = (0, import_react16.useState)(shownRef.current);
-  const caretRef = (0, import_react16.useRef)(shownRef.current.length);
-  const reportedRef = (0, import_react16.useRef)(null);
-  const reportModeRef = (0, import_react16.useRef)(null);
-  const moveRef = (0, import_react16.useRef)(null);
-  const widthRef = (0, import_react16.useRef)(0);
+  const [cursorPosition, setCursorPosition] = (0, import_react17.useState)(() => endPosition(base));
+  const [confirmDiscard, setConfirmDiscard] = (0, import_react17.useState)(false);
+  useReadGate({ confirm: confirmDiscard });
+  const ref = (0, import_react17.useRef)(null);
+  const realRef = (0, import_react17.useRef)(base);
+  const shownRef = (0, import_react17.useRef)(standInText(base));
+  const [value, setValueState] = (0, import_react17.useState)(shownRef.current);
+  const caretRef = (0, import_react17.useRef)(shownRef.current.length);
+  const reportedRef = (0, import_react17.useRef)(null);
+  const reportModeRef = (0, import_react17.useRef)(null);
+  const moveRef = (0, import_react17.useRef)(null);
+  const widthRef = (0, import_react17.useRef)(0);
   const renderedCaret = offsetAt(value, cursorPosition);
   const stale = () => shownRef.current !== value || caretRef.current !== renderedCaret;
   const show = (nextReal, caret) => {
@@ -11186,11 +11874,11 @@ function InlineEditor({ width, height, base, onClose, onSave }) {
       return;
     }
     const fresh = !stale();
-    const shown = shownRef.current;
+    const shown2 = shownRef.current;
     const at = caretRef.current;
     const from = Math.max(0, at - edit.before);
-    const after = shown.slice(0, from) + edit.text + shown.slice(Math.min(shown.length, at + edit.after));
-    show(remapEdit(realRef.current, shown, after, from + edit.text.length), from + edit.text.length);
+    const after = shown2.slice(0, from) + edit.text + shown2.slice(Math.min(shown2.length, at + edit.after));
+    show(remapEdit(realRef.current, shown2, after, from + edit.text.length), from + edit.text.length);
     if (fresh) reportModeRef.current = "absolute";
     else reportModeRef.current = String(positionAt(next, edit.caret)) !== reportedRef.current ? "skip" : null;
   };
@@ -11345,14 +12033,14 @@ function MainPanes({
     ] }),
     tagsFocused ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Text, { children: "focus: tags" }) : noteFocused ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Text, { children: "focus: preview" }) : searchOpen || query !== "" ? (() => {
       const full = "search: " + sanitizeForTerminal(query);
-      const shown = full.length > width - 2 ? full.slice(0, width - 4) + ".." : full;
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Text, { bold: true, inverse: searchOpen, children: shown });
+      const shown2 = full.length > width - 2 ? full.slice(0, width - 4) + ".." : full;
+      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Text, { bold: true, inverse: searchOpen, children: shown2 });
     })() : collection2.type === "tag" ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Text, { children: "tag: " + sanitizeForTerminal(collection2.tagName ?? "") }) : collection2.type === "untagged" ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Text, { children: "filter: untagged" }) : null
   ] });
 }
 
 // src/tui/useAppState.ts
-var import_react17 = __toESM(require_react(), 1);
+var import_react18 = __toESM(require_react(), 1);
 
 // src/tui/app-model.ts
 function sortEntries(entries, sortType2, sortReversed2, inTrash) {
@@ -11419,27 +12107,36 @@ function matchParsed(note, parsed) {
   return true;
 }
 
+// src/core/connection-word.ts
+function connectionWord(sim, socketOpen) {
+  if (sim.connected || sim.connectionStatus === "green") return "connected";
+  if (sim.connectionStatus === "offline") return "offline";
+  if (!sim.everConnected) return "connecting";
+  return socketOpen ? "stale" : "offline";
+}
+
 // src/tui/useAppState.ts
 function useAppState(store) {
-  const [noteEntries, setNoteEntries] = (0, import_react17.useState)([]);
-  const selectedIdRef = (0, import_react17.useRef)(null);
-  const openedRef = (0, import_react17.useRef)(null);
-  const [selectedIndex, setSelectedIndex] = (0, import_react17.useState)(0);
-  const [connected, setConnected] = (0, import_react17.useState)(false);
-  const [pending, setPending] = (0, import_react17.useState)(0);
-  const [allTagNames, setAllTagNames] = (0, import_react17.useState)([]);
-  const [query, setQuery] = (0, import_react17.useState)("");
-  const [tagNames, setTagNames] = (0, import_react17.useState)([]);
-  const [collection2, setCollection] = (0, import_react17.useState)({ type: "all" });
-  const [inTrash, setInTrash] = (0, import_react17.useState)(false);
-  const [sortLabelStr, setSortLabelStr] = (0, import_react17.useState)("");
-  const sortCacheRef = (0, import_react17.useRef)(null);
-  const externalSelectRef = (0, import_react17.useRef)(null);
-  (0, import_react17.useEffect)(() => {
+  const [noteEntries, setNoteEntries] = (0, import_react18.useState)([]);
+  const selectedIdRef = (0, import_react18.useRef)(null);
+  const openedRef = (0, import_react18.useRef)(null);
+  const [selectedIndex, setSelectedIndex] = (0, import_react18.useState)(0);
+  const [connected, setConnected] = (0, import_react18.useState)(false);
+  const [word, setWord] = (0, import_react18.useState)("connecting");
+  const [pending, setPending] = (0, import_react18.useState)(0);
+  const [allTagNames, setAllTagNames] = (0, import_react18.useState)([]);
+  const [query, setQuery] = (0, import_react18.useState)("");
+  const [tagNames, setTagNames] = (0, import_react18.useState)([]);
+  const [collection2, setCollection] = (0, import_react18.useState)({ type: "all" });
+  const [inTrash, setInTrash] = (0, import_react18.useState)(false);
+  const [sortLabelStr, setSortLabelStr] = (0, import_react18.useState)("");
+  const sortCacheRef = (0, import_react18.useRef)(null);
+  const externalSelectRef = (0, import_react18.useRef)(null);
+  (0, import_react18.useEffect)(() => {
     if (externalSelectRef.current !== null) return;
     selectedIdRef.current = noteEntries[selectedIndex]?.id ?? null;
   }, [noteEntries, selectedIndex]);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react18.useEffect)(() => {
     const render = () => {
       const state = store.getState();
       const inTrashNow = state.ui.collection.type === "trash";
@@ -11500,6 +12197,7 @@ function useAppState(store) {
         }
       }
       setConnected(state.simperium.connected);
+      setWord(connectionWord(state.simperium, hasOpenSocket()));
       setPending(pendingCount(state.simperium));
       const tags2 = [];
       for (const [, tag] of state.data.tags) {
@@ -11516,16 +12214,17 @@ function useAppState(store) {
   const setExternalSelect = (id) => {
     externalSelectRef.current = id;
   };
-  return { noteEntries, selectedIndex, setSelectedIndex, setExternalSelect, connected, pending, allTagNames, query, setQuery, tagNames, collection: collection2, inTrash, sortLabelStr };
+  return { noteEntries, selectedIndex, setSelectedIndex, setExternalSelect, connected, word, pending, allTagNames, query, setQuery, tagNames, collection: collection2, inTrash, sortLabelStr };
 }
 
 // src/tui/notice.ts
-var import_react18 = __toESM(require_react(), 1);
+var import_react19 = __toESM(require_react(), 1);
 function useNotice() {
-  const [notice, setNoticeState] = (0, import_react18.useState)(() => {
+  const [notice, setNoticeState] = (0, import_react19.useState)(() => {
+    const info = currentProblemIsInfo();
     const problem = currentProblem();
     if (problem !== null) {
-      return { message: problem, isError: true };
+      return { message: problem, isError: !info };
     }
     const update = currentUpdate();
     return update ? { message: updateMessage(update), isError: false, isUpdate: true } : null;
@@ -11533,11 +12232,11 @@ function useNotice() {
   const setNotice = (message) => setNoticeState({ message, isError: false });
   const setNoticeError = (message) => setNoticeState({ message, isError: true });
   const clearNotice = () => setNoticeState(null);
-  (0, import_react18.useEffect)(() => {
+  (0, import_react19.useEffect)(() => {
     const offUpdate = onUpdate(
       (u) => setNoticeState({ message: updateMessage(u), isError: false, isUpdate: true })
     );
-    const offProblem = onProblem((message) => setNoticeState({ message, isError: true }));
+    const offProblem = onProblem((message, info) => setNoticeState({ message, isError: !info }));
     return () => {
       offUpdate();
       offProblem();
@@ -11556,6 +12255,28 @@ function noticeColor(notice) {
     return theme2.error.color;
   }
   return notice.isUpdate ? theme2.warning.color : theme2.success.color;
+}
+
+// src/tui/banner.tsx
+var import_react20 = __toESM(require_react(), 1);
+var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
+function BannerRow() {
+  const [banner, setBanner] = (0, import_react20.useState)(currentBanner);
+  (0, import_react20.useEffect)(() => {
+    setBanner(currentBanner());
+    return onBanner(() => setBanner(currentBanner()));
+  }, []);
+  if (banner === null) {
+    return null;
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Text, { color: theme2.warning.color, wrap: "truncate-end", children: sanitizeForTerminal(`Update available: ${banner.running} -> ${banner.available}`) });
+}
+function dismissOnEscape(keyName) {
+  if (keyName === "Escape" && currentBanner() !== null) {
+    dismissBanner();
+    return true;
+  }
+  return false;
 }
 
 // src/tui/note-focus.ts
@@ -11644,36 +12365,36 @@ function useReselect(ctx) {
 }
 
 // src/tui/App.tsx
-var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
 function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, copyText, startNew }) {
   const { exit, suspendTerminal } = use_app_default();
   const { setRawMode } = use_stdin_default();
   const view = useAppState(store);
   const { noteEntries, selectedIndex, setSelectedIndex, connected, pending, allTagNames, query, setQuery, tagNames, collection: collection2, inTrash, sortLabelStr } = view;
-  const [rendered, setRendered] = (0, import_react19.useState)(false);
-  const [helpOpen, setHelpOpen] = (0, import_react19.useState)(false);
-  const [tagEditorOpen, setTagEditorOpen] = (0, import_react19.useState)(false);
-  const [logoutAsk, setLogoutAsk] = (0, import_react19.useState)(false);
-  const [searchOpen, setSearchOpen] = (0, import_react19.useState)(false);
-  const [tagsOpen, setTagsOpen] = (0, import_react19.useState)(false);
-  const [tagsFocused, setTagsFocused] = (0, import_react19.useState)(false);
-  const [noteFocused, setNoteFocused] = (0, import_react19.useState)(false);
-  const [itemIndex, setItemIndex] = (0, import_react19.useState)(0);
-  const [tagIndex, setTagIndex] = (0, import_react19.useState)(0);
-  const [tagDialog, setTagDialog] = (0, import_react19.useState)(null);
-  const [emptyAsk, setEmptyAsk] = (0, import_react19.useState)(0);
-  const [copyResult, setCopyResult] = (0, import_react19.useState)(null);
-  const [historyOpen, setHistoryOpen] = (0, import_react19.useState)(false);
-  const [historyIndex, setHistoryIndex] = (0, import_react19.useState)(0);
-  const [reading, setReading] = (0, import_react19.useState)(false);
+  const [rendered, setRendered] = (0, import_react21.useState)(false);
+  const [helpOpen, setHelpOpen] = (0, import_react21.useState)(false);
+  const [tagEditorOpen, setTagEditorOpen] = (0, import_react21.useState)(false);
+  const [logoutAsk, setLogoutAsk] = (0, import_react21.useState)(false);
+  const [searchOpen, setSearchOpen] = (0, import_react21.useState)(false);
+  const [tagsOpen, setTagsOpen] = (0, import_react21.useState)(false);
+  const [tagsFocused, setTagsFocused] = (0, import_react21.useState)(false);
+  const [noteFocused, setNoteFocused] = (0, import_react21.useState)(false);
+  const [itemIndex, setItemIndex] = (0, import_react21.useState)(0);
+  const [tagIndex, setTagIndex] = (0, import_react21.useState)(0);
+  const [tagDialog, setTagDialog] = (0, import_react21.useState)(null);
+  const [emptyAsk, setEmptyAsk] = (0, import_react21.useState)(0);
+  const [copyResult, setCopyResult] = (0, import_react21.useState)(null);
+  const [historyOpen, setHistoryOpen] = (0, import_react21.useState)(false);
+  const [historyIndex, setHistoryIndex] = (0, import_react21.useState)(0);
+  const [reading, setReading] = (0, import_react21.useState)(false);
   const { itemAsk, setItemAsk } = useItemAsk();
   const { exportAsk, setExportAsk } = useExportAsk();
   const { setBlogSendAsk } = useBlogSendAsk();
   const { open: inlineEditOpen, base: inlineEditBase, openEdit: openInlineEdit, closeEdit: closeInlineEdit } = useInlineEditorState();
   const { notice, setNotice, setNoticeError, clearNotice } = useNotice();
-  const [syncedAt, setSyncedAt] = (0, import_react19.useState)(null);
-  const syncedTimerRef = (0, import_react19.useRef)(null);
-  const tagsAutoOpenedRef = (0, import_react19.useRef)(false);
+  const [syncedAt, setSyncedAt] = (0, import_react21.useState)(null);
+  const syncedTimerRef = (0, import_react21.useRef)(null);
+  const tagsAutoOpenedRef = (0, import_react21.useRef)(false);
   useAppEffects(width, tagNames.length, setTagsOpen, syncedTimerRef, () => handleKey("n", EXTERNAL_KEY), startNew);
   const handleKey = (input, key) => {
     recordKeyEvent(input, key, Boolean(searchOpen || tagEditorOpen || tagDialog?.kind === "rename" || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen || inlineEditOpen));
@@ -11731,7 +12452,7 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
       const noteKeyCtx = { store, selectedEntry, itemIndex, setItemIndex, setItemAsk, setNotice, setExportAsk, setBlogSendAsk };
       if (handleNoteKey(input, keyName, noteKeyCtx)) return;
     }
-    const action = noteKeyAction(input, selectedEntry?.id ?? null, store.getState());
+    const action = dismissOnEscape(keyName) ? null : noteKeyAction(input, selectedEntry?.id ?? null, store.getState());
     if (action) {
       store.dispatch(action);
       if (action.type === "SELECT_TRASH") setTagIndex(tagNames.length + 2);
@@ -11794,10 +12515,11 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
     }
   };
   const remember = useReselect({ store, setExternalSelect: view.setExternalSelect });
+  useReadGate({ entry: () => inlineEditOpen ? "" : searchOpen || tagDialog || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen ? "\r" : tagEditorOpen ? "whole" : null, onDropped: () => setNotice(SEVERAL_KEYS) });
   use_input_default((input, key) => {
     for (const ch of splitPastedInput(input) ?? [input]) handleKey(ch, key);
   }, { isActive: emptyAsk === 0 });
-  const listCount = import_react19.default.useMemo(() => {
+  const listCount = import_react21.default.useMemo(() => {
     const st = store.getState();
     let count = 0;
     for (const note of st.data.notes.values()) {
@@ -11809,8 +12531,9 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
   const selectedNote = selectedEntry?.note ?? null;
   const noteItems = noteFocused && selectedEntry ? checklistItems(selectedEntry.note.content ?? "") : [];
   const cursorLine = noteItems.length > 0 ? noteItems[Math.min(itemIndex, noteItems.length - 1)].line : null;
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Box_default, { flexDirection: "column", height, children: helpOpen ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Help, { width, height, editor: selectEditor(process.env) }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Box_default, { flexDirection: "column", height, children: helpOpen ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Help, { width, height, editor: selectEditor(process.env) }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(BannerRow, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
       MainPanes,
       {
         store,
@@ -11837,15 +12560,15 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
         }
       }
     ),
-    notice ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Text, { color: noticeColor(notice), wrap: "truncate-end", children: sanitizeForTerminal(notice.message) }) : null,
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+    notice ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Text, { color: noticeColor(notice), wrap: "truncate-end", children: sanitizeForTerminal(notice.message) }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
       BottomArea,
       {
         store,
         view: {
           ...view,
           noteEntries: view.noteEntries.slice(0, listCount),
-          sortLabelStr: syncedAt ? "synced " + syncedAt : view.sortLabelStr
+          sortLabelStr: syncedAt ? syncedAt : view.sortLabelStr
         },
         selectedEntry,
         width,
@@ -11871,7 +12594,7 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
 }
 
 // src/tui/Root.tsx
-var import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime21 = __toESM(require_jsx_runtime(), 1);
 var MIN_W = 20;
 var MIN_H = 7;
 var TOO_SMALL = `snote needs at least ${MIN_W}x${MIN_H} \u2014 make the window bigger`;
@@ -11883,42 +12606,38 @@ function smallLines(cols, rows) {
   }
   return out;
 }
+function endSyncClient(s) {
+  try {
+    s?.client?.end?.();
+  } catch {
+  }
+}
 function Root(props) {
-  const [phase, setPhase] = (0, import_react20.useState)("loading");
-  const [store, setStore] = (0, import_react20.useState)(null);
-  const [error, setError] = (0, import_react20.useState)("");
-  const userLogoutRef = (0, import_react20.useRef)(false);
-  const [lockMessage, setLockMessage] = (0, import_react20.useState)(null);
-  const [size, setSize] = (0, import_react20.useState)({
+  const [phase, setPhase] = (0, import_react22.useState)("loading");
+  const [store, setStore] = (0, import_react22.useState)(null);
+  const [error, setError] = (0, import_react22.useState)("");
+  const userLogoutRef = (0, import_react22.useRef)(false);
+  const [lockMessage, setLockMessage] = (0, import_react22.useState)(null);
+  const [size, setSize] = (0, import_react22.useState)({
     width: props.width,
     height: props.height
   });
   const { stdout } = use_stdout_default();
   const { exit } = use_app_default();
-  const stdin = use_stdin_default();
   const tooSmall = size.width < MIN_W || size.height < MIN_H;
-  const roomy = (0, import_react20.useRef)(size);
+  const roomy = (0, import_react22.useRef)(size);
   if (!tooSmall) roomy.current = size;
-  const quitRef = (0, import_react20.useRef)(() => {
+  const quitRef = (0, import_react22.useRef)(() => {
   });
   quitRef.current = props.onQuit ?? exit;
-  (0, import_react20.useLayoutEffect)(() => {
-    const em = stdin.internal_eventEmitter;
-    if (!tooSmall || !em) return;
-    const real = em.emit;
-    em.emit = function(ev, ...a) {
-      if (ev === "input") {
-        if (a[0] === "q" && !isInlineEditOpen()) quitRef.current();
-        return false;
-      }
-      if (ev === "paste") return false;
-      return real.call(this, ev, ...a);
-    };
-    return () => {
-      em.emit = real;
-    };
-  }, [tooSmall, stdin]);
-  (0, import_react20.useEffect)(() => {
+  useReadGate({
+    onCtrlC: () => quitRef.current(),
+    // T538R-5: Ctrl+C quits only as a read of its own
+    whileSmall: tooSmall ? (input) => {
+      if (input === "q" && !isInlineEditOpen()) quitRef.current();
+    } : void 0
+  });
+  (0, import_react22.useEffect)(() => {
     const onResize = () => {
       setSize({
         width: stdout.columns ?? props.width,
@@ -11930,14 +12649,16 @@ function Root(props) {
       stdout.off("resize", onResize);
     };
   }, [stdout, props.width, size.height]);
-  (0, import_react20.useEffect)(() => {
+  (0, import_react22.useEffect)(() => {
     let cancelled = false;
     loadToken(props.dataDir).then((auth) => {
       if (cancelled) return;
       if (auth === null || auth.server !== props.server) {
         setPhase("login");
       } else {
+        let made = null;
         const onLogout = () => {
+          if (!userLogoutRef.current) endSyncClient(made);
           logout2(props.dataDir);
           setStore(null);
           if (!userLogoutRef.current) {
@@ -11945,7 +12666,8 @@ function Root(props) {
           }
           setPhase("login");
         };
-        setStore(props.makeStoreFor(auth, onLogout));
+        made = props.makeStoreFor(auth, onLogout);
+        setStore(made);
         setPhase("app");
       }
     }).catch((e) => {
@@ -11962,18 +12684,20 @@ function Root(props) {
       cancelled = true;
     };
   }, [props.dataDir, props.server, props.makeStoreFor]);
-  const handleLogout = (0, import_react20.useCallback)(() => {
+  const handleLogout = (0, import_react22.useCallback)(() => {
     logout2(props.dataDir);
     setStore(null);
     setPhase("login");
   }, [props.dataDir]);
-  const onLoggedIn = (0, import_react20.useCallback)(
+  const onLoggedIn = (0, import_react22.useCallback)(
     async (auth) => {
       try {
         await saveToken(props.dataDir, { ...auth, server: props.server });
         userLogoutRef.current = false;
         setError("");
+        let made = null;
         const onLogout = () => {
+          if (!userLogoutRef.current) endSyncClient(made);
           logout2(props.dataDir);
           setStore(null);
           if (!userLogoutRef.current) {
@@ -11981,7 +12705,8 @@ function Root(props) {
           }
           setPhase("login");
         };
-        setStore(props.makeStoreFor(auth, onLogout));
+        made = props.makeStoreFor(auth, onLogout);
+        setStore(made);
         setPhase("app");
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -11997,13 +12722,13 @@ function Root(props) {
   );
   let screen;
   if (phase === "loading") {
-    screen = /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Box_default, { flexDirection: "column", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Text, { children: "Loading..." }),
-      lockMessage ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Text, { ...theme2.error, children: lockMessage }) : null
+    screen = /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Box_default, { flexDirection: "column", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Text, { children: "Loading..." }),
+      lockMessage ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Text, { ...theme2.error, children: lockMessage }) : null
     ] });
   } else if (phase === "login") {
-    screen = /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Box_default, { flexDirection: "column", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    screen = /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Box_default, { flexDirection: "column", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
         Login,
         {
           width: roomy.current.width,
@@ -12014,13 +12739,13 @@ function Root(props) {
           onLoggedIn
         }
       ),
-      error ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Text, { ...theme2.error, children: [
+      error ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Text, { ...theme2.error, children: [
         "Error: ",
         error
       ] }) : null
     ] });
   } else {
-    screen = /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    screen = /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
       App,
       {
         store,
@@ -12036,9 +12761,9 @@ function Root(props) {
       }
     );
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Box_default, { flexDirection: "column", children: [
-    tooSmall ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Box_default, { flexDirection: "column", children: smallLines(size.width, size.height).map((l, i) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Text, { children: l }, i)) }) : null,
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Box_default, { display: tooSmall ? "none" : "flex", flexDirection: "column", children: screen })
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Box_default, { flexDirection: "column", children: [
+    tooSmall ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Box_default, { flexDirection: "column", children: smallLines(size.width, size.height).map((l, i) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Text, { children: l }, i)) }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Box_default, { display: tooSmall ? "none" : "flex", flexDirection: "column", children: screen })
   ] });
 }
 
@@ -12147,8 +12872,9 @@ function buildStore(opts, auth, onLogout) {
   let stopSaving = instanceLock.release;
   let noteGhosts;
   const unsynced = loadUnsynced(opts.dataDir);
+  const preloadedState = dropTombstonedNotes(opts.dataDir, loadState(opts.dataDir));
   const store = makeStore({
-    preloadedState: dropTombstonedNotes(opts.dataDir, loadState(opts.dataDir)),
+    preloadedState,
     sync: {
       appId: opts.appId,
       token: auth.token,
@@ -12178,14 +12904,14 @@ function buildStore(opts, auth, onLogout) {
       restoreNotesFromGhosts(store, ghosts, unsynced);
     }, 0);
   }
-  const ownEchoes = trackOwnEchoes(store.client, opts.dataDir);
+  const ownEchoes = trackOwnEchoes(store.client, opts.dataDir, preloadedState?.data?.notes);
   const startSaving = persistOnChange(store, opts.dataDir);
   setDraftsDir(path12.join(opts.dataDir, "drafts"));
   setTimeout(() => {
-    const restored = recoverDrafts(store);
-    if (restored > 0) {
-      publishProblem(`Restored ${restored} ${restored === 1 ? "note" : "notes"} from an unfinished editor session`);
-    }
+    const tooLarge = [];
+    const report = { changed: 0 };
+    const notice = recoveryNotice(recoverDrafts(store, draftsDir(), tooLarge, report), tooLarge, report.changed);
+    if (notice !== null) publishInfo(notice);
   }, 0);
   const unsyncedTracker = trackUnsynced(store, opts.dataDir);
   const stopUnsynced = unsyncedTracker.stop;
@@ -12211,7 +12937,8 @@ function buildStore(opts, auth, onLogout) {
       () => whenCatchUpApplied(store.client, "note"),
       // T493 — a change the record says the server never confirmed is
       // re-sent even when the ghost's date is newer.
-      unsynced
+      unsynced,
+      preloadedState?.data?.notes
     ).then(
       // T502 — the start-up re-send is over: a carried entry that never went
       // pending with it was found equal to its ghost, so it leaves the record.
@@ -12220,7 +12947,7 @@ function buildStore(opts, auth, onLogout) {
         publishProblem(problemText("could not re-send offline edits", err));
       }
     );
-  void whenCatchUpApplied(store.client, "note").then(
+  void whenCatchUpApplied(store.client, "note", false).then(
     () => ownEchoes.settle(),
     () => ownEchoes.settle()
   );
@@ -12255,10 +12982,7 @@ async function writeReport(log, dataDir) {
     const crashes = fs13.readdirSync(dir).filter((f) => f.startsWith("crash-") && f.endsWith(".json")).sort();
     if (crashes.length > 0) {
       const raw = fs13.readFileSync(path12.join(dir, crashes.at(-1)), "utf8");
-      const old = JSON.parse(raw);
-      const oldSession = old.session;
-      const session = typeof oldSession === "object" && oldSession !== null ? oldSession.keysMasked === true ? { ...oldSession, keys: redactStoredKeys(oldSession.keys) } : { ...oldSession, keys: [], keysDropped: "older version" } : oldSession;
-      bundle = { ...old, error: redactStoredError(old.error, os2.homedir()), session, source: "crash" };
+      bundle = storedCrashBundle(JSON.parse(raw), os2.homedir());
     }
   } catch (err) {
     if (err.code !== "ENOENT") {
@@ -12323,6 +13047,7 @@ async function main(argv, io) {
   }
   const dataDir = o.dataDir ?? defaultDataDir();
   setDataRoot(dataDir);
+  setShownVersion(VERSION);
   const appId = o.appId ?? APP_ID;
   if (o.help) {
     log(USAGE);
@@ -12381,6 +13106,7 @@ async function main(argv, io) {
         stateDir: statusDir(process.env)
       }).catch(() => {
       });
+      startUpdateWatch({ version: VERSION, home: os2.homedir(), env: process.env, stateDir: statusDir(process.env) });
     }
     return built.store;
   };
@@ -12388,7 +13114,7 @@ async function main(argv, io) {
   guardOutputStream(process.stdout);
   guardOutputStream(process.stderr);
   const { waitUntilExit, unmount, clear } = render_default(
-    import_react21.default.createElement(Root, {
+    import_react23.default.createElement(Root, {
       dataDir,
       server: o.server,
       width: process.stdout.columns ?? 80,
@@ -12413,8 +13139,10 @@ async function main(argv, io) {
       }
     }),
     // T402 — never take Ink's screen-reader output path (it skips the
-    // stage that drops OSC sequences).
-    { isScreenReaderEnabled: false }
+    // stage that drops OSC sequences). T538R-5: Ink's own exit on Ctrl+C is
+    // off; Root quits on Ctrl+C through the read gate, only when Ctrl+C is a
+    // read of its own.
+    { isScreenReaderEnabled: false, exitOnCtrlC: false }
   );
   let crashed;
   const crash = (err) => {
@@ -12500,18 +13228,18 @@ async function main(argv, io) {
   const win = globalThis;
   if (win.window && typeof win.window.addEventListener === "function") {
     const g = globalThis;
-    const listeners3 = /* @__PURE__ */ new Map();
+    const listeners4 = /* @__PURE__ */ new Map();
     g.addEventListener ??= (type, l) => {
-      let set = listeners3.get(type);
+      let set = listeners4.get(type);
       if (!set) {
         set = /* @__PURE__ */ new Set();
-        listeners3.set(type, set);
+        listeners4.set(type, set);
       }
       set.add(l);
     };
     g.dispatchEvent ??= (e) => {
       const type = e.type ?? "error";
-      for (const l of listeners3.get(type) ?? []) l(e);
+      for (const l of listeners4.get(type) ?? []) l(e);
       return e.defaultPrevented !== true;
     };
     win.window.error ??= class ErrorEvent {

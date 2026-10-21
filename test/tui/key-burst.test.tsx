@@ -5,6 +5,8 @@ import React from 'react';
 import { makeStore } from '../../src/core/store';
 import { App } from '../../src/tui/App';
 import { makeNote } from './fixtures';
+import { waitForFrame } from '../helpers/ink-waits';
+import { SEVERAL_KEYS as SEVERAL } from '../../src/tui/read-gate';
 import type { EntityId } from '@vendor/types';
 
 // Helper to create branded types for testing
@@ -93,7 +95,7 @@ describe('T241 key burst', () => {
     expect(store.getState().settings.sortType).toBe('creationDate');
   });
 
-  it('2: WHEN the 2-note store renders at 80x24 and ss (two characters in one stdin.write call) is written THEN the frame contains sort: a-z and store.getState().settings.sortType is alphabetical', async () => {
+  it('2: WHEN the 2-note store renders at 80x24 and ss (two characters in one stdin.write call) is written THEN the frame contains sort: created and `Several keys at once: only the first was used`, and store.getState().settings.sortType is creationDate (T538R-3: only the first key of a read acts)', async () => {
     const store = make2NoteStore();
     const { stdin, lastFrame } = render(
       <App store={store} width={80} height={24} />
@@ -102,14 +104,13 @@ describe('T241 key burst', () => {
     await new Promise((r) => setTimeout(r, 50));
 
     stdin.write('ss');
-    await new Promise((r) => setTimeout(r, 0));
-
-    const frame = lastFrame();
-    expect(frame).toContain('sort: a-z');
-    expect(store.getState().settings.sortType).toBe('alphabetical');
+    const frame = await waitForFrame(lastFrame, (f) => f.includes('sort: created') && f.includes(SEVERAL) && store.getState().settings.sortType === 'creationDate');
+    expect(frame).toContain('sort: created');
+    expect(frame).toContain(SEVERAL);
+    expect(store.getState().settings.sortType).toBe('creationDate');
   });
 
-  it('3: WHEN the 2-note store renders at 80x24 and sss (three characters in one stdin.write call) is written THEN store.getState().settings.sortType is modificationDate, and the frame contains neither sort: created nor sort: a-z', async () => {
+  it('3: WHEN the 2-note store renders at 80x24 and sss (three characters in one stdin.write call) is written THEN store.getState().settings.sortType is creationDate, and the frame contains sort: created and not sort: a-z (T538R-3)', async () => {
     const store = make2NoteStore();
     const { stdin, lastFrame } = render(
       <App store={store} width={80} height={24} />
@@ -118,15 +119,13 @@ describe('T241 key burst', () => {
     await new Promise((r) => setTimeout(r, 50));
 
     stdin.write('sss');
-    await new Promise((r) => setTimeout(r, 0));
-
-    const frame = lastFrame();
-    expect(store.getState().settings.sortType).toBe('modificationDate');
-    expect(frame).not.toContain('sort: created');
+    const frame = await waitForFrame(lastFrame, (f) => f.includes('sort: created') && f.includes(SEVERAL) && !f.includes('sort: a-z') && store.getState().settings.sortType === 'creationDate');
+    expect(store.getState().settings.sortType).toBe('creationDate');
+    expect(frame).toContain('sort: created');
     expect(frame).not.toContain('sort: a-z');
   });
 
-  it('4: WHEN the 4-note store renders at 80x24 and jj (two characters in one stdin.write call) is written THEN the frame contains >Note C and does not contain >Note A', async () => {
+  it('4: WHEN the 4-note store renders at 80x24 and jj (two characters in one stdin.write call) is written THEN the frame contains >Note B and does not contain >Note C (T538R-3)', async () => {
     const store = make4NoteStore();
     const { stdin, lastFrame } = render(
       <App store={store} width={80} height={24} />
@@ -138,10 +137,8 @@ describe('T241 key burst', () => {
     expect(frame).toMatch(/>Note A/);
 
     stdin.write('jj');
-    await new Promise((r) => setTimeout(r, 0));
-
-    frame = lastFrame();
-    expect(frame).toMatch(/>Note C/);
-    expect(frame).not.toMatch(/>Note A/);
+    frame = await waitForFrame(lastFrame, (f) => />Note B/.test(f) && f.includes(SEVERAL));
+    expect(frame).toMatch(/>Note B/);
+    expect(frame).not.toMatch(/>Note C/);
   });
 });

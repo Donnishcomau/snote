@@ -16,11 +16,15 @@ describe('.gitignore — secrets', () => {
     expect(envDotStarIdx).toBeLessThan(envExampleIdx);
   });
 
-  it('2: first 4 entries are node_modules/, dist/, .loop/, *.tgz', () => {
-    expect(lines[0]).toBe('node_modules/');
-    expect(lines[1]).toBe('dist/');
-    expect(lines[2]).toBe('.loop/');
-    expect(lines[3]).toBe('*.tgz');
+  it('2: first entries, skipping each export-drop marker and its next line, are node_modules/, dist/, *.tgz; and entries 3-4 are the marker and .loop/', () => {
+    const kept: string[] = [];
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i] === '# export: drop next line') { i++; continue; }
+      kept.push(lines[i]);
+    }
+    expect(kept.slice(0, 3)).toEqual(['node_modules/', 'dist/', '*.tgz']);
+    // export: drop next line
+    expect([lines[2], lines[3]]).toEqual(['# export: drop next line', '.loop/']);
   });
 
   it('3: git check-ignore -q .env exits 0', () => {

@@ -99,7 +99,7 @@ export function BottomArea({
   setNotice,
   setNoticeError,
 }: BottomAreaProps): React.JSX.Element {
-  const { allTagNames, connected, noteEntries, inTrash, sortLabelStr, pending } = view;
+  const { allTagNames, connected, word, noteEntries, inTrash, sortLabelStr, pending } = view;
   const blogLine = selectedEntry ? blogStatusLine(loadBlogSend(dataRoot(), String(selectedEntry.id))) : null;
   // T293: the checklist-item prompt state is owned here and published to the
   // module cell App.tsx reads via useItemAsk() (see itemAskRef above).
@@ -277,8 +277,8 @@ export function BottomArea({
               {copyResult?.noteId === selectedEntry.id ? (copyResult.ok ? ' (copied)' : ' (copy failed)') : ''}
             </Text>
           ) : null}
-          <KeyHints context={tagsFocused ? 'tags' : inTrash ? 'trash' : 'list'} width={width} />
-          <StatusBar connected={connected} count={noteEntries.length} width={width} label={inTrash ? (sortLabelStr && sortLabelStr !== 'sort: modified' ? 'trash  ' + sortLabelStr : 'trash') : (sortLabelStr && sortLabelStr !== 'sort: modified' ? sortLabelStr : undefined)} pending={pending} />
+          <KeyHints context={tagsFocused ? 'tags' : inTrash ? 'trash' : 'list'} width={width} pin={selectedEntry ? (selectedEntry.note.systemTags.includes('pinned') ? 'Unpin' : 'Pin') : undefined} />
+          <StatusBar connected={connected} word={word} count={noteEntries.length} width={width} label={inTrash ? (sortLabelStr && sortLabelStr !== 'sort: modified' ? 'trash  ' + sortLabelStr : 'trash') : (sortLabelStr && sortLabelStr !== 'sort: modified' ? sortLabelStr : undefined)} pending={pending} />
         </>
       )}
     </>

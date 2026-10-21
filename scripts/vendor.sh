@@ -33,8 +33,9 @@ if [[ ${1:-} == --diff ]]; then
   for f in "${FILES[@]}"; do
     git -C "$WORK/up" diff --stat "$UPSTREAM_COMMIT" trunk -- "$f" | tail -1
   done
-  git -C "$WORK/up" diff "$UPSTREAM_COMMIT" trunk -- "${FILES[@]}" > "$ROOT/.loop/upstream.diff" || true
-  echo "Full diff written to .loop/upstream.diff"; rm -rf "$WORK"; exit 0
+  mkdir -p "$ROOT/dist"
+  git -C "$WORK/up" diff "$UPSTREAM_COMMIT" trunk -- "${FILES[@]}" > "$ROOT/dist/upstream.diff" || true
+  echo "Full diff written to dist/upstream.diff"; rm -rf "$WORK"; exit 0
 fi
 git -C "$WORK/up" checkout -q "$UPSTREAM_COMMIT"
 for f in "${FILES[@]}"; do

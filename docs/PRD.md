@@ -29,7 +29,7 @@ The sync engine, data model, search parser and note utilities are vendored from 
 Omarchy users who already use Simplenote on macOS/iOS/Android and want the same notes on Linux without Electron.
 
 ## 5. Functional requirements
-Each FR maps to an eval in `docs/EVALS.md` and one or more tasks in `TASKS.md`.
+Each FR maps to an eval in `docs/EVALS.md` and the tracked issues that implement it.
 
 Auth
 - FR-1  Login with email + emailed code (`POST app.simplenote.com/account/request-login`, then `complete-login` → `sync_token`).

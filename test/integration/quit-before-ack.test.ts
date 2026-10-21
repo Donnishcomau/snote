@@ -284,6 +284,15 @@ describe('T523 a change applied just before quit is not applied twice', () => {
     filters.holdReplies.on = false;
     const receivedAtRestart = server.received.length;
     const a = openA(dir, server.url);
+    // F186: wait for the restart's catch-up (`0:cv:`) request and the
+    // beat it needs, so the wait below evaluates after the catch-up
+    // echo has arrived rather than before it.
+    await waitFor(
+      () => server.received.slice(receivedAtRestart).some((m) => m.startsWith('0:cv:')),
+      8000,
+      "the restart's catch-up (0:cv:) request"
+    );
+    await new Promise((r) => setTimeout(r, 300));
     // The test's own `0:c:` frames go client -> server (server.received);
     // holdReplies only drops server -> client sends, so this clause is
     // unaffected by releasing the replies.
@@ -366,6 +375,13 @@ describe('T523 a change applied just before quit is not applied twice', () => {
     filters.holdReplies.on = false;
     const receivedAtRestart = server.received.length;
     const r = openA(dir, server.url);
+    // F186: same catch-up wait as in line 1.
+    await waitFor(
+      () => server.received.slice(receivedAtRestart).some((m) => m.startsWith('0:cv:')),
+      8000,
+      "the restart's catch-up (0:cv:) request"
+    );
+    await new Promise((r2) => setTimeout(r2, 300));
     const want = () =>
       serverContent(server, 'n2') === 'two\nMK' &&
       localContent(r, 'n2') === 'two\nMK' &&

@@ -1,5 +1,6 @@
 node_modules/
 dist/
+# export: drop next line
 .loop/
 *.tgz
 .env
@@ -8,3 +9,4 @@ dist/
 
 # machine-specific paths for the shared agent skills (agent-skills bin/init-project)
 .claude/skill-context/local.md
+.claude/skill-context/typesafe/spool/

@@ -1,3 +1,4 @@
+// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-09-23).
 import type { Client } from 'simperium';
 
 import * as S from '../../';
@@ -5,8 +6,9 @@ import * as S from '../../';
 export const start = (client: Client, { dispatch, getState }: S.Store) => {
   let lastMessageAt = -Infinity;
 
-  client.on('message', () => {
+  client.on('message', (data: string) => {
     lastMessageAt = Date.now();
+    if (!/^\d+:/.test(data)) return; // OMARCHY: a bare `h:` heartbeat reply is not proof of a session (#79)
     if (getState().simperium.connectionStatus !== 'green') {
       dispatch({ type: 'CHANGE_CONNECTION_STATUS', status: 'green' });
     }
