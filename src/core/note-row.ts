@@ -20,7 +20,7 @@ export function noteRow(note: Note, width: number, query?: string): NoteRow {
   // NoteRow keeps the field and NoteList still renders it (always empty).
   const marker = '';
 
-  const rows = wrapLines(preview, width - 2);
+  const rows = wrapLines(preview, width - 4);
   const previewLines = rows
     .slice(0, 2)
     .map(r => r.text)

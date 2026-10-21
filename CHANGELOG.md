@@ -3,30 +3,126 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
-## 0.2.7
+## 0.2.8
 
-Your saved notes are not changed by the upgrade.
+Data-safety fixes for typing, pasting and restarts, a more careful
+update path, and clearer lists and status words. Your saved notes are
+not changed by the upgrade. Releases are not signed yet (see Known
+issues).
 
 ### Fixed
 
-- Sync works again. Since about 9 October the sync server refuses
-  connections that do not name the app, so snote stayed offline and
-  retried forever, leaving a connection open on each try. snote now
-  sends `snote/<version>` when it connects (nothing else) and closes a
-  refused connection.
-- A note written in the editor is no longer lost when the editor ends
-  with an error or snote stops before saving. The editor's file is kept
-  in a private folder in your account's data folder until the note is
-  saved, brought back as a new note on the next start, and removed at
-  logout (only snote's own files).
+- Fast typing or a paste right after a key such as `i` or `/` no longer
+  runs list commands on the selected note. When several keys arrive in
+  one read, only the first acts as a command; the rest go to the text
+  box it opened, never to a yes/no question, and the notice line says
+  `Several keys at once: only the first was used`. A yes/no question,
+  such as sending a note to your blog or logging out, is answered only
+  by a single key. Ctrl+C bunched with other keys no longer quits snote.
+- Restarts keep more of your changes:
+  - A pin, trash, tag or untag made just after start is no longer undone
+    when an offline edit syncs.
+  - Tags changed on another device are no longer lost when an offline
+    edit syncs after a restart.
+  - Undoing an edit just after a restart is no longer lost when the
+    server confirms the edit you made before quitting.
+  - A change made just after a restart no longer makes the change you
+    made before quitting land twice, and a second save waiting behind an
+    unconfirmed one lands once.
+  - A note deleted forever just after a restart stays deleted.
+- When the editor ends with an error while you edit an existing note,
+  the next start puts the kept text back into that note if the note
+  still holds the text the edit began with. Otherwise it comes back as a
+  new note, as before, and the notice says why. A kept file larger than
+  1 MiB is left on disk, untouched, and a notice says so. The
+  "restored" notice no longer looks like an error.
+- Opening History (`h`) on a note with a damaged version no longer
+  crashes snote. A version with no usable date reads `unknown date`, and
+  a version without text is left out.
+- The status bar no longer sits on `[offline]` with no reason. It reads
+  `[connecting]` before the first answer, `[stale]` when the connection
+  is open but silent, and `[offline]` when it is closed. If the sync
+  server keeps ignoring the sign-in, the notice line reads
+  `sync server ignored sign-in, retrying (attempt N)`. Pressing `r`
+  while not connected says `sync requested`, not `synced`.
+- When the server signs you out, snote now closes the old connection
+  instead of leaving it open.
+- A preview that holds wide characters (Chinese, Japanese, Korean or
+  emoji) stays inside the list column.
+- In Help at 70 columns by 35 rows, a description no longer touches the
+  next key.
+- A very large note of non-ASCII text is refused for inline edit
+  quickly, without the time and memory it took before.
+- Crash reports (`snote --report`) keep common error codes such as
+  `ENOSPC` and `EAI_AGAIN`, so they are easier to read. They are also
+  stricter about what they include: only the fields snote writes itself
+  are used, an upper-case code snote does not know is hidden like a
+  lower-case one, and the lines under `Caused by:` are cut.
+
+### Changed
+
+- Note titles in the list are bold. The preview lines are indented under
+  the title.
+- The footer shows the pin key: `p Pin`, or `p Unpin` when the selected
+  note is pinned.
+- The version you are running is shown in the app: on the first line of
+  Help, and at the right end of the status line when the terminal is 80
+  columns or wider.
+- snote tells you about a new version while it is open. A line reading
+  `Update available: <running> -> <new>` appears above the panes until
+  you press Escape in the plain list, which hides it for that version.
+  `SNOTE_UPDATE_CHECK=off` turns the check off.
+- The check for a new version asks GitHub at most once a day, also
+  across restarts, instead of at every start. It remembers the answer
+  in a small file, `update-tag-check.json`, in snote's status folder.
+- The update step (`setup`) is safer. It stops with
+  `snote is running: quit it and run setup again` instead of replacing
+  the build under a running snote. It installs the new build beside the
+  old one and runs it once before switching; if that fails, the old
+  build stays and it says `update failed: kept <version>`.
+  `setup --rollback` brings the previous build back. It touches nothing
+  in your data folder.
+- When a release carries a `SHA256SUMS` file, `setup` checks every file
+  against it first and, if one differs, stops with
+  `update refused: the download could not be verified`.
+
+### Known issues
+
+- Rare restart cases can still lose or double a change. After a restart
+  that re-downloads every note, a note deleted forever can come back, and
+  an edit can appear twice (text is duplicated, not lost). An edit that
+  only moves lines can be dropped, and so can an untouched line when
+  another device moved a line you deleted offline. In rare timing cases
+  an edit made around a restart can be lost. If you restart and see a
+  difference in a note, check it in History (`h`).
+- When the server signs you out, snote deletes the account's folder,
+  including changes not yet synced and kept editor text.
+- A restored editor draft can, rarely, be cut short.
+- Two devices adding text to one note within about a second once
+  produced a garbled note on the real service. It has not been seen
+  again. Pressing `d` to trash a note was once ignored on the real
+  service. It has not been seen again.
+- The status can show `[offline]` for a moment after a save, even though
+  the edit arrives once.
+- Releases are not signed yet. Signature checks are not part of 0.2.8.
+- The bar's update prompt can reinstall the version you already have
+  when the plugin has not been updated first. Run
+  `omarchy plugin update io.github.donnishcomau.snote-simplenote` before
+  clicking the bar.
+
+## 0.2.7
+
+A small release. Your saved notes are not changed by the upgrade.
+
+### Fixed
+
 - snote no longer keeps old versions of your notes in memory. The list
   remembered the title and preview of every version of a note it had
   shown, so a long session with a shared note that someone else keeps
   editing used memory without limit. It now keeps them only while the
   note itself is in the list, and a note whose text changed always
   shows its newest title. What you see and what is saved are the same
-  as before. A build check now fails if any
-  unbounded cache keyed by note text is added again.
+  as before.
 - Opening a note's history no longer keeps old versions in memory for
   the rest of the session. They are released when you close history,
   and opening it again shows them again.

@@ -17,7 +17,8 @@ export function revisionsOf(state: State, noteId: EntityId | null): Revision[] {
   }
   const result: Revision[] = [];
   revisions.forEach((note, version) => {
-    result.push({ version, note });
+    // F244: a revision whose text is not a string cannot be shown or restored.
+    if (typeof note?.content === 'string') result.push({ version, note });
   });
   result.sort((a, b) => b.version - a.version);
   return result;
@@ -25,10 +26,12 @@ export function revisionsOf(state: State, noteId: EntityId | null): Revision[] {
 
 export function revisionLabel(rev: Revision): string {
   const title = sanitizeForTerminal(noteTitleAndPreview(rev.note).title);
-  const dateStr = new Date(rev.note.modificationDate * 1000)
-    .toISOString()
-    .slice(0, 16)
-    .replace('T', ' ');
+  // F244: a date that is not a finite number of seconds, or beyond what Date
+  // can hold, would throw in toISOString() during render.
+  const when = new Date(Number(rev.note.modificationDate) * 1000);
+  const dateStr = Number.isNaN(when.getTime())
+    ? 'unknown date'
+    : when.toISOString().slice(0, 16).replace('T', ' ');
   return `v${rev.version}  ${dateStr}  ${title}`;
 }
 

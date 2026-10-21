@@ -30,6 +30,18 @@ describe('help cut', () => {
     expect(frame).not.toContain('Toggle rendered markd');
   });
 
+  it('1: WHEN Help renders at 70x35 THEN every description is separated from the next key by at least one space', () => {
+    const frame = frameAt(70, 35);
+    expect(frame).not.toContain('draft a');
+    expect(frame).toContain('Send to blog as dra…');
+  });
+
+  it('2: WHEN Help renders at 100x40 THEN it looks the same as before: the blog row shows its full description with no ellipsis', () => {
+    const frame = frameAt(100, 40);
+    expect(frame).toContain('b'.padEnd(8) + '  ' + 'Send to blog as draft');
+    expect(frame).not.toContain('Send to blog as dra…');
+  });
+
   it('2: WHEN Help renders at 80x24 THEN the frame contains `Toggle rendered markdown pr…` and `Edit inline (built-in edito…` and not `markdown pre /`', () => {
     const frame = frameAt(80, 24);
     expect(frame).toContain('Toggle rendered markdown pr…');

@@ -91,7 +91,9 @@ function writeCreatingInstaller(record: string): string {
   writeFileSync(
     installer,
     '#!/bin/sh\nprintf \'%s\\n\' "$@" >> "$SNOTE_INSTALLER_RECORD"\n' +
-      'printf \'#!/bin/sh\\necho v22.1.0\\n\' > "$SNOTE_NODE"\n' +
+      'printf \'#!/bin/sh\\nif [ "$1" = --version ]; then echo v22.1.0; exit 0; fi\\nexec ' +
+      process.execPath +
+      ' "$@"\\n\' > "$SNOTE_NODE"\n' +
       'chmod 755 "$SNOTE_NODE"\n'
   );
   chmodSync(installer, 0o755);

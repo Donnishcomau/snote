@@ -3,7 +3,7 @@ import { Store } from 'redux';
 import { basename, dirname, join } from 'node:path';
 
 import type { State } from '../core/store';
-import { editInEditor, releaseDraftsAfterSave } from '../core/editor';
+import { editInEditor, expectNote, releaseDraftsAfterSave } from '../core/editor';
 import { selectEditor, isTerminalEditor, editorFinishHint } from '../core/editor-select';
 import { newNoteFields } from '../core/new-note';
 import { publishLink } from '../core/note-keys';
@@ -52,7 +52,7 @@ export function editSelectedNote(ctx: EditSelectedNoteCtx): void {
     const run = async () => {
       try {
         announceEditorIfGui();
-        result = await editor(selectedEntry.note.content ?? '');
+        expectNote(selectedEntry.id); result = await editor(selectedEntry.note.content ?? '');
       } catch (err) {
         editorError = err;
         editorFailed = true;
@@ -155,7 +155,7 @@ export function createNote(ctx: CreateNoteCtx): void {
   const run = async () => {
     try {
       announceEditorIfGui();
-      result = await editor('');
+      expectNote(null); result = await editor('');
     } catch (err) {
       editorError = err;
       editorFailed = true;
@@ -220,15 +220,15 @@ interface ForceSyncNowCtx {
 }
 
 /**
- * Fire a manual sync and flash "synced hh:mm" for 3 seconds (r key).
+ * Fire a manual sync and flash "synced hh:mm" (green) or "sync requested" (not connected) for 3 seconds (r key).
  */
 export function forceSyncNow(ctx: ForceSyncNowCtx): void {
   const { store, onForceSync, timerRef, setSyncedAt } = ctx;
   const fn = onForceSync ?? (store as { forceSync?: () => void }).forceSync;
   if (fn) fn.call(store);
   if (timerRef.current) clearTimeout(timerRef.current);
-  const hhmm = new Date().toTimeString().slice(0, 5);
-  setSyncedAt(hhmm);
+  const green = store.getState().simperium.connected; // #79: only a green connection may say "synced"
+  setSyncedAt(green ? 'synced ' + new Date().toTimeString().slice(0, 5) : 'sync requested');
   timerRef.current = setTimeout(() => {
     setSyncedAt(null);
     timerRef.current = null;

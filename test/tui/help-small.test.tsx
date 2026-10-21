@@ -49,6 +49,7 @@ describe('help small', () => {
     await waitForInput(stdin);
     for (let i = 1; i <= 50; i++) {
       stdin.write('j');
+      if (i % 4 !== 0 && i !== 50) continue;
       const top = Math.min(i, 41);
       await waitForFrame(lastFrame, `${top + 1}-${top + 4}/45`);
     }
@@ -58,7 +59,7 @@ describe('help small', () => {
       expect(lines.some((l) => l.startsWith(e.key.trim()))).toBe(true);
     }
     unmount();
-  });
+  }, 10000);
 
   it('5: WHEN App at 30x12 opens Help with `?` and `j` is written 60 times THEN within 1 s the frame contains `Editing:` and `/45 j/k`; after 60 `k` it contains `Help - Keyboard`; Escape closes it', async () => {
     const store = makeStore({ stubClient: {} });

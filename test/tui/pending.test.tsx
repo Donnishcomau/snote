@@ -52,7 +52,7 @@ function statusLine(frame: string | undefined): string {
 }
 
 describe('T83 Status bar shows changes waiting to be sent', () => {
-  it('1: WHEN the app is rendered with a plain stub store, seeded THEN the status line, trimmed, is exactly [offline] 4 notes and the frame does not contain pending', async () => {
+  it('1: WHEN the app is rendered with a plain stub store, seeded THEN the status line, trimmed, is exactly [connecting] 4 notes and the frame does not contain pending', async () => {
     const store = plainStore();
     seedStore(store);
 
@@ -63,7 +63,7 @@ describe('T83 Status bar shows changes waiting to be sent', () => {
     await new Promise((r) => setTimeout(r, 50));
 
     const frame = lastFrame() ?? frames.join('\n');
-    expect(statusLine(frame)).toBe('[offline] 4 notes');
+    expect(statusLine(frame)).toBe('[connecting] 4 notes');
     expect(frame).not.toContain('pending');
   });
 
@@ -119,7 +119,7 @@ describe('T83 Status bar shows changes waiting to be sent', () => {
     expect(frame2).toContain('5 pending');
   });
 
-  it('4: WHEN all 5 notes were submitted and acknowledged on the tracking store THEN the status line, trimmed, is exactly [offline] 4 notes', async () => {
+  it('4: WHEN all 5 notes were submitted and acknowledged on the tracking store THEN the status line, trimmed, is exactly [connecting] 4 notes', async () => {
     const store = trackingStore();
     seedStore(store);
 
@@ -145,7 +145,7 @@ describe('T83 Status bar shows changes waiting to be sent', () => {
     await new Promise((r) => setTimeout(r, 50));
 
     const frame = lastFrame() ?? frames.join('\n');
-    expect(statusLine(frame)).toBe('[offline] 4 notes');
+    expect(statusLine(frame)).toBe('[connecting] 4 notes');
   });
 
   it('5: WHEN CHANGE_CONNECTION_STATUS with status: green is dispatched on the seeded tracking store THEN the status line contains connected and 5 pending and does not contain offline', async () => {

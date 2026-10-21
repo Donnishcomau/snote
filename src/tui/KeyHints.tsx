@@ -54,10 +54,13 @@ export function visibleHints(entries: HintEntry[], width: number): HintEntry[] {
 interface KeyHintsProps {
   context: 'list' | 'tags' | 'trash' | 'editing';
   width: number;
+  /** #84: the pin hint label for the selected note in the list (`Pin` or `Unpin`); none shows no pin hint. */
+  pin?: 'Pin' | 'Unpin';
 }
 
-export function KeyHints({ context, width }: KeyHintsProps): React.JSX.Element {
-  const hints = visibleHints(hintsForContext(context), width);
+export function KeyHints({ context, width, pin }: KeyHintsProps): React.JSX.Element {
+  const base = hintsForContext(context);
+  const hints = visibleHints(context === 'list' && pin ? [...base.slice(0, -1), { key: 'p', label: pin }, ...base.slice(-1)] : base, width);
   return (
     <Box>
       {hints.map((h, i) => (

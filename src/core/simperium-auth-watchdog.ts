@@ -27,6 +27,8 @@
  * `simperium-*-fix` modules.
  */
 
+import { publishProblem } from './problem-signal';
+
 // OMARCHY: boundary cast — the simperium client is an untyped EventEmitter.
 interface ClientLike {
   reconnect?: boolean;
@@ -64,6 +66,8 @@ export function installSimperiumAuthWatchdog(client: unknown, timeoutMs: number)
   let timer: ReturnType<typeof setTimeout> | undefined;
   let inits = 0;
   let auths = 0;
+  // #79: consecutive connections whose login was ignored; an `auth:` reply resets it.
+  let ignoredLogins = 0;
 
   const clear = (): void => {
     if (timer !== undefined) {
@@ -86,6 +90,10 @@ export function installSimperiumAuthWatchdog(client: unknown, timeoutMs: number)
       if (c.reconnect === false) {
         return; // ended by the app; never resurrect a finished client
       }
+      ignoredLogins++;
+      if (ignoredLogins >= 2) {
+        publishProblem(`sync server ignored sign-in, retrying (attempt ${ignoredLogins})`);
+      }
       // The login was ignored: close the socket once. 'disconnect' fires on
       // the socket's onclose, clears any state here, and the library's
       // ReconnectionTimer sends fresh inits on the next attempt.
@@ -104,6 +112,7 @@ export function installSimperiumAuthWatchdog(client: unknown, timeoutMs: number)
   c.on('message', (data) => {
     if (typeof data === 'string' && AUTH.test(data)) {
       auths++;
+      ignoredLogins = 0;
     }
   });
 

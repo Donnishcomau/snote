@@ -3,6 +3,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import { secureWriteFileSync } from './secure-fs';
+import { compareVersions } from './update-state';
 
 /**
  * Update notice U2 core (T386): ask the plugin clone's origin once a
@@ -42,6 +43,7 @@ export type GitRunner = (
 
 const GIT_TIMEOUT_MS = 5000;
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const TAG_CACHE_FILE = 'update-tag-check.json';
 
 interface UpdateCheckCache {
   checkedAt: number;
@@ -62,7 +64,32 @@ function gitEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     }
   }
   out.GIT_TERMINAL_PROMPT = '0';
+  out.GIT_CONFIG_NOSYSTEM = '1';
   return out;
+}
+
+/**
+ * F235 (SECURITY MUST 6): the config flags every remote git call carries,
+ * so a configured credential helper, hook path or fsmonitor never runs from
+ * the background check and only https (or a local path) is spoken. They
+ * come before the subcommand, as git requires.
+ */
+const REMOTE_GIT_FLAGS = [
+  '-c', 'credential.helper=',
+  '-c', 'core.hooksPath=/dev/null',
+  '-c', 'core.fsmonitor=false',
+  '-c', 'protocol.allow=never',
+  '-c', 'protocol.https.allow=always',
+];
+
+/**
+ * The flags for one remote call. A local absolute-path origin (reached only
+ * in tests; production refuses it) is the `file` protocol, which
+ * `protocol.allow=never` would block, so it alone gets
+ * `protocol.file.allow=always`. An https origin gets exactly MUST 6's set.
+ */
+function remoteGitFlags(url: string): string[] {
+  return url.startsWith('/') ? [...REMOTE_GIT_FLAGS, '-c', 'protocol.file.allow=always'] : REMOTE_GIT_FLAGS;
 }
 
 /**
@@ -313,7 +340,7 @@ export async function checkRemoteUpdate(o: {
     }
     let res: { code: number | null; stdout: string };
     try {
-      res = await run(['ls-remote', url, 'HEAD'], {
+      res = await run([...remoteGitFlags(url), 'ls-remote', url, 'HEAD'], {
         cwd: '/',
         timeoutMs: GIT_TIMEOUT_MS,
         env: gitEnv(o.env),
@@ -361,5 +388,125 @@ export async function checkRemoteUpdate(o: {
     return { state: verdict };
   } catch {
     return { state: 'unknown' };
+  }
+}
+
+/**
+ * #66: the newest release the clone's origin tags, as `x.y.z`, or null.
+ * One `git ls-remote --tags <url>` on the same rules as
+ * `checkRemoteUpdate` (url read from `.git/config` without git, `https://`
+ * or an absolute path only, cwd `/`, no `GIT_*` variables, 5 s timeout).
+ * Only a tag named exactly `v<digits>.<digits>.<digits>` with an optional
+ * `.<digits>` (1 to 6 digits each) counts; the `^{}` line of an annotated tag is the same tag, and
+ * every other line the remote sends is ignored. Opted out, no clone
+ * (no `.git/config` to read), offline, timed out or failing git: null.
+ * F234: with a `stateDir`, a fresh `update-tag-check.json` (under 24 h, stamped
+ * with the check's start time) answers with no git call, a success writes it 0600, a failure writes
+ * nothing. Never throws.
+ */
+const RELEASE_TAG_LINE = /^([0-9a-f]{1,64})\s+refs\/tags\/v(\d{1,6}\.\d{1,6}\.\d{1,6}(?:\.\d{1,6})?)(\^\{\})?$/;
+
+const TAG_VERSION = /^\d{1,6}\.\d{1,6}\.\d{1,6}(?:\.\d{1,6})?$/;
+const TAG_CACHE_MAX_BYTES = 4096;
+
+/** F234: a newest release tag and the commit it names. */
+export interface RemoteVersion {
+  version: string;
+  commit: string;
+}
+
+/**
+ * F234: the tag-check cache, a sibling of `update-check.json` (its reader
+ * and its tests pin that file to `{checkedAt, remoteHead}`). Anything not
+ * exactly a fresh, past `checkedAt`, a validated version and a hex commit
+ * is no cache.
+ */
+function readTagCache(file: string, now: number): RemoteVersion | null {
+  try {
+    if (fs.statSync(file).size > TAG_CACHE_MAX_BYTES) {
+      return null;
+    }
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf8')) as Record<string, unknown> | null;
+    if (
+      parsed !== null &&
+      typeof parsed === 'object' &&
+      typeof parsed.checkedAt === 'number' &&
+      Number.isFinite(parsed.checkedAt) &&
+      parsed.checkedAt <= now &&
+      now - parsed.checkedAt < CACHE_TTL_MS &&
+      typeof parsed.version === 'string' &&
+      TAG_VERSION.test(parsed.version) &&
+      typeof parsed.commit === 'string' &&
+      isValidCommitId(parsed.commit)
+    ) {
+      return { version: parsed.version, commit: parsed.commit };
+    }
+  } catch {
+    // unreadable or malformed cache counts as no cache
+  }
+  return null;
+}
+
+export async function checkRemoteVersion(o: {
+  cloneDir: string;
+  env: NodeJS.ProcessEnv;
+  run?: GitRunner;
+  /** Where the 24 h cache lives; without it nothing is cached or written. */
+  stateDir?: string;
+  now?: () => number;
+}): Promise<RemoteVersion | null> {
+  if (!updateCheckEnabled(o.env)) {
+    return null;
+  }
+  const clock = o.now ?? Date.now;
+  // checkedAt is the moment the check STARTED, so the 24 h timer of an open
+  // snote (scheduled right after the start) finds the cache exactly 24 h old.
+  const startedAt = clock();
+  const cacheFile = o.stateDir === undefined ? null : path.join(o.stateDir, TAG_CACHE_FILE);
+  if (cacheFile !== null) {
+    const cached = readTagCache(cacheFile, startedAt);
+    if (cached !== null) {
+      return cached;
+    }
+  }
+  const url = readOriginUrl(o.cloneDir);
+  if (url === null || !isSafeRemoteUrl(url)) {
+    return null;
+  }
+  try {
+    const res = await (o.run ?? defaultGitRunner)([...remoteGitFlags(url), 'ls-remote', '--tags', url], {
+      cwd: '/',
+      timeoutMs: GIT_TIMEOUT_MS,
+      env: gitEnv(o.env),
+    });
+    if (res.code !== 0) {
+      return null;
+    }
+    let newest: RemoteVersion | null = null;
+    for (const line of res.stdout.split('\n')) {
+      const match = RELEASE_TAG_LINE.exec(line.trim());
+      if (match === null) {
+        continue;
+      }
+      const [, commit, version, peeled] = match;
+      const cmp = newest === null ? 1 : compareVersions(version, newest.version);
+      if (cmp > 0 || (cmp === 0 && peeled !== undefined)) {
+        newest = { version, commit };
+      }
+    }
+    if (newest !== null && cacheFile !== null) {
+      try {
+        fs.mkdirSync(o.stateDir as string, { recursive: true });
+        secureWriteFileSync(
+          cacheFile,
+          JSON.stringify({ checkedAt: startedAt, version: newest.version, commit: newest.commit }) + '\n'
+        );
+      } catch {
+        // a cache we cannot write is simply no cache next time
+      }
+    }
+    return newest;
+  } catch {
+    return null;
   }
 }

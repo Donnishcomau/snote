@@ -26,9 +26,9 @@ import {
   use_stdin_default,
   use_stdout_default,
   use_window_size_default
-} from "./chunks/chunk-MRAMNRR7.js";
-import "./chunks/chunk-CT7MGM3M.js";
-import "./chunks/chunk-GGREWLKO.js";
+} from "./chunks/chunk-GF6EF3C5.js";
+import "./chunks/chunk-TUNEPWD3.js";
+import "./chunks/chunk-U3ANDNGC.js";
 import "./chunks/chunk-SRSFEH3H.js";
 export {
   Box_default as Box,

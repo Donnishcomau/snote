@@ -17,10 +17,14 @@ describe('.gitignore — secrets', () => {
   });
 
 
-    expect(lines[0]).toBe('node_modules/');
-    expect(lines[1]).toBe('dist/');
+    const kept: string[] = [];
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i] === '# export: drop next line') { i++; continue; }
+      kept.push(lines[i]);
+    }
+    expect(kept.slice(0, 3)).toEqual(['node_modules/', 'dist/', '*.tgz']);
+    // export: drop next line
 
-    expect(lines[3]).toBe('*.tgz');
   });
 
   it('3: git check-ignore -q .env exits 0', () => {

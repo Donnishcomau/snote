@@ -1,35 +1,16 @@
 # snote 0.2.7 release notes
 
-Sync works again, text you write in the editor is kept until the note
-is saved, and snote stays light in long sessions. Your saved notes are not
-changed by the upgrade.
+A small release that keeps snote light in long sessions. Your saved
+notes are not changed by the upgrade.
 
 ## What's new
-
-**Sync works again.** Since about 9 October, Simplenote's sync server
-has refused connections from apps that do not say who they are, and
-snote did not, so every earlier version stayed at `[offline]` and
-nothing synced. snote now names itself (`snote/0.2.7`) when it
-connects, and nothing else is added to the connection. Your notes
-on this machine sync again as soon as you start the new version.
-
-**Text you write in the editor is kept until the note is saved.** snote used to
-delete the editor's file as soon as you left the editor, so if the
-editor ended with an error, or snote stopped before saving, the text
-was gone. snote now keeps the editor's file in a private folder inside
-your account's data folder until the note is saved. If the editor ends
-with an error, the message tells you where the file is. If snote stops
-before saving, it brings the text back as a new note the next time it
-starts and tells you so; it never changes an existing note. Logging out
-removes these files, and only snote's own.
 
 **Less memory in long sessions.** snote used to remember the title and
 preview of every version of a note it had shown. If you share a note
 with someone who keeps editing it, each new version stayed in memory
 for as long as snote ran. snote now keeps a note's title and preview
 only while that note is in your list, so memory no longer grows as
-shared notes are edited. A check in the build now fails if any cache
-keyed by note text without a limit comes back. A note whose text changed always shows its newest title.
+shared notes are edited. A note whose text changed always shows its newest title.
 What you see and what is saved are the same as before, and the list is
 no slower.
 
@@ -84,8 +65,7 @@ keeps the old widget until the shell restarts.
 ## Thanks
 
 Thanks to the Omarchy marketplace review, which found the memory growth
-and reported it clearly, and to everyone who noticed snote had stopped
-syncing.
+and reported it clearly.
 
 snote reuses the Simperium sync client and the Redux sync layer from
 Automattic's open-source `simplenote-electron` project. See `NOTICE` for full

@@ -7,6 +7,7 @@ import { blogOriginFromEnv } from '../core/blog-config';
 import { sendNoteToBlog } from '../core/blog-send';
 import { loadBlogSend } from '../core/blog-sent';
 import { dataRoot } from '../core/data-root';
+import { useReadGate } from './read-gate';
 
 export interface BlogSendAskActions {
   onYes: () => void;
@@ -91,6 +92,9 @@ export function useBlogSendAskState(
     setTick((t) => t + 1);
   };
 
+  // T538R-4 (F227, F224): the send/resend question is a y/n confirm of the
+  // read gate, so only a read that is exactly one key answers it
+  useReadGate({ confirm: phase?.kind === 'send' || phase?.kind === 'resend' });
   // Always registered (see the doc comment above): only acts while `phase`
   // is `send` or `resend`, a no-op otherwise.
   useInput((input, key) => {

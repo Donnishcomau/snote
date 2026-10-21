@@ -9,6 +9,7 @@ import { caretMove } from './caretMoves';
 import { Divider } from './Divider';
 import { previewColWidth } from './Preview';
 import { remapEdit, standInText } from './standin';
+import { useReadGate } from './read-gate';
 
 interface InlineEditorProps {
   note: Note | null;
@@ -129,6 +130,7 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
   const footerRows = Math.max(1, Math.ceil(FOOTER_HINT.length / Math.max(1, colWidth)));
   const [cursorPosition, setCursorPosition] = useState<[number, number]>(() => endPosition(base));
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  useReadGate({ confirm: confirmDiscard }); // T538R: only a one-key read answers (F224)
   const ref = useRef<TextAreaHandle>(null);
 
   // T412: the TextArea only ever sees stand-in text (control/bidi/zero-width

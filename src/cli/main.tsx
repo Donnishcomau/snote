@@ -10,7 +10,8 @@ import { render } from 'ink';
 
 // T214 — one new import.
 import { crashReport } from '../core/crash-report';
-import { redactStoredError, redactStoredKeys, isLockError } from '../core/crash-redact';
+import { isLockError } from '../core/crash-redact';
+import { storedCrashBundle } from '../core/crash-bundle';
 // T291 — data files private: mkdirs 0o700, files 0o600.
 import { secureMkdir, secureWriteFileSync } from '../core/secure-fs';
 // T232 — the crash bundle carries a redacted session snapshot (T230).
@@ -26,7 +27,8 @@ import { FileGhostStore } from '../core/ghost-store';
 // save debounce) is added back from the ghost file at start-up.
 import { restoreNotesFromGhosts } from '../core/ghost-restore';
 // #65: editor drafts left by a failed editor or a crash come back as notes.
-import { recoverDrafts, setDraftsDir } from '../core/editor-drafts';
+import { draftsDir, recoverDrafts, recoveryNotice, setDraftsDir } from '../core/editor-drafts';
+import type { TooLargeDraft } from '../core/editor-drafts';
 // T85 — re-queue notes newer than their ghost on start-up.
 import { requeueUnsynced } from '../core/requeue';
 // T493 — the record of local changes the server never confirmed: kept and
@@ -40,7 +42,7 @@ import { trackOwnEchoes } from '../core/own-echoes';
 import { dropTombstonedNotes, resendDeletions, trackDeletions } from '../core/tombstones';
 import { parseCli, checkReport, splitNewFlag, splitNotifyFlag, USAGE } from './args';
 // T443 — a fire-and-forget failure that cannot reach the screen shows on the notice line.
-import { problemText, publishProblem } from '../core/problem-signal';
+import { problemText, publishInfo, publishProblem } from '../core/problem-signal';
 // T358 — the bar widget's status file: watch, path, and removal on logout.
 import {
   statusDir,
@@ -55,7 +57,7 @@ import {
   emitNewRequest,
 } from '../core/new-request';
 // T323 — `--version`/`-v` prints `snote <version>` from package.json.
-import { VERSION } from './version';
+import { VERSION } from './version'; import { setShownVersion } from '../core/shown-version';
 import { envReport } from './env-check';
 import { checkEndpoints } from '../core/endpoint-check';
 // T156 — one data folder per account: accountDir + prepareDataDir.
@@ -69,6 +71,7 @@ import {
 import { setDataRoot } from '../core/data-root';
 // T390 — start-up update checks (local first, then the daily remote one).
 import { runUpdateChecks } from '../core/update-run';
+import { startUpdateWatch } from '../core/update-watch';
 import { updateCheckEnabled } from '../core/update-check';
 // T303 — one snote process per account dir: stale locks reclaimed, live ones refuse.
 import { acquireInstanceLock } from '../core/instance-lock';
@@ -113,8 +116,9 @@ export function buildStore(
   // built: restoreNotesFromGhosts and requeueUnsynced both consult it, and
   // it is only ever written by trackUnsynced below, never by the 500 ms save.
   const unsynced = loadUnsynced(opts.dataDir);
+  const preloadedState = dropTombstonedNotes(opts.dataDir, loadState(opts.dataDir));
   const store = makeStore({
-    preloadedState: dropTombstonedNotes(opts.dataDir, loadState(opts.dataDir)),
+    preloadedState,
     sync: {
       appId: opts.appId,
       token: auth.token,
@@ -154,7 +158,9 @@ export function buildStore(
   // of a change sent before the last quit reads as this client's own
   // confirmation instead of being applied a second time. Created before
   // the first start-up save can run.
-  const ownEchoes = trackOwnEchoes(store.client, opts.dataDir);
+  // F206 — it also reads each note as loaded from state.json, to tell a
+  // change made in this session from the echo of one sent before the quit.
+  const ownEchoes = trackOwnEchoes(store.client, opts.dataDir, preloadedState?.data?.notes);
   const startSaving = persistOnChange(store, opts.dataDir);
   // #65: editor drafts live in this account's folder, under its instance
   // lock. A draft no note holds (the editor failed, or snote died before
@@ -162,10 +168,10 @@ export function buildStore(
   // restore above, so a note the ghost holds is not added twice.
   setDraftsDir(path.join(opts.dataDir, 'drafts'));
   setTimeout(() => {
-    const restored = recoverDrafts(store);
-    if (restored > 0) {
-      publishProblem(`Restored ${restored} ${restored === 1 ? 'note' : 'notes'} from an unfinished editor session`);
-    }
+    const tooLarge: TooLargeDraft[] = [];
+    const report = { changed: 0 };
+    const notice = recoveryNotice(recoverDrafts(store, draftsDir(), tooLarge, report), tooLarge, report.changed);
+    if (notice !== null) publishInfo(notice); // #89: not a failure, so not the error style
   }, 0);
   // T493 — keep the unsynced record fresh: written at once whenever the
   // pending set changes, never by the debounced state.json save.
@@ -209,7 +215,8 @@ export function buildStore(
       () => whenCatchUpApplied(store.client, 'note'),
       // T493 — a change the record says the server never confirmed is
       // re-sent even when the ghost's date is newer.
-      unsynced
+      unsynced,
+      preloadedState?.data?.notes
     ).then(
       // T502 — the start-up re-send is over: a carried entry that never went
       // pending with it was found equal to its ghost, so it leaves the record.
@@ -220,7 +227,9 @@ export function buildStore(
     );
   // T523 — once the start-up catch-up is applied, entries the record
   // loaded whose echo never came leave it (they were never owed).
-  void whenCatchUpApplied(store.client, 'note').then(
+  // #27 — only a catch-up that was really applied, not the 4 s fallback: an
+  // echo that comes later must still be recognised.
+  void whenCatchUpApplied(store.client, 'note', false).then(
     () => ownEchoes.settle(),
     () => ownEchoes.settle()
   );
@@ -293,17 +302,7 @@ async function writeReport(log: (text: string) => void, dataDir: string): Promis
       const raw = fs.readFileSync(path.join(dir, crashes.at(-1)!), 'utf8');
       // The file may predate redaction: its error goes through the same
       // redaction before it is re-shared.
-      const old = JSON.parse(raw) as Record<string, unknown>;
-      const oldSession = old.session;
-      // S5d-01: a file without the `keysMasked` marker is from 0.2.3 or older,
-      // which stored inline-editor typing one character per entry: drop its keys.
-      const session =
-        typeof oldSession === 'object' && oldSession !== null
-          ? (oldSession as { keysMasked?: unknown }).keysMasked === true
-            ? { ...(oldSession as Record<string, unknown>), keys: redactStoredKeys((oldSession as { keys?: unknown }).keys) }
-            : { ...(oldSession as Record<string, unknown>), keys: [], keysDropped: 'older version' }
-          : oldSession;
-      bundle = { ...old, error: redactStoredError(old.error, os.homedir()), session, source: 'crash' };
+      bundle = storedCrashBundle(JSON.parse(raw) as Record<string, unknown>, os.homedir());
     }
   } catch (err) {
     if ((err as { code?: string }).code !== 'ENOENT') {
@@ -391,7 +390,7 @@ export async function main(
 
   const dataDir = o.dataDir ?? defaultDataDir();
   // T408 — publish the resolved root so the blog sites read/write there.
-  setDataRoot(dataDir);
+  setDataRoot(dataDir); setShownVersion(VERSION);
   const appId = o.appId ?? APP_ID;
 
   if (o.help) {
@@ -473,6 +472,8 @@ export async function main(
         env: process.env,
         stateDir: statusDir(process.env),
       }).catch(() => {});
+      // #66 — keep checking every 24 h while snote stays open; the banner shows a newer release.
+      startUpdateWatch({ version: VERSION, home: os.homedir(), env: process.env, stateDir: statusDir(process.env) });
     }
     return built.store;
   };
@@ -510,8 +511,10 @@ export async function main(
       },
     }),
     // T402 — never take Ink's screen-reader output path (it skips the
-    // stage that drops OSC sequences).
-    { isScreenReaderEnabled: false }
+    // stage that drops OSC sequences). T538R-5: Ink's own exit on Ctrl+C is
+    // off; Root quits on Ctrl+C through the read gate, only when Ctrl+C is a
+    // read of its own.
+    { isScreenReaderEnabled: false, exitOnCtrlC: false }
   );
 
   // T214 — one shared crash handler: an error anywhere (React render, an

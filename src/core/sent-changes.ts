@@ -85,12 +85,17 @@ export function createSentChanges(dir: string): SentChanges {
   const loaded: SentRecord = loadSentChanges(dir);
   // Entries recorded by `sent` this session; they survive `settle`.
   const fresh: SentRecord = {};
+  // #28 — loaded entries a `sent` replaced, kept in memory until `settle`:
+  // `echoes` matches one only for an echo whose note has a stale change in
+  // flight (one the server rejects), never as a plain loaded entry.
+  const superseded: SentRecord = {};
 
   const current = (): SentRecord => ({ ...loaded, ...fresh });
 
   return {
     sent(id: string, ccid: string): void {
       fresh[id] = ccid;
+      if (loaded[id] !== undefined) superseded[id] = loaded[id];
       delete loaded[id];
       writeRecord(dir, current());
     },
@@ -107,6 +112,9 @@ export function createSentChanges(dir: string): SentChanges {
     settle(): void {
       for (const id of Object.keys(loaded)) {
         delete loaded[id];
+      }
+      for (const id of Object.keys(superseded)) {
+        delete superseded[id];
       }
       writeRecord(dir, current());
     },
@@ -133,8 +141,16 @@ export function createSentChanges(dir: string): SentChanges {
         if (typeof id !== 'string' || 'error' in change) {
           continue;
         }
-        const ccid = loaded[id];
-        if (ccid === undefined || inFlight[id]) {
+        // #28 — a change in flight from the echo's own source version is
+        // stale (the server already holds the echoed change and rejects it
+        // with 405): it does not block the echo, and the entry its `sent`
+        // replaced still matches. #93 (F226) — a remove in flight (it has no
+        // source version) does not block it either. Any other change in flight
+        // blocks it.
+        const flying = inFlight[id] as { sv?: unknown; o?: unknown } | undefined;
+        const stale = (typeof flying?.sv === 'number' && flying.sv === change.sv) || flying?.o === '-';
+        const ccid = flying ? (stale ? (loaded[id] ?? superseded[id]) : undefined) : loaded[id];
+        if (ccid === undefined) {
           continue;
         }
         const { ccids } = change;

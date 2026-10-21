@@ -46,6 +46,10 @@ bin_dir="$(realpath -m "$HOME/.local/bin")"
 plugin_dir="$data_home/omarchy-snote-plugin"
 app_dir="$plugin_dir/app"
 shim="$bin_dir/snote"
+prev_dir="$plugin_dir/app.prev"
+run_lock="$plugin_dir/run.lock"
+rolled_back_mark="$plugin_dir/rolled-back"
+checked_mark="$plugin_dir/checked"
 dist_dir="$src_dir/plugin-dist"
 # First line written into the shim so uninstall (and a future setup re-run)
 # can tell "ours" apart from some other file/symlink a user or another tool
@@ -108,6 +112,10 @@ assert_not_symlink() {
 }
 assert_not_symlink "the plugin data directory" "$plugin_dir"
 assert_not_symlink "the build directory" "$app_dir"
+assert_not_symlink "the previous build" "$prev_dir"
+assert_not_symlink "the run lock" "$run_lock"
+assert_not_symlink "the rolled-back mark" "$rolled_back_mark"
+assert_not_symlink "the checked mark" "$checked_mark"
 
 # Same reasoning for the shim path: the original script wrote it with a
 # plain `cat > "$shim"` redirect, which — just like the old delete-style
@@ -209,6 +217,89 @@ dev_env_installer() {
   return 1
 }
 
+# --- Never replace the build under a running snote (#67) -------------------
+# The shim setup writes holds a shared flock on $run_lock for snote's whole
+# life (the fd stays open across exec), so an exclusive non-blocking flock
+# here fails exactly while a snote started through that shim is running, and
+# a snote started while setup holds it waits in the shim until the swap is
+# done. The lock file is not snote's data folder: nothing here reads or
+# writes that. Processes started by an older shim (0.2.7, no lock) are found
+# by their command line instead: any process whose argument is this build's
+# cli.js. The lock stays held until setup exits (or closes fd 9 below).
+snote_proc_running() {
+  local f
+  for f in $(printf '%s\n' "$app_dir/cli.js" "$prev_dir/cli.js" | grep -alsF -f - /proc/[0-9]*/cmdline); do
+    if tr '\0' '\n' < "$f" 2>/dev/null | grep -qxF -e "$app_dir/cli.js" -e "$prev_dir/cli.js"; then
+      return 0
+    fi
+  done
+  return 1
+}
+acquire_run_lock() {
+  [ -x /usr/bin/flock ] || fail "flock is required but was not found at /usr/bin/flock"
+  assert_not_symlink "the run lock" "$run_lock"
+  ( umask 077; : >> "$run_lock" )
+  exec 9>> "$run_lock"
+  if ! /usr/bin/flock -n -x 9 || snote_proc_running; then
+    fail "snote is running: quit it and run setup again"
+  fi
+}
+
+# Leftover directories of a killed run (#67): app.XXXXXX (a stage),
+# app.failed.<pid> and app.rolledback.<pid> (a restore), check.XXXXXX (a start
+# check). Called with the exclusive lock held, so none of them can be live.
+# Only real directories directly in $plugin_dir whose names have exactly these
+# shapes are removed (six letters or digits, or a pid of digits only): a
+# symlink with such a name is left alone, so are app and app.prev, and nothing
+# outside $plugin_dir is looked at.
+clean_stage_leftovers() {
+  local d
+  for d in "$plugin_dir"/app.[A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9] \
+           "$plugin_dir"/check.[A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9] \
+           "$plugin_dir"/app.failed.[0-9]* "$plugin_dir"/app.rolledback.[0-9]*; do
+    case "${d##*.}" in ''|*[!A-Za-z0-9]*) continue ;; esac
+    case "$d" in "$plugin_dir"/app.failed.*|"$plugin_dir"/app.rolledback.*)
+      case "${d##*.}" in *[!0-9]*) continue ;; esac ;;
+    esac
+    if [ -d "$d" ] && [ ! -L "$d" ]; then rm -rf "$d"; fi
+  done
+}
+
+# Start check (#67): after the swap, before the shim is touched, the new build
+# must print its own version. It runs with an isolated environment: a temp
+# HOME and temp XDG_* directories (no token, no snote data folder), nothing
+# inherited from the caller, a 10 s limit where timeout exists.
+start_check_passes() {
+  local node_bin chk out limit=""
+  node_bin="$(find_node)" || return 1
+  [ -x /usr/bin/timeout ] && limit="/usr/bin/timeout 10"
+  chk="$(mktemp -d "$plugin_dir/check.XXXXXX")" || return 1
+  mkdir -p "$chk/home" "$chk/data" "$chk/config" "$chk/state" "$chk/cache"
+  out="$(env -i PATH=/usr/bin:/bin HOME="$chk/home" XDG_DATA_HOME="$chk/data" \
+    XDG_CONFIG_HOME="$chk/config" XDG_STATE_HOME="$chk/state" XDG_CACHE_HOME="$chk/cache" \
+    SNOTE_UPDATE_CHECK=off $limit "$node_bin" "$app_dir/cli.js" --version 2>/dev/null 9>&-)" || out=""
+  rm -rf "$chk"
+  [ "${out##* }" = "$source_version" ]
+}
+
+# The checked mark (#67): $plugin_dir/checked holds the VERSION of the build
+# whose start check passed. It lives in the 0700 plugin directory beside the
+# rolled-back mark (the build directory is renamed away and replaced, so a
+# mark inside it would not outlive the swap), is written with mktemp (0600)
+# and a rename, and is only ever written AFTER the start check passes. An
+# installed build is "current" only while this names its VERSION, so a setup
+# killed during the start check leaves no mark and the next run checks again.
+build_checked() {
+  [ -f "$checked_mark" ] && [ ! -L "$checked_mark" ] && [ "$(cat "$checked_mark")" = "$1" ]
+}
+write_checked_mark() {
+  local t
+  assert_not_symlink "the checked mark" "$checked_mark"
+  t="$(mktemp "$plugin_dir/.checked.XXXXXX")"
+  printf '%s\n' "$1" > "$t"
+  mv "$t" "$checked_mark"
+}
+
 # --check: used by BarWidget.qml to decide, without opening a terminal,
 # whether a click can launch straight away or needs to route through this
 # script's visible install path first. Exits 0 when the installed app's
@@ -216,8 +307,53 @@ dev_env_installer() {
 # otherwise (including "nothing installed yet" and "the symlink guard
 # above fired"). No node call, no side effects.
 if [ "${1:-}" = "--check" ]; then
-  [ -f "$app_dir/VERSION" ] && [ "$(cat "$app_dir/VERSION")" = "$source_version" ]
+  [ -f "$app_dir/VERSION" ] || exit 1
+  if [ "$(cat "$app_dir/VERSION")" = "$source_version" ] && build_checked "$source_version"; then exit 0; fi
+  # Rolled back from exactly the version this clone ships: still "current" (see --rollback).
+  [ -f "$rolled_back_mark" ] && [ ! -L "$rolled_back_mark" ] && [ "$(cat "$rolled_back_mark")" = "$source_version" ]
   exit $?
+fi
+
+# --rollback (#67): bring the previous build back. It refuses while snote runs
+# (the same lock and the same message as an install). app.prev becomes app and
+# the build it replaces is removed, so there is no second previous build.
+# The version rolled back from is written to $rolled_back_mark, so --check
+# keeps saying "current" while the clone still ships exactly that version:
+# the bar must not reinstall at once what the user just rolled back. An
+# install (by hand, or after the clone moves to another version) clears it.
+# Between the two renames the shim runs app.prev, which is the build wanted.
+if [ "${1:-}" = "--rollback" ]; then
+  [ -f "$prev_dir/cli.js" ] || fail "no previous build to roll back to"
+  acquire_run_lock
+  [ -f "$prev_dir/cli.js" ] || fail "no previous build to roll back to"
+  rolled_from=""
+  if [ -f "$app_dir/VERSION" ]; then
+    rolled_from="$(cat "$app_dir/VERSION")"
+  fi
+  if [ -n "$rolled_from" ]; then
+    mark_tmp="$(mktemp "$plugin_dir/.rolled-back.XXXXXX")"
+    printf '%s\n' "$rolled_from" > "$mark_tmp"
+    mv "$mark_tmp" "$rolled_back_mark"
+  fi
+  if [ -e "$app_dir" ]; then
+    assert_not_symlink "the build directory" "$app_dir"
+    gone_dir="${app_dir}.rolledback.$$"
+    mv "$app_dir" "$gone_dir"
+    mv "$prev_dir" "$app_dir"
+    # The keys of the build just replaced stay (SG-4): a key removed by a verified
+    # update must not be trusted again because an older build is back.
+    if [ -f "$gone_dir/allowed_signers" ] && [ ! -L "$gone_dir/allowed_signers" ]; then
+      signers_tmp="$(mktemp "$app_dir/.allowed_signers.XXXXXX")"
+      cp "$gone_dir/allowed_signers" "$signers_tmp"
+      chmod 644 "$signers_tmp"
+      mv "$signers_tmp" "$app_dir/allowed_signers"
+    fi
+    rm -rf "$gone_dir"
+  else
+    mv "$prev_dir" "$app_dir"
+  fi
+  log "rolled back: snote $(cat "$app_dir/VERSION" 2>/dev/null || echo unknown) is installed again"
+  exit 0
 fi
 
 # --- Pre-built payload ----------------------------------------------------
@@ -244,6 +380,26 @@ fi
 # `--version` probes, no build and no download.
 if [ -x "$shim" ] && [ -f "$app_dir/VERSION" ] && [ -f "$app_dir/cli.js" ] \
    && [ "$(cat "$app_dir/VERSION")" = "$source_version" ]; then
+  if ! build_checked "$source_version"; then
+    # Same version, but no start check passed for it (a setup killed during
+    # the check): check it now. If it does not start, put app.prev back.
+    log "Checking that the installed snote $source_version starts..."
+    if start_check_passes; then
+      write_checked_mark "$source_version"
+    else
+      acquire_run_lock
+      if [ -f "$prev_dir/cli.js" ]; then
+        assert_not_symlink "the previous build" "$prev_dir"
+        failed_dir="${app_dir}.failed.$$"
+        mv "$app_dir" "$failed_dir"
+        mv "$prev_dir" "$app_dir"
+        kept_version="$(cat "$app_dir/VERSION" 2>/dev/null || echo unknown)"
+        rm -rf "$failed_dir"
+        fail "update failed: kept $kept_version"
+      fi
+      fail "install failed: the installed build did not start"
+    fi
+  fi
   log "snote $source_version is already installed at $app_dir — nothing to do."
   exit 0
 fi
@@ -255,6 +411,9 @@ mkdir -p "$plugin_dir"
 # instant between the guard above and here, this still catches it before
 # mktemp would create a directory inside an attacker-chosen location.
 assert_not_symlink "the plugin data directory" "$plugin_dir"
+chmod 700 "$plugin_dir"
+acquire_run_lock
+clean_stage_leftovers
 
 stage_tmp="$(mktemp -d "$plugin_dir/app.XXXXXX")"
 # Clean up the scratch directory on any failure path; cleared right before
@@ -271,24 +430,53 @@ cp -R "$dist_dir"/. "$stage_tmp"/
 # $app_dir/VERSION as-is.
 printf '%s\n' "$source_version" > "$stage_tmp/VERSION"
 
-# Swap the payload into place. app_dir was already confirmed above not to
-# be a symlink; re-check here too (cheap, same TOCTOU reasoning as above)
-# before the swap. `mv` within $plugin_dir is a same-filesystem rename, so
-# this is atomic — there is no window where $app_dir is half-written — and
-# `mv` replaces the destination directory entry itself rather than
-# following it, so it can't be redirected by a destination symlink the
-# way the old delete-style sync could.
-if [ -e "$app_dir" ]; then
-  assert_not_symlink "the build directory" "$app_dir"
-  old_app_dir="${app_dir}.old.$$"
-  mv "$app_dir" "$old_app_dir"
-  mv "$stage_tmp" "$app_dir"
-  rm -rf "$old_app_dir"
-else
-  mv "$stage_tmp" "$app_dir"
+# The staged copy must be exactly the files the release lists (#68, MUST 10).
+# The clone's SHA256SUMS was verified (signature and every sum) by the running
+# build before the clone was moved to this commit, so setup does not check the
+# signature again; it hashes the copy it just made, because that is what gets
+# installed and the clone's files could have changed since that check
+# (CWE-367). Every staged file must be a verbatim copy of a plugin-dist/<path>
+# line of the manifest, and every such line must have its file; a symlink or
+# any other special file is refused. With no SHA256SUMS in the clone (setup run
+# directly in a development checkout, or a clone from a release before
+# signing) nothing is checked: the documented manual path (SECURITY.md).
+refuse_unverified() {
+  printf '%s\n' 'update refused: the download could not be verified' >&2
+  exit 1
+}
+verify_stage_against_manifest() {
+  local sums="$src_dir/SHA256SUMS"
+  if [ ! -e "$sums" ] && [ ! -L "$sums" ]; then
+    # The update path (the helper) passes --verified-update: a clone it just verified must hold SHA256SUMS.
+    if [ "${1:-}" = "--verified-update" ]; then refuse_unverified; fi
+    log "No SHA256SUMS in $src_dir: installing without a manifest check (a development checkout or an older release)."
+    return 0
+  fi
+  if [ ! -f "$sums" ] || [ -L "$sums" ]; then refuse_unverified; fi
+  if [ -n "$(find "$stage_tmp" ! -type f ! -type d -print -quit)" ]; then refuse_unverified; fi
+  cmp -s <(sed -n 's#^\([0-9a-f]\{64\}\)  plugin-dist/\(..*\)$#\1  \2#p' "$sums" | LC_ALL=C sort) \
+         <(cd "$stage_tmp" && find . -type f -print0 | LC_ALL=C sort -z \
+             | while IFS= read -r -d '' f; do printf '%s  %s\n' "$(sha256sum < "$f" | cut -d' ' -f1)" "${f#./}"; done \
+             | LC_ALL=C sort) || refuse_unverified
+}
+# The release keys (SG-2): a symlink named allowed_signers is never installed.
+if [ -L "$stage_tmp/allowed_signers" ]; then
+  fail "allowed_signers in the build is a symlink; refusing to install it"
 fi
-trap - EXIT
+verify_stage_against_manifest "${1:-}"
+# Modes come from this fixed list, not from the tree: directories 0700, cli.js
+# 0755, every other file 0644 (so allowed_signers is 0644 and nothing is group-
+# or world-writable, whatever the clone or the umask said).
+find "$stage_tmp" -type d -exec chmod 700 {} +
+find "$stage_tmp" -type f -exec chmod 644 {} +
+if [ -f "$stage_tmp/cli.js" ]; then chmod 755 "$stage_tmp/cli.js"; fi
 
+# The shim (#67): written BEFORE the two renames when a build is already
+# there, so a shim from an older install (no app.prev fallback) is replaced
+# while a runnable snote still exists: a kill between the renames then leaves
+# a shim that starts app.prev. A first install writes it after the start
+# check, so a build that does not start leaves no shim.
+install_shim() {
 log "Installing the snote shim at $shim..."
 # Re-check right before writing (same TOCTOU reasoning as the app_dir
 # re-checks above): the real guard already ran, up top, first thing; this
@@ -320,6 +508,7 @@ shim_tmp="$(mktemp "$bin_dir/.snote-shim.XXXXXX")"
 # than inside double quotes, so a path containing shell metacharacters
 # can never be reinterpreted when the shim runs.
 app_dir_quoted="'$(printf '%s' "$app_dir" | sed "s/'/'\\\\''/g")'"
+run_lock_quoted="'$(printf '%s' "$run_lock" | sed "s/'/'\\\\''/g")'"
 cat > "$shim_tmp" <<EOF
 #!/bin/sh
 $shim_marker
@@ -368,10 +557,59 @@ if [ -z "\$node" ]; then
   echo "$node_message" >&2
   exit 1
 fi
+run_lock=$run_lock_quoted
+# Hold a shared lock for snote's whole life: fd 9 stays open across exec, so
+# setup's exclusive lock fails while snote runs, and a snote started during
+# setup's swap waits here until the new build is complete.
+if [ -x /usr/bin/flock ] && [ -f "\$run_lock" ] && [ ! -L "\$run_lock" ] && [ -w "\$run_lock" ]; then
+  exec 9>>"\$run_lock" && /usr/bin/flock -s 9
+fi
+# Between setup's two renames there is no app/cli.js: run the kept build.
+if [ ! -f $app_dir_quoted/cli.js ] && [ -f $app_dir_quoted.prev/cli.js ]; then
+  exec env -u NODE_OPTIONS "\$node" $app_dir_quoted.prev/cli.js "\$@"
+fi
 exec env -u NODE_OPTIONS "\$node" $app_dir_quoted/cli.js "\$@"
 EOF
 chmod +x "$shim_tmp"
 mv "$shim_tmp" "$shim"
+}
+
+# Swap the payload into place (#67). The finished stage is renamed in, and the
+# build it replaces is kept as app.prev (exactly one copy: the older one is
+# removed first). Both steps are same-filesystem renames of the directory
+# entry itself, so neither follows a destination symlink. If setup is killed
+# between the two renames there is no $app_dir for a moment, and the shim runs
+# app.prev instead, so a runnable snote is always there. A leftover app.prev
+# with no $app_dir (that very kill) is kept as it is.
+rm -f "$checked_mark"
+had_build=0
+if [ -e "$app_dir" ] || [ -d "$prev_dir" ]; then had_build=1; install_shim; fi
+if [ -e "$app_dir" ]; then
+  assert_not_symlink "the build directory" "$app_dir"
+  assert_not_symlink "the previous build" "$prev_dir"
+  rm -rf "$prev_dir"
+  mv "$app_dir" "$prev_dir"
+fi
+mv "$stage_tmp" "$app_dir"
+trap - EXIT
+
+# The new build must start (#67): if it does not, put the previous build back
+# and say so in one sentence. A first install writes its shim only after this passes.
+if ! start_check_passes; then
+  failed_dir="${app_dir}.failed.$$"
+  mv "$app_dir" "$failed_dir"
+  if [ -d "$prev_dir" ]; then
+    mv "$prev_dir" "$app_dir"
+    kept_version="$(cat "$app_dir/VERSION" 2>/dev/null || echo unknown)"
+    rm -rf "$failed_dir"
+    fail "update failed: kept $kept_version"
+  fi
+  rm -rf "$failed_dir"
+  fail "install failed: the new build did not start, so nothing was installed"
+fi
+rm -f "$rolled_back_mark"
+write_checked_mark "$source_version"
+if [ "$had_build" = 0 ]; then install_shim; fi
 
 case ":$PATH:" in
   *":$bin_dir:"*) ;;
@@ -382,5 +620,7 @@ case ":$PATH:" in
 esac
 
 log "snote is installed. Launching it now..."
+# Release the run lock first: the shim takes a shared lock on it.
+exec 9>&-
 "$shim" --version >/dev/null 2>&1 || true
 exit 0

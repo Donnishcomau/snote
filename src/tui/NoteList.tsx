@@ -102,17 +102,17 @@ export function NoteList({
               ) : (
                 <Text>{' '}</Text>
               )}
-              <Text {...(isSelected ? theme.selection : {})} {...(isSelected ? theme.accent : {})}>
+              <Text {...(isSelected ? theme.selection : theme.heading)} {...(isSelected ? theme.accent : {})}>
                 {title}
                 {marker}
               </Text>
             </Box>,
           );
 
-          // Up to two dim preview lines, indented by 2 spaces
+          // Up to two dim preview lines, indented by 4 spaces (3 cells under the title, #75)
           for (let p = 0; p < previewLines.length; p++) {
             lines.push(
-              <Box key={`preview-${idx}-${p}`} marginLeft={2}>
+              <Box key={`preview-${idx}-${p}`} marginLeft={4}>
                 <Text {...theme.muted}>{previewLines[p]}</Text>
               </Box>,
             );

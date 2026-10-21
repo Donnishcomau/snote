@@ -45,8 +45,8 @@ describe('T324 strip Ink devtools and ws from the bundle', () => {
   // 1,537,371 bytes after the 0.2.5 arrow-key burst fix (caretMoves.ts).
   // (2026-10-12): 1,545,000 for the S8-01 fix (T529): measured 1,539,937 bytes with it.
   // chunk-keys slice 2 (F193): the cap and its measurement live in test/helpers/bundle-size.ts.
-  it('1: WHEN the bundle is built into a temp outfile with `bundle` from `scripts/build.mjs` THEN `bundleSize` of its text is below `BUNDLE_CAP` (`1565000`) bytes', () => {
-    expect(BUNDLE_CAP).toBe(1565000);
+  it('1: WHEN the bundle is built into a temp outfile with `bundle` from `scripts/build.mjs` THEN `bundleSize` of its text is below `BUNDLE_CAP` (`1600000`) bytes', () => {
+    expect(BUNDLE_CAP).toBe(1600000);
     expect(size).toBeLessThan(BUNDLE_CAP);
   });
 

@@ -9,32 +9,32 @@ const read = (...parts: string[]) =>
   readFileSync(join(process.cwd(), ...parts), 'utf8');
 
 describe('release 0.2.6', () => {
-  it("1: WHEN package.json, manifest.json and package-lock.json are parsed THEN `version` (and `packages[''].version`) all equal `0.2.7`.", () => {
+  it("1: WHEN package.json, manifest.json and package-lock.json are parsed THEN `version` (and `packages[''].version`) all equal `0.2.8`.", () => {
     const pkg = JSON.parse(read('package.json')) as { version: string };
     const manifest = JSON.parse(read('manifest.json')) as { version: string };
     const lock = JSON.parse(read('package-lock.json')) as {
       version: string;
       packages: Record<string, { version?: string }>;
     };
-    expect(pkg.version).toBe('0.2.7');
-    expect(manifest.version).toBe('0.2.7');
-    expect(lock.version).toBe('0.2.7');
-    expect(lock.packages[''].version).toBe('0.2.7');
+    expect(pkg.version).toBe('0.2.8');
+    expect(manifest.version).toBe('0.2.8');
+    expect(lock.version).toBe('0.2.8');
+    expect(lock.packages[''].version).toBe('0.2.8');
   });
 
-  it('2: WHEN packaging/aur/PKGBUILD is read THEN it contains `pkgver=0.2.7` and `pkgrel=1` and not `pkgver=0.2.5`.', () => {
+  it('2: WHEN packaging/aur/PKGBUILD is read THEN it contains `pkgver=0.2.8` and `pkgrel=1` and not `pkgver=0.2.5`.', () => {
     const pkgbuild = read('packaging', 'aur', 'PKGBUILD');
-    expect(pkgbuild).toContain('pkgver=0.2.7');
+    expect(pkgbuild).toContain('pkgver=0.2.8');
     expect(pkgbuild).toContain('pkgrel=1');
     expect(pkgbuild).not.toContain('pkgver=0.2.5');
   });
 
-  it("3: WHEN main(['--version'], io) runs THEN it resolves `0` and logged is exactly `['snote 0.2.7']`.", async () => {
+  it("3: WHEN main(['--version'], io) runs THEN it resolves `0` and logged is exactly `['snote 0.2.8']`.", async () => {
     const logged: string[] = [];
     const io = { log: (text: string) => logged.push(text) };
     const code = await main(['--version'], io);
     expect(code).toBe(0);
-    expect(logged).toEqual(['snote 0.2.7']);
+    expect(logged).toEqual(['snote 0.2.8']);
   });
 
   it("4: WHEN CHANGELOG.md is read THEN `## 0.2.6` comes before `## 0.2.5`, it contains no `## Unreleased`, and the text between them contains `### Fixed`, `### Known issues` and `0.2.7`.", () => {

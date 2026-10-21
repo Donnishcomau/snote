@@ -49,7 +49,7 @@ describe('T275 content not muted', () => {
     try {
       const notes = [makeNote('1', 'Title\nneed to type something')];
       const { lastFrame, unmount } = render(
-        <NoteList notes={notes} selectedIndex={0} width={60} height={26} />,
+        <NoteList notes={notes} selectedIndex={0} width={80} height={26} />,
       );
       await delay(50);
       const frame = lastFrame() ?? '';

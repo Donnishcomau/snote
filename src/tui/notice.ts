@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { theme } from './theme';
 import { currentUpdate, onUpdate } from '../core/update-signal';
 import type { UpdateSignal } from '../core/update-signal';
-import { currentProblem, onProblem } from '../core/problem-signal';
+import { currentProblem, currentProblemIsInfo, onProblem } from '../core/problem-signal';
 
 /**
  * The bottom-area notice line (T349): error notices stay red; success and
@@ -27,9 +27,10 @@ export function useNotice(): {
   // check that finished before the first render still shows up.
   // T441: a problem published before the first render comes first.
   const [notice, setNoticeState] = useState<NoticeState | null>(() => {
+    const info = currentProblemIsInfo();
     const problem = currentProblem();
     if (problem !== null) {
-      return { message: problem, isError: true };
+      return { message: problem, isError: !info };
     }
     const update = currentUpdate();
     return update ? { message: updateMessage(update), isError: false, isUpdate: true } : null;
@@ -43,7 +44,7 @@ export function useNotice(): {
     const offUpdate = onUpdate((u) =>
       setNoticeState({ message: updateMessage(u), isError: false, isUpdate: true })
     );
-    const offProblem = onProblem((message) => setNoticeState({ message, isError: true }));
+    const offProblem = onProblem((message, info) => setNoticeState({ message, isError: !info }));
     return () => {
       offUpdate();
       offProblem();

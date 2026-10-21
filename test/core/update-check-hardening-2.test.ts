@@ -67,7 +67,7 @@ const makeRunner = (answers: {
   const calls: { args: string[]; cwd: string }[] = [];
   const run: GitRunner = async (args, opts) => {
     calls.push({ args, cwd: opts.cwd });
-    if (args[0] === 'ls-remote') {
+    if (args.includes('ls-remote')) {
       return { code: 0, stdout: answers.lsRemote };
     }
     if (args[0] === 'rev-parse') {
@@ -101,7 +101,7 @@ describe('update-check-hardening-2', () => {
 
     await checkRemoteUpdate({ cloneDir, stateDir, env: {}, now: 1000000, run });
 
-    const lsRemote = calls.filter((c) => c.args[0] === 'ls-remote');
+    const lsRemote = calls.filter((c) => c.args.includes('ls-remote'));
     expect(lsRemote).toHaveLength(1);
     expect(lsRemote[0].cwd).toBe('/');
 
@@ -153,7 +153,7 @@ describe('update-check-hardening-2', () => {
 
     await checkRemoteUpdate({ cloneDir, stateDir, env: {}, now: 2000000, run });
 
-    expect(calls.filter((c) => c.args[0] === 'ls-remote')).toHaveLength(1);
+    expect(calls.filter((c) => c.args.includes('ls-remote'))).toHaveLength(1);
   });
 
   it("5: WHEN `defaultGitRunner(['definitely-not-a-git-command'], { cwd: '/', timeoutMs: 5000, env: process.env })` resolves THEN its code is a number other than 0 and other than `null`", async () => {

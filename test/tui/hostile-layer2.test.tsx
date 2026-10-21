@@ -29,6 +29,7 @@ import { setDataRoot } from '../../src/core/data-root';
 import { guardOutputStream } from '../../src/core/output-guard';
 import { App } from '../../src/tui/App';
 import { HOSTILE, hostileText, LONG_LINE } from '../fixtures/hostile';
+import { makeNote } from './fixtures';
 
 // ESC is written by code so this file itself never holds a raw control byte
 // inside a literal that a stray regex could trip over.
@@ -424,5 +425,174 @@ describe('hostile layer 2 bytes on the wire (T431)', () => {
     expect(src).toContain('isScreenReaderEnabled: false');
     // the corpus itself is non-empty, so a vacuous clean capture is visible
     expect(HOSTILE.osc52Bel.length).toBeGreaterThan(0);
+  });
+
+  it('7: WHEN, with `isScreenReaderEnabled: true`, `?` is written THEN the stdout capture is raw-clean and contains `Help - Keyboard Shortcuts`.', async () => {
+    const rig = makeRig();
+    const { unmount } = renderApp(rig, true);
+    try {
+      await until(() => outOf(rig).includes('TITLE'));
+      await press(rig.stdin, ['?']);
+      const capture = await pollClean(rig, 'Help - Keyboard Shortcuts');
+      expect(dirt(capture)).toEqual([]);
+      expect(capture).toContain('Help - Keyboard Shortcuts');
+    } finally {
+      unmount();
+    }
+  });
+
+  it('8: WHEN, with `isScreenReaderEnabled: true`, `w` is written THEN the stdout capture is raw-clean, contains `export:` and `TITLE`, and does not contain `curl evil`.', async () => {
+    const rig = makeRig();
+    const { unmount } = renderApp(rig, true);
+    try {
+      await until(() => outOf(rig).includes('TITLE'));
+      await press(rig.stdin, ['w']);
+      const capture = await pollClean(rig, 'export:');
+      expect(dirt(capture)).toEqual([]);
+      expect(capture).toContain('export:');
+      expect(capture).toContain('TITLE');
+      expect(capture).not.toContain('curl evil');
+    } finally {
+      unmount();
+    }
+  });
+
+  it('9: WHEN, with `isScreenReaderEnabled: true`, `g` is written THEN the stdout capture is raw-clean and contains `+ type to add` and `TAG`.', async () => {
+    const rig = makeRig();
+    const { unmount } = renderApp(rig, true);
+    try {
+      await until(() => outOf(rig).includes('TITLE'));
+      await press(rig.stdin, ['g']);
+      const capture = await pollClean(rig, '+ type to add');
+      expect(dirt(capture)).toEqual([]);
+      expect(capture).toContain('+ type to add');
+      expect(capture).toContain('TAG');
+    } finally {
+      unmount();
+    }
+  });
+
+  it("10: WHEN a component in the same rig calls `console.error(hostileText('ERR'))` and `console.warn(hostileText('WARN'))` with `isScreenReaderEnabled: true` THEN the stderr capture is clean and contains `ERR` and `WARN`.", async () => {
+    const rig = makeRig();
+    const { unmount } = renderApp(rig, true, (
+      <>
+        <App store={rig.store} width={120} height={34} />
+        <ConsoleSpew />
+      </>
+    ));
+    try {
+      await until(() => errOf(rig).includes('ERR') && errOf(rig).includes('WARN'));
+      const capture = await pollStderrClean(rig, ['ERR', 'WARN']);
+      expect(dirt(knownCorpusBytes(capture))).toEqual([]);
+      expect(capture).toContain('ERR');
+      expect(capture).toContain('WARN');
+    } finally {
+      unmount();
+    }
+  });
+
+  // #17 / F244 — History: versions of n1 whose text carries the corpus, plus
+  // malformed ones (dates NaN, "x", undefined, 1e20, -1e16; content 42, {}).
+  const BAD_DATES = [Number.NaN, 'x', undefined, 1e20, -1e16];
+  const revisionFixture = () => {
+    const bad = BAD_DATES.map((date, i): [number, ReturnType<typeof makeNote>] => {
+      const note = makeNote('n1', `BADD${i}\nbad date body`);
+      (note as unknown as Record<string, unknown>).modificationDate = date;
+      return [1 + i, note];
+    });
+    const badContent = [42, {}].map((content, i): [number, ReturnType<typeof makeNote>] => {
+      const note = makeNote('n1', 'x');
+      (note as unknown as Record<string, unknown>).content = content;
+      return [6 + i, note];
+    });
+    return [
+      [10, makeNote('n1', `${hostileText('REVA')}\nfirst body`)],
+      [11, makeNote('n1', `${hostileText('REVB')}\nsecond body`)],
+      [12, makeNote('n1', `${hostileText('REVC')}\nthird body`)],
+      // the title of this one is plain text then SGR, bidi, zero-width and separator characters, so only the row's own sanitiser stands between them and the guard
+      [9, makeNote('n1', `REVD${HOSTILE.sgr}${HOSTILE.bidi}${HOSTILE.zeroWidth}${HOSTILE.separators}\nfourth body`)],
+      ...bad,
+      ...badContent,
+    ];
+  };
+  const openHistory = async (rig: Rig, revisions: unknown[]): Promise<void> => {
+    await until(() => outOf(rig).includes('TITLE'));
+    await press(rig.stdin, ['h']);
+    await until(() => outOf(rig).includes('History'));
+    rig.store.dispatch({ type: 'LOAD_REVISIONS', noteId: eid('n1'), revisions } as never);
+  };
+  /** Poll until every marker is in the capture AND the raw capture holds no dirt (no corpus exemption). */
+  async function pollRaw(rig: Rig, markers: string[]): Promise<string> {
+    const end = Date.now() + 2500;
+    let capture = '';
+    for (;;) {
+      capture = outOf(rig);
+      if (dirt(capture).length === 0 && markers.every((m) => capture.includes(m))) return capture;
+      if (Date.now() >= end) return capture;
+      await wait(15);
+    }
+  }
+
+  it('11: WHEN, with `isScreenReaderEnabled: true`, `h` is written and the loaded versions include malformed dates and contents THEN the raw stdout capture (no corpus exemption) is clean and contains `History`, `unknown date`, `BADD0`, `REVA`, `REVC` and `REVD`, and WHEN Escape is then written THEN it contains `Plain note` again.', async () => {
+    const rig = makeRig();
+    const { unmount } = renderApp(rig, true);
+    try {
+      await openHistory(rig, revisionFixture());
+      const capture = await pollRaw(rig, ['unknown date', 'BADD0', 'REVA', 'REVC', 'REVD']);
+      expect(dirt(capture)).toEqual([]);
+      for (const text of ['History', 'unknown date', 'BADD0', 'REVA', 'REVC', 'REVD']) {
+        expect(capture).toContain(text);
+      }
+      const before = outOf(rig).length;
+      await press(rig.stdin, ['\x1b']);
+      await until(() => outOf(rig).slice(before).includes('Plain note'));
+      expect(outOf(rig).slice(before)).toContain('Plain note');
+    } finally {
+      unmount();
+    }
+  });
+
+  it('12: WHEN, with `isScreenReaderEnabled: true`, the versions load THEN the raw stdout capture is clean and the selected version previews `third body`.', async () => {
+    const rig = makeRig();
+    const { unmount } = renderApp(rig, true);
+    try {
+      await openHistory(rig, revisionFixture());
+      const capture = await pollRaw(rig, ['third body']);
+      expect(dirt(capture)).toEqual([]);
+      expect(capture).toContain('third body');
+    } finally {
+      unmount();
+    }
+  });
+
+  it('13: WHEN, with `isScreenReaderEnabled: false`, `h` is written and the same versions load THEN the raw stdout capture is clean and contains `unknown date`, `REVC` and `REVD`.', async () => {
+    const rig = makeRig();
+    const { unmount } = renderApp(rig, false);
+    try {
+      await openHistory(rig, revisionFixture());
+      const capture = await pollRaw(rig, ['unknown date', 'REVC', 'REVD']);
+      expect(dirt(capture)).toEqual([]);
+      expect(capture).toContain('unknown date');
+      expect(capture).toContain('REVC');
+      expect(capture).toContain('REVD');
+    } finally {
+      unmount();
+    }
+  });
+
+  it('14: WHEN, with `isScreenReaderEnabled: true`, the versions load and the second row is restored with `j` then Enter THEN the note content is exactly that version\'s text.', async () => {
+    const rig = makeRig();
+    const { unmount } = renderApp(rig, true);
+    const wanted = `${hostileText('REVB')}\nsecond body`;
+    try {
+      await openHistory(rig, revisionFixture());
+      await pollRaw(rig, ['REVC']);
+      // newest first: v12 (REVC), v11 (REVB), v10 (REVA), then the malformed v5 .. v1
+      await press(rig.stdin, ['j', '\r']);
+      await until(() => rig.store.getState().data.notes.get(eid('n1'))?.content === wanted);
+      expect(rig.store.getState().data.notes.get(eid('n1'))?.content).toBe(wanted);
+    } finally {
+      unmount();
+    }
   });
 });

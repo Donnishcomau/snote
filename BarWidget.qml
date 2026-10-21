@@ -69,7 +69,7 @@ BarWidget {
     var noun = status.count === 1 ? "note" : "notes"
     lines.push("snote — " + status.count + " " + noun)
     if (status.last !== null) lines.push("Last: " + status.last.title)
-    // F134: status.json is only kept fresh while snote runs (`alive` is its
+    // status.json is only kept fresh while snote runs (`alive` is its
     // heartbeat, written every 30 s), so an old heartbeat means "not
     // running", not a failed sync. A file without `alive` is shown as before.
     var notRunning = typeof status.alive === "string" &&
@@ -98,7 +98,7 @@ BarWidget {
   // tooltip-format:end
 
   // Live status snapshot read from the status.json the app writes while
-  // it runs (T358); null while the file is missing or unreadable, which
+  // it runs; null while the file is missing or unreadable, which
   // falls the tooltip back to defaultTooltip plus the click hint.
   property var statusData: null
 
@@ -106,7 +106,7 @@ BarWidget {
   // there are recomputed (no ticking timer).
   property double nowMs: Date.now()
 
-  // Where the app publishes status.json — the same location T358's
+  // Where the app publishes status.json — the same location the app's
   // statusDir() computes: SNOTE_STATUS_DIR when non-empty, else the
   // plugin's data directory under XDG_DATA_HOME (or ~/.local/share).
   readonly property string statusPath: {

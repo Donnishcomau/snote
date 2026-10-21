@@ -6,7 +6,7 @@ import { editorFinishHint } from '../core/editor-select';
 import { layoutHelp } from '../core/help-layout';
 import { cutLine, helpListLines, helpListWindow } from '../core/help-list';
 import { maxFitColumns } from '../core/help-fit';
-import { theme } from './theme';
+import { theme } from './theme'; import { withVersion } from '../core/shown-version';
 
 interface HelpProps {
   width: number;
@@ -61,7 +61,7 @@ function Section({
               <Box key={entry.action} flexDirection="row">
                 {(() => {
                   const full = entry.key.padEnd(8) + '  ' + entry.description;
-                  const sliced = cutLine(full, subColWidth - 1);
+                  const sliced = cutLine(full, full.length === subColWidth - 1 ? subColWidth - 2 : subColWidth - 1);
                   const keyLen = Math.min(8, sliced.length);
                   const keyPart = sliced.slice(0, keyLen);
                   const restPart = sliced.slice(keyLen);
@@ -131,7 +131,7 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
     (width >= 80 && height >= 24) ||
     (width >= 50 && width < 100 && height >= 30 && sectionCols <= maxFitColumns(width));
   const list = entries === undefined && !sectioned;
-  const listLines = list ? helpListLines(editor ?? 'nvim') : [];
+  const listLines = list ? helpListLines(editor ?? 'nvim').map((l, i) => (i === 0 ? { ...l, text: withVersion(l.text) } : l)) : [];
   const win = helpListWindow(listLines, scroll, Math.max(1, width - 2), Math.max(1, height - 2));
   useInput(
     (input, key) => {
@@ -151,7 +151,7 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
   const flatContent = (
     <Box flexDirection="column" width={width} height={height}>
       <Box paddingX={2}>
-        <Text bold>Help - Keyboard Shortcuts</Text>
+        <Text bold>{withVersion('Help - Keyboard Shortcuts')}</Text>
       </Box>
       <Box flexDirection="row" paddingX={2}>
         {columns.map((colEntries, ci) => (
@@ -211,12 +211,12 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
           </>
         )
         : wide
-        ? wideLines.map((line, i) => <Text key={i}>{line}</Text>)
+        ? wideLines.map((line, i) => <Text key={i}>{i === 0 ? withVersion(line) : line}</Text>)
         : narrow
         ? (
           <>
             <Box paddingX={2}>
-              <Text bold>Help - Keyboard Shortcuts</Text>
+              <Text bold>{withVersion('Help - Keyboard Shortcuts')}</Text>
             </Box>
             <Box flexDirection="row" paddingX={2}>
               {narrowCols.map((colEntries, ci) => (
@@ -243,7 +243,7 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
         : (
           <>
             <Box paddingX={2}>
-              <Text bold>Help - Keyboard Shortcuts</Text>
+              <Text bold>{withVersion('Help - Keyboard Shortcuts')}</Text>
             </Box>
             <Box flexDirection={twoCols ? 'row' : 'column'} paddingX={2}>
               <Box flexDirection="column">

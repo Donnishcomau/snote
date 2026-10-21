@@ -5,10 +5,10 @@ import {
   require_react,
   require_react_reconciler,
   require_scheduler
-} from "./chunk-CT7MGM3M.js";
+} from "./chunk-TUNEPWD3.js";
 import {
   src_default
-} from "./chunk-GGREWLKO.js";
+} from "./chunk-U3ANDNGC.js";
 import {
   __commonJS,
   __export,
@@ -16,9 +16,9 @@ import {
   __toESM
 } from "./chunk-SRSFEH3H.js";
 
-// node_modules/signal-exit/signals.js
+// ../../localdev/simplenote/node_modules/signal-exit/signals.js
 var require_signals = __commonJS({
-  "node_modules/signal-exit/signals.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/signal-exit/signals.js"(exports, module) {
     module.exports = [
       "SIGABRT",
       "SIGALRM",
@@ -53,9 +53,9 @@ var require_signals = __commonJS({
   }
 });
 
-// node_modules/signal-exit/index.js
+// ../../localdev/simplenote/node_modules/signal-exit/index.js
 var require_signal_exit = __commonJS({
-  "node_modules/signal-exit/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/signal-exit/index.js"(exports, module) {
     var process14 = global.process;
     var processOk = function(process15) {
       return process15 && typeof process15 === "object" && typeof process15.removeListener === "function" && typeof process15.emit === "function" && typeof process15.reallyExit === "function" && typeof process15.listeners === "function" && typeof process15.kill === "function" && typeof process15.pid === "number" && typeof process15.on === "function";
@@ -212,9 +212,9 @@ var require_signal_exit = __commonJS({
   }
 });
 
-// node_modules/react-reconciler/cjs/react-reconciler-constants.production.js
+// ../../localdev/simplenote/node_modules/react-reconciler/cjs/react-reconciler-constants.production.js
 var require_react_reconciler_constants_production = __commonJS({
-  "node_modules/react-reconciler/cjs/react-reconciler-constants.production.js"(exports) {
+  "../../localdev/simplenote/node_modules/react-reconciler/cjs/react-reconciler-constants.production.js"(exports) {
     "use strict";
     exports.ConcurrentRoot = 1;
     exports.ContinuousEventPriority = 8;
@@ -226,9 +226,9 @@ var require_react_reconciler_constants_production = __commonJS({
   }
 });
 
-// node_modules/react-reconciler/constants.js
+// ../../localdev/simplenote/node_modules/react-reconciler/constants.js
 var require_constants = __commonJS({
-  "node_modules/react-reconciler/constants.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/react-reconciler/constants.js"(exports, module) {
     "use strict";
     if (true) {
       module.exports = require_react_reconciler_constants_production();
@@ -238,9 +238,9 @@ var require_constants = __commonJS({
   }
 });
 
-// node_modules/mimic-fn/index.js
+// ../../localdev/simplenote/node_modules/mimic-fn/index.js
 var require_mimic_fn = __commonJS({
-  "node_modules/mimic-fn/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/mimic-fn/index.js"(exports, module) {
     "use strict";
     var mimicFn = (to, from) => {
       for (const prop of Reflect.ownKeys(from)) {
@@ -253,9 +253,9 @@ var require_mimic_fn = __commonJS({
   }
 });
 
-// node_modules/onetime/index.js
+// ../../localdev/simplenote/node_modules/onetime/index.js
 var require_onetime = __commonJS({
-  "node_modules/onetime/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/onetime/index.js"(exports, module) {
     "use strict";
     var mimicFn = require_mimic_fn();
     var calledFunctions = /* @__PURE__ */ new WeakMap();
@@ -291,9 +291,9 @@ var require_onetime = __commonJS({
   }
 });
 
-// node_modules/stack-utils/node_modules/escape-string-regexp/index.js
+// ../../localdev/simplenote/node_modules/stack-utils/node_modules/escape-string-regexp/index.js
 var require_escape_string_regexp = __commonJS({
-  "node_modules/stack-utils/node_modules/escape-string-regexp/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/stack-utils/node_modules/escape-string-regexp/index.js"(exports, module) {
     "use strict";
     var matchOperatorsRegex = /[|\\{}()[\]^$+*?.-]/g;
     module.exports = (string) => {
@@ -305,9 +305,9 @@ var require_escape_string_regexp = __commonJS({
   }
 });
 
-// node_modules/stack-utils/index.js
+// ../../localdev/simplenote/node_modules/stack-utils/index.js
 var require_stack_utils = __commonJS({
-  "node_modules/stack-utils/index.js"(exports, module) {
+  "../../localdev/simplenote/node_modules/stack-utils/index.js"(exports, module) {
     "use strict";
     var escapeStringRegexp = require_escape_string_regexp();
     var cwd2 = typeof process === "object" && process && typeof process.cwd === "function" ? process.cwd() : ".";
@@ -558,15 +558,15 @@ var require_stack_utils = __commonJS({
   }
 });
 
-// node_modules/ink/build/render.js
+// ../../localdev/simplenote/node_modules/ink/build/render.js
 import { Stream } from "node:stream";
 import process13 from "node:process";
 
-// node_modules/ink/build/ink.js
+// ../../localdev/simplenote/node_modules/ink/build/ink.js
 var import_react16 = __toESM(require_react(), 1);
 import process12 from "node:process";
 
-// node_modules/es-toolkit/dist/function/debounce.mjs
+// ../../localdev/simplenote/node_modules/es-toolkit/dist/function/debounce.mjs
 function debounce(func, debounceMs, { signal, edges } = {}) {
   let pendingThis = void 0;
   let pendingArgs = null;
@@ -620,7 +620,7 @@ function debounce(func, debounceMs, { signal, edges } = {}) {
   return debounced;
 }
 
-// node_modules/es-toolkit/dist/compat/function/debounce.mjs
+// ../../localdev/simplenote/node_modules/es-toolkit/dist/compat/function/debounce.mjs
 function debounce2(func, debounceMs = 0, options = {}) {
   if (typeof options !== "object") options = {};
   const { leading = false, trailing = true, maxWait } = options;
@@ -656,7 +656,7 @@ function debounce2(func, debounceMs = 0, options = {}) {
   return debounced;
 }
 
-// node_modules/es-toolkit/dist/compat/function/throttle.mjs
+// ../../localdev/simplenote/node_modules/es-toolkit/dist/compat/function/throttle.mjs
 function throttle(func, throttleMs = 0, options = {}) {
   const { leading = true, trailing = true } = options;
   return debounce2(func, throttleMs, {
@@ -666,7 +666,7 @@ function throttle(func, throttleMs = 0, options = {}) {
   });
 }
 
-// node_modules/ansi-escapes/base.js
+// ../../localdev/simplenote/node_modules/ansi-escapes/base.js
 var base_exports = {};
 __export(base_exports, {
   ConEmu: () => ConEmu,
@@ -710,7 +710,7 @@ __export(base_exports, {
 import process2 from "node:process";
 import os from "node:os";
 
-// node_modules/environment/index.js
+// ../../localdev/simplenote/node_modules/environment/index.js
 var isBrowser = globalThis.window?.document !== void 0;
 var isNode = globalThis.process?.versions?.node !== void 0;
 var isBun = globalThis.process?.versions?.bun !== void 0;
@@ -728,7 +728,7 @@ var isLinux = platform === "Linux" || globalThis.navigator?.platform?.startsWith
 var isIos = platform === "iOS" || globalThis.navigator?.platform === "MacIntel" && globalThis.navigator?.maxTouchPoints > 1 || /iPad|iPhone|iPod/.test(globalThis.navigator?.platform);
 var isAndroid = platform === "Android" || globalThis.navigator?.platform === "Android" || globalThis.navigator?.userAgent?.includes(" Android ") === true || globalThis.process?.platform === "android";
 
-// node_modules/ansi-escapes/base.js
+// ../../localdev/simplenote/node_modules/ansi-escapes/base.js
 var ESC = "\x1B[";
 var OSC = "\x1B]";
 var BEL = "\x07";
@@ -868,13 +868,13 @@ var ConEmu = {
 };
 var setCwd = (cwd2 = cwdFunction()) => iTerm.setCwd(cwd2) + ConEmu.setCwd(cwd2);
 
-// node_modules/is-in-ci/index.js
+// ../../localdev/simplenote/node_modules/is-in-ci/index.js
 import { env } from "node:process";
 var check = (key) => key in env && env[key] !== "0" && env[key] !== "false";
 var isInCi = check("CI") || check("CONTINUOUS_INTEGRATION");
 var is_in_ci_default = isInCi;
 
-// node_modules/auto-bind/index.js
+// ../../localdev/simplenote/node_modules/auto-bind/index.js
 var getAllProperties = (object) => {
   const properties = /* @__PURE__ */ new Set();
   do {
@@ -907,10 +907,10 @@ function autoBind(self, { include, exclude } = {}) {
   return self;
 }
 
-// node_modules/ink/build/ink.js
+// ../../localdev/simplenote/node_modules/ink/build/ink.js
 var import_signal_exit2 = __toESM(require_signal_exit(), 1);
 
-// node_modules/patch-console/dist/index.js
+// ../../localdev/simplenote/node_modules/patch-console/dist/index.js
 import { PassThrough } from "node:stream";
 var consoleMethods = [
   "assert",
@@ -956,10 +956,10 @@ var patchConsole = (callback) => {
 };
 var dist_default = patchConsole;
 
-// node_modules/ink/build/ink.js
+// ../../localdev/simplenote/node_modules/ink/build/ink.js
 var import_constants2 = __toESM(require_constants(), 1);
 
-// node_modules/ansi-regex/index.js
+// ../../localdev/simplenote/node_modules/ansi-regex/index.js
 function ansiRegex({ onlyFirst = false } = {}) {
   const ST = "(?:\\u0007|\\u001B\\u005C|\\u009C)";
   const osc = `(?:\\u001B\\][^\\u0007\\u001B\\u009C]*${ST})`;
@@ -968,7 +968,7 @@ function ansiRegex({ onlyFirst = false } = {}) {
   return new RegExp(pattern, onlyFirst ? void 0 : "g");
 }
 
-// node_modules/strip-ansi/index.js
+// ../../localdev/simplenote/node_modules/strip-ansi/index.js
 var regex = ansiRegex();
 function stripAnsi(string) {
   if (typeof string !== "string") {
@@ -980,7 +980,7 @@ function stripAnsi(string) {
   return string.replace(regex, "");
 }
 
-// node_modules/get-east-asian-width/lookup-data.js
+// ../../localdev/simplenote/node_modules/get-east-asian-width/lookup-data.js
 var ambiguousMinimalCodePoint = 161;
 var ambiguousMaximumCodePoint = 1114109;
 var ambiguousRanges = [161, 161, 164, 164, 167, 168, 170, 170, 173, 174, 176, 180, 182, 186, 188, 191, 198, 198, 208, 208, 215, 216, 222, 225, 230, 230, 232, 234, 236, 237, 240, 240, 242, 243, 247, 250, 252, 252, 254, 254, 257, 257, 273, 273, 275, 275, 283, 283, 294, 295, 299, 299, 305, 307, 312, 312, 319, 322, 324, 324, 328, 331, 333, 333, 338, 339, 358, 359, 363, 363, 462, 462, 464, 464, 466, 466, 468, 468, 470, 470, 472, 472, 474, 474, 476, 476, 593, 593, 609, 609, 708, 708, 711, 711, 713, 715, 717, 717, 720, 720, 728, 731, 733, 733, 735, 735, 768, 879, 913, 929, 931, 937, 945, 961, 963, 969, 1025, 1025, 1040, 1103, 1105, 1105, 8208, 8208, 8211, 8214, 8216, 8217, 8220, 8221, 8224, 8226, 8228, 8231, 8240, 8240, 8242, 8243, 8245, 8245, 8251, 8251, 8254, 8254, 8308, 8308, 8319, 8319, 8321, 8324, 8364, 8364, 8451, 8451, 8453, 8453, 8457, 8457, 8467, 8467, 8470, 8470, 8481, 8482, 8486, 8486, 8491, 8491, 8531, 8532, 8539, 8542, 8544, 8555, 8560, 8569, 8585, 8585, 8592, 8601, 8632, 8633, 8658, 8658, 8660, 8660, 8679, 8679, 8704, 8704, 8706, 8707, 8711, 8712, 8715, 8715, 8719, 8719, 8721, 8721, 8725, 8725, 8730, 8730, 8733, 8736, 8739, 8739, 8741, 8741, 8743, 8748, 8750, 8750, 8756, 8759, 8764, 8765, 8776, 8776, 8780, 8780, 8786, 8786, 8800, 8801, 8804, 8807, 8810, 8811, 8814, 8815, 8834, 8835, 8838, 8839, 8853, 8853, 8857, 8857, 8869, 8869, 8895, 8895, 8978, 8978, 9312, 9449, 9451, 9547, 9552, 9587, 9600, 9615, 9618, 9621, 9632, 9633, 9635, 9641, 9650, 9651, 9654, 9655, 9660, 9661, 9664, 9665, 9670, 9672, 9675, 9675, 9678, 9681, 9698, 9701, 9711, 9711, 9733, 9734, 9737, 9737, 9742, 9743, 9756, 9756, 9758, 9758, 9792, 9792, 9794, 9794, 9824, 9825, 9827, 9829, 9831, 9834, 9836, 9837, 9839, 9839, 9886, 9887, 9919, 9919, 9926, 9933, 9935, 9939, 9941, 9953, 9955, 9955, 9960, 9961, 9963, 9969, 9972, 9972, 9974, 9977, 9979, 9980, 9982, 9983, 10045, 10045, 10102, 10111, 11094, 11097, 12872, 12879, 57344, 63743, 65024, 65039, 65533, 65533, 127232, 127242, 127248, 127277, 127280, 127337, 127344, 127373, 127375, 127376, 127387, 127404, 917760, 917999, 983040, 1048573, 1048576, 1114109];
@@ -991,7 +991,7 @@ var wideMinimalCodePoint = 4352;
 var wideMaximumCodePoint = 262141;
 var wideRanges = [4352, 4447, 8986, 8987, 9001, 9002, 9193, 9196, 9200, 9200, 9203, 9203, 9725, 9726, 9748, 9749, 9776, 9783, 9800, 9811, 9855, 9855, 9866, 9871, 9875, 9875, 9889, 9889, 9898, 9899, 9917, 9918, 9924, 9925, 9934, 9934, 9940, 9940, 9962, 9962, 9970, 9971, 9973, 9973, 9978, 9978, 9981, 9981, 9989, 9989, 9994, 9995, 10024, 10024, 10060, 10060, 10062, 10062, 10067, 10069, 10071, 10071, 10133, 10135, 10160, 10160, 10175, 10175, 11035, 11036, 11088, 11088, 11093, 11093, 11904, 11929, 11931, 12019, 12032, 12245, 12272, 12287, 12289, 12350, 12353, 12438, 12441, 12543, 12549, 12591, 12593, 12686, 12688, 12773, 12783, 12830, 12832, 12871, 12880, 42124, 42128, 42182, 43360, 43388, 44032, 55203, 63744, 64255, 65040, 65049, 65072, 65106, 65108, 65126, 65128, 65131, 94176, 94180, 94192, 94198, 94208, 101594, 101631, 101664, 101760, 101874, 101888, 102801, 102816, 102866, 110576, 110579, 110581, 110587, 110589, 110590, 110592, 110888, 110898, 110898, 110928, 110930, 110933, 110933, 110948, 110952, 110960, 111355, 119552, 119638, 119648, 119670, 126980, 126980, 127183, 127183, 127374, 127374, 127377, 127386, 127406, 127406, 127488, 127490, 127504, 127547, 127552, 127560, 127568, 127569, 127584, 127589, 127744, 127776, 127789, 127797, 127799, 127868, 127870, 127891, 127904, 127946, 127951, 127955, 127968, 127984, 127988, 127988, 127992, 128062, 128064, 128064, 128066, 128252, 128255, 128317, 128331, 128334, 128336, 128359, 128378, 128378, 128405, 128406, 128420, 128420, 128507, 128591, 128640, 128709, 128716, 128716, 128720, 128722, 128725, 128729, 128732, 128735, 128747, 128748, 128756, 128764, 128986, 128986, 128992, 129003, 129008, 129008, 129292, 129338, 129340, 129349, 129351, 129535, 129648, 129660, 129664, 129734, 129736, 129736, 129740, 129757, 129759, 129771, 129775, 129786, 131072, 196605, 196608, 262141];
 
-// node_modules/get-east-asian-width/utilities.js
+// ../../localdev/simplenote/node_modules/get-east-asian-width/utilities.js
 var isInRange = (ranges, codePoint) => {
   let low = 0;
   let high = Math.floor(ranges.length / 2) - 1;
@@ -1009,7 +1009,7 @@ var isInRange = (ranges, codePoint) => {
   return false;
 };
 
-// node_modules/get-east-asian-width/lookup.js
+// ../../localdev/simplenote/node_modules/get-east-asian-width/lookup.js
 var commonCjkCodePoint = 19968;
 var [wideFastPathStart, wideFastPathEnd] = /* @__PURE__ */ findWideFastPathRange(wideRanges);
 function findWideFastPathRange(ranges) {
@@ -1050,7 +1050,7 @@ var isWide = (codePoint) => {
   return isInRange(wideRanges, codePoint);
 };
 
-// node_modules/get-east-asian-width/index.js
+// ../../localdev/simplenote/node_modules/get-east-asian-width/index.js
 function validate(codePoint) {
   if (!Number.isSafeInteger(codePoint)) {
     throw new TypeError(`Expected a code point, got \`${typeof codePoint}\`.`);
@@ -1064,7 +1064,7 @@ function eastAsianWidth(codePoint, { ambiguousAsWide = false } = {}) {
   return 1;
 }
 
-// node_modules/string-width/index.js
+// ../../localdev/simplenote/node_modules/string-width/index.js
 var __asciiSegments = (s) => ({ [Symbol.iterator]: function* () {
   for (let i = 0; i < s.length; i++) yield { segment: s[i], index: i, input: s };
 }, containing: (i) => i >= 0 && i < s.length ? { segment: s[i], index: i, input: s } : void 0 });
@@ -1196,7 +1196,7 @@ function stringWidth(input, options = {}) {
   return width;
 }
 
-// node_modules/wrap-ansi/node_modules/ansi-styles/index.js
+// ../../localdev/simplenote/node_modules/wrap-ansi/node_modules/ansi-styles/index.js
 var ANSI_BACKGROUND_OFFSET = 10;
 var wrapAnsi16 = (offset = 0) => (code) => `\x1B[${code + offset}m`;
 var wrapAnsi256 = (offset = 0) => (code) => `\x1B[${38 + offset};5;${code}m`;
@@ -1382,7 +1382,7 @@ function assembleStyles() {
 var ansiStyles = assembleStyles();
 var ansi_styles_default = ansiStyles;
 
-// node_modules/wrap-ansi/index.js
+// ../../localdev/simplenote/node_modules/wrap-ansi/index.js
 var __asciiSegments2 = (s) => ({ [Symbol.iterator]: function* () {
   for (let i = 0; i < s.length; i++) yield { segment: s[i], index: i, input: s };
 }, containing: (i) => i >= 0 && i < s.length ? { segment: s[i], index: i, input: s } : void 0 });
@@ -1866,7 +1866,7 @@ function wrapAnsi(string, columns, options) {
   return String(string).normalize().replaceAll("\r\n", "\n").split("\n").map((line) => exec(expandTabs(line), columns, options)).join("\n");
 }
 
-// node_modules/terminal-size/index.js
+// ../../localdev/simplenote/node_modules/terminal-size/index.js
 import process3 from "node:process";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -1972,7 +1972,7 @@ var resize = () => {
   }
 };
 
-// node_modules/ink/build/utils.js
+// ../../localdev/simplenote/node_modules/ink/build/utils.js
 var getWindowSize = (stdout) => {
   const { columns, rows } = stdout;
   if (columns && rows) {
@@ -1985,14 +1985,14 @@ var getWindowSize = (stdout) => {
   };
 };
 
-// node_modules/ink/build/reconciler.js
+// ../../localdev/simplenote/node_modules/ink/build/reconciler.js
 var import_react_reconciler = __toESM(require_react_reconciler(), 1);
 var import_constants = __toESM(require_constants(), 1);
 var Scheduler = __toESM(require_scheduler(), 1);
 import process4 from "node:process";
 var import_react = __toESM(require_react(), 1);
 
-// node_modules/widest-line/index.js
+// ../../localdev/simplenote/node_modules/widest-line/index.js
 function widestLine(string) {
   let lineWidth = 0;
   for (const line of string.split("\n")) {
@@ -2001,7 +2001,7 @@ function widestLine(string) {
   return lineWidth;
 }
 
-// node_modules/ink/build/measure-text.js
+// ../../localdev/simplenote/node_modules/ink/build/measure-text.js
 var cache = /* @__PURE__ */ new Map();
 var measureText = (text) => {
   if (text.length === 0) {
@@ -2022,7 +2022,7 @@ var measureText = (text) => {
 };
 var measure_text_default = measureText;
 
-// node_modules/slice-ansi/node_modules/ansi-styles/index.js
+// ../../localdev/simplenote/node_modules/slice-ansi/node_modules/ansi-styles/index.js
 var ANSI_BACKGROUND_OFFSET2 = 10;
 var wrapAnsi162 = (offset = 0) => (code) => `\x1B[${code + offset}m`;
 var wrapAnsi2562 = (offset = 0) => (code) => `\x1B[${38 + offset};5;${code}m`;
@@ -2208,7 +2208,7 @@ function assembleStyles2() {
 var ansiStyles2 = assembleStyles2();
 var ansi_styles_default2 = ansiStyles2;
 
-// node_modules/is-fullwidth-code-point/index.js
+// ../../localdev/simplenote/node_modules/is-fullwidth-code-point/index.js
 function isFullwidthCodePoint(codePoint) {
   if (!Number.isInteger(codePoint)) {
     return false;
@@ -2216,7 +2216,7 @@ function isFullwidthCodePoint(codePoint) {
   return isFullwidth(codePoint) || isWide(codePoint);
 }
 
-// node_modules/slice-ansi/tokenize-ansi.js
+// ../../localdev/simplenote/node_modules/slice-ansi/tokenize-ansi.js
 var __asciiSegments3 = (s) => ({ [Symbol.iterator]: function* () {
   for (let i = 0; i < s.length; i++) yield { segment: s[i], index: i, input: s };
 }, containing: (i) => i >= 0 && i < s.length ? { segment: s[i], index: i, input: s } : void 0 });
@@ -2827,7 +2827,7 @@ function tokenizeAnsi(string, { endCharacter = Number.POSITIVE_INFINITY } = {}) 
   return tokens;
 }
 
-// node_modules/slice-ansi/index.js
+// ../../localdev/simplenote/node_modules/slice-ansi/index.js
 function applySgrFragments(activeStyles, fragments) {
   for (const fragment of fragments) {
     switch (fragment.type) {
@@ -3057,7 +3057,7 @@ function sliceAnsi(string, start, end) {
   return returnValue;
 }
 
-// node_modules/cli-truncate/index.js
+// ../../localdev/simplenote/node_modules/cli-truncate/index.js
 var validPositions = /* @__PURE__ */ new Set(["start", "middle", "end"]);
 function getIndexOfNearestSpace(string, wantedIndex, shouldSearchRight) {
   if (string.charAt(wantedIndex) === " ") {
@@ -3199,7 +3199,7 @@ function cliTruncate(text, columns, options = {}) {
   }
 }
 
-// node_modules/ink/build/wrap-text.js
+// ../../localdev/simplenote/node_modules/ink/build/wrap-text.js
 var cache2 = {};
 var wrapText = (text, maxWidth, wrapType) => {
   const cacheKey = text + String(maxWidth) + String(wrapType);
@@ -3236,7 +3236,7 @@ var wrapText = (text, maxWidth, wrapType) => {
 };
 var wrap_text_default = wrapText;
 
-// node_modules/ink/build/ansi-tokenizer.js
+// ../../localdev/simplenote/node_modules/ink/build/ansi-tokenizer.js
 var bellCharacter = "\x07";
 var escapeCharacter = "\x1B";
 var stringTerminatorCharacter = "\x9C";
@@ -3543,7 +3543,7 @@ var tokenizeAnsi2 = (text) => {
   return tokens;
 };
 
-// node_modules/ink/build/sanitize-ansi.js
+// ../../localdev/simplenote/node_modules/ink/build/sanitize-ansi.js
 var sgrParametersRegex = /^[\d:;]*$/;
 var sanitizeAnsi = (text) => {
   if (!hasAnsiControlCharacters(text)) {
@@ -3563,7 +3563,7 @@ var sanitizeAnsi = (text) => {
 };
 var sanitize_ansi_default = sanitizeAnsi;
 
-// node_modules/ink/build/squash-text-nodes.js
+// ../../localdev/simplenote/node_modules/ink/build/squash-text-nodes.js
 var squashTextNodes = (node) => {
   let text = "";
   for (let index = 0; index < node.childNodes.length; index++) {
@@ -3588,7 +3588,7 @@ var squashTextNodes = (node) => {
 };
 var squash_text_nodes_default = squashTextNodes;
 
-// node_modules/ink/build/dom.js
+// ../../localdev/simplenote/node_modules/ink/build/dom.js
 var createNode = (nodeName) => {
   const node = {
     nodeName,
@@ -3723,7 +3723,7 @@ var emitLayoutListeners = (rootNode) => {
   }
 };
 
-// node_modules/ink/build/styles.js
+// ../../localdev/simplenote/node_modules/ink/build/styles.js
 var positionEdges = [
   ["top", src_default.EDGE_TOP],
   ["right", src_default.EDGE_RIGHT],
@@ -4010,7 +4010,7 @@ var styles3 = (node, style = {}, currentStyle = style) => {
 };
 var styles_default = styles3;
 
-// node_modules/ink/build/reconciler.js
+// ../../localdev/simplenote/node_modules/ink/build/reconciler.js
 if (process4.env["DEV"] === "true") {
   let isDevtoolsInstalled = false;
   try {
@@ -4297,7 +4297,7 @@ var reconciler_default = (0, import_react_reconciler.default)({
   rendererVersion: packageInfo.version
 });
 
-// node_modules/indent-string/index.js
+// ../../localdev/simplenote/node_modules/indent-string/index.js
 function indentString(string, count = 1, options = {}) {
   const {
     indent = " ",
@@ -4330,13 +4330,13 @@ function indentString(string, count = 1, options = {}) {
   return string.replace(regex2, indent.repeat(count));
 }
 
-// node_modules/ink/build/get-max-width.js
+// ../../localdev/simplenote/node_modules/ink/build/get-max-width.js
 var getMaxWidth = (yogaNode) => {
   return yogaNode.getComputedWidth() - yogaNode.getComputedPadding(src_default.EDGE_LEFT) - yogaNode.getComputedPadding(src_default.EDGE_RIGHT) - yogaNode.getComputedBorder(src_default.EDGE_LEFT) - yogaNode.getComputedBorder(src_default.EDGE_RIGHT);
 };
 var get_max_width_default = getMaxWidth;
 
-// node_modules/cli-boxes/boxes.json
+// ../../localdev/simplenote/node_modules/cli-boxes/boxes.json
 var boxes_default = {
   single: {
     topLeft: "\u250C",
@@ -4420,10 +4420,10 @@ var boxes_default = {
   }
 };
 
-// node_modules/cli-boxes/index.js
+// ../../localdev/simplenote/node_modules/cli-boxes/index.js
 var cli_boxes_default = boxes_default;
 
-// node_modules/ink/node_modules/chalk/source/vendor/ansi-styles/index.js
+// ../../localdev/simplenote/node_modules/ink/node_modules/chalk/source/vendor/ansi-styles/index.js
 var ANSI_BACKGROUND_OFFSET3 = 10;
 var wrapAnsi163 = (offset = 0) => (code) => `\x1B[${code + offset}m`;
 var wrapAnsi2563 = (offset = 0) => (code) => `\x1B[${38 + offset};5;${code}m`;
@@ -4609,7 +4609,7 @@ function assembleStyles3() {
 var ansiStyles3 = assembleStyles3();
 var ansi_styles_default3 = ansiStyles3;
 
-// node_modules/ink/node_modules/chalk/source/vendor/supports-color/index.js
+// ../../localdev/simplenote/node_modules/ink/node_modules/chalk/source/vendor/supports-color/index.js
 import process5 from "node:process";
 import os2 from "node:os";
 import tty2 from "node:tty";
@@ -4741,7 +4741,7 @@ var supportsColor = {
 };
 var supports_color_default = supportsColor;
 
-// node_modules/ink/node_modules/chalk/source/utilities.js
+// ../../localdev/simplenote/node_modules/ink/node_modules/chalk/source/utilities.js
 function stringReplaceAll(string, substring, replacer) {
   let index = string.indexOf(substring);
   if (index === -1) {
@@ -4771,7 +4771,7 @@ function stringEncaseCRLFWithFirstIndex(string, prefix, postfix, index) {
   return returnValue;
 }
 
-// node_modules/ink/node_modules/chalk/source/index.js
+// ../../localdev/simplenote/node_modules/ink/node_modules/chalk/source/index.js
 var { stdout: stdoutColor, stderr: stderrColor } = supports_color_default;
 var GENERATOR = /* @__PURE__ */ Symbol("GENERATOR");
 var STYLER = /* @__PURE__ */ Symbol("STYLER");
@@ -4918,7 +4918,7 @@ var chalk = createChalk();
 var chalkStderr = createChalk({ level: stderrColor ? stderrColor.level : 0 });
 var source_default = chalk;
 
-// node_modules/ink/build/colorize.js
+// ../../localdev/simplenote/node_modules/ink/build/colorize.js
 var rgbRegex = /^rgb\(\s?(\d+),\s?(\d+),\s?(\d+)\s?\)$/;
 var ansiRegex2 = /^ansi256\(\s?(\d+)\s?\)$/;
 var isNamedColor = (color) => {
@@ -4960,7 +4960,7 @@ var colorize = (str, color, type) => {
 };
 var colorize_default = colorize;
 
-// node_modules/ink/build/render-border.js
+// ../../localdev/simplenote/node_modules/ink/build/render-border.js
 var stylePiece = (segment, fg, bg, dim) => {
   let styled = colorize_default(segment, fg, "foreground");
   styled = colorize_default(styled, bg, "background");
@@ -5031,7 +5031,7 @@ var renderBorder = (x, y, node, output) => {
 };
 var render_border_default = renderBorder;
 
-// node_modules/ink/build/render-background.js
+// ../../localdev/simplenote/node_modules/ink/build/render-background.js
 var renderBackground = (x, y, node, output) => {
   if (!node.style.backgroundColor) {
     return;
@@ -5054,7 +5054,7 @@ var renderBackground = (x, y, node, output) => {
 };
 var render_background_default = renderBackground;
 
-// node_modules/ink/build/render-node-to-output.js
+// ../../localdev/simplenote/node_modules/ink/build/render-node-to-output.js
 var applyPaddingToText = (node, text) => {
   const yogaNode = node.childNodes[0]?.yogaNode;
   if (yogaNode) {
@@ -5162,7 +5162,7 @@ var renderNodeToOutput = (node, output, options) => {
 };
 var render_node_to_output_default = renderNodeToOutput;
 
-// node_modules/@alcalzone/ansi-tokenize/node_modules/ansi-styles/index.js
+// ../../localdev/simplenote/node_modules/@alcalzone/ansi-tokenize/node_modules/ansi-styles/index.js
 var ANSI_BACKGROUND_OFFSET4 = 10;
 var wrapAnsi164 = (offset = 0) => (code) => `\x1B[${code + offset}m`;
 var wrapAnsi2564 = (offset = 0) => (code) => `\x1B[${38 + offset};5;${code}m`;
@@ -5348,7 +5348,7 @@ function assembleStyles4() {
 var ansiStyles4 = assembleStyles4();
 var ansi_styles_default4 = ansiStyles4;
 
-// node_modules/@alcalzone/ansi-tokenize/build/consts.js
+// ../../localdev/simplenote/node_modules/@alcalzone/ansi-tokenize/build/consts.js
 var BEL2 = "\x07";
 var ESC2 = "\x1B";
 var BACKSLASH = "\\";
@@ -5372,7 +5372,7 @@ var linkEndCode = `${ESC2}${OSC2}8;;${BEL2}`;
 var linkEndCodeST = `${ESC2}${OSC2}8;;${ESC2}${BACKSLASH}`;
 var linkEndCodeC1ST = `${ESC2}${OSC2}8;;${C1_ST}`;
 
-// node_modules/@alcalzone/ansi-tokenize/build/ansiCodes.js
+// ../../localdev/simplenote/node_modules/@alcalzone/ansi-tokenize/build/ansiCodes.js
 var endCodesSet = /* @__PURE__ */ new Set();
 var endCodesMap = /* @__PURE__ */ new Map();
 for (const [start, end] of ansi_styles_default4.codes) {
@@ -5415,7 +5415,7 @@ function isIntensityCode(code) {
   return code.code === ansi_styles_default4.bold.open || code.code === ansi_styles_default4.dim.open;
 }
 
-// node_modules/@alcalzone/ansi-tokenize/build/reduce.js
+// ../../localdev/simplenote/node_modules/@alcalzone/ansi-tokenize/build/reduce.js
 function reduceAnsiCodes(codes) {
   return reduceAnsiCodesIncremental([], codes);
 }
@@ -5440,7 +5440,7 @@ function reduceAnsiCodesIncremental(codes, newCodes) {
   return ret;
 }
 
-// node_modules/@alcalzone/ansi-tokenize/build/undo.js
+// ../../localdev/simplenote/node_modules/@alcalzone/ansi-tokenize/build/undo.js
 function undoAnsiCodes2(codes) {
   return reduceAnsiCodes(codes).reverse().map((code) => ({
     ...code,
@@ -5448,7 +5448,7 @@ function undoAnsiCodes2(codes) {
   }));
 }
 
-// node_modules/@alcalzone/ansi-tokenize/build/diff.js
+// ../../localdev/simplenote/node_modules/@alcalzone/ansi-tokenize/build/diff.js
 function diffAnsiCodes(from, to) {
   const endCodesInTo = new Set(to.map((code) => code.endCode));
   const startCodesInTo = new Set(to.map((code) => code.code));
@@ -5467,7 +5467,7 @@ function diffAnsiCodes(from, to) {
   ];
 }
 
-// node_modules/@alcalzone/ansi-tokenize/build/styledChars.js
+// ../../localdev/simplenote/node_modules/@alcalzone/ansi-tokenize/build/styledChars.js
 function styledCharsFromTokens(tokens) {
   let codes = [];
   const ret = [];
@@ -5500,7 +5500,7 @@ function styledCharsToString(chars) {
   return ret;
 }
 
-// node_modules/@alcalzone/ansi-tokenize/build/tokenize.js
+// ../../localdev/simplenote/node_modules/@alcalzone/ansi-tokenize/build/tokenize.js
 var __asciiSegments4 = (s) => ({ [Symbol.iterator]: function* () {
   for (let i = 0; i < s.length; i++) yield { segment: s[i], index: i, input: s };
 }, containing: (i) => i >= 0 && i < s.length ? { segment: s[i], index: i, input: s } : void 0 });
@@ -5654,7 +5654,7 @@ function tokenize(str, endChar = Number.POSITIVE_INFINITY) {
   return ret;
 }
 
-// node_modules/ink/build/output.js
+// ../../localdev/simplenote/node_modules/ink/build/output.js
 var OutputCaches = class {
   widths = /* @__PURE__ */ new Map();
   blockWidths = /* @__PURE__ */ new Map();
@@ -5842,7 +5842,7 @@ var Output = class {
   }
 };
 
-// node_modules/ink/build/renderer.js
+// ../../localdev/simplenote/node_modules/ink/build/renderer.js
 var renderer = (node, isScreenReaderEnabled) => {
   if (node.yogaNode) {
     if (isScreenReaderEnabled) {
@@ -5898,7 +5898,7 @@ var renderer = (node, isScreenReaderEnabled) => {
 };
 var renderer_default = renderer;
 
-// node_modules/ink/build/cursor-helpers.js
+// ../../localdev/simplenote/node_modules/ink/build/cursor-helpers.js
 var showCursorEscape = "\x1B[?25h";
 var hideCursorEscape = "\x1B[?25l";
 var cursorPositionChanged = (a, b) => a?.x !== b?.x || a?.y !== b?.y;
@@ -5929,10 +5929,10 @@ var buildReturnToBottomPrefix = (cursorWasShown, previousLineCount, previousCurs
   return hideCursorEscape + buildReturnToBottom(previousLineCount, previousCursorPosition);
 };
 
-// node_modules/cli-cursor/index.js
+// ../../localdev/simplenote/node_modules/cli-cursor/index.js
 import process7 from "node:process";
 
-// node_modules/restore-cursor/index.js
+// ../../localdev/simplenote/node_modules/restore-cursor/index.js
 var import_onetime = __toESM(require_onetime(), 1);
 var import_signal_exit = __toESM(require_signal_exit(), 1);
 import process6 from "node:process";
@@ -5943,7 +5943,7 @@ var restoreCursor = (0, import_onetime.default)(() => {
 });
 var restore_cursor_default = restoreCursor;
 
-// node_modules/cli-cursor/index.js
+// ../../localdev/simplenote/node_modules/cli-cursor/index.js
 var isHidden = false;
 var cliCursor = {};
 cliCursor.show = (writableStream = process7.stderr) => {
@@ -5973,7 +5973,7 @@ cliCursor.toggle = (force, writableStream) => {
 };
 var cli_cursor_default = cliCursor;
 
-// node_modules/ink/build/log-update.js
+// ../../localdev/simplenote/node_modules/ink/build/log-update.js
 var visibleLineCount = (lines, str) => str.endsWith("\n") ? lines.length - 1 : lines.length;
 var createStandard = (stream, { showCursor = false } = {}) => {
   let previousLineCount = 0;
@@ -6203,23 +6203,23 @@ var create2 = (stream, { showCursor = false, incremental = false } = {}) => {
 var logUpdate = { create: create2 };
 var log_update_default = logUpdate;
 
-// node_modules/ink/build/write-synchronized.js
+// ../../localdev/simplenote/node_modules/ink/build/write-synchronized.js
 var bsu = "\x1B[?2026h";
 var esu = "\x1B[?2026l";
 function shouldSynchronize(stream, interactive) {
   return "isTTY" in stream && stream.isTTY && (interactive ?? !is_in_ci_default);
 }
 
-// node_modules/ink/build/instances.js
+// ../../localdev/simplenote/node_modules/ink/build/instances.js
 var instances = /* @__PURE__ */ new WeakMap();
 var instances_default = instances;
 
-// node_modules/ink/build/components/App.js
+// ../../localdev/simplenote/node_modules/ink/build/components/App.js
 var import_react15 = __toESM(require_react(), 1);
 import { EventEmitter as EventEmitter2 } from "node:events";
 import process11 from "node:process";
 
-// node_modules/ink/build/input-parser.js
+// ../../localdev/simplenote/node_modules/ink/build/input-parser.js
 var escape = "\x1B";
 var pasteStart = "\x1B[200~";
 var pasteEnd = "\x1B[201~";
@@ -6404,7 +6404,7 @@ var createInputParser = () => {
   };
 };
 
-// node_modules/ink/build/components/AppContext.js
+// ../../localdev/simplenote/node_modules/ink/build/components/AppContext.js
 var import_react2 = __toESM(require_react(), 1);
 var noopSuspension = {
   async resume() {
@@ -6429,7 +6429,7 @@ var AppContext = (0, import_react2.createContext)(defaultValue);
 AppContext.displayName = "InternalAppContext";
 var AppContext_default = AppContext;
 
-// node_modules/ink/build/components/StdinContext.js
+// ../../localdev/simplenote/node_modules/ink/build/components/StdinContext.js
 var import_react3 = __toESM(require_react(), 1);
 import { EventEmitter } from "node:events";
 import process8 from "node:process";
@@ -6448,7 +6448,7 @@ var StdinContext = (0, import_react3.createContext)({
 StdinContext.displayName = "InternalStdinContext";
 var StdinContext_default = StdinContext;
 
-// node_modules/ink/build/components/StdoutContext.js
+// ../../localdev/simplenote/node_modules/ink/build/components/StdoutContext.js
 var import_react4 = __toESM(require_react(), 1);
 import process9 from "node:process";
 var StdoutContext = (0, import_react4.createContext)({
@@ -6459,7 +6459,7 @@ var StdoutContext = (0, import_react4.createContext)({
 StdoutContext.displayName = "InternalStdoutContext";
 var StdoutContext_default = StdoutContext;
 
-// node_modules/ink/build/components/StderrContext.js
+// ../../localdev/simplenote/node_modules/ink/build/components/StderrContext.js
 var import_react5 = __toESM(require_react(), 1);
 import process10 from "node:process";
 var StderrContext = (0, import_react5.createContext)({
@@ -6470,7 +6470,7 @@ var StderrContext = (0, import_react5.createContext)({
 StderrContext.displayName = "InternalStderrContext";
 var StderrContext_default = StderrContext;
 
-// node_modules/ink/build/components/FocusContext.js
+// ../../localdev/simplenote/node_modules/ink/build/components/FocusContext.js
 var import_react6 = __toESM(require_react(), 1);
 var FocusContext = (0, import_react6.createContext)({
   activeId: void 0,
@@ -6496,7 +6496,7 @@ var FocusContext = (0, import_react6.createContext)({
 FocusContext.displayName = "InternalFocusContext";
 var FocusContext_default = FocusContext;
 
-// node_modules/ink/build/components/AnimationContext.js
+// ../../localdev/simplenote/node_modules/ink/build/components/AnimationContext.js
 var import_react7 = __toESM(require_react(), 1);
 var animationContext = (0, import_react7.createContext)({
   renderThrottleMs: 0,
@@ -6511,7 +6511,7 @@ var animationContext = (0, import_react7.createContext)({
 animationContext.displayName = "InternalAnimationContext";
 var AnimationContext_default = animationContext;
 
-// node_modules/ink/build/components/CursorContext.js
+// ../../localdev/simplenote/node_modules/ink/build/components/CursorContext.js
 var import_react8 = __toESM(require_react(), 1);
 var CursorContext = (0, import_react8.createContext)({
   setCursorPosition() {
@@ -6520,22 +6520,22 @@ var CursorContext = (0, import_react8.createContext)({
 CursorContext.displayName = "InternalCursorContext";
 var CursorContext_default = CursorContext;
 
-// node_modules/ink/build/components/ErrorBoundary.js
+// ../../localdev/simplenote/node_modules/ink/build/components/ErrorBoundary.js
 var import_react14 = __toESM(require_react(), 1);
 
-// node_modules/ink/build/components/ErrorOverview.js
+// ../../localdev/simplenote/node_modules/ink/build/components/ErrorOverview.js
 var import_react13 = __toESM(require_react(), 1);
 var import_stack_utils = __toESM(require_stack_utils(), 1);
 import * as fs2 from "node:fs";
 import { cwd } from "node:process";
 
-// node_modules/convert-to-spaces/dist/index.js
+// ../../localdev/simplenote/node_modules/convert-to-spaces/dist/index.js
 var convertToSpaces = (input, spaces = 2) => {
   return input.replace(/^\t+/gm, ($1) => " ".repeat($1.length * spaces));
 };
 var dist_default2 = convertToSpaces;
 
-// node_modules/code-excerpt/dist/index.js
+// ../../localdev/simplenote/node_modules/code-excerpt/dist/index.js
 var generateLineNumbers = (line, around) => {
   const lineNumbers = [];
   const min = line - around;
@@ -6561,20 +6561,20 @@ var codeExcerpt = (source, line, options = {}) => {
 };
 var dist_default3 = codeExcerpt;
 
-// node_modules/ink/build/components/Box.js
+// ../../localdev/simplenote/node_modules/ink/build/components/Box.js
 var import_react11 = __toESM(require_react(), 1);
 
-// node_modules/ink/build/components/AccessibilityContext.js
+// ../../localdev/simplenote/node_modules/ink/build/components/AccessibilityContext.js
 var import_react9 = __toESM(require_react(), 1);
 var accessibilityContext = (0, import_react9.createContext)({
   isScreenReaderEnabled: false
 });
 
-// node_modules/ink/build/components/BackgroundContext.js
+// ../../localdev/simplenote/node_modules/ink/build/components/BackgroundContext.js
 var import_react10 = __toESM(require_react(), 1);
 var backgroundContext = (0, import_react10.createContext)(void 0);
 
-// node_modules/ink/build/components/Box.js
+// ../../localdev/simplenote/node_modules/ink/build/components/Box.js
 var Box = (0, import_react11.forwardRef)(({ children, backgroundColor, "aria-label": ariaLabel, "aria-hidden": ariaHidden, "aria-role": role, "aria-state": ariaState, ...style }, ref) => {
   const { isScreenReaderEnabled } = (0, import_react11.useContext)(accessibilityContext);
   const label = ariaLabel ? import_react11.default.createElement("ink-text", null, ariaLabel) : void 0;
@@ -6602,7 +6602,7 @@ var Box = (0, import_react11.forwardRef)(({ children, backgroundColor, "aria-lab
 Box.displayName = "Box";
 var Box_default = Box;
 
-// node_modules/ink/build/components/Text.js
+// ../../localdev/simplenote/node_modules/ink/build/components/Text.js
 var import_react12 = __toESM(require_react(), 1);
 function Text({ color, backgroundColor, dimColor = false, bold = false, italic = false, underline = false, strikethrough = false, inverse = false, wrap = "wrap", children, "aria-label": ariaLabel, "aria-hidden": ariaHidden = false }) {
   const { isScreenReaderEnabled } = (0, import_react12.useContext)(accessibilityContext);
@@ -6645,7 +6645,7 @@ function Text({ color, backgroundColor, dimColor = false, bold = false, italic =
   return import_react12.default.createElement("ink-text", { style: { flexGrow: 0, flexShrink: 1, flexDirection: "row", textWrap: wrap }, internal_transform: transform }, childrenOrAriaLabel);
 }
 
-// node_modules/ink/build/components/ErrorOverview.js
+// ../../localdev/simplenote/node_modules/ink/build/components/ErrorOverview.js
 var cleanupPath = (path) => {
   return path?.replace(`file://${cwd()}/`, "");
 };
@@ -6758,7 +6758,7 @@ function ErrorOverview({ error }) {
   );
 }
 
-// node_modules/ink/build/components/ErrorBoundary.js
+// ../../localdev/simplenote/node_modules/ink/build/components/ErrorBoundary.js
 var ErrorBoundary = class extends import_react14.PureComponent {
   static displayName = "InternalErrorBoundary";
   static getDerivedStateFromError(error) {
@@ -6778,7 +6778,7 @@ var ErrorBoundary = class extends import_react14.PureComponent {
   }
 };
 
-// node_modules/ink/build/components/App.js
+// ../../localdev/simplenote/node_modules/ink/build/components/App.js
 var tab = "	";
 var shiftTab = "\x1B[Z";
 var escape2 = "\x1B";
@@ -7290,7 +7290,7 @@ function App({ children, stdin, stdout, stderr, writeToStdout, writeToStderr, ex
 App.displayName = "InternalApp";
 var App_default = App;
 
-// node_modules/ink/build/kitty-keyboard.js
+// ../../localdev/simplenote/node_modules/ink/build/kitty-keyboard.js
 var kittyFlags = {
   disambiguateEscapeCodes: 1,
   reportEventTypes: 2,
@@ -7316,7 +7316,7 @@ var kittyModifiers = {
   numLock: 128
 };
 
-// node_modules/ink/build/ink.js
+// ../../localdev/simplenote/node_modules/ink/build/ink.js
 var noop = () => {
 };
 var textEncoder = new TextEncoder();
@@ -8112,7 +8112,7 @@ var Ink = class {
   }
 };
 
-// node_modules/ink/build/render.js
+// ../../localdev/simplenote/node_modules/ink/build/render.js
 var render = (node, options) => {
   const inkOptions = {
     stdout: process13.stdout,
@@ -8163,7 +8163,7 @@ var getInstance = (stdout, createInstance) => {
   return instance;
 };
 
-// node_modules/ink/build/render-to-string.js
+// ../../localdev/simplenote/node_modules/ink/build/render-to-string.js
 var import_constants3 = __toESM(require_constants(), 1);
 var renderToString = (node, options) => {
   const columns = options?.columns ?? 80;
@@ -8219,7 +8219,7 @@ var renderToString = (node, options) => {
 };
 var render_to_string_default = renderToString;
 
-// node_modules/ink/build/components/Static.js
+// ../../localdev/simplenote/node_modules/ink/build/components/Static.js
 var import_react17 = __toESM(require_react(), 1);
 function Static(props) {
   const { items, children: render2, style: customStyle } = props;
@@ -8241,7 +8241,7 @@ function Static(props) {
   return import_react17.default.createElement("ink-box", { internal_static: true, style }, children);
 }
 
-// node_modules/ink/build/components/Transform.js
+// ../../localdev/simplenote/node_modules/ink/build/components/Transform.js
 var import_react18 = __toESM(require_react(), 1);
 function Transform({ children, transform, accessibilityLabel }) {
   const { isScreenReaderEnabled } = (0, import_react18.useContext)(accessibilityContext);
@@ -8251,22 +8251,22 @@ function Transform({ children, transform, accessibilityLabel }) {
   return import_react18.default.createElement("ink-text", { style: { flexGrow: 0, flexShrink: 1, flexDirection: "row" }, internal_transform: transform }, isScreenReaderEnabled && accessibilityLabel ? accessibilityLabel : children);
 }
 
-// node_modules/ink/build/components/Newline.js
+// ../../localdev/simplenote/node_modules/ink/build/components/Newline.js
 var import_react19 = __toESM(require_react(), 1);
 function Newline({ count = 1 }) {
   return import_react19.default.createElement("ink-text", null, "\n".repeat(count));
 }
 
-// node_modules/ink/build/components/Spacer.js
+// ../../localdev/simplenote/node_modules/ink/build/components/Spacer.js
 var import_react20 = __toESM(require_react(), 1);
 function Spacer() {
   return import_react20.default.createElement(Box_default, { flexGrow: 1 });
 }
 
-// node_modules/ink/build/hooks/use-input.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-input.js
 var import_react22 = __toESM(require_react(), 1);
 
-// node_modules/ink/build/parse-keypress.js
+// ../../localdev/simplenote/node_modules/ink/build/parse-keypress.js
 var textDecoder = new TextDecoder();
 var metaKeyCodeRe = /^(?:\x1b)([a-zA-Z0-9])$/;
 var fnKeyRe = /^(?:\x1b+)(O|N|\[|\[\[)(?:(\d+)(?:;(\d+))?([~^$])|(?:1;)?(\d+)?([a-zA-Z]))/;
@@ -8698,13 +8698,13 @@ var parseKeypress = (s = "") => {
 };
 var parse_keypress_default = parseKeypress;
 
-// node_modules/ink/build/hooks/use-stdin.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-stdin.js
 var import_react21 = __toESM(require_react(), 1);
 var useStdin = () => (0, import_react21.useContext)(StdinContext_default);
 var useStdinContext = () => (0, import_react21.useContext)(StdinContext_default);
 var use_stdin_default = useStdin;
 
-// node_modules/ink/build/hooks/use-input.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-input.js
 var useInput = (inputHandler, options = {}) => {
   const { setRawMode, internal_exitOnCtrlC, internal_eventEmitter } = useStdinContext();
   (0, import_react22.useEffect)(() => {
@@ -8784,7 +8784,7 @@ var useInput = (inputHandler, options = {}) => {
 };
 var use_input_default = useInput;
 
-// node_modules/ink/build/hooks/use-paste.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-paste.js
 var import_react23 = __toESM(require_react(), 1);
 var usePaste = (handler, options = {}) => {
   const { setRawMode, setBracketedPasteMode, internal_eventEmitter } = useStdinContext();
@@ -8816,22 +8816,22 @@ var usePaste = (handler, options = {}) => {
 };
 var use_paste_default = usePaste;
 
-// node_modules/ink/build/hooks/use-app.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-app.js
 var import_react24 = __toESM(require_react(), 1);
 var useApp = () => (0, import_react24.useContext)(AppContext_default);
 var use_app_default = useApp;
 
-// node_modules/ink/build/hooks/use-stdout.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-stdout.js
 var import_react25 = __toESM(require_react(), 1);
 var useStdout = () => (0, import_react25.useContext)(StdoutContext_default);
 var use_stdout_default = useStdout;
 
-// node_modules/ink/build/hooks/use-stderr.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-stderr.js
 var import_react26 = __toESM(require_react(), 1);
 var useStderr = () => (0, import_react26.useContext)(StderrContext_default);
 var use_stderr_default = useStderr;
 
-// node_modules/ink/build/hooks/use-focus.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-focus.js
 var import_react27 = __toESM(require_react(), 1);
 var useFocus = ({ isActive = true, autoFocus = false, id: customId } = {}) => {
   const { isRawModeSupported, setRawMode } = use_stdin_default();
@@ -8868,7 +8868,7 @@ var useFocus = ({ isActive = true, autoFocus = false, id: customId } = {}) => {
 };
 var use_focus_default = useFocus;
 
-// node_modules/ink/build/hooks/use-focus-manager.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-focus-manager.js
 var import_react28 = __toESM(require_react(), 1);
 var useFocusManager = () => {
   const focusContext = (0, import_react28.useContext)(FocusContext_default);
@@ -8883,7 +8883,7 @@ var useFocusManager = () => {
 };
 var use_focus_manager_default = useFocusManager;
 
-// node_modules/ink/build/hooks/use-is-screen-reader-enabled.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-is-screen-reader-enabled.js
 var import_react29 = __toESM(require_react(), 1);
 var useIsScreenReaderEnabled = () => {
   const { isScreenReaderEnabled } = (0, import_react29.useContext)(accessibilityContext);
@@ -8891,7 +8891,7 @@ var useIsScreenReaderEnabled = () => {
 };
 var use_is_screen_reader_enabled_default = useIsScreenReaderEnabled;
 
-// node_modules/ink/build/hooks/use-cursor.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-cursor.js
 var import_react30 = __toESM(require_react(), 1);
 var useCursor = () => {
   const context = (0, import_react30.useContext)(CursorContext_default);
@@ -8909,7 +8909,7 @@ var useCursor = () => {
 };
 var use_cursor_default = useCursor;
 
-// node_modules/ink/build/hooks/use-animation.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-animation.js
 var import_react31 = __toESM(require_react(), 1);
 var defaultAnimationInterval = 100;
 var maximumTimerInterval = 2147483647;
@@ -8969,7 +8969,7 @@ function normalizeAnimationInterval(interval) {
   return Math.min(maximumTimerInterval, Math.max(1, interval));
 }
 
-// node_modules/ink/build/hooks/use-window-size.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-window-size.js
 var import_react32 = __toESM(require_react(), 1);
 var useWindowSize = () => {
   const { stdout } = use_stdout_default();
@@ -8987,7 +8987,7 @@ var useWindowSize = () => {
 };
 var use_window_size_default = useWindowSize;
 
-// node_modules/ink/build/hooks/use-box-metrics.js
+// ../../localdev/simplenote/node_modules/ink/build/hooks/use-box-metrics.js
 var import_react33 = __toESM(require_react(), 1);
 var emptyMetrics = {
   width: 0,
@@ -9030,7 +9030,7 @@ var useBoxMetrics = (ref) => {
 };
 var use_box_metrics_default = useBoxMetrics;
 
-// node_modules/ink/build/measure-element.js
+// ../../localdev/simplenote/node_modules/ink/build/measure-element.js
 var measureElement = (node) => {
   const { yogaNode } = node;
   if (!yogaNode) {

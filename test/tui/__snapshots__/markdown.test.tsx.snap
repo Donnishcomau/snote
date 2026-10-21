@@ -3,10 +3,10 @@
 exports[`Markdown preview > 5: snapshot test at 80x24 > markdown-rendered-80x24 1`] = `
 "Notes                           │Preview: Plain text note
 >Plain text note                │g add tag
-  No markdown here              │No markdown here
+    No markdown here            │No markdown here
                                 │
  Title                          │
-  Some bold text                │
+    Some bold text              │
                                 │
                                 │
                                 │
@@ -22,7 +22,7 @@ exports[`Markdown preview > 5: snapshot test at 80x24 > markdown-rendered-80x24 
                                 │
                                 │
                                 │
-? Help  n New  e Edit  g Add tag  / Search  q Quit  Tab Tags
-[offline] 2 notes
+? Help  n New  e Edit  g Add tag  / Search  q Quit  p Pin  Tab Tags
+[connecting] 2 notes
 "
 `;

@@ -11,6 +11,8 @@ const eid = (id: string): EntityId => id as unknown as EntityId;
 
 function buildStoreWithTwoNotes(): ReturnType<typeof makeStore> {
   const store = makeStore({ stubClient: {} });
+  // #79: `r` says "synced" only on a green connection
+  store.dispatch({ type: 'CHANGE_CONNECTION_STATUS', status: 'green' } as never);
   const notes = [
     { content: 'Note one', systemTags: [] as const, tags: [] as string[] },
     { content: 'Note two', systemTags: [] as const, tags: [] as string[] },
