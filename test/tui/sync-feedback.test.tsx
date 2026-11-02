@@ -28,7 +28,7 @@ function buildStoreWithTwoNotes(): ReturnType<typeof makeStore> {
   return store;
 }
 
-describe('T212 The r key says it synced', () => {
+describe('The r key says it synced', () => {
   describe('1: WHEN r is written THEN spy was called 1 time and the frame contains synced followed by a time', () => {
     it('WHEN r is written THEN spy was called 1 time and the frame contains `synced ` followed by a time matching /\\d\\d:\\d\\d/', async () => {
       const store = buildStoreWithTwoNotes();

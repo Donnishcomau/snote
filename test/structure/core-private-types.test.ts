@@ -16,9 +16,9 @@ function offenders(files: string[], names: string[]): string[] {
   return names.filter((n) => srcs.some((s) => exportsName(s, n)));
 }
 
-describe("T455 private core and cli types", () => {
+describe("private core and cli types", () => {
   it("1: WHEN update-check.ts, update-state.ts, layout.ts, wrap.ts and note-row.ts are read THEN no line exports `defaultGitRunner`, `RemoteUpdateResult`, `LocalUpdate`, `PaneLayout`, `Row` or `NoteRow`.", () => {
-    // defaultGitRunner stays exported: update-check-hardening-2 imports it (T455 Facts: re-check names).
+    // defaultGitRunner stays exported: update-check-hardening-2 imports it ( Facts: re-check names).
     expect(
       offenders(
         [

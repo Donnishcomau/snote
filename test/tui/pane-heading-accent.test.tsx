@@ -12,6 +12,11 @@ import { makeNote } from './fixtures';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+const E = String.fromCharCode(27);
+const UNFOCUSED = (label: string): string => E + '[1m' + E + '[34m' + label + E + '[39m' + E + '[22m';
+// #73: the focused heading is an accent bar: inverse, bold and blue, padded with spaces
+const BAR = E + '[7m' + E + '[1m' + E + '[34m';
+
 const inkPkgDir = path.dirname(
   path.dirname(createRequire(import.meta.url).resolve('ink')),
 );
@@ -21,7 +26,7 @@ const inkChalk = (
   )
 ).default;
 
-describe('T378 Pane headings use accent and bold, the focused heading stays inverse', () => {
+describe('Pane headings use accent and bold, the focused heading stays inverse', () => {
   let savedLevel: number;
 
   beforeEach(() => {
@@ -33,53 +38,53 @@ describe('T378 Pane headings use accent and bold, the focused heading stays inve
     inkChalk.level = savedLevel;
   });
 
-  it('1: WHEN <NoteList notes={[]} selectedIndex={0} width={40} height={10} /> renders with chalk forced THEN the frame contains \\u001b[1m\\u001b[34mNotes\\u001b[39m\\u001b[22m', async () => {
+  it('1: WHEN <NoteList notes={[]} selectedIndex={0} width={40} height={10} /> renders with chalk forced THEN the frame contains Notes bold and blue', async () => {
     const { lastFrame } = render(
       <NoteList notes={[]} selectedIndex={0} width={40} height={10} />,
     );
     await delay(0);
     const frame = lastFrame() ?? '';
-    expect(frame).toContain('\u001b[1m\u001b[34mNotes\u001b[39m\u001b[22m');
+    expect(frame).toContain(UNFOCUSED('Notes'));
   });
 
-  it('2: WHEN <TagPane tags={[\'home\']} selectedIndex={0} focused={false} width={20} height={5} /> renders with chalk forced THEN the frame contains \\u001b[1m\\u001b[34mTags\\u001b[39m\\u001b[22m', async () => {
+  it('2: WHEN <TagPane tags={[\'home\']} selectedIndex={0} focused={false} width={20} height={5} /> renders with chalk forced THEN the frame contains Tags bold and blue', async () => {
     const { lastFrame } = render(
       <TagPane tags={['home']} selectedIndex={0} focused={false} width={20} height={5} />,
     );
     await delay(0);
     const frame = lastFrame() ?? '';
-    expect(frame).toContain('\u001b[1m\u001b[34mTags\u001b[39m\u001b[22m');
+    expect(frame).toContain(UNFOCUSED('Tags'));
   });
 
-  it('3: WHEN Preview renders with note={null} (80x24, chalk forced) THEN the frame contains \\u001b[1m\\u001b[34mPreview\\u001b[39m\\u001b[22m', async () => {
+  it('3: WHEN Preview renders with note={null} (80x24, chalk forced) THEN the frame contains Preview bold and blue', async () => {
     const { lastFrame } = render(
       <Preview note={null} width={80} height={24} />,
     );
     await delay(0);
     const frame = lastFrame() ?? '';
-    expect(frame).toContain('\u001b[1m\u001b[34mPreview\u001b[39m\u001b[22m');
+    expect(frame).toContain(UNFOCUSED('Preview'));
   });
 
-  it('4: WHEN Preview renders makeNote(\'g\', \'Groceries\\n\\nbody\', {}) (80x24, chalk forced) THEN the frame contains \\u001b[1m\\u001b[34mPreview: Groceries\\u001b[39m\\u001b[22m', async () => {
+  it('4: WHEN Preview renders makeNote(\'g\', \'Groceries\\n\\nbody\', {}) (80x24, chalk forced) THEN the frame contains Preview: Groceries bold and blue', async () => {
     const { lastFrame } = render(
       <Preview note={makeNote('g', 'Groceries\n\nbody', {})} width={80} height={24} />,
     );
     await delay(0);
     const frame = lastFrame() ?? '';
-    expect(frame).toContain('\u001b[1m\u001b[34mPreview: Groceries\u001b[39m\u001b[22m');
+    expect(frame).toContain(UNFOCUSED('Preview: Groceries'));
   });
 
-  it('5: WHEN the empty NoteList of line 1 renders with focused and chalk forced THEN the frame contains \\u001b[7m\\u001b[1mNotes\\u001b[22m\\u001b[27m and does not contain \\u001b[34mNotes', async () => {
+  it('5: WHEN the empty NoteList of line 1 renders with focused and chalk forced THEN the frame contains the Notes accent bar, inverse, bold and blue (#73; it was inverse without blue before)', async () => {
     const { lastFrame } = render(
       <NoteList notes={[]} selectedIndex={0} width={40} height={10} focused />,
     );
     await delay(0);
     const frame = lastFrame() ?? '';
-    expect(frame).toContain('\u001b[7m\u001b[1mNotes\u001b[22m\u001b[27m');
-    expect(frame).not.toContain('\u001b[34mNotes');
+    expect(frame).toContain(BAR + 'Notes ');
+    expect(frame).not.toContain(E + '[7m' + E + '[1mNotes');
   });
 
-  it('6: WHEN the empty NoteList of line 1 renders without forcing chalk THEN the frame starts with Notes and does not contain \\u001b', async () => {
+  it('6: WHEN the empty NoteList of line 1 renders without forcing chalk THEN the frame starts with Notes and does not contain the ESC character', async () => {
     inkChalk.level = 0;
     const { lastFrame } = render(
       <NoteList notes={[]} selectedIndex={0} width={40} height={10} />,
@@ -87,6 +92,6 @@ describe('T378 Pane headings use accent and bold, the focused heading stays inve
     await delay(0);
     const frame = lastFrame() ?? '';
     expect(frame.startsWith('Notes')).toBe(true);
-    expect(frame).not.toContain('\u001b');
+    expect(frame).not.toContain(E);
   });
 });

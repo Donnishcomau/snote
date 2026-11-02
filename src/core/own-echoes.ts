@@ -1,9 +1,9 @@
 /**
- * T523 — the server's echo of a change sent before snote quit must read
+ * the server's echo of a change sent before snote quit must read
  * as THIS client's confirmation after a restart, not as another device's
  * change.
  *
- * The cause (F178, issue #9): a change goes out, the server applies it,
+ * The cause (, issue #9): a change goes out, the server applies it,
  * and snote dies before the reply lands. The local note already holds
  * the edit; after restart the echo arrives with no match in the library's
  * in-memory `localQueue.sent`, so `internal.findAcknowledgedChange`
@@ -17,13 +17,16 @@
  * instead of applying it. `Channel.prototype.onChanges` is bound to
  * `message.on('c', ...)` at construction (channel.js:392), so a listener
  * added with `message.prependListener('c', ...)` runs first: for each
- * change T519's record recognises as an echo (`createSentChanges`'s
- * `echoes`, which matches only entries LOADED at open — a change sent
- * this session is never its own echo — and skips every id the library
- * already has in flight), seed the sent entry so the library
- * acknowledges the echo.
+ * change's record recognises as an echo (`createSentChanges`'s
+ * `echoes`, which matches only entries LOADED at open, so a change sent
+ * this session is not its own echo, and which passes over an id the
+ * library has in flight unless that change is stale), seed the sent entry
+ * so the library acknowledges the echo.
  *
- * An id `localQueue.sent` already holds is never seeded over: `onAuth`
+ * A non-stale change that `localQueue.sent` holds keeps its entry (a stale
+ * one, from the echo's own source version or a remove, is replaced on
+ * purpose when no later change for the note follows in the frame: #28,
+ * #93, see `seedEcho`): `onAuth`
  * starts the local queue before it asks for the catch-up
  * (channel.js:625-629), so an edit made between auth and the catch-up
  * sits there by the time the echo arrives, and replacing that entry
@@ -43,6 +46,7 @@
  * the record from touching `sent-changes.json` again: the library keeps
  * sending and acknowledging until `client.end()`, and a late write
  * after a logout would bring the account folder back with the record.
+ * proof: test/core/own-echoes.test.ts
  */
 
 import { apply } from 'simperium/lib/simperium/util/change';
@@ -84,12 +88,13 @@ type Note = Record<string, unknown>;
  * Hook the note channel of a simperium client to `sent-changes.json`:
  * record outgoing changes and acknowledgements, and make the server's
  * echo of a change sent before the previous quit the library's own
- * in-flight change so it is acknowledged, not applied — never over a
- * change the library already has in flight for that note. Safe to call
- * on a client without a note channel: nothing is hooked and `settle`
+ * in-flight change so it is acknowledged, not applied — not over a
+ * non-stale change the library has in flight for that note (#28, #93).
+ * Safe to call on a client without a note channel: nothing is hooked and `settle`
  * still drains the record. `settle` drops loaded entries whose echo
  * never came; `stop` detaches every listener and makes every later
  * write to `sent-changes.json` a no-op. Never throws.
+ * proof: test/core/own-echoes.test.ts
  */
 export function trackOwnEchoes(
   client: unknown,
@@ -168,14 +173,14 @@ export function trackOwnEchoes(
     }
   };
 
-  // F206 — true when the user set every field the local note does not hold
+  // true when the user set every field the local note does not hold
   // in this session: the local copy is newer than both the note as loaded
   // from state.json (`loadedNotes`, read-only) and the ghost (a user action
   // stamps this machine's time; a start-up write such as a ghost restored
   // over the loaded copy does not), and each of those fields differs from
   // the loaded copy. Then the echo only confirms the pre-quit send, and the
   // user's edit goes out on its own send against the confirmed copy.
-  // Otherwise today's rule stands (the F198 crash-before-save rows: the
+  // Otherwise today's rule stands (the crash-before-save rows: the
   // echo is applied as before).
   const setThisSession = (id: string, keys: string[], ghost: Note): boolean => {
     const loaded = loadedNotes?.get(id) as Note | undefined;
@@ -224,9 +229,12 @@ export function trackOwnEchoes(
     // acknowledged instead of applied to the copy that already has it.
     seedEcho = (data: string) => {
       // Pass the library's live in-flight map as `inFlight`: `echoes`
-      // skips every id it holds (sent-changes.ts:137), so an echo is
-      // never seeded over a change the library already has in flight
-      // for that note — that entry is its only handle on the change.
+      // skips an id it holds unless that change is stale (same source
+      // version, or a remove: #28, #93; sent-changes.ts `stale`), so an
+      // echo is not seeded over a non-stale change the library has in
+      // flight for that note — that entry is its only handle on the change.
+      // A stale one is replaced when no later change for the note follows in
+      // the frame (proof: test/integration/r1-echo-in-flight.test.ts).
       const inFlight = channel.localQueue.sent;
       for (const { id, ccid } of record.echoes(data, inFlight)) {
         const changes = JSON.parse(data) as Array<{ id: string; v?: Note; sv?: number }>;
@@ -245,13 +253,13 @@ export function trackOwnEchoes(
         channel.store?.eachGhost((g) => {
           if (g.key === id) ghost = g;
         });
-        // F190 (#23) — the library defers an echo whose `sv` is not the
+        // (#23) — the library defers an echo whose `sv` is not the
         // ghost's version (channel.js:210-218), so a seed for it would wait
         // in `sent` and `resendSentChanges` would re-send it after a
         // reconnect: seed only an echo that applies at once, with that `sv`.
         const version = ghost?.version;
         if (!change || (version !== undefined && change.sv !== version)) continue;
-        // #93 (F226) — a note deleted forever on this machine (tombstones.json
+        // #93 — a note deleted forever on this machine (tombstones.json
         // names it; its local copy may not be removed yet) only confirms the
         // pre-quit send: applied, the echo would re-create the note and drop
         // the remove. Nothing is queued for it.
@@ -296,6 +304,7 @@ export function trackOwnEchoes(
   return {
     settle: () => {
       if (!stopped) record.settle();
+      loadedNotes = undefined; // #335: the start-up copy is not read after the settle
     },
     stop: () => {
       stopped = true;

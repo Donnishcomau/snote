@@ -1,5 +1,5 @@
 /**
- * R1 sync-3 (F206; REQUIRED-LINES section A row 7) and issue #23 (F190).
+ * R1 sync-3 (; REQUIRED-LINES section A row 7) and issue #23.
  * After a restart the server's echo of a change sent before the quit only
  * confirms that change: when the user set the changed fields again in this
  * session (the note as loaded from state.json differs, and the local copy is
@@ -59,7 +59,7 @@ function setup(version: number, loadedCopy: Copy, localCopy: Copy) {
 
 describe('R1 sync-3: the echo of a pre-quit change never undoes this session', () => {
   it('1: WHEN the edit `MK` was sent before a quit and not acknowledged, snote restarts with a prompt catch-up and the user edits n1 back to `line1\\nline2` before the echo THEN the server and the store hold content `line1\\nline2`, verdict `KEPT`', async () => {
-    const o = await runScenario('T531-P1-revert');
+    const o = await runScenario('P1-revert');
     expect(o.server?.content).toBe(BASE);
     expect(o.store?.content).toBe(BASE);
     expect(o.verdict).toBe('KEPT');

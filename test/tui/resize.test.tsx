@@ -38,7 +38,7 @@ const completeLogin = vi.fn().mockResolvedValue('tok');
 // The Unicode box-drawing character used as divider in the three-pane layout
 const divider = '│';
 
-describe('T252 Resize', () => {
+describe('Resize', () => {
   let dir: string;
 
   beforeEach(() => {

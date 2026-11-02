@@ -1,5 +1,5 @@
 /**
- * T296 — a queued local edit can be lost for good on reconnect.
+ * a queued local edit can be lost for good on reconnect.
  *
  * Repro: store1's socket is dropped (`server.dropClient`) and it queues an
  * offline edit; store2 (still online) edits the same note and syncs it to
@@ -127,7 +127,7 @@ afterEach(async () => {
   server.stop();
 });
 
-describe('T296 reconnect does not lose a queued local edit', () => {
+describe('reconnect does not lose a queued local edit', () => {
   it('1: WHEN store2 syncs EDIT_NOTE on note race1 setting content to "line1\\nB-EDIT-ONLINE", store1 is dropped via server.dropClient after queuing an offline EDIT_NOTE on race1 to "A-EDIT-OFFLINE\\nline2", and store1 reconnects THEN within 10 s the server\'s race1 content contains both "A-EDIT-OFFLINE" and "B-EDIT-ONLINE", and store1\'s pendingCount is 0', async () => {
     server.seedBucket(APP_ID, 'note', [{ id: 'race1', data: noteData('line1\nline2') }]);
     const store2 = await account(server, 'store2@example.com', ['race1']);

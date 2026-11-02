@@ -43,7 +43,7 @@ function seedTags(store: ReturnType<typeof makeStore>) {
   });
 }
 
-describe('T348 Left and right arrows move between the panes (tags, list, preview)', () => {
+describe('Left and right arrows move between the panes (tags, list, preview)', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

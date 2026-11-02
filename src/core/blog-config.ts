@@ -2,21 +2,11 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-import { secureMkdir } from './secure-fs';
+import { secureMkdir, secureWriteFileSync } from './secure-fs';
+
+export { DEFAULT_BLOG_ORIGIN, blogOriginFromEnv } from './blog-origin';
 
 const BLOG_FILE = 'blog.json';
-
-/** T340: the out-of-the-box blog origin (owner's choice, 2026-09-30). */
-export const DEFAULT_BLOG_ORIGIN = 'https://skryf.art';
-
-/**
- * The blog origin to use when no `blog.json` is saved: `SNOTE_BLOG_ORIGIN`
- * when set to a non-empty string, otherwise `DEFAULT_BLOG_ORIGIN`.
- */
-export function blogOriginFromEnv(env: NodeJS.ProcessEnv): string {
-  const fromEnv = env.SNOTE_BLOG_ORIGIN;
-  return fromEnv && fromEnv.length > 0 ? fromEnv : DEFAULT_BLOG_ORIGIN;
-}
 
 interface BlogConfigPayload {
   origin: string;
@@ -51,8 +41,7 @@ export async function saveBlogConfig(
   const data = JSON.stringify(payload);
 
   secureMkdir(dir);
-  fs.writeFileSync(filePath, data, { mode: 0o600 });
-  fs.chmodSync(filePath, 0o600);
+  secureWriteFileSync(filePath, data);
 }
 
 /**

@@ -1,5 +1,5 @@
 /**
- * T538R-4 (F227, F224): the per-read rule at the blog-send question and in
+ * the per-read rule at the blog-send question and in
  * the prompts.
  *
  * The send-to-blog question (and its resend form) is a y/n confirm of the
@@ -74,7 +74,7 @@ async function withBlog(run: (hits: () => number, dir: string) => Promise<void>)
   }
 }
 
-describe('T538R-4 the blog-send question and the prompts', () => {
+describe('the blog-send question and the prompts', () => {
   it('1: WHEN the note pane of t1 shows `Send this note to your blog as a draft? y/n` and `y\\x1b[B` arrives as one read THEN the blog receives 0 drafts and the frame still contains `Send this note to your blog as a draft? y/n`', async () => {
     await withBlog(async (hits) => {
       const a = await at('hello world');

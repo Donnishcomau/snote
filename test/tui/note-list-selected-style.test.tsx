@@ -42,11 +42,11 @@ async function withInkChalkLevel3<T>(fn: () => T): Promise<T> {
   }
 }
 
-describe('Note list selected style (T247)', () => {
+describe('Note list selected style', () => {
   it('1: WHEN 2 notes (Note one/body one line, Note two/body two) are rendered with selectedIndex=0 THEN the frame line for Note one is exactly \\u001b[7m\\u001b[1m>Note one\\u001b[22m\\u001b[27m.', async () => {
     const frame = await withInkChalkLevel3(() => {
       const { lastFrame } = render(
-        <NoteList notes={notes} selectedIndex={0} width={60} height={26} />
+        <NoteList notes={notes} selectedIndex={0} width={60} height={26} focused />
       );
       return lastFrame();
     });
@@ -70,7 +70,7 @@ describe('Note list selected style (T247)', () => {
   it('3: WHEN the same 2 notes are rendered with selectedIndex=1 THEN the line for Note one is exactly " Note one" in bold (#70) and the line for Note two is exactly \\u001b[7m\\u001b[1m>Note two\\u001b[22m\\u001b[27m.', async () => {
     const frame = await withInkChalkLevel3(() => {
       const { lastFrame } = render(
-        <NoteList notes={notes} selectedIndex={1} width={60} height={26} />
+        <NoteList notes={notes} selectedIndex={1} width={60} height={26} focused />
       );
       return lastFrame();
     });

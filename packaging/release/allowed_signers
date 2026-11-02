@@ -1,0 +1,8 @@
+# snote release signing keys (issue #68). One line per key, in this form:
+#   snote-release namespaces="snote-release" <key type> <base64 key> <comment>
+# A release is trusted only when SHA256SUMS.sig verifies against a line in this file
+# (ssh-keygen -Y verify -I snote-release -n snote-release). At least 2 lines must be
+# pinned before a release: the main key and the offline backup key. Steps: docs/RELEASE-SIGNING.md.
+# The key lines are added by the release owner once the keys exist. Pinned 28 Oct 2026: the main key and the offline backup key.
+snote-release namespaces="snote-release" sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIIAEK11WBb5RlydufqIWvbvW2KsJvFa97HE/09BlkuJGAAAAEXNzaDpzbm90ZS1yZWxlYXNl snote-release-main
+snote-release namespaces="snote-release" sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAILGd2O/mqNfucFwu+CjKdBCTkKUxBSmw+RLfNwno7hyHAAAAEXNzaDpzbm90ZS1yZWxlYXNl snote-release-backup

@@ -1,5 +1,5 @@
 /**
- * T319 — a note deleted forever on another device comes back after snote
+ * a note deleted forever on another device comes back after snote
  * catches up.
  *
  * During a catch-up, `internal.applyChange`
@@ -18,7 +18,8 @@
  * (Live finding 2026-09-26: a stale cache came back with 31 notes where
  * the account holds 4.)
  *
- * This module never revives a removed id: per note-bucket channel, every
+ * This module stops a removed id coming back while the id is among the last
+ * REMOVED_ID_CAP (5000, #202) removed on its channel: per note-bucket channel, every
  * id the channel emits `'remove'` for (only changes from other clients
  * emit it, channel.js:147-148 — local deletes are untouched) is
  * remembered, and the channel's own `emit` is wrapped so an event named
@@ -27,7 +28,10 @@
  * `requestObjectVersion`'s promise stays pending and `applyChange` never
  * writes the ghost or emits `'update'`. Every other event — including
  * the `'remove'` itself, since the id is only remembered AFTER it is
- * delivered — goes through unchanged.
+ * delivered — goes through unchanged. Past the cap the oldest id is
+ * forgotten (test/core/id-set-caps.test.ts test 1), so a version reply that
+ * arrives after more than 5000 later removes can still bring it back.
+ * proof: test/core/simperium-removed-note-fix.test.ts
  */
 
 // OMARCHY: boundary cast — Channel is untyped where it reaches through
@@ -55,9 +59,12 @@ interface ClientLike {
  */
 const installed = new WeakSet<object>();
 
+/** #202: how many removed ids one channel remembers (ids only, about 100 bytes each). */
+export const REMOVED_ID_CAP = 5000;
+
 /**
  * Wrap one channel's own `emit` so a `version.<id>.<anything>` event for
- * an id this channel already emitted `'remove'` for is never delivered.
+ * an id this channel emitted `'remove'` for, and still remembers, is dropped.
  * Safe to call more than once on the same channel.
  */
 function installOnChannel(channel: ChannelLike | undefined): void {
@@ -75,7 +82,10 @@ function installOnChannel(channel: ChannelLike | undefined): void {
 
   channel.on('remove', (id: unknown) => {
     if (typeof id === 'string') {
+      // #202: at most REMOVED_ID_CAP ids; the oldest is dropped first.
+      removed.delete(id);
       removed.add(id);
+      if (removed.size > REMOVED_ID_CAP) removed.delete(removed.values().next().value as string);
     }
   });
 
@@ -95,7 +105,8 @@ function installOnChannel(channel: ChannelLike | undefined): void {
 
 /**
  * Hook every note-bucket channel of a simperium client so a late
- * version reply can never re-create a locally-removed note. Safe to
+ * version reply does not re-create a locally-removed note while its id is
+ * remembered (REMOVED_ID_CAP). Safe to
  * call more than once; never throws on a client without channels.
  */
 export function installSimperiumRemovedNoteFix(client: unknown): void {

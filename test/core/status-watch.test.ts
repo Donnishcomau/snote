@@ -1,5 +1,5 @@
 /**
- * T358: watchStatus keeps status.json fresh (debounced) and logout removes it.
+ * watchStatus keeps status.json fresh (debounced) and logout removes it.
  */
 import * as fs from 'node:fs';
 import * as os from 'node:os';
@@ -57,7 +57,7 @@ const seedNote = (
   } as never);
 };
 
-describe('T358 status watch', () => {
+describe('status watch', () => {
   let tmpDir: string;
   let server: FakeSimperiumServer | undefined;
   let stopSaving: (() => void) | undefined;

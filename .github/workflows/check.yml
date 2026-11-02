@@ -1,28 +1,44 @@
 name: check
 
+# Hosted runner minutes cost money: run where it counts.
+# push stays on main and ship-*: the release gate needs a green run for the exact release HEAD,
+# and merge commits there are not the PR heads. Each PR runs once per push to it; a newer push or merge
+# cancels the older run. No paths-ignore: test/docs reads README, CHANGELOG, SECURITY and docs/, and a
+# skipped docs-only commit on main would leave the release gate with no run for HEAD.
+# One job, not three shards: every shard repeated npm ci, typecheck and lint, so a run cost about
+# 14.8 billable minutes against about 10.5 for one job. The job id `check` is the required status context.
+# The push-to-main run is skipped when the repository is private (a merge there lands only a tested tree) and kept when it is public.
+# A job skipped by `if:` reports success to the required check, so keep the `||` form below.
+# The npm cache is kept only on a GitHub-hosted runner: any other runner may keep its own warm package store,
+# and saving to the hosted cache would cost it time.
+# workflow_dispatch lets a branch be checked by hand (gh workflow run check --ref <branch>).
 on:
   push:
     branches: [main, 'ship-*']
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
+    if: github.event.repository.private == false || github.event_name != 'push' || github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
-          cache: npm
+          cache: ${{ runner.environment == 'github-hosted' && 'npm' || '' }}
 
       - run: npm ci
 
@@ -35,7 +51,20 @@ jobs:
       # typecheck, lint, the full test suite, the keymap gate, and the ANSI
       # gate all still run here and must pass. Perf regressions are still
       # caught locally, where `make check` runs the bench unskipped.
-      - run: make check-ci
+      # The suite takes ~585 s on 2 vCPU, so the vitest time limit is raised to 900 s (stopgap).
+      - run: make check-ci VITEST_TIMEOUT=900 SHARD_REPORT="$RUNNER_TEMP/vitest-report.json"
+
+      # R4: the hostile corpus (test/fixtures/hostile.ts) through the BUILT dist/snote-main.js on a real
+      # pty, in normal mode and with INK_SCREEN_READER=true. SNOTE_PTY_REQUIRED makes a runner that cannot open
+      # a pty fail this step; it never skips and never passes with zero frames captured.
+      - name: Build dist/
+        run: npm run build
+
+      - name: Hostile corpus on dist/ in a pty
+        env:
+          SNOTE_PTY_BUNDLE: dist/snote-main.js
+          SNOTE_PTY_REQUIRED: '1'
+        run: npx vitest run test/integration/pty-hostile-corpus.test.ts
 
       # In the public repo the pre-built plugin files are committed under
       # plugin-dist/; prove they still match a fresh build of the source.

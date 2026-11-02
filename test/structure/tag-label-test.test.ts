@@ -12,7 +12,7 @@ const caseTwo = (): string => {
   return lines.slice(start, end).join('\n');
 };
 
-describe('tag label test (T485)', () => {
+describe('tag label test', () => {
   it('1: WHEN test/tui/tag-real-name.test.tsx is read THEN the text of its case 2 (from the line starting `  it(` whose title starts with `2:` to the next line starting `  it(`) contains `tag: ab`, `waitForFrame` and `\\r`', () => {
     const body = caseTwo();
     expect(body).toContain('tag: ab');

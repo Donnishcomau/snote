@@ -1,12 +1,12 @@
 /**
- * T493: an edit or trash the server has not confirmed survives a restart
+ * an edit or trash the server has not confirmed survives a restart
  * and is sent, whatever the dates say. `pendingNotes` knows which local
  * changes the server never acknowledged but lives only in memory, so the
  * record of those ids (with the date each change carried) now lives in
  * unsynced.json: at start-up a held note the record names is never
  * replaced by a newer ghost copy, and requeueUnsynced sends it even when
  * the ghost's date is larger. Only content the server confirmed may still
- * be adopted from the ghost (test 3, the T487 guard).
+ * be adopted from the ghost (test 3, the guard).
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'node:fs';
@@ -50,7 +50,7 @@ const waitFor = async (cond: () => boolean, timeoutMs = 1000) => {
   }
 };
 
-describe('T493 an edit or trash the server has not confirmed survives a restart and is sent, whatever the dates say', () => {
+describe('an edit or trash the server has not confirmed survives a restart and is sent, whatever the dates say', () => {
   let server: FakeSimperiumServer;
   let dir: string;
   let stopSaving: (() => void) | undefined;

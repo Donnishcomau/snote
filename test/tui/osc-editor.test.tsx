@@ -1,5 +1,5 @@
 /**
- * T402 — security fix, step 3 of 3 (#10063): snote writes to the terminal
+ * security fix, step 3 of 3 (#10063): snote writes to the terminal
  * through the output guard and never uses Ink's screen-reader renderer.
  *
  * The rig renders the real App through Ink's real `render` with a fake TTY
@@ -207,7 +207,7 @@ async function runEditorWithOSC(original: string, screenReader: boolean): Promis
 const C1 = /[\u0080-\u009f]/;
 const hasC1 = (s: string): boolean => C1.test(s);
 
-describe('T402 — guarded terminal output for the inline editor', () => {
+describe('guarded terminal output for the inline editor', () => {
   it("1: WHEN, with INK_SCREEN_READER unset, the editor is opened on `Title\\n\\nbody \\x1b]52;c;UFdORUQ=\\x07 end`, `X` typed and saved THEN the joined stdout contains `body`, contains no `\\x1b]` and no `\\x07`, and the saved content is the original plus `X`.", async () => {
     const original = 'Title\n\nbody \x1b]52;c;UFdORUQ=\x07 end';
     const { joined, saved } = await runEditorWithOSC(original, false);
@@ -236,13 +236,13 @@ describe('T402 — guarded terminal output for the inline editor', () => {
     }
   });
 
-  it("4: WHEN src/cli/main.tsx is read THEN it contains `guardOutputStream(process.stdout)` before `const { waitUntilExit, unmount, clear } = render(`, and contains `isScreenReaderEnabled: false`.", () => {
+  it("4: WHEN src/cli/main.tsx is read THEN it contains `guardOutputStream(process.stdout)` before `const { waitUntilExit, unmount, clear } = render(`, and contains `isScreenReaderEnabled: screenReader`.", () => {
     const src = readFileSync(resolve(process.cwd(), 'src/cli/main.tsx'), 'utf8');
     const guardAt = src.indexOf('guardOutputStream(process.stdout)');
     const renderAt = src.indexOf('const { waitUntilExit, unmount, clear } = render(');
     expect(guardAt).toBeGreaterThan(-1);
     expect(renderAt).toBeGreaterThan(-1);
     expect(guardAt).toBeLessThan(renderAt);
-    expect(src).toContain('isScreenReaderEnabled: false');
+    expect(src).toContain('isScreenReaderEnabled: screenReader');
   });
 });

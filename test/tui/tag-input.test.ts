@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { suggestTag, tagInputStep, type TagKey } from '../../src/tui/tag-input';
 
-describe('T102 tag-input pure functions', () => {
+describe('tag-input pure functions', () => {
   const all = ['home', 'work', 'Web'];
   const tags = ['home', 'x1'];
 

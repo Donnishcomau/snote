@@ -1,5 +1,5 @@
 /**
- * T334: Bump the direct esbuild dependency past the advisory.
+ * Bump the direct esbuild dependency past the advisory.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { bundle } from '../../scripts/build.mjs';
 
-describe('esbuild version (T334)', () => {
+describe('esbuild version', () => {
   it('1: WHEN `node_modules/esbuild/package.json` is read THEN its version is `0.28.2`', () => {
     const pkg = JSON.parse(readFileSync('node_modules/esbuild/package.json', 'utf8'));
     expect(pkg.version).toBe('0.28.2');

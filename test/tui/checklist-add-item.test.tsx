@@ -1,5 +1,5 @@
 /**
- * T293: `a` (add checklist item) opens the Prompt and inserts through
+ * `a` (add checklist item) opens the Prompt and inserts through
  * `insertChecklistItem` — including a bunched `soy\r` paste chunk, the
  * trash notice, and a real write landing on the fake server.
  */
@@ -29,7 +29,7 @@ async function waitFor(cond: () => boolean, timeoutMs: number, label: string): P
   const start = Date.now();
   while (!cond()) {
     if (Date.now() - start > timeoutMs) {
-      // Always a failed expect(), even when the loop never entered `cond`'s own expects.
+      // Always a failed expect(), even when the poll never entered `cond`'s own expects.
       await Promise.resolve(expect(cond()).toBe(true));
       throw new Error(`timed out (${timeoutMs} ms) waiting for: ${label}`);
     }
@@ -51,7 +51,7 @@ function setup() {
 const content = (store: ReturnType<typeof makeStore>): unknown =>
   store.getState().data.notes.get(eid('g'))?.content;
 
-describe('checklist add item (T293)', () => {
+describe('checklist add item', () => {
   it('1: WHEN Tab, a, t, e, a, Enter are written on a store seeded with note g (content Groceries\\n- [ ] milk\\n- [x] bread) THEN store.getState().data.notes.get("g")?.content is Groceries\\n- [ ] milk\\n- [ ] tea\\n- [x] bread', async () => {
     const store = setup();
     const { stdin } = render(<App store={store} width={80} height={24} />);

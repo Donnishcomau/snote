@@ -15,7 +15,7 @@ import type { EntityId } from '@vendor/types';
 const eid = (id: string): EntityId => id as unknown as EntityId;
 
 // Poll until the condition holds or 2 s pass; the whole predicate, every
-// asserted value included, runs inside the loop.
+// asserted value included, runs inside the poll.
 async function until(cond: () => boolean, what: string, timeoutMs = 2000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (!cond()) {

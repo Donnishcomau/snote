@@ -1,4 +1,4 @@
-// T398: MdRowText colours a checklist glyph and the link/code spans of one
+// MdRowText colours a checklist glyph and the link/code spans of one
 // preview row. Frames are measured with ink's bundled chalk forced to level 3
 // (the preview-markdown-style recipe), except line 6 which runs unpinned.
 import { createRequire } from 'module';
@@ -42,7 +42,7 @@ const S: InlineSpan[] = [
   { start: 11, end: 20, kind: 'code' },
 ];
 
-describe('md-row (T398)', () => {
+describe('md-row', () => {
   it('1: WHEN text is \u2610 see docs now and spans is [{ start: 6, end: 10, kind: \'link\' }] THEN frame is exactly  \\u001b[2m\u2610\\u001b[22m see \\u001b[4m\\u001b[34mdocs\\u001b[39m\\u001b[24m now', async () => {
     const { restore } = await forceInkChalk();
     try {

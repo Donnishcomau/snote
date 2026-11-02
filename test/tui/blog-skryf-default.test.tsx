@@ -1,5 +1,5 @@
 /**
- * T340: Skryf is the ready-to-go blog default; `b` asks only for the token.
+ * Skryf is the ready-to-go blog default; `b` asks only for the token.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -71,7 +71,7 @@ async function focusAndPressB(r: ReturnType<typeof render>): Promise<void> {
   r.stdin.write('b');
 }
 
-describe('Skryf blog default (T340)', () => {
+describe('Skryf blog default', () => {
   it('1: WHEN `b` is pressed on a note with no `blog.json` and `SNOTE_BLOG_ORIGIN` unset THEN the frame contains `Skryf token` and `https://skryf.art/settings/keys`, and does not contain `Blog origin`', async () => {
     const prevOrigin = process.env.SNOTE_BLOG_ORIGIN;
     delete process.env.SNOTE_BLOG_ORIGIN;

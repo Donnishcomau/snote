@@ -1,5 +1,5 @@
 /**
- * T332: b asks for the blog origin and token, then confirms a second send.
+ * b asks for the blog origin and token, then confirms a second send.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -88,7 +88,7 @@ function startBlogServer(body: unknown): Promise<{ server: ReturnType<typeof cre
   });
 }
 
-describe('blog setup (T332)', () => {
+describe('blog setup', () => {
   it('1: WHEN `b` is pressed with no `blog.json` THEN the frame contains `Skryf token`', async () => {
     await withTempDataDir(async (dir) => {
       const r = renderNote('s1');

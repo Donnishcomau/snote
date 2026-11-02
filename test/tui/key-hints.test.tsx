@@ -74,7 +74,7 @@ const makeBaseProps = () => ({
   searchOpen: false,
 });
 
-describe('KeyHints (T264)', () => {
+describe('KeyHints', () => {
   it('1: WHEN <BottomArea {...makeBaseProps()} /> (from the reused makeBaseProps(), selectedEntry: null) is rendered with chalk forced to level 3 THEN the frame contains the exact \\u001b[34m?\\u001b[39m Help; rendered again WITHOUT forcing chalk, the frame contains the exact ? Help  n New  e Edit  g Add tag  / Search  q Quit', async () => {
     inkChalk.level = 3;
     const { lastFrame, unmount } = render(<BottomArea {...makeBaseProps()} />);

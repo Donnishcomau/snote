@@ -69,7 +69,7 @@ const makeBaseProps = () => ({
   searchOpen: false,
 });
 
-describe('prompt highlight (T265)', () => {
+describe('prompt highlight', () => {
   it('1: WHEN <TagEditor tags={[]} allTags={[]} onAdd={vi.fn()} onRemove={vi.fn()} onClose={vi.fn()} /> is rendered with chalk forced to level 3 THEN the frame contains the exact \\u001b[7m\\u001b[1mtags: + type to add\\u001b[22m\\u001b[27m', async () => {
     inkChalk.level = 3;
     const { lastFrame, unmount } = render(

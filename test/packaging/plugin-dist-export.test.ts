@@ -1,5 +1,5 @@
 /**
- * T343: the public export ships plugin-dist/ and CI proves it matches the
+ * the public export ships plugin-dist/ and CI proves it matches the
  * source. buildPluginDist writes SHA256SUMS next to the chunks; --check
  * rebuilds and compares byte for byte; the export script, the CI workflow
  * and the README all say so.
@@ -38,7 +38,7 @@ function buildInto(dir: string): void {
   expect(built.status).toBe(0);
 }
 
-describe('T343 pre-built plugin files in the public export', () => {
+describe('pre-built plugin files in the public export', () => {
   it("1: WHEN buildPluginDist builds into a temp directory THEN SHA256SUMS there has one line per other file, and each line's hash equals the sha256 of that file", () => {
     const dir = mkdtempSync(join(tmpdir(), 'plugin-dist-export-'));
     try {

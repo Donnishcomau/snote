@@ -1,4 +1,4 @@
-// T172 — fixture rendered both bundled and unbundled so the test can prove
+// fixture rendered both bundled and unbundled so the test can prove
 // the lazyIcu plugin's ASCII fast path produces identical frames.
 // Run as: node <outfile> print
 

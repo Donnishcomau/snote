@@ -1,5 +1,5 @@
 /**
- * T158: Tag order reaches the server and other clients.
+ * Tag order reaches the server and other clients.
  * Proves with the real sync engine against the fake Simperium server
  * that a REORDER_TAG batch lands as `index` values on the server tag
  * objects, reaches a second connected store, and never touches notes.
@@ -120,7 +120,7 @@ function moveTag(store: ServerStore, tagName: string, delta: -1 | 1) {
   }
 }
 
-describe('T158 Tag order reaches the server and other clients', () => {
+describe('Tag order reaches the server and other clients', () => {
   it('1: WHEN the store has synced THEN tagRows of its data.tags equals [home, work, zeta] and the server tag home has no index (toBeUndefined)', async () => {
     const { server, store } = await setup();
 

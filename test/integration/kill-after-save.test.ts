@@ -1,5 +1,5 @@
 /**
- * T533 (F198): an edit saved shortly before snote is killed is kept after
+ * an edit saved shortly before snote is killed is kept after
  * restart. The kill is simulated exactly at the disk level: N ms after the
  * save, the data dir is copied synchronously (what a SIGKILL leaves behind),
  * the server stops accepting change frames from the dying process, and the
@@ -193,7 +193,7 @@ async function expectKept(server: FakeSimperiumServer, b: Built, recheck: boolea
   expect(pending(b)).toBe(0);
 }
 
-describe('T533 an edit saved just before snote is killed is kept after restart (F198)', () => {
+describe('an edit saved just before snote is killed is kept after restart', () => {
   it('1: WHEN n1 is saved with Ctrl+S as `line1\\nline2\\nMK` and snote is killed 50 ms later, before the edit was sent, and restarts THEN the server\'s and store\'s n1 content is exactly `line1\\nline2\\nMK` and pendingCount is `0`', async () => {
     const { server, b, serverHadIt } = await saveThenKill('inline', 50);
     expect(serverHadIt).toBe(false);

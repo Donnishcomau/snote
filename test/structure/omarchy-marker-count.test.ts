@@ -16,9 +16,9 @@ describe('omarchy-marker-count', () => {
     }
   });
 
-  it('2: WHEN src/cli/main.tsx is read THEN it still contains `guardOutputStream(process.stdout)` and `isScreenReaderEnabled: false`.', () => {
+  it('2: WHEN src/cli/main.tsx is read THEN it still contains `guardOutputStream(process.stdout)` and `isScreenReaderEnabled: screenReader`.', () => {
     const content = read('src/cli/main.tsx');
     expect(content).toContain('guardOutputStream(process.stdout)');
-    expect(content).toContain('isScreenReaderEnabled: false');
+    expect(content).toContain('isScreenReaderEnabled: screenReader');
   });
 });

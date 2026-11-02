@@ -81,7 +81,7 @@ function BottomAreaWrapper({
   );
 }
 
-describe('logout unsynced warning (T274)', () => {
+describe('logout unsynced warning', () => {
   it('1: WHEN BottomArea is rendered with logoutAsk true and a store whose pendingCount is 0 THEN the frame contains "log out and delete local data? y/n" and does not contain "type \'logout\'"', async () => {
     const store = makeStore({ stubClient: {} });
     expect(pendingCount(store.getState().simperium)).toBe(0);
@@ -113,7 +113,7 @@ describe('logout unsynced warning (T274)', () => {
     unmount();
   });
 
-  it('2: WHEN BottomArea is rendered with logoutAsk true and a store with 1 edited note (pendingCount 1) THEN the frame contains "log out: 1 unsynced notes will be lost - type \'logout\' to confirm" and does not contain "y/n"', async () => {
+  it('2: WHEN BottomArea is rendered with logoutAsk true and a store with 1 edited note (pendingCount 1) THEN the frame contains "log out: 1 unsynced change will be deleted. Please type \'logout\' to confirm" and does not contain "y/n"', async () => {
     const store = trackingStore();
     store.dispatch({
       type: 'CREATE_NOTE_WITH_ID',
@@ -149,7 +149,7 @@ describe('logout unsynced warning (T274)', () => {
     );
     await new Promise(r => setTimeout(r, 50));
     const frame = lastFrame();
-    expect(frame).toContain("log out: 1 unsynced notes will be lost - type 'logout' to confirm");
+    expect(frame).toContain("log out: 1 unsynced change will be deleted. Please type 'logout' to confirm");
     expect(frame).not.toContain('y/n');
     unmount();
   });

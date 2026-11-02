@@ -1,5 +1,5 @@
 /**
- * T489: case 3 of test/tui/session-expired.test.tsx must let the event loop
+ * case 3 of test/tui/session-expired.test.tsx must let the event loop
  * run once (one `setImmediate` between the EXPIRED frame and the first typed
  * key) so the fresh login screen has attached its key handler before `a@b.co`
  * is written. Cases 1 and 2 keep no such wait, and no test raises its timeout.

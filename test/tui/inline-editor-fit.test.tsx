@@ -1,5 +1,5 @@
 /**
- * T461: the inline editor takes the Preview's rows (height - 2) and divider.
+ * the inline editor takes the Preview's rows (height - 2) and divider.
  */
 import { describe, it, expect, vi } from 'vitest';
 import { render } from 'ink-testing-library';
@@ -14,7 +14,7 @@ const eid = (id: string): EntityId => id as unknown as EntityId;
 const BODY = (k: number): string =>
   `Note n${k}\n\nalpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon ${k}\nsecond line`;
 const LONG = `Note n1\n\n${Array.from({ length: 40 }, (_, i) => `line ${i}`).join('\n')}`;
-const FOOTER = 'Ctrl+S save · Esc cancel · Enter new line';
+const FOOTER = 'Autosaves · Esc close · Ctrl+S save now';
 
 function setup(opts: { long?: boolean; tagged?: boolean; w: number; h: number }) {
   const store = makeStore({ stubClient: {} });
@@ -47,8 +47,8 @@ async function open(opts: Parameters<typeof setup>[0]) {
   return s;
 }
 
-describe('inline editor fit (T461)', () => {
-  it('1: WHEN n1 is LONG and APP(100, 24) opens it THEN within 1 s a line contains `Ctrl+S save · Esc cancel · Enter new line` and the line starting `? Help` contains neither `new line` nor `cancel`', async () => {
+describe('inline editor fit', () => {
+  it('1: WHEN n1 is LONG and APP(100, 24) opens it THEN within 1 s a line contains `Autosaves · Esc close · Ctrl+S save now` and the line starting `? Help` contains neither `new line` nor `cancel`', async () => {
     const { lastFrame } = await open({ long: true, w: 100, h: 24 });
     const f = await waitForFrame(
       lastFrame,

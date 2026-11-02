@@ -1,6 +1,6 @@
 /**
- * Published links use https (T310).
- * One `it()` per numbered acceptance line of T310.
+ * Published links use https.
+ * One `it()` per numbered acceptance line of.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -28,7 +28,7 @@ const unpublishedNote: Note = {
   publishURL: 'abc123',
 };
 
-describe('T310: Published links use https://simp.ly/...', () => {
+describe('Published links use https://simp.ly/...', () => {
   it('1: WHEN publishLink is called with a published note whose publishURL is abc123 THEN it returns https://simp.ly/p/abc123', () => {
     expect(publishLink(publishedNote)).toBe('https://simp.ly/p/abc123');
   });

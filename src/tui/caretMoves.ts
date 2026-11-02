@@ -1,4 +1,4 @@
-// S6-01: the inline editor's caret-move keys, worked out on the latest text.
+// the inline editor's caret-move keys, worked out on the latest text.
 //
 // react-ink-textarea moves the caret from the value and caret of its last
 // render, and drops a caret report equal to its previous one. Keys that

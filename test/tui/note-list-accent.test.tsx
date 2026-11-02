@@ -42,11 +42,11 @@ async function withInkChalkLevel3<T>(fn: () => T): Promise<T> {
   }
 }
 
-describe('Note list accent colour (T379)', () => {
+describe('Note list accent colour', () => {
   it('1: WHEN the 2 notes render with selectedIndex=0, width 60, height 26, chalk forced THEN the Note one title line is exactly \\u001b[7m\\u001b[1m\\u001b[34m>Note one\\u001b[39m\\u001b[22m\\u001b[27m.', async () => {
     const frame = await withInkChalkLevel3(() => {
       const { lastFrame } = render(
-        <NoteList notes={notes} selectedIndex={0} width={60} height={26} />
+        <NoteList notes={notes} selectedIndex={0} width={60} height={26} focused />
       );
       return lastFrame();
     });
@@ -86,7 +86,7 @@ describe('Note list accent colour (T379)', () => {
   it('4: WHEN the notes render with selectedIndex=1 THEN the Note one line is exactly " Note one" in bold (#70) and the Note two line is exactly \\u001b[7m\\u001b[1m\\u001b[34m>Note two\\u001b[39m\\u001b[22m\\u001b[27m.', async () => {
     const frame = await withInkChalkLevel3(() => {
       const { lastFrame } = render(
-        <NoteList notes={notes} selectedIndex={1} width={60} height={26} />
+        <NoteList notes={notes} selectedIndex={1} width={60} height={26} focused />
       );
       return lastFrame();
     });

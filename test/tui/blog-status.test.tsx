@@ -1,5 +1,5 @@
 /**
- * T333: Show a sent-as-draft line for a note that was posted.
+ * Show a sent-as-draft line for a note that was posted.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -33,7 +33,7 @@ async function withTempDataDir(run: (dir: string) => Promise<void>): Promise<voi
   }
 }
 
-describe('blog status line (T333)', () => {
+describe('blog status line', () => {
   it('1: WHEN `blogStatusLine` is called with sentAt `2026-09-28T00:00:00.000Z` and url `https://blog.example/write/p1` THEN it returns `Sent as draft · 2026-09-28 · https://blog.example/write/p1`', () => {
     const res = blogStatusLine({
       sentAt: '2026-09-28T00:00:00.000Z',

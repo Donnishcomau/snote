@@ -12,7 +12,7 @@
 //
 // A few scenarios need to prove the *opposite*: that the guard lets a
 // legitimate case (a symlinked XDG_DATA_HOME, a pre-marker legacy shim)
-// PAST it. Since the setup script stopped building (T342: it copies the
+// PAST it. Since the setup script stopped building (it copies the
 // plugin's shipped plugin-dist/ instead of running npm), those cases run
 // setup against a clone with no plugin-dist and SNOTE_NODE set to this
 // very process's node. If the guard had rejected the symlink or the
@@ -70,7 +70,7 @@ function runWithNode(script: string, home: string, xdgDataHome: string) {
 }
 
 // A self-contained clone holding only the setup script and deliberately NO
-// plugin-dist/, so the result is identical in the private tree and in the
+// plugin-dist/, so the result is identical in a full checkout and in the
 // public export (which ships a real plugin-dist/). setup derives its source
 // directory from its own location, so the copy sees the temp clone.
 function setupInCloneWithoutDist(root: string): string {

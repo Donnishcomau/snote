@@ -1,5 +1,5 @@
 /**
- * T449 — tags whose names hold control characters or an emoji selector
+ * tags whose names hold control characters or an emoji selector
  * can be opened, renamed and deleted. The actions address the stored
  * name (ui.collection.tagName keeps it verbatim); every place that shows
  * the name shows it sanitised.
@@ -69,7 +69,7 @@ function seedStore(name: string) {
 const tagsOf = (store: ReturnType<typeof makeStore>, id: string) =>
   store.getState().data.notes.get(eid(id))?.tags;
 
-describe('T449 tags with control chars / emoji selector addressed by stored name', () => {
+describe('tags with control chars / emoji selector addressed by stored name', () => {
   it('1: WHEN n1 is tagged \u2764\ufe0flove and t, j are written THEN ui.collection.tagName is \'\u2764\ufe0flove\' and the frame contains Tagged note and not Other note', async () => {
     const store = seedStore(HEART_EMOJI);
     const { stdin, lastFrame, unmount } = render(

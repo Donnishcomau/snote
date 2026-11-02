@@ -1,5 +1,5 @@
 /**
- * T538R-1 (F224, F221 structure): one stdin read is seen in one place.
+ * ( structure): one stdin read is seen in one place.
  *
  * Ink splits one stdin read into several input events at every escape
  * sequence, so `y` followed by an arrow in ONE read reaches a y/n confirm as
@@ -41,7 +41,8 @@ async function atLogoutConfirm() {
   return { ...r, onLogout };
 }
 
-async function atDiscardPrompt() {
+// #387: the discard prompt is gone; the editor stays open showing the typed `Z`
+async function atEditorWithZ() {
   const store = seeded('hello world');
   const r = render(<App store={store} width={80} height={24} />);
   await waitForInput(r.stdin);
@@ -50,14 +51,12 @@ async function atDiscardPrompt() {
   await waitForFrame(r.lastFrame, 'Ctrl+S save');
   r.stdin.write('Z');
   await waitForFrame(r.lastFrame, 'hello worldZ');
-  r.stdin.write('\x1b');
-  await waitForFrame(r.lastFrame, 'discard changes?');
   return { ...r, store };
 }
 
 const settle = () => new Promise((res) => setTimeout(res, 100));
 
-describe('T538R-1 read gate', () => {
+describe('read gate', () => {
   it('1: WHEN the logout confirm shows and `y\\x1b[B` arrives as one read THEN `onLogout` is called 0 times and the frame still contains `log out and delete local data? y/n`', async () => {
     const { stdin, lastFrame, onLogout } = await atLogoutConfirm();
     stdin.write('y\x1b[B');
@@ -66,13 +65,13 @@ describe('T538R-1 read gate', () => {
     expect(lastFrame()).toContain(ASK);
   });
 
-  it('2: WHEN the inline editor shows `discard changes?` and `y\\x1b[B` arrives as one read THEN the frame still contains `discard changes?` and `hello worldZ`', async () => {
-    const { stdin, lastFrame } = await atDiscardPrompt();
+  it('2: WHEN the inline editor is open showing `hello worldZ` and `y\\x1b[B` arrives as one read THEN the editor stays open and shows `hello worldZy` (#387)', async () => {
+    const { stdin, lastFrame } = await atEditorWithZ();
     stdin.write('y\x1b[B');
-    await settle();
-    const frame = lastFrame() ?? '';
-    expect(frame).toContain('discard changes?');
-    expect(frame).toContain('hello worldZ');
+    const frame = await waitForFrame(lastFrame, (f) => f.includes('hello worldZy') && f.includes('Ctrl+S save now') && !f.includes('Preview:'));
+    expect(frame).toContain('hello worldZy');
+    expect(frame).toContain('Ctrl+S save now');
+    expect(frame).not.toContain('Preview:');
   });
 
   it('3: WHEN the logout confirm shows and `y` arrives alone as one read THEN `onLogout` is called 1 time', async () => {
@@ -82,21 +81,21 @@ describe('T538R-1 read gate', () => {
     expect(onLogout).toHaveBeenCalledTimes(1);
   });
 
-  it('4: WHEN the inline editor shows `discard changes?` and `\\x1b` arrives alone as one read THEN the frame no longer contains `discard changes?` and still contains `hello worldZ`', async () => {
-    const { stdin, lastFrame } = await atDiscardPrompt();
+  it('4: WHEN the inline editor is open showing `hello worldZ` and `\\x1b` arrives alone as one read THEN the frame shows `Preview:` and the note is `hello worldZ` (#387: Esc closes and keeps the text)', async () => {
+    const { stdin, lastFrame, store } = await atEditorWithZ();
     stdin.write('\x1b');
-    const frame = await waitForFrame(lastFrame, (f) => !f.includes('discard changes?') && f.includes('hello worldZ'));
-    expect(frame).not.toContain('discard changes?');
-    expect(frame).toContain('hello worldZ');
+    const frame = await waitForFrame(lastFrame, (f) => f.includes('Preview:') && store.getState().data.notes.get(eid('t1'))?.content === 'hello worldZ');
+    expect(frame).toContain('Preview:');
+    expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello worldZ');
   });
 
-  it('6: WHEN the inline editor shows `discard changes?` and `\\x1by` arrives as one read THEN the frame still contains `discard changes?` and `hello worldZ`', async () => {
-    const { stdin, lastFrame } = await atDiscardPrompt();
+  it('6: WHEN the inline editor is open showing `hello worldZ` and `\\x1by` arrives as one read THEN the editor stays open and shows `hello worldZy` (#387)', async () => {
+    const { stdin, lastFrame } = await atEditorWithZ();
     stdin.write('\x1by');
-    await settle();
-    const frame = lastFrame() ?? '';
-    expect(frame).toContain('discard changes?');
-    expect(frame).toContain('hello worldZ');
+    const frame = await waitForFrame(lastFrame, (f) => f.includes('hello worldZy') && f.includes('Ctrl+S save now') && !f.includes('Preview:'));
+    expect(frame).toContain('hello worldZy');
+    expect(frame).toContain('Ctrl+S save now');
+    expect(frame).not.toContain('Preview:');
   });
 
   it('7: WHEN the logout confirm shows and `\\x1by` arrives as one read THEN `onLogout` is called 0 times', async () => {

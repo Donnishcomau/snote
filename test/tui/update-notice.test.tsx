@@ -1,5 +1,5 @@
 /**
- * T391: the notice line tells the user an update is available or downloaded.
+ * the notice line tells the user an update is available or downloaded.
  * The green notice line above the key hints shows the update signal:
  * `available` names the steps, `restart` says to restart snote / the bar.
  * Any keypress clears it, as for every notice.
@@ -65,7 +65,7 @@ afterEach(() => {
   inkChalk.level = chalkLevel;
 });
 
-describe('update notice (T391)', () => {
+describe('update notice', () => {
   it("1: WHEN fixture N renders and then publishUpdate({ kind: 'available' }) runs THEN, polled, the frame contains \\u001b[33mupdate available: omarchy plugin update io.github.donnishcomau.snote-simplenote\\u001b[39m", async () => {
     const { lastFrame } = renderN();
     publishUpdate({ kind: 'available' });

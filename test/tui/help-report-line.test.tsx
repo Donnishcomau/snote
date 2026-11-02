@@ -1,5 +1,5 @@
 /**
- * Help overlay: report line added to footer (T248).
+ * Help overlay: report line added to footer.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -19,7 +19,7 @@ function stripAnsi(s: string): string {
   return s.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
-describe('Help report line (T248)', () => {
+describe('Help report line', () => {
   it('1: WHEN <Help width={80} height={24} /> (real keymap) is rendered THEN lastFrame() contains Found a bug? Run snote --report to save a report bundle., has at most 24 lines, and still contains Move down and Search notes.', async () => {
     const { frames, unmount } = render(
       <Help width={80} height={24} />
@@ -65,7 +65,7 @@ describe('Help report line (T248)', () => {
     unmount();
   });
 
-  it('4: (source, negative space) WHEN src/core/keymap.ts is imported THEN keymap.length is 36 (T315.2 added edit_note_inline) and no entry.description equals Found a bug? Run snote --report to save a report bundle..', () => {
+  it('4: (source, negative space) WHEN src/core/keymap.ts is imported THEN keymap.length is 36 (.2 added edit_note_inline) and no entry.description equals Found a bug? Run snote --report to save a report bundle..', () => {
     expect(keymap.length).toBe(36);
     for (const entry of keymap) {
       expect(entry.description).not.toBe(REPORT_LINE);

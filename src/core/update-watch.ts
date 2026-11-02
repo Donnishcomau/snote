@@ -2,7 +2,7 @@
  * Update banner watch (#66): while snote stays open it asks the plugin
  * clone's origin for the newest release tag when it starts (if the last
  * answer is over 24 hours old) and then every 24 hours, with no restart, and publishes the banner when that
- * version is newer than the running one. F234: the answer is cached for
+ * version is newer than the running one. the answer is cached for
  * 24 hours across restarts (update-tag-check.json, written on success only),
  * so a start inside that window asks no one and shows a cached newer version;
  * an offline or failed check shows nothing and writes nothing. The
@@ -13,7 +13,7 @@
 import { checkRemoteVersion, updateCheckEnabled } from './update-check';
 import type { GitRunner } from './update-check';
 import { compareVersions, pluginCloneDir } from './update-state';
-import { publishBanner } from './update-banner';
+import { markRunningNewest, publishBanner } from './update-banner';
 
 export const WATCH_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
@@ -58,8 +58,12 @@ export function startUpdateWatch(o: {
         stateDir: o.stateDir,
         now: o.now,
       });
-      if (newest !== null && compareVersions(newest.version, o.version) > 0) {
-        publishBanner(o.version, newest.version);
+      if (newest !== null) {
+        const newer = compareVersions(newest.version, o.version) > 0;
+        markRunningNewest(!newer);
+        if (newer) {
+          publishBanner(o.version, newest.version);
+        }
       }
     } catch {
       // the banner never breaks the app

@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 const read = (p: string) => fs.readFileSync(path.resolve(process.cwd(), p), 'utf8');
 
-describe('bench gate (T287)', () => {
+describe('bench gate', () => {
   it('1: WHEN Makefile is read THEN it contains the exact line `@if [ -f scripts/bench.mjs ]; then node scripts/bench.mjs; else echo "skip: bench gate (T17)"; fi` and does not contain `] && node scripts/bench.mjs ||`', () => {
     const makefile = read('Makefile');
     expect(makefile).toContain(
@@ -62,10 +62,10 @@ describe('bench gate (T287)', () => {
     expect(appModel).toContain('localeCompare');
   });
 
-  it('6: WHEN `scripts/bench.mjs` is read as text THEN it contains `const START_MS = 150;` and `const START_CEILING_MS = 200;` and contains `above PRD target`', () => {
+  it('6: WHEN `scripts/bench.mjs` is read as text THEN it contains `const START_MS = 150;` and `const START_CEILING_MS = 200;` and contains `above the start target`', () => {
     const bench = read('scripts/bench.mjs');
     expect(bench).toContain('const START_MS = 150;');
     expect(bench).toContain('const START_CEILING_MS = 200;');
-    expect(bench).toContain('above PRD target');
+    expect(bench).toContain('above the start target');
   });
 });

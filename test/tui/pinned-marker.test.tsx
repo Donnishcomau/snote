@@ -64,7 +64,7 @@ function seedStore(): ReturnType<typeof makeStore> {
   return store;
 }
 
-describe('Pinned notes lose the trailing marker (T355)', () => {
+describe('Pinned notes lose the trailing marker', () => {
   it('1: WHEN noteRow is called for a pinned note with content "Pinned note\\nbody" at width 30 THEN marker is "" and title is "Pinned note"', () => {
     const n = note('Pinned note\nbody', ['pinned']);
     const row = noteRow(n, 30);

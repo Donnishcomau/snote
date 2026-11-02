@@ -24,7 +24,7 @@ const lastInputs = (n: number): string[] =>
 
 const joinedInputs = (): string => getKeyLog().map((e) => e.input).join('');
 
-describe('key ring stores text as <text> (T411)', () => {
+describe('key ring stores text as <text>', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

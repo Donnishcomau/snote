@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { useStdin } from 'ink';
 
 /**
- * T538R (F220, F221, F224): the one place that sees each stdin read.
+ * the one place that sees each stdin read.
  *
  * Ink splits one stdin read into several input events at every escape
  * sequence, so a rule on one Ink event cannot tell `y` typed alone from `y`
@@ -15,7 +15,7 @@ import { useStdin } from 'ink';
  * one key delivers nothing (fail closed); while a role reports the window too
  * small, every input goes to that role and pastes are dropped.
  *
- * T538R-3 (F217, F220): with App's role (`entry`) the rule holds in the list,
+ * with App's role (`entry`) the rule holds in the list,
  * search and the editor. Only the first key of a read acts outside text
  * entry; every later key and paste of the read is delivered only while a
  * text-entry mode is open (each read again in the mode the previous key left
@@ -32,14 +32,14 @@ export interface ReadGateRole {
   /** App: later keys of a read were dropped. */
   onDropped?: () => void;
   /**
-   * Root, T538R-5: Ctrl+C. Ink's own exit on Ctrl+C is off (src/cli/main.tsx),
+   * Root, Ctrl+C. Ink's own exit on Ctrl+C is off (src/cli/main.tsx),
    * so Ctrl+C quits only through the gate, and only from a read that holds
    * nothing but Ctrl+C; in any other read it quits nothing and ends the read.
    */
   onCtrlC?: () => void;
 }
 
-
+/** The status line App shows when later keys of a read were dropped. */
 export const SEVERAL_KEYS = 'Several keys at once: only the first was used';
 
 type Read = (...args: unknown[]) => unknown;
@@ -100,7 +100,7 @@ function install(stdin: { read: Read }, em: NodeJS.EventEmitter): Gate {
   const roles = () => [...gate.roles].map((r) => r.current);
   const emit = (ev: string, data: string, read: ReadState): void => {
     read.delivered += 1;
-    // a paste whose listener left while it waited (the list's refusal, T481)
+    // a paste whose listener left while it waited (the list's refusal,)
     // goes to the input channel, as Ink itself hands it over
     realEmit.call(em, ev === 'paste' && em.listenerCount('paste') === 0 ? 'input' : ev, data);
   };
@@ -147,7 +147,7 @@ function install(stdin: { read: Read }, em: NodeJS.EventEmitter): Gate {
   };
   // A microtask is enough for the screen to catch up: Ink runs each key's
   // handler as a discrete update that React commits, effects included,
-  // before it returns (T538, SR17 Check 3), so the next piece is read in the
+  // before it returns ( Check 3), so the next piece is read in the
   // mode the previous one opened.
   const pump = (): void => {
     const entry = roles().find((r) => r.entry)?.entry;

@@ -1,5 +1,5 @@
 /**
- * T301 — a note deleted forever on the server while this client was
+ * a note deleted forever on the server while this client was
  * offline reappears after a full re-index.
  *
  * When a client reconnects with a change version the server no longer
@@ -39,12 +39,12 @@
  *   (the same field `store.forceSync` reads, src/core/store.ts:194) once
  *   their hand-off has been dispatched, and the `held-unsynced` registry
  *   (src/core/held-unsynced.ts) while `requeueUnsynced` is still waiting on
- *   the catch-up to hand one over. T499 corrects an earlier claim here:
+ *   the catch-up to hand one over. corrects an earlier claim here:
  *   `pendingNotes` is NOT filled before any index event — with
  *   `whenCaughtUp` given, `requeueUnsynced` dispatches nothing until the
  *   catch-up lands, which can be after `'index'` fires, so the hold
  *   registry is the only record sparing an offline create while its
- *   `IMPORT_NOTE_WITH_ID` is still pending (F141). Those are local work
+ *   `IMPORT_NOTE_WITH_ID` is still pending. Those are local work
  *   the server has not confirmed yet — a fresh index says nothing about
  *   them, and deleting them would destroy an unsynced offline edit or
  *   create.
@@ -114,7 +114,7 @@ function installOnChannel(
   // leaves behind: the index pages write ghosts into the CHANNEL's
   // ghost store (`store.put`), while the Redux ghost mirror
   // (`store.getState().simperium.ghosts`) stays empty after a re-index
-  // (probe against the fake server, T301). An id the server deleted
+  // (probe against the fake server,). An id the server deleted
   // while we were offline appears on no page, so no `'update'` ever
   // carries it.
   const seenDuringIndex = new Set<string>();
@@ -135,7 +135,7 @@ function installOnChannel(
     // we were offline — remove them. Notes with unsynced local work are
     // spared: `pendingNotes` once their hand-off ran, and the hold
     // registry while `requeueUnsynced` still has the hand-off pending
-    // (T499 — with `whenCaughtUp` the catch-up may land after `'index'`
+    // (with `whenCaughtUp` the catch-up may land after `'index'`
     // fires and dispatches nothing until it does, so `pendingNotes` is
     // empty here and the hold is the only record). A fresh index says
     // nothing about either.
@@ -149,7 +149,7 @@ function installOnChannel(
         type: 'REMOTE_NOTE_DELETE_FOREVER',
         noteId: id,
       } as A.ActionType);
-      // F180 (T521) — the saved server copy must go with the note: if the
+      // the saved server copy must go with the note: if the
       // ghost survived, the NEXT start's `restoreNotesFromGhosts`
       // (src/core/ghost-restore.ts) would find a ghost with text and no
       // note and bring the deleted note back to life. Only ids this

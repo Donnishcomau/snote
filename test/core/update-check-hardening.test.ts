@@ -1,5 +1,5 @@
 /**
- * T415: the once-a-day update check must never let the plugin
+ * the once-a-day update check must never let the plugin
  * clone's own `.git/config` run anything. Real temp git clones carry
  * configs whose `remote.origin.uploadpack`, `core.sshCommand`,
  * `credential.helper` (`!` script) and `core.fsmonitor` all create a

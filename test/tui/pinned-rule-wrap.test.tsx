@@ -41,7 +41,7 @@ function rowsOf(frame: string): string[] {
   return ruleRows(frame).map(stripAnsi);
 }
 
-describe('Pinned rule truncation (T365)', () => {
+describe('Pinned rule truncation', () => {
   it('1: WHEN the App with testNotes renders at width 120 height 40 THEN exactly 1 row is a rule row, and the row right after it contains Third normal note', async () => {
     const store = makeStore({ stubClient: {} });
     testNotes.forEach((note, idx) => {

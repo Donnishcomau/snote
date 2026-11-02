@@ -7,9 +7,9 @@ describe('layout-widths: tags column shrink', () => {
     expect(result).toEqual({ tagsWidth: 14, listWidthProp: 66, previewWidthProp: 66 });
   });
 
-  it('2: WHEN paneLayout(120, true, false, false) is called THEN it returns { tagsWidth: 14, listWidthProp: 106, previewWidthProp: 106 }', () => {
+  it('2: WHEN paneLayout(120, true, false, false) is called THEN it returns { tagsWidth: 24, listWidthProp: 96, previewWidthProp: 96 } (#74: the tags pane is 24 wide from 100 columns)', () => {
     const result = paneLayout(120, true, false, false);
-    expect(result).toEqual({ tagsWidth: 14, listWidthProp: 106, previewWidthProp: 106 });
+    expect(result).toEqual({ tagsWidth: 24, listWidthProp: 96, previewWidthProp: 96 });
   });
 
   it('3: WHEN paneLayout(80, false, false, false) is called (tags closed) THEN it returns { tagsWidth: 0, listWidthProp: 80, previewWidthProp: 80 }, unchanged from before this task', () => {

@@ -1,7 +1,8 @@
 import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
-import { beforeAll, describe, expect, it } from 'vitest';
+import * as path from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 type Run = {
   status: number | null;
@@ -10,9 +11,14 @@ type Run = {
   stderr: string;
 };
 
+// The bench child gets its own temp folder (TMPDIR), so a `snote-bench-` folder
+// that another test file makes in the shared os.tmpdir() is never counted here.
+let benchTmp: string;
+let foreign: string;
+
 function benchEntries(): string[] {
   return fs
-    .readdirSync(os.tmpdir())
+    .readdirSync(benchTmp)
     .filter((name) => name.startsWith('snote-bench-'));
 }
 
@@ -24,14 +30,17 @@ let entriesBefore: string[];
 let entriesAfter: string[];
 
 beforeAll(() => {
+  benchTmp = fs.mkdtempSync(path.join(os.tmpdir(), 'bench-script-test-'));
   entriesBefore = benchEntries();
+  // A foreign bench folder appearing in the shared os.tmpdir() mid-run is not a leak.
+  foreign = fs.mkdtempSync(path.join(os.tmpdir(), 'snote-bench-foreign-'));
   small = spawnSync(
     process.execPath,
     ['scripts/bench.mjs'],
     {
       encoding: 'utf8',
       cwd: root,
-      env: { ...process.env, SNOTE_BENCH_NOTES: '50', SNOTE_BENCH_RUNS: '1' },
+      env: { ...process.env, TMPDIR: benchTmp, SNOTE_BENCH_NOTES: '50', SNOTE_BENCH_RUNS: '1' },
     }
   );
   entriesAfter = benchEntries();
@@ -45,6 +54,11 @@ beforeAll(() => {
     }
   );
 }, 20000);
+
+afterAll(() => {
+  fs.rmSync(foreign, { recursive: true, force: true });
+  fs.rmSync(benchTmp, { recursive: true, force: true });
+});
 
 describe('T63 bench script', () => {
   it('1: WHEN the small run has finished THEN its exit status is 0 if no stdout line starts with `FAIL:`, and 1 if at least one does; it is never another value and `signal` is `null`', () => {

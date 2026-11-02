@@ -1,5 +1,5 @@
 /**
- * T486: one press of force sync shows at most one problem notice,
+ * one press of force sync shows at most one problem notice,
  * however many steps failed. `store.forceSync` collects the outcome of
  * every bucket step and every pending-note re-send of that press and
  * publishes a single summary notice when at least one step failed.
@@ -60,7 +60,7 @@ async function pollSpan(ms: number): Promise<void> {
   }
 }
 
-describe('T486 one press of force sync publishes at most one notice', () => {
+describe('one press of force sync publishes at most one notice', () => {
   let server: FakeSimperiumServer;
   let notices: string[];
   let unsubscribe: (() => void) | undefined;

@@ -41,11 +41,9 @@ export function loadTombstones(dir: string): string[] {
 
 export function saveTombstones(dir: string, ids: string[]): void {
   const filePath = path.join(dir, TOMBSTONE_FILE);
-  const tmpPath = filePath + '.tmp';
 
   secureMkdir(dir);
-  secureWriteFileSync(tmpPath, JSON.stringify(ids));
-  fs.renameSync(tmpPath, filePath);
+  secureWriteFileSync(filePath, JSON.stringify(ids));
 }
 
 export function addTombstone(dir: string, id: string): void {
@@ -106,7 +104,7 @@ export function trackDeletions(
 }
 
 /**
- * T488 — drop notes that a tombstone says were deleted forever.
+ * drop notes that a tombstone says were deleted forever.
  *
  * A "delete forever" removes the note from the server and the ghost file at
  * once, but state.json is only written 500 ms later. Killed inside that
@@ -143,7 +141,7 @@ export function dropTombstonedNotes(
   try {
     saveState(next as State, dir);
   } catch (err) {
-    // T494 — a state.json that cannot be written (an EISDIR on the temp
+    // a state.json that cannot be written (an EISDIR on the temp
     // file) must not stop snote from starting: show it on the notice line
     // like every other save failure does and carry on with the pruned
     // state in memory.

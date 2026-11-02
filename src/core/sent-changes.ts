@@ -42,11 +42,9 @@ export function loadSentChanges(dir: string): SentRecord {
 
 const writeRecord = (dir: string, record: SentRecord): void => {
   const filePath = path.join(dir, SENT_CHANGES_FILE);
-  const tmpPath = filePath + '.tmp';
   try {
     secureMkdir(dir);
-    secureWriteFileSync(tmpPath, JSON.stringify(record));
-    fs.renameSync(tmpPath, filePath);
+    secureWriteFileSync(filePath, JSON.stringify(record));
   } catch {
     // A failed write (EACCES, ENOSPC, EISDIR) must not crash the app;
     // the record is a safety net, the notes themselves live in state.json.
@@ -144,7 +142,7 @@ export function createSentChanges(dir: string): SentChanges {
         // #28 — a change in flight from the echo's own source version is
         // stale (the server already holds the echoed change and rejects it
         // with 405): it does not block the echo, and the entry its `sent`
-        // replaced still matches. #93 (F226) — a remove in flight (it has no
+        // replaced still matches. #93 — a remove in flight (it has no
         // source version) does not block it either. Any other change in flight
         // blocks it.
         const flying = inFlight[id] as { sv?: unknown; o?: unknown } | undefined;

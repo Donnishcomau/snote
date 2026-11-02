@@ -1,5 +1,5 @@
 /**
- * T101 Pending count against the fake server
+ * Pending count against the fake server
  * Proves pendingCount() rises on a local edit and falls to 0 when the
  * fake server acknowledges, and that remote changes are never counted.
  */
@@ -15,7 +15,7 @@ async function pollUntil(cond: () => boolean): Promise<void> {
   }
 }
 
-describe('T101 Pending count against the fake server', () => {
+describe('Pending count against the fake server', () => {
   let server: FakeSimperiumServer;
 
   beforeEach(async () => {

@@ -1,6 +1,6 @@
 /**
  * T14 Offline edits are queued and sent when the network is back.
- * Proves with the real sync engine and the fake server (docs/EVALS.md scenario 4)
+ * Proves with the real sync engine and the fake server (offline queue scenario)
  * that edits made while navigator.onLine is false stay local and are sent,
  * oldest first, once an 'online' event fires on window.
  */

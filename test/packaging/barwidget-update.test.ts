@@ -1,4 +1,4 @@
-// Acceptance tests for T389: the bar tooltip shows the update lines from
+// Acceptance tests for the bar tooltip shows the update lines from
 // status.json. When the app publishes an `update` key in status.json,
 // `formatTooltip` in BarWidget.qml inserts the matching notice lines after
 // the Synced line and before the click hint ('available' gets two lines,

@@ -7,7 +7,7 @@ interface PaneArrowCtx {
 }
 
 /**
- * T348: left/right arrows move between the panes (tags, list, preview).
+ * left/right arrows move between the panes (tags, list, preview).
  * Returns true when the key was a pane arrow and was handled.
  */
 export function handlePaneArrow(keyName: string | null, ctx: PaneArrowCtx): boolean {

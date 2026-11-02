@@ -16,7 +16,7 @@ export interface NoteGhostReader {
 }
 
 /**
- * T445 — a note the server confirmed but state.json never caught (the kill
+ * a note the server confirmed but state.json never caught (the kill
  * landed inside the 500 ms save debounce): the ghost holds the server's copy
  * at its version, so the store is told about it with REMOTE_NOTE_UPDATE, the
  * action the sync middleware itself uses for a note arriving from the server.
@@ -30,7 +30,7 @@ export interface NoteGhostReader {
  * inside its save debounce. An equal or older ghost date, or a missing one
  * (NaN), keeps the store's copy, so a newer local edit is never lost.
  *
- * T493 — `unsynced` is the record of changes the server never confirmed.
+ * `unsynced` is the record of changes the server never confirmed.
  * A held note the record names (its date still matching the recorded one)
  * is such an edit: the ghost's newer date means another device changed it,
  * not that this change was ever confirmed, so the held copy is kept.
@@ -49,7 +49,7 @@ export function restoreNotesFromGhosts(
     }
     const held = store.getState().data.notes.get(key as EntityId);
     if (held) {
-      // T493 — an unconfirmed local change the record names is never
+      // an unconfirmed local change the record names is never
       // replaced, whatever the dates say.
       if (isUnsyncedCopy(unsynced, key, held)) {
         return;

@@ -36,7 +36,7 @@ function seed(store: ReturnType<typeof makeStore>) {
   });
 }
 
-describe('T153 Read a note on a narrow terminal', () => {
+describe('Read a note on a narrow terminal', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

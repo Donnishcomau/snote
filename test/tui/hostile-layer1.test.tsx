@@ -193,7 +193,7 @@ async function press(stdin: { write(value: string): void }, keys: string[]): Pro
   }
 }
 
-describe('hostile layer 1 walk (T430)', () => {
+describe('hostile layer 1 walk', () => {
   let dataDir: string;
   let savedCi: string | undefined;
   let savedXdg: string | undefined;

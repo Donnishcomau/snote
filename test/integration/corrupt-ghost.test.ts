@@ -1,6 +1,6 @@
 /**
- * T444: After a corrupt ghost file, an edit made while offline still reaches
- * the server and nothing else is re-sent (Closes: F040).
+ * After a corrupt ghost file, an edit made while offline still reaches
+ * the server and nothing else is re-sent (Closes:).
  *
  * `ghosts-note.json` holds the text `{not json`, so the ghost store starts
  * empty for every note. state.json carries the saved notes. The store is
@@ -51,7 +51,7 @@ const serverNote = (content: string): Record<string, unknown> => ({
   tags: [],
 });
 
-describe('T444 corrupt ghost file: offline edit reaches the server once', () => {
+describe('corrupt ghost file: offline edit reaches the server once', () => {
   let server: FakeSimperiumServer;
   let dir: string;
   let stopSaving: (() => void) | undefined;

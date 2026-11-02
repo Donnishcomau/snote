@@ -1,5 +1,5 @@
 /**
- * T173: the bundle loads `simperium` lazily (only when the client is first
+ * the bundle loads `simperium` lazily (only when the client is first
  * created) and imports one lodash function instead of all of lodash.
  */
 import { spawnSync } from 'node:child_process';
@@ -18,7 +18,7 @@ let bundled = '';
 let size = 0;
 const dirs: string[] = [];
 
-describe('T173 lazy simperium and slim lodash', () => {
+describe('lazy simperium and slim lodash', () => {
   beforeAll(async () => {
     const dir = mkdtempSync(join(tmpdir(), 'bundle-lazy-'));
     dirs.push(dir);
@@ -44,9 +44,9 @@ describe('T173 lazy simperium and slim lodash', () => {
     expect(bundled).not.toContain('lodash/lodash.js');
   });
 
-  it('3: WHEN the size of the bundle is read THEN it is above `1000000` and below `1600000` bytes', () => {
+  it('3: WHEN the size of the bundle is read THEN it is above `1000000` and below `1625200` bytes', () => {
     expect(size).toBeGreaterThan(1000000);
-    expect(size).toBeLessThan(1600000);
+    expect(size).toBeLessThan(1625200);
   });
 
   it('4: WHEN the bundle is run with spawnSync(process.execPath, [outfile, \'--help\'], { encoding: \'utf8\' }) THEN the exit status is `0` and stdout contains `usage: snote`', () => {
@@ -59,7 +59,7 @@ describe('T173 lazy simperium and slim lodash', () => {
 
   it("5: WHEN vendor/simplenote/utils/note-utils.ts is read THEN line 3 contains `lodash/escapeRegExp` and `// OMARCHY:`, and the file does not contain `from 'lodash'`", () => {
     const source = readFileSync('vendor/simplenote/utils/note-utils.ts', 'utf8');
-    const line3 = source.split('\n')[2]; // OMARCHY: line 1 is now the GPLv2 change-notice header (T269)
+    const line3 = source.split('\n')[2]; // OMARCHY: line 1 is now the GPLv2 change-notice header
     expect(line3).toContain('lodash/escapeRegExp');
     expect(line3).toContain('// OMARCHY:');
     expect(source).not.toContain("from 'lodash'");

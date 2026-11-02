@@ -26,7 +26,7 @@ function seed(content: string): ReturnType<typeof makeStore> {
 }
 const content = (s: ReturnType<typeof makeStore>) => s.getState().data.notes.get(eid('t1'))?.content;
 
-describe('inline editor line cap (T456)', () => {
+describe('inline editor line cap', () => {
   it('1: WHEN HOSTILE is selected and `i` is written THEN the frame contains `Preview:` and `A line is over 10,000 characters: press e to edit in your editor`, has no `\\x1b]52`, and the note is unchanged', async () => {
     const store = seed(HOSTILE);
     const { stdin, lastFrame } = render(<App store={store} width={100} height={24} />);

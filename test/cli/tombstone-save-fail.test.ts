@@ -1,11 +1,11 @@
 /**
- * T494: A failed state save while dropping deleted-forever notes at start
+ * A failed state save while dropping deleted-forever notes at start
  * no longer stops snote from starting. `dropTombstonedNotes` writes the
  * pruned state.json at once; when that write throws (here, a directory
  * named `state.json.tmp` makes `writeFileSync` fail with EISDIR) the
  * failure shows on the notice line like every other save failure does,
  * instead of throwing out of `buildStore`. Rig copied from
- * test/cli/delete-forever-restart.test.ts (T488).
+ * test/cli/delete-forever-restart.test.ts.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs';
@@ -58,7 +58,7 @@ const noteData = (id: string): Note =>
     tags: [],
   }) as unknown as Note;
 
-describe('T494 a failed state save while dropping tombstoned notes at start', () => {
+describe('a failed state save while dropping tombstoned notes at start', () => {
   let dir: string;
   let stopSaving: (() => void) | undefined;
   let problems: string[];
@@ -67,7 +67,7 @@ describe('T494 a failed state save while dropping tombstoned notes at start', ()
   // Lay out the data dir by hand per the Decisions: the server and the
   // ghost each hold `b` at version 1; state.json holds every id named in
   // `state`. The server is closed again at once: `buildStore` runs on the
-  // stubbed client (as in the T488 rig), so the one thing these tests
+  // stubbed client (as in the rig), so the one thing these tests
   // observe happens entirely against the local files, and no server
   // socket stays open while they run.
   const prepare = async (state: string[]): Promise<void> => {
@@ -103,7 +103,7 @@ describe('T494 a failed state save while dropping tombstoned notes at start', ()
   };
 
   // The server is closed by `prepare` before any of this runs, so buildStore
-  // dials a port nothing listens on (the T488 rig never needs it alive
+  // dials a port nothing listens on (the rig never needs it alive
   // either: everything buildStore does here happens on the stub client).
   const open = () => {
     const built = buildStore(

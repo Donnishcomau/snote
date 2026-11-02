@@ -1,8 +1,15 @@
+import { boundedRequest } from './bounded-request';
+
+/** Give-up time for one blog send (ms), covering connect, headers and the whole reply. */
+const DEFAULT_TIMEOUT_MS = 15000;
+
 interface BlogDraftOptions {
   origin: string;
   token: string;
   title: string;
   markdown: string;
+  /** Milliseconds before the send gives up (default 15000). */
+  timeoutMs?: number;
 }
 
 export interface BlogDraftResult {
@@ -31,22 +38,27 @@ export async function postBlogDraft({
   token,
   title,
   markdown,
+  timeoutMs,
 }: BlogDraftOptions): Promise<BlogDraftResult> {
   const trimmedOrigin = origin.replace(/\/+$/, '');
   const url = `${trimmedOrigin}/api/agent/posts`;
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+  const response = await boundedRequest(
+    url,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ title, markdown, draft: true }),
+      redirect: 'error',
     },
-    body: JSON.stringify({ title, markdown, draft: true }),
-    redirect: 'error',
-  });
+    { timeoutMs: timeoutMs ?? DEFAULT_TIMEOUT_MS },
+  );
 
   if (response.status === 201) {
-    const body = (await response.json()) as { id: string; url: string };
+    const body = response.json() as { id: string; url: string };
     return { id: body.id, url: normalizeBlogUrl(body.url, origin) };
   }
 
@@ -55,7 +67,7 @@ export async function postBlogDraft({
   }
 
   if (response.status === 422) {
-    const body = (await response.json()) as { error: string };
+    const body = response.json() as { error: string };
     throw new Error(body.error);
   }
 

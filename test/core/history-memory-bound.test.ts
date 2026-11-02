@@ -1,5 +1,5 @@
 /**
- * T536 Note history cannot grow memory without limit.
+ * Note history cannot grow memory without limit.
  * A note's versions are held only while its history is open (one note at
  * most): closing history releases them from Redux and from simperium's
  * module-level revisionCache; reopening fetches and shows them again.
@@ -23,7 +23,7 @@ const heap = (): number => {
 };
 const MB = 1024 * 1024;
 /**
- * F215: under CPU contention V8 can keep just-freed objects counted for a
+ * under CPU contention V8 can keep just-freed objects counted for a
  * few forced gcs (seen: 21.8 MB after 4 gcs, 0.2 MB after the 5th, with
  * revisionCache and noteRevisions already empty and a heap snapshot at that
  * moment holding none of the version texts). So the heap is re-measured on
@@ -96,7 +96,7 @@ function rig() {
   return { store, open, close, held, loadA, bump: () => (current += 100) };
 }
 
-describe('T536 note history memory bound', () => {
+describe('note history memory bound', () => {
   it('1: WHEN history is opened and closed 20 times on a note whose versions are 10 KB texts `v<n>\\n` plus 1,500 repeats of `shared ` plus `<n>`, starting at version `200` and gaining 100 versions between opens THEN the last open shows `2100` versions and heapUsed after a forced gc grew by less than `5` MB', async () => {
     const r = rig();
     const before = heap();
@@ -142,7 +142,7 @@ describe('T536 note history memory bound', () => {
   });
 });
 
-describe('T536 note history against the fake server', () => {
+describe('note history against the fake server', () => {
   const appId = 'test-app';
   const now = Math.floor(Date.now() / 1000);
   let server: FakeSimperiumServer;

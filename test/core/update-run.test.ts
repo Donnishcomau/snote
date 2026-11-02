@@ -1,5 +1,5 @@
 /**
- * T390: `runUpdateChecks` — the start-up wiring that runs the local
+ * `runUpdateChecks` — the start-up wiring that runs the local
  * check first and the once-a-day remote check second, publishing the
  * result through the update signal. A temp home holds the plugin
  * clone fixture; a fake runner counts every git call so nothing here

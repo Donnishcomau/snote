@@ -1,0 +1,219 @@
+#!/bin/bash
+# What the bar runs when the installed snote is out of date (#135). Setup copies
+# this plugin clone's own pre-built files, so setup must never run from a clone
+# that is older than the install: it would put the old version back. This
+# script brings the clone to the newest release first (a fast-forward only),
+# then hands over to setup, and runs nothing when the clone cannot be moved.
+#
+#   bar-update            ask, update the clone if needed, then run setup
+#   bar-update --check    exit 0 when the bar should offer no update
+#
+# Rules (security review SECURITY-PREBUILD-UPDATER-0.2.8, MUST 6, 9, 13 and 20):
+# argv only, nothing remote is ever interpolated into a shell, every git call
+# carries the hardened flags and an env without GIT_*, the release is a tag
+# named v<digits>.<digits>.<digits>, and the clone is checked after the move.
+set -eu
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+src_dir="$(cd "$here/../.." && pwd)"
+setup="$here/setup"
+data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
+app_version_file="$data_home/omarchy-snote-plugin/app/VERSION"
+dist_version_file="$src_dir/plugin-dist/VERSION"
+home_url="https://github.com/donnishcomau/snote"
+
+say() { printf 'snote update: %s\n' "$1"; }
+refuse() { printf 'snote update: %s Nothing was reinstalled.\n' "$1" >&2; exit 1; }
+
+valid_version() { [[ "$1" =~ ^[0-9]{1,6}(\.[0-9]{1,6}){1,3}$ ]]; }
+
+# ver_gt A B: success when version A is strictly newer than B (numeric per part).
+ver_gt() {
+  local IFS=. i x y
+  local -a a b
+  read -r -a a <<< "$1"
+  read -r -a b <<< "$2"
+  for i in 0 1 2 3; do
+    x=$((10#${a[$i]:-0}))
+    y=$((10#${b[$i]:-0}))
+    [ "$x" -gt "$y" ] && return 0
+    [ "$x" -lt "$y" ] && return 1
+  done
+  return 1
+}
+
+read_version() {
+  local v
+  v="$(cat "$1" 2>/dev/null || true)"
+  if valid_version "$v"; then printf '%s' "$v"; fi
+}
+
+installed="$(read_version "$app_version_file")"
+clone_version="$(read_version "$dist_version_file")"
+
+if [ "${1:-}" = "--check" ]; then
+  # An install newer than this clone is current: the clone only lags behind.
+  if [ -n "$installed" ] && [ -n "$clone_version" ] && ver_gt "$installed" "$clone_version"; then exit 0; fi
+  exec "$setup" --check
+fi
+[ $# -eq 0 ] || { echo "usage: bar-update [--check]" >&2; exit 2; }
+[ -n "$clone_version" ] || refuse "this plugin folder has no readable release version."
+
+# MUST 6: no GIT_* from the caller; no prompts; no system config.
+for name in $(compgen -e); do
+  case "$name" in GIT_*) unset "$name" ;; esac
+done
+export GIT_TERMINAL_PROMPT=0 GIT_CONFIG_NOSYSTEM=1
+gf=(-c credential.helper= -c core.hooksPath=/dev/null -c core.fsmonitor=false -c protocol.allow=never -c protocol.https.allow=always)
+# #197: every network git call has a time limit and the release list a size cap,
+# with or without timeout(1). The limit is in seconds: 1 to 999, or 0.1 to 0.99.
+# proof: test/packaging/bar-update-bounds.test.ts
+net_secs="${SNOTE_UPDATE_NET_SECS:-60}"
+[[ "$net_secs" =~ ^([1-9][0-9]{0,2}|0\.[1-9][0-9]?)$ ]] || net_secs=60
+list_cap=1048576
+# #210: the release download has a byte cap too, one total for the whole download
+# (default 32 MiB; the marketplace caps a plugin at 8 MiB). SNOTE_UPDATE_FETCH_CAP
+# is read as plain text and may only LOWER the cap: a whole number from 1024 to the default
+# is used, anything else (text, 0, too small, above the default) means the default.
+# proof: test/packaging/bar-update-fetch-cap.test.ts
+dl_cap=33554432
+if [[ "${SNOTE_UPDATE_FETCH_CAP:-}" =~ ^[1-9][0-9]{3,7}$ ]] \
+   && [ "$SNOTE_UPDATE_FETCH_CAP" -ge 1024 ] && [ "$SNOTE_UPDATE_FETCH_CAP" -le "$dl_cap" ]; then
+  dl_cap="$SNOTE_UPDATE_FETCH_CAP"
+fi
+dl_blocks=$(( (dl_cap + 1023) / 1024 ))
+have_timeout=0
+if command -v timeout >/dev/null 2>&1; then have_timeout=1; fi
+
+# run_limited CMD...: run CMD for at most net_secs seconds. Uses timeout(1) when
+# it is on PATH, otherwise a background watchdog that signals the command.
+# proof: test/packaging/bar-update-bounds.test.ts
+run_limited() {
+  if [ "$have_timeout" -eq 1 ]; then timeout "$net_secs" "$@"; return; fi
+  local pid wd rc=0
+  "$@" & pid=$!
+  ( trap 'kill "$sp" 2>/dev/null; exit 0' TERM; sleep "$net_secs" & sp=$!; wait "$sp" && kill "$pid" 2>/dev/null ) >/dev/null 2>&1 &
+  wd=$!
+  wait "$pid" || rc=$?
+  kill "$wd" >/dev/null 2>&1 || true
+  wait "$wd" >/dev/null 2>&1 || true
+  return "$rc"
+}
+
+# MUST 13: nothing happens before an explicit yes.
+if [ -n "$installed" ]; then say "snote $installed is installed."; fi
+printf 'Update snote now? [y/N] '
+answer=""
+read -r answer || true
+case "$answer" in
+  y|Y|yes|YES) ;;
+  *) say "Nothing was changed."; exit 1 ;;
+esac
+
+# dl_snapshot / dl_cleanup: remember which files exist under the clone's .git before the
+# download, and remove the ones that appeared since (objects, lock files, the target ref).
+declare -A dl_before=()
+dl_paths() {
+  local gd="$src_dir/.git"
+  ( shopt -s globstar dotglob nullglob; printf '%s\n' "$gd"/objects/** "$gd"/**/*.lock "$gd"/refs/snote-update/** )
+}
+dl_snapshot() {
+  local f
+  dl_before=()
+  while IFS= read -r f; do dl_before["$f"]=1; done < <(dl_paths)
+}
+dl_cleanup() {
+  local f i
+  local -a now=()
+  while IFS= read -r f; do now+=("$f"); done < <(dl_paths)
+  for f in "${now[@]}"; do
+    [ -z "${dl_before[$f]:-}" ] && { [ -f "$f" ] || [ -L "$f" ]; } && rm -f -- "$f"
+  done
+  # new, now empty directories, deepest first
+  for ((i = ${#now[@]} - 1; i >= 0; i--)); do
+    f="${now[$i]}"
+    [ -z "${dl_before[$f]:-}" ] && [ -d "$f" ] && [ ! -L "$f" ] && rm -d -- "$f" 2>/dev/null
+  done
+  return 0
+}
+
+update_clone() {
+  local url norm dirty tags sha ref v peeled best best_sha target prev re lsrc=0
+  local LC_ALL=C
+  case "${SNOTE_UPDATE_CHECK:-}" in
+    off|0) refuse "updates are switched off (SNOTE_UPDATE_CHECK)." ;;
+  esac
+  [ -d "$src_dir/.git" ] && [ ! -L "$src_dir/.git" ] || refuse "this plugin folder is not a git checkout."
+  url="$(git config --file "$src_dir/.git/config" --get remote.origin.url 2>/dev/null || true)"
+  norm="$(printf '%s' "$url" | tr 'A-Z' 'a-z')"
+  norm="${norm%/}"; norm="${norm%.git}"; norm="${norm%/}"
+  case "$url" in
+    /*) gf+=(-c protocol.file.allow=always) ;;
+    https://*) [ "$norm" = "$home_url" ] || refuse "the plugin folder's origin is not the snote repository." ;;
+    *) refuse "the plugin folder's origin is not the snote repository." ;;
+  esac
+  dirty="$(git "${gf[@]}" -C "$src_dir" status --porcelain --untracked-files=no 2>/dev/null)" \
+    || refuse "the plugin folder could not be read."
+  [ -z "$dirty" ] || refuse "the plugin folder has local changes."
+
+  # #197: reading stops at the cap (head -c closes the pipe, git gets SIGPIPE),
+  # so no more than cap+1 bytes are ever held; a cut-off list is "too large".
+  tags="$(cd / && set -o pipefail && run_limited git "${gf[@]}" ls-remote --tags "$url" 2>/dev/null | head -c $((list_cap + 1)))" || lsrc=$?
+  [ "${#tags}" -le "$list_cap" ] || refuse "the release list was too large."
+  [ "$lsrc" -eq 0 ] || refuse "the newest release could not be looked up (offline?)."
+  best=""; best_sha=""
+  re='^refs/tags/v([0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6}(\.[0-9]{1,6})?)(\^\{\})?$'
+  while IFS=$'\t' read -r sha ref; do
+    [[ "$sha" =~ ^[0-9a-f]{40}([0-9a-f]{24})?$ ]] || continue
+    [[ "$ref" =~ $re ]] || continue
+    v="${BASH_REMATCH[1]}"; peeled="${BASH_REMATCH[3]}"
+    if [ -z "$best" ] || ver_gt "$v" "$best" || { [ "$v" = "$best" ] && [ -n "$peeled" ]; }; then
+      best="$v"; best_sha="$sha"
+    fi
+  done <<< "$tags"
+  [ -n "$best" ] || refuse "no release was found."
+  ver_gt "$best" "$clone_version" || return 0
+
+  # MUST 9: fetch without touching the work tree, then move to exactly that commit.
+  # #210: the download keeps one pack (unpackLimit=1), so a per-file write limit (ulimit -f,
+  # in 1 KiB blocks, a shell builtin: no timeout(1) needed) is the cap on the whole download.
+  # When it fails, whatever it wrote under .git (objects, locks, the target ref) is removed.
+  # #318: the same subshell sets the core limit to 0 (soft and hard) and ignores SIGXFSZ: git gets EFBIG on the write
+  # instead of the signal, so there is no core and no systemd-coredump journal entry (no crash toast).
+  # proof: test/packaging/bar-update-fetch-cap.test.ts, bar-update-fetch-core.test.ts
+  dl_snapshot
+  (cd / && ulimit -c 0 && trap "" XFSZ && ulimit -f "$dl_blocks" && run_limited git "${gf[@]}" -c fetch.unpackLimit=1 --git-dir="$src_dir/.git" fetch --quiet --no-tags --no-recurse-submodules \
+    "$url" "+refs/tags/v$best:refs/snote-update/target" >/dev/null 2>&1) \
+    || { dl_cleanup; refuse "release $best could not be downloaded."; }
+  target="$(git "${gf[@]}" --git-dir="$src_dir/.git" rev-parse --verify --quiet "refs/snote-update/target^{commit}" || true)"
+  git "${gf[@]}" --git-dir="$src_dir/.git" update-ref -d refs/snote-update/target >/dev/null 2>&1 || true
+  [ -n "$target" ] && [ "$target" = "$best_sha" ] || refuse "the downloaded release did not match its tag."
+  prev="$(git "${gf[@]}" -C "$src_dir" rev-parse HEAD)"
+  git "${gf[@]}" -C "$src_dir" merge --ff-only --quiet "$target" >/dev/null 2>&1 \
+    || refuse "the plugin folder cannot be fast-forwarded to $best."
+  if ! git "${gf[@]}" -C "$src_dir" merge-base --is-ancestor "$target" HEAD >/dev/null 2>&1 \
+     || [ "$(read_version "$dist_version_file")" != "$best" ]; then
+    git "${gf[@]}" -C "$src_dir" reset --hard --quiet "$prev" >/dev/null 2>&1 || true
+    refuse "release $best did not match its version."
+  fi
+  say "the plugin folder is now at release $best."
+}
+
+# A clone newer than the install needs no network at all.
+if [ -z "$installed" ] || ! ver_gt "$clone_version" "$installed"; then
+  update_clone
+  clone_version="$(read_version "$dist_version_file")"
+  [ -n "$clone_version" ] || refuse "this plugin folder has no readable release version."
+fi
+
+if [ -z "$installed" ] || ver_gt "$clone_version" "$installed"; then
+  exec "$setup"
+fi
+if [ "$clone_version" = "$installed" ]; then
+  if "$setup" --check; then
+    say "snote $installed is already the newest release."
+    exit 0
+  fi
+  exec "$setup"
+fi
+refuse "the plugin folder (snote $clone_version) is older than the installed snote ($installed), and no newer release was found."

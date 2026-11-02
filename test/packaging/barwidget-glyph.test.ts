@@ -1,6 +1,6 @@
-// Acceptance tests for T356: the bar button is a themed Nerd Font glyph,
+// Acceptance tests for the bar button is a themed Nerd Font glyph,
 // not a PNG. The PNG cannot take the bar foreground, so the button now
-// draws U+F249 (nf-fa-sticky_note) as `text:` on the BarIconButton and
+// draws U+ (nf-fa-sticky_note) as `text:` on the BarIconButton and
 // colours it from the qs.Commons `Color` singleton: the bar foreground
 // normally, Color.accent while snote is missing or out of date. No hex
 // literals anywhere; snote-icon.png stays in the repo but is no longer

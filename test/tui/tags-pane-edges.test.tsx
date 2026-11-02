@@ -24,7 +24,7 @@ function seedTags(store: ReturnType<typeof makeStore>) {
   });
 }
 
-describe('T114 Tags pane edges', () => {
+describe('Tags pane edges', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

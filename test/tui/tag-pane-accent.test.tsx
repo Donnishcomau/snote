@@ -18,7 +18,7 @@ const inkChalk = (
   )
 ).default;
 
-describe('T380 TagPane selected row accent, system rows dim', () => {
+describe('TagPane selected row accent, system rows dim', () => {
   let savedLevel: number;
 
   beforeEach(() => {

@@ -25,6 +25,9 @@ const CHECK_DONE = '\uE006';
 const IMG_OPEN = '\uE007';
 const IMG_CLOSE = '\uE008';
 
+// A note can hold these same characters. Only the masks below may put a sentinel in a line, so every one in the raw text is removed first.
+const OWN_SENTINELS = new RegExp(`[${LINK_OPEN}-${IMG_CLOSE}]`, 'g');
+
 // Run removeMarkdown on a masked line and read the sentinels back out:
 // they are dropped, link/code pairs become spans, and each marker
 // sentinel expands to its prefix (empty for plain lines).
@@ -38,7 +41,7 @@ function expandMasked(stripped: string, markerPrefix: string): { text: string; s
       openStart = text.length;
       openKind = ch === LINK_OPEN ? 'link' : 'code';
     } else if (ch === LINK_CLOSE || ch === CODE_CLOSE) {
-      // U+E000..U+E008 arriving from raw are dropped here and never make a span.
+      // Every sentinel here was put there by a mask below: raw ones were removed before masking.
       if (openStart >= 0 && openKind !== null && text.length > openStart) {
         spans.push({ start: openStart, end: text.length, kind: openKind });
       }
@@ -64,6 +67,7 @@ function expandMasked(stripped: string, markerPrefix: string): { text: string; s
  */
 export function inlineMarkdown(raw: string): { text: string; spans: InlineSpan[] } {
   const masked = raw
+    .replace(OWN_SENTINELS, '')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, (_match, label: string) => LINK_OPEN + label + LINK_CLOSE)
     .replace(/`([^`]*)`/g, (_match, content: string) => CODE_OPEN + content + CODE_CLOSE);
 
@@ -83,7 +87,8 @@ export type BodyLine = { text: string; isHeading: boolean; spans: InlineSpan[] }
  * stripped line. Spans point into the returned text.
  */
 export function markdownBodyLine(raw: string): BodyLine {
-  const masked = raw
+  const clean = raw.replace(OWN_SENTINELS, '');
+  const masked = clean
     .replace(/^#{1,6}\s+/, '')
     .replace(/^([-*])\s+\[([ xX])\]\s+/, (_match, _marker: string, state: string) =>
       state === ' ' ? CHECK_EMPTY : CHECK_DONE,
@@ -95,7 +100,7 @@ export function markdownBodyLine(raw: string): BodyLine {
 
   const stripped = removeMarkdown(masked);
 
-  const isHeading = /^#{1,6}\s/.test(raw);
+  const isHeading = /^#{1,6}\s/.test(clean);
   const markerPrefix = stripped.startsWith(CHECK_EMPTY)
     ? '☐ '
     : stripped.startsWith(CHECK_DONE)

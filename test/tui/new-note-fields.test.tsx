@@ -69,7 +69,7 @@ function freshNote(store: ReturnType<typeof makeStore>): Note | undefined {
   return [...store.getState().data.notes.values()].find((n) => n.content === CONTENT);
 }
 
-describe('T208 n creates the note with upstream fields', () => {
+describe('n creates the note with upstream fields', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

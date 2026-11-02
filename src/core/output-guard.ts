@@ -44,8 +44,23 @@ const MODES_KEPT = new Set(['25', '1049', '2004', '2026']);
 const STRING_INTRODUCERS = new Set([']', 'P', 'X', '^', '_']);
 const C1_STRING_INTRODUCERS = new Set([0x90, 0x98, 0x9d, 0x9e, 0x9f]);
 
+let plain = false;
+const BIDI = /[\u061c\u200b\u200c\u200e\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
+
+/**
+ * Plain output (#17, `setPlainOutput(true)`, set once at start for the screen-reader
+ * mode): additionally drops every SGR (`ESC [ ... m`, so no colour or style), CR, and
+ * the zero-width and bidi characters U+200B, U+200C, U+200E, U+200F, U+2028, U+2029,
+ * U+061C, U+202A-U+202E and U+2066-U+2069. Off by default.
+ * proof: test/core/output-guard-plain.test.ts
+ */
+export function setPlainOutput(on: boolean): void {
+  plain = on;
+}
+
 /** Is `ESC [ <params> <final>` one of the kept CSI forms? */
 function keepCsi(params: string, final: string): boolean {
+  if (plain && final === 'm') return false;
   if (final === 'h' || final === 'l') {
     return params.startsWith('?') && params.slice(1).split(';').every((m) => MODES_KEPT.has(m));
   }
@@ -110,7 +125,7 @@ function createFilter(): (input: string) => string {
       if (C1_STRING_INTRODUCERS.has(c)) {
         inString = true;
       } else if (c >= 0x20 ? c < 0x7f || c > 0x9f : c === 0x09 || c === 0x0a || c === 0x0d) {
-        out += s[i];
+        if (!(plain && (c === 0x0d || BIDI.test(s[i]!)))) out += s[i];
       }
       i += 1;
     }

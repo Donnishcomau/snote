@@ -1,5 +1,5 @@
 /**
- * T535: the list preview cache keeps an entry only while its note is alive,
+ * the list preview cache keeps an entry only while its note is alive,
  * and a note whose text or markdown tag changed shows its newest title.
  */
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -30,7 +30,7 @@ const mk = (content: string, systemTags: string[] = []): T.Note =>
 
 const dirs: string[] = [];
 
-describe('T535 preview cache is bounded', () => {
+describe('preview cache is bounded', () => {
   it('1: WHEN 10,000 new note objects, each a 10 KB text `Shared v<n>\\n` plus 1,500 repeats of `shared `, pass through noteTitleAndPreview and are dropped THEN the last title is `Shared v9999` and heapUsed after a forced gc grew by less than `10` MB', () => {
     const body = 'shared '.repeat(1500);
     gc();

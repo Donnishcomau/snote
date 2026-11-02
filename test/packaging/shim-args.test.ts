@@ -1,5 +1,5 @@
-// Acceptance tests for T393: on the mise path the `snote` shim passes
-// the user's arguments to cli.js unchanged. The T372 probe must keep
+// Acceptance tests for on the mise path the `snote` shim passes
+// the user's arguments to cli.js unchanged. The probe must keep
 // starting from `env -i PATH=/usr/bin:/bin HOME=...` and carry each
 // set, non-empty XDG/MISE directory variable byte for byte, but it may
 // no longer touch the shim's positional parameters: no `set --`, no

@@ -1,4 +1,4 @@
-// T352: key names take the blue accent role and muted chrome takes the dim
+// key names take the blue accent role and muted chrome takes the dim
 // role. Cyan (\u001b[36m) and bright-black gray (\u001b[90m) are gone from these
 // components; keys render \u001b[34m...\u001b[39m and dim chrome \u001b[2m...\u001b[22m.
 import { createRequire } from 'module';
@@ -17,7 +17,7 @@ import { makeNote } from './fixtures';
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Portable way to force ink's bundled chalk to emit ANSI (the T244 recipe,
+ * Portable way to force ink's bundled chalk to emit ANSI (the recipe,
  * same as content-not-muted.test.tsx).
  */
 async function forceInkChalk(): Promise<{ restore: () => void }> {
@@ -34,7 +34,7 @@ async function forceInkChalk(): Promise<{ restore: () => void }> {
   };
 }
 
-describe('theme adoption (T352)', () => {
+describe('theme adoption', () => {
   it('1: WHEN <KeyHints context="list" width={80} /> is rendered THEN the frame contains \\u001b[34m?\\u001b[39m Help and does not contain \\u001b[36m', async () => {
     const { restore } = await forceInkChalk();
     try {

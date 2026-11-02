@@ -3,8 +3,9 @@ import * as path from 'node:path';
 
 import noteTitleAndPreview from '@vendor/utils/note-utils';
 import { sanitizeForTerminal } from './sanitize';
-import { secureWriteFileSync } from './secure-fs';
+import { ensureDir, secureUnlink, secureWriteFileSync } from './secure-fs';
 import { pendingCount } from './simperium-reducer';
+import { currentBanner, onBanner, runningIsNewestRelease } from './update-banner';
 import { currentUpdate, onUpdate } from './update-signal';
 
 import type { EntityId, Note } from '@vendor/types';
@@ -12,7 +13,7 @@ import type { State } from './store';
 import type { UpdateSignal } from './update-signal';
 
 /**
- * Non-secret status document published for the bar widget (T357).
+ * Non-secret status document published for the bar widget.
  * The widget must never read the data directory (it holds the auth
  * token), so this file carries only: schema version, the count of
  * live notes, the newest live note's title, the last sync time, and
@@ -25,16 +26,22 @@ export interface Status {
   last: { title: string; modified: number } | null;
   synced: string | null;
   update?: 'available' | 'restart';
-  /** Heartbeat (F134): ISO time of the last write while snote runs; it stops when snote stops. Added by the watcher, not buildStatus. */
+  /** The release the update is for, as digits and dots only (#159). Present only with `update`. */
+  updateVersion?: string;
+  /** Heartbeat: ISO time of the last write while snote runs; it stops when snote stops. Added by the watcher, not buildStatus. */
   alive?: string;
 }
 
 const MAX_TITLE_CHARS = 40;
 
+/** #159: the only shape of a release version the bar may show or link to. */
+const RELEASE_VERSION = /^\d{1,6}\.\d{1,6}\.\d{1,6}$/;
+
 /**
  * The note title for the status file: the app's own title derivation,
- * terminal-sanitized, with every newline/tab folded to a space,
- * trimmed, and capped at 40 characters (39 plus an ellipsis).
+ * terminal-sanitized, trimmed, and capped at 40 characters (39 plus an
+ * ellipsis). Newline/tab folding is layout only and is not a guarded claim.
+ * proof: test/core/status-file.test.ts
  */
 function statusTitle(note: Note): string {
   let title = sanitizeForTerminal(noteTitleAndPreview(note).title);
@@ -51,15 +58,16 @@ function statusTitle(note: Note): string {
  * `count` counts live notes (those with a falsy `deleted`). `last`
  * is the live note with the greatest `modificationDate` (ties broken
  * by the smaller id under `localeCompare`), or `null` when there is
- * no live note. `synced` is passed through untouched (T358 supplies
+ * no live note. `synced` is passed through untouched ( supplies
  * the ISO-8601 string, or `null`). `update` carries the signal's
- * `kind` (T388) and is present ONLY when a signal is given: never
+ * `kind` and is present ONLY when a signal is given: never
  * `update: undefined`.
  */
 export function buildStatus(
   state: State,
   synced: string | null,
-  update?: UpdateSignal | null
+  update?: UpdateSignal | null,
+  updateVersion?: string | null
 ): Status {
   const live: [EntityId, Note][] = [];
   for (const [id, note] of state.data.notes) {
@@ -91,6 +99,9 @@ export function buildStatus(
 
   if (update) {
     status.update = update.kind;
+    if (typeof updateVersion === 'string' && RELEASE_VERSION.test(updateVersion)) {
+      status.updateVersion = updateVersion;
+    }
   }
 
   return status;
@@ -99,22 +110,21 @@ export function buildStatus(
 /**
  * Write the status file atomically into `dir`.
  *
- * The directory is created with plain recursive `mkdir` (NOT
+ * The directory is created with `ensureDir` (a plain recursive mkdir; NOT
  * `secureMkdir`: that would chmod the plugin's data directory to
  * 0700). The payload lands in `status.json.tmp` via
  * `secureWriteFileSync` (mode 0600) and is renamed over
  * `status.json`, so readers never see a partial file.
+ * proof: test/core/status-file.test.ts
  */
 export function writeStatusFile(dir: string, status: Status): void {
-  fs.mkdirSync(dir, { recursive: true });
+  ensureDir(dir);
   const filePath = path.join(dir, 'status.json');
-  const tmpPath = filePath + '.tmp';
-  secureWriteFileSync(tmpPath, JSON.stringify(status) + '\n');
-  fs.renameSync(tmpPath, filePath);
+  secureWriteFileSync(filePath, JSON.stringify(status) + '\n');
 }
 
 /**
- * Where the status file lives (T358): `SNOTE_STATUS_DIR` when set and
+ * Where the status file lives: `SNOTE_STATUS_DIR` when set and
  * non-empty; else the bar plugin's data directory,
  * `<XDG_DATA_HOME or <HOME>/.local/share>/omarchy-snote-plugin`.
  * This function only computes the path; it never creates anything.
@@ -129,13 +139,13 @@ export function statusDir(env: NodeJS.ProcessEnv): string {
 }
 
 /**
- * Delete `status.json` and its temp sibling from `dir` (T358, logout).
+ * Delete `status.json` and its temp sibling from `dir` (, logout).
  * A missing file is not an error.
  */
 export function removeStatusFile(dir: string): void {
   for (const name of ['status.json', 'status.json.tmp']) {
     try {
-      fs.rmSync(path.join(dir, name), { force: true });
+      secureUnlink(path.join(dir, name));
     } catch {
       // a missing file is fine
     }
@@ -143,7 +153,7 @@ export function removeStatusFile(dir: string): void {
 }
 
 /**
- * F177 (T518): the epoch `alive` a clean quit writes into `status.json`.
+ * the epoch `alive` a clean quit writes into `status.json`.
  * `Date.parse` of it is 0, so every widget version reads the file as
  * "snote is not running" the moment snote ends, instead of waiting for
  * the 120 s heartbeat rule.
@@ -151,7 +161,7 @@ export function removeStatusFile(dir: string): void {
 export const STOPPED_ALIVE = '1970-01-01T00:00:00.000Z';
 
 /**
- * Rewrite `status.json` in `dir` at quit (T417 + F177/T518): the `update`
+ * Rewrite `status.json` in `dir` at quit: the `update`
  * key is dropped so the bar tooltip stops saying "Update available", and
  * `alive` becomes the epoch so the tooltip says "snote is not running"
  * at once instead of "Synced …" for up to 120 s. Read-modify-write:
@@ -172,6 +182,10 @@ export function clearUpdateStatusFile(dir: string): void {
       delete record.update;
       changed = true;
     }
+    if ('updateVersion' in record) {
+      delete record.updateVersion;
+      changed = true;
+    }
     if (record.alive !== STOPPED_ALIVE) {
       record.alive = STOPPED_ALIVE;
       changed = true;
@@ -186,7 +200,7 @@ export function clearUpdateStatusFile(dir: string): void {
 }
 
 /**
- * Keep `status.json` in `dir` up to date while the app runs (T358).
+ * Keep `status.json` in `dir` up to date while the app runs.
  *
  * One write is scheduled at start; after that a single debounced write
  * (default 1000 ms) follows whenever `state.data.notes` changed by
@@ -194,7 +208,7 @@ export function clearUpdateStatusFile(dir: string): void {
  * `pendingCount` 0) after not being synced. The moment it becomes
  * synced, `synced` is set to `new Date(now()).toISOString()` and kept
  * in every later file. Every write carries the current update signal
- * (T388); publishing a new signal schedules a normal debounced write.
+ *; publishing a new signal schedules a normal debounced write.
  * `stop()` unsubscribes from the store and the update signal, clears
  * the timer and flushes a pending write synchronously.
  */
@@ -223,7 +237,12 @@ export function watchStatus(
     try {
       // Best-effort: the bar status is optional, so a write that fails
       // (unreadable state, missing directory, read-only disk) is ignored.
-      const status = buildStatus(store.getState(), synced, currentUpdate());
+      // A running snote that is the newest release never announces `available`
+      // (the HEAD check can differ from the release tag): the file loses a stale one.
+      const signal = currentUpdate();
+      const update = signal !== null && signal.kind === 'available' && runningIsNewestRelease() ? null : signal;
+      const version = update === null ? null : update.kind === 'restart' ? update.available : (currentBanner()?.available ?? null);
+      const status = buildStatus(store.getState(), synced, update, version);
       status.alive = new Date(now()).toISOString();
       writeStatusFile(dir, status);
     } catch {
@@ -252,16 +271,18 @@ export function watchStatus(
 
   const unsubscribe = store.subscribe(schedule);
   // A published signal is an external event: always schedule the
-  // debounced write that carries it (T388).
-  const unsubscribeUpdate = onUpdate(() => {
+  // debounced write that carries it.
+  const scheduleSignalWrite = () => {
     if (timer !== null) {
       clearTimeout(timer);
     }
     timer = setTimeout(flush, delayMs);
-  });
+  };
+  const unsubscribeUpdate = onUpdate(scheduleSignalWrite);
+  const unsubscribeBanner = onBanner(scheduleSignalWrite);
   schedule();
 
-  // F134: while snote runs, an idle session still refreshes `alive` (and
+  // while snote runs, an idle session still refreshes `alive` (and
   // `synced`, while it is in sync) so the bar can tell "not running" apart.
   const heartbeat = setInterval(() => {
     if (lastSynced) {
@@ -275,6 +296,7 @@ export function watchStatus(
     clearInterval(heartbeat);
     unsubscribe();
     unsubscribeUpdate();
+    unsubscribeBanner();
     // Flush only a write that is still pending; never write on its own.
     if (timer !== null) {
       flush();

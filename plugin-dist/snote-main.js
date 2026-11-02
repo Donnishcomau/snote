@@ -2,6 +2,46 @@
 import { createRequire as __cr } from 'node:module';
 const require = __cr(import.meta.url);
 import {
+  currentBanner,
+  dismissBanner,
+  onBanner,
+  runningIsNewestRelease
+} from "./chunks/chunk-KC7W25YK.js";
+import {
+  documentsDir,
+  exportFileName
+} from "./chunks/chunk-PCM5WMUJ.js";
+import {
+  APP_ID
+} from "./chunks/chunk-S4I2QST2.js";
+import {
+  blogStatusLine,
+  checkEndpoints,
+  loadBlogSend,
+  sanitizeForTerminal
+} from "./chunks/chunk-NSKMBNUK.js";
+import {
+  DEFAULT_BLOG_ORIGIN,
+  blogOriginFromEnv
+} from "./chunks/chunk-35YNABTO.js";
+import {
+  currentUpdate,
+  onUpdate
+} from "./chunks/chunk-YEBQPWOH.js";
+import {
+  ensureDir,
+  isSymlinkFolder,
+  secureExclusiveCreate,
+  secureMkdir,
+  secureMkdtemp,
+  secureOpenForRead,
+  secureRemoveTree,
+  secureRename,
+  secureRmdir,
+  secureUnlink,
+  secureWriteFileSync
+} from "./chunks/chunk-ASSCDLWP.js";
+import {
   Box_default,
   Text,
   measure_element_default,
@@ -10,21 +50,22 @@ import {
   use_app_default,
   use_box_metrics_default,
   use_input_default,
+  use_is_screen_reader_enabled_default,
   use_paste_default,
   use_stdin_default,
   use_stdout_default
-} from "./chunks/chunk-GF6EF3C5.js";
+} from "./chunks/chunk-MRAMNRR7.js";
 import {
   require_react
-} from "./chunks/chunk-TUNEPWD3.js";
-import "./chunks/chunk-U3ANDNGC.js";
+} from "./chunks/chunk-CT7MGM3M.js";
+import "./chunks/chunk-GGREWLKO.js";
 import {
   require_change,
   require_channel,
   require_websocket,
   simperium_default
-} from "./chunks/chunk-DCFOREKC.js";
-import "./chunks/chunk-OJYCEQGS.js";
+} from "./chunks/chunk-6P5EENRL.js";
+import "./chunks/chunk-J73DZ7ZA.js";
 import {
   __commonJS,
   __export,
@@ -32,9 +73,9 @@ import {
   __toESM
 } from "./chunks/chunk-SRSFEH3H.js";
 
-// ../../localdev/simplenote/node_modules/remove-markdown/index.js
+// node_modules/remove-markdown/index.js
 var require_remove_markdown = __commonJS({
-  "../../localdev/simplenote/node_modules/remove-markdown/index.js"(exports, module) {
+  "node_modules/remove-markdown/index.js"(exports, module) {
     module.exports = function(md, options) {
       options = options || {};
       options.listUnicodeChar = options.hasOwnProperty("listUnicodeChar") ? options.listUnicodeChar : false;
@@ -83,17 +124,17 @@ var require_remove_markdown = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/_freeGlobal.js
+// node_modules/lodash/_freeGlobal.js
 var require_freeGlobal = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/_freeGlobal.js"(exports, module) {
+  "node_modules/lodash/_freeGlobal.js"(exports, module) {
     var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
     module.exports = freeGlobal;
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/_root.js
+// node_modules/lodash/_root.js
 var require_root = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/_root.js"(exports, module) {
+  "node_modules/lodash/_root.js"(exports, module) {
     var freeGlobal = require_freeGlobal();
     var freeSelf = typeof self == "object" && self && self.Object === Object && self;
     var root2 = freeGlobal || freeSelf || Function("return this")();
@@ -101,18 +142,18 @@ var require_root = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/_Symbol.js
+// node_modules/lodash/_Symbol.js
 var require_Symbol = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/_Symbol.js"(exports, module) {
+  "node_modules/lodash/_Symbol.js"(exports, module) {
     var root2 = require_root();
     var Symbol2 = root2.Symbol;
     module.exports = Symbol2;
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/_arrayMap.js
+// node_modules/lodash/_arrayMap.js
 var require_arrayMap = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/_arrayMap.js"(exports, module) {
+  "node_modules/lodash/_arrayMap.js"(exports, module) {
     function arrayMap(array, iteratee) {
       var index = -1, length = array == null ? 0 : array.length, result = Array(length);
       while (++index < length) {
@@ -124,17 +165,17 @@ var require_arrayMap = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/isArray.js
+// node_modules/lodash/isArray.js
 var require_isArray = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/isArray.js"(exports, module) {
+  "node_modules/lodash/isArray.js"(exports, module) {
     var isArray = Array.isArray;
     module.exports = isArray;
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/_getRawTag.js
+// node_modules/lodash/_getRawTag.js
 var require_getRawTag = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/_getRawTag.js"(exports, module) {
+  "node_modules/lodash/_getRawTag.js"(exports, module) {
     var Symbol2 = require_Symbol();
     var objectProto = Object.prototype;
     var hasOwnProperty = objectProto.hasOwnProperty;
@@ -161,9 +202,9 @@ var require_getRawTag = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/_objectToString.js
+// node_modules/lodash/_objectToString.js
 var require_objectToString = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/_objectToString.js"(exports, module) {
+  "node_modules/lodash/_objectToString.js"(exports, module) {
     var objectProto = Object.prototype;
     var nativeObjectToString = objectProto.toString;
     function objectToString(value) {
@@ -173,9 +214,9 @@ var require_objectToString = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/_baseGetTag.js
+// node_modules/lodash/_baseGetTag.js
 var require_baseGetTag = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/_baseGetTag.js"(exports, module) {
+  "node_modules/lodash/_baseGetTag.js"(exports, module) {
     var Symbol2 = require_Symbol();
     var getRawTag = require_getRawTag();
     var objectToString = require_objectToString();
@@ -192,9 +233,9 @@ var require_baseGetTag = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/isObjectLike.js
+// node_modules/lodash/isObjectLike.js
 var require_isObjectLike = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/isObjectLike.js"(exports, module) {
+  "node_modules/lodash/isObjectLike.js"(exports, module) {
     function isObjectLike(value) {
       return value != null && typeof value == "object";
     }
@@ -202,9 +243,9 @@ var require_isObjectLike = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/isSymbol.js
+// node_modules/lodash/isSymbol.js
 var require_isSymbol = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/isSymbol.js"(exports, module) {
+  "node_modules/lodash/isSymbol.js"(exports, module) {
     var baseGetTag = require_baseGetTag();
     var isObjectLike = require_isObjectLike();
     var symbolTag = "[object Symbol]";
@@ -215,9 +256,9 @@ var require_isSymbol = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/_baseToString.js
+// node_modules/lodash/_baseToString.js
 var require_baseToString = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/_baseToString.js"(exports, module) {
+  "node_modules/lodash/_baseToString.js"(exports, module) {
     var Symbol2 = require_Symbol();
     var arrayMap = require_arrayMap();
     var isArray = require_isArray();
@@ -242,9 +283,9 @@ var require_baseToString = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/toString.js
+// node_modules/lodash/toString.js
 var require_toString = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/toString.js"(exports, module) {
+  "node_modules/lodash/toString.js"(exports, module) {
     var baseToString = require_baseToString();
     function toString(value) {
       return value == null ? "" : baseToString(value);
@@ -253,9 +294,9 @@ var require_toString = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/lodash/escapeRegExp.js
+// node_modules/lodash/escapeRegExp.js
 var require_escapeRegExp = __commonJS({
-  "../../localdev/simplenote/node_modules/lodash/escapeRegExp.js"(exports, module) {
+  "node_modules/lodash/escapeRegExp.js"(exports, module) {
     var toString = require_toString();
     var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
     var reHasRegExpChar = RegExp(reRegExpChar.source);
@@ -267,9 +308,9 @@ var require_escapeRegExp = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/@babel/runtime/helpers/typeof.js
+// node_modules/@babel/runtime/helpers/typeof.js
 var require_typeof = __commonJS({
-  "../../localdev/simplenote/node_modules/@babel/runtime/helpers/typeof.js"(exports, module) {
+  "node_modules/@babel/runtime/helpers/typeof.js"(exports, module) {
     function _typeof(o) {
       "@babel/helpers - typeof";
       return module.exports = _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o2) {
@@ -282,9 +323,9 @@ var require_typeof = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/@babel/runtime/helpers/toPrimitive.js
+// node_modules/@babel/runtime/helpers/toPrimitive.js
 var require_toPrimitive = __commonJS({
-  "../../localdev/simplenote/node_modules/@babel/runtime/helpers/toPrimitive.js"(exports, module) {
+  "node_modules/@babel/runtime/helpers/toPrimitive.js"(exports, module) {
     var _typeof = require_typeof()["default"];
     function toPrimitive(t, r) {
       if ("object" != _typeof(t) || !t) return t;
@@ -300,9 +341,9 @@ var require_toPrimitive = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/@babel/runtime/helpers/toPropertyKey.js
+// node_modules/@babel/runtime/helpers/toPropertyKey.js
 var require_toPropertyKey = __commonJS({
-  "../../localdev/simplenote/node_modules/@babel/runtime/helpers/toPropertyKey.js"(exports, module) {
+  "node_modules/@babel/runtime/helpers/toPropertyKey.js"(exports, module) {
     var _typeof = require_typeof()["default"];
     var toPrimitive = require_toPrimitive();
     function toPropertyKey(t) {
@@ -313,9 +354,9 @@ var require_toPropertyKey = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/@babel/runtime/helpers/defineProperty.js
+// node_modules/@babel/runtime/helpers/defineProperty.js
 var require_defineProperty = __commonJS({
-  "../../localdev/simplenote/node_modules/@babel/runtime/helpers/defineProperty.js"(exports, module) {
+  "node_modules/@babel/runtime/helpers/defineProperty.js"(exports, module) {
     var toPropertyKey = require_toPropertyKey();
     function _defineProperty(e, r, t) {
       return (r = toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
@@ -329,9 +370,9 @@ var require_defineProperty = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/@babel/runtime/helpers/objectSpread2.js
+// node_modules/@babel/runtime/helpers/objectSpread2.js
 var require_objectSpread2 = __commonJS({
-  "../../localdev/simplenote/node_modules/@babel/runtime/helpers/objectSpread2.js"(exports, module) {
+  "node_modules/@babel/runtime/helpers/objectSpread2.js"(exports, module) {
     var defineProperty = require_defineProperty();
     function ownKeys(e, r) {
       var t = Object.keys(e);
@@ -358,9 +399,9 @@ var require_objectSpread2 = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/redux/lib/redux.js
+// node_modules/redux/lib/redux.js
 var require_redux = __commonJS({
-  "../../localdev/simplenote/node_modules/redux/lib/redux.js"(exports) {
+  "node_modules/redux/lib/redux.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var _objectSpread = require_objectSpread2();
@@ -466,9 +507,9 @@ var require_redux = __commonJS({
         } finally {
           isDispatching = false;
         }
-        var listeners4 = currentListeners = nextListeners;
-        for (var i = 0; i < listeners4.length; i++) {
-          var listener2 = listeners4[i];
+        var listeners2 = currentListeners = nextListeners;
+        for (var i = 0; i < listeners2.length; i++) {
+          var listener2 = listeners2[i];
           listener2();
         }
         return action;
@@ -671,9 +712,9 @@ var require_redux = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/ms/index.js
+// node_modules/ms/index.js
 var require_ms = __commonJS({
-  "../../localdev/simplenote/node_modules/ms/index.js"(exports, module) {
+  "node_modules/ms/index.js"(exports, module) {
     var s = 1e3;
     var m = s * 60;
     var h = m * 60;
@@ -787,9 +828,9 @@ var require_ms = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/debug/src/common.js
+// node_modules/debug/src/common.js
 var require_common = __commonJS({
-  "../../localdev/simplenote/node_modules/debug/src/common.js"(exports, module) {
+  "node_modules/debug/src/common.js"(exports, module) {
     function setup(env) {
       createDebug.debug = createDebug;
       createDebug.default = createDebug;
@@ -964,9 +1005,9 @@ var require_common = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/debug/src/browser.js
+// node_modules/debug/src/browser.js
 var require_browser = __commonJS({
-  "../../localdev/simplenote/node_modules/debug/src/browser.js"(exports, module) {
+  "node_modules/debug/src/browser.js"(exports, module) {
     exports.formatArgs = formatArgs;
     exports.save = save;
     exports.load = load;
@@ -1134,9 +1175,9 @@ var require_browser = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/has-flag/index.js
+// node_modules/has-flag/index.js
 var require_has_flag = __commonJS({
-  "../../localdev/simplenote/node_modules/has-flag/index.js"(exports, module) {
+  "node_modules/has-flag/index.js"(exports, module) {
     "use strict";
     module.exports = (flag, argv = process.argv) => {
       const prefix = flag.startsWith("-") ? "" : flag.length === 1 ? "-" : "--";
@@ -1147,9 +1188,9 @@ var require_has_flag = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/supports-color/index.js
+// node_modules/supports-color/index.js
 var require_supports_color = __commonJS({
-  "../../localdev/simplenote/node_modules/supports-color/index.js"(exports, module) {
+  "node_modules/supports-color/index.js"(exports, module) {
     "use strict";
     var os3 = __require("os");
     var tty = __require("tty");
@@ -1249,9 +1290,9 @@ var require_supports_color = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/debug/src/node.js
+// node_modules/debug/src/node.js
 var require_node = __commonJS({
-  "../../localdev/simplenote/node_modules/debug/src/node.js"(exports, module) {
+  "node_modules/debug/src/node.js"(exports, module) {
     var tty = __require("tty");
     var util = __require("util");
     exports.init = init;
@@ -1423,9 +1464,9 @@ var require_node = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/debug/src/index.js
+// node_modules/debug/src/index.js
 var require_src = __commonJS({
-  "../../localdev/simplenote/node_modules/debug/src/index.js"(exports, module) {
+  "node_modules/debug/src/index.js"(exports, module) {
     if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
       module.exports = require_browser();
     } else {
@@ -1434,9 +1475,9 @@ var require_src = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/react/cjs/react-jsx-runtime.production.js
+// node_modules/react/cjs/react-jsx-runtime.production.js
 var require_react_jsx_runtime_production = __commonJS({
-  "../../localdev/simplenote/node_modules/react/cjs/react-jsx-runtime.production.js"(exports) {
+  "node_modules/react/cjs/react-jsx-runtime.production.js"(exports) {
     "use strict";
     var REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for("react.transitional.element");
     var REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for("react.fragment");
@@ -1464,9 +1505,9 @@ var require_react_jsx_runtime_production = __commonJS({
   }
 });
 
-// ../../localdev/simplenote/node_modules/react/jsx-runtime.js
+// node_modules/react/jsx-runtime.js
 var require_jsx_runtime = __commonJS({
-  "../../localdev/simplenote/node_modules/react/jsx-runtime.js"(exports, module) {
+  "node_modules/react/jsx-runtime.js"(exports, module) {
     "use strict";
     if (true) {
       module.exports = require_react_jsx_runtime_production();
@@ -1481,10 +1522,10 @@ process.noDeprecation = true;
 process.removeAllListeners("warning");
 
 // src/cli/main.tsx
-var import_react23 = __toESM(require_react(), 1);
-import fs13 from "node:fs";
+var import_react24 = __toESM(require_react(), 1);
+import fs10 from "node:fs";
 import os2 from "node:os";
-import path12 from "node:path";
+import path9 from "node:path";
 
 // src/core/crash-redact.ts
 var KNOWN_WORDS = new Set(
@@ -1692,17 +1733,6 @@ function storedCrashBundle(old, home) {
   return bundle;
 }
 
-// src/core/secure-fs.ts
-import { chmodSync, mkdirSync, writeFileSync } from "node:fs";
-function secureMkdir(dir) {
-  mkdirSync(dir, { recursive: true, mode: 448 });
-  chmodSync(dir, 448);
-}
-function secureWriteFileSync(path13, data) {
-  writeFileSync(path13, data, { mode: 384 });
-  chmodSync(path13, 384);
-}
-
 // src/core/crash-ring.ts
 var MAX_KEY_EVENTS = 20;
 function pushKeyEvent(ring, event) {
@@ -1735,7 +1765,7 @@ var import_react2 = __toESM(require_react(), 1);
 var tagHashOf = (tagName) => {
   const normalized = tagName.normalize("NFC");
   const lowercased = normalized.toLocaleLowerCase("en-US");
-  const encoded = encodeURIComponent(lowercased);
+  const encoded = encodeURIComponent(lowercased.replace(new RegExp("\\p{Cs}", "gu"), "\uFFFD"));
   return encoded.replace(
     /[!'()*\-_~.]/g,
     (c) => "%" + c.charCodeAt(0).toString(16).toUpperCase()
@@ -1761,20 +1791,6 @@ var withoutTag = (tags2, tag) => {
 var naiveEmailPattern = /^(?:[^@]+)@(?:.+)(?:\.[^.]{2,})$/;
 var isEmailTag = (tagName) => naiveEmailPattern.test(tagName);
 var is_email_tag_default = isEmailTag;
-
-// src/core/sanitize.ts
-var ESC = "\x1B";
-var CSI_OR_OSC = new RegExp(
-  ESC + "\\[[\\d?;]*[@-~]|" + ESC + "\\](?:[^" + ESC + "\x07]|" + ESC + "\\\\)*(?:\x07|" + ESC + "\\\\)",
-  "g"
-);
-var ANY_ESC_PAIR = new RegExp(ESC + ".", "g");
-var CONTROL_BYTES = new RegExp("[\\u0080-\\u009f\\x00-\\x08\\x0b-\\x1f\\x7f]", "g");
-var VARIATION_SELECTORS = /[\uFE0F\uFE0E]/g;
-var BIDI_INVISIBLES = /[\u200B\u200C\u200E\u200F\u202A-\u202E\u2066-\u2069\u2028\u2029]/g;
-function sanitizeForTerminal(s) {
-  return s.replace(CSI_OR_OSC, "").replace(ANY_ESC_PAIR, "").replace(CONTROL_BYTES, "").replace(BIDI_INVISIBLES, "").replace(VARIATION_SELECTORS, "");
-}
 
 // src/core/collection.ts
 function tagRowsStored(tags2) {
@@ -1993,7 +2009,7 @@ function restoreRevisionAction(state, noteId, version) {
 // src/core/layout.ts
 function paneLayout(width, tagsOpen, tagsFocused, reading = false) {
   if (width >= 80) {
-    const tagsWidth = tagsOpen ? 14 : 0;
+    const tagsWidth = tagsOpen ? width >= 100 ? 24 : 14 : 0;
     return {
       tagsWidth,
       listWidthProp: width - tagsWidth,
@@ -2151,9 +2167,7 @@ import {
   existsSync,
   watch,
   lstatSync,
-  readFileSync,
-  renameSync,
-  unlinkSync
+  readFileSync
 } from "node:fs";
 import { join } from "node:path";
 var REQUEST_FILE = "new-note.request";
@@ -2187,9 +2201,7 @@ function requestNewNote(dir) {
     return "no-instance";
   }
   const requestPath = join(dir, REQUEST_FILE);
-  const tmpPath = join(dir, `${REQUEST_FILE}.tmp`);
-  secureWriteFileSync(tmpPath, JSON.stringify({ v: 1, t: Date.now() }));
-  renameSync(tmpPath, requestPath);
+  secureWriteFileSync(requestPath, JSON.stringify({ v: 1, t: Date.now() }));
   return "sent";
 }
 function watchNewRequests(dir, onRequest, opts) {
@@ -2205,7 +2217,7 @@ function watchNewRequests(dir, onRequest, opts) {
   };
   const claim = () => {
     try {
-      unlinkSync(requestPath);
+      secureUnlink(requestPath);
       return true;
     } catch {
       return false;
@@ -2278,12 +2290,12 @@ function onNewRequest(l) {
 }
 
 // src/tui/app-actions.ts
-import { basename as basename3, dirname, join as join8 } from "node:path";
+import { basename as basename3, dirname, join as join7 } from "node:path";
 
 // src/core/editor.ts
-import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync as readFileSync4 } from "node:fs";
-import { join as join7, basename as basename2 } from "node:path";
+import { spawn } from "node:child_process";
+import { readFileSync as readFileSync4 } from "node:fs";
+import { join as join6, basename as basename2 } from "node:path";
 
 // src/cli/env-check.ts
 import { delimiter, join as join2 } from "node:path";
@@ -2376,50 +2388,10 @@ function editorFinishHint(editorCmd) {
   return "save and close the editor to return";
 }
 
-// src/core/export-note.ts
-import { homedir } from "node:os";
-import { join as join4 } from "node:path";
-import { writeFile } from "node:fs/promises";
-var FILENAME_LENGTH = 40;
-var INVALID_CHARS = /[\/\\?<>:*|"\u0000-\u001f\u007f-\u009f\u200B\u200C\u200E\u200F\u202A-\u202E\u2066-\u2069\u2028\u2029]/g;
-function exportFileName(content) {
-  const raw = (content ?? "").split("\n").map((line) => line.trim()).find((line) => line !== "");
-  if (raw === void 0) return "untitled";
-  const cleaned = raw.replace(/^#\s+/, "").replace(INVALID_CHARS, "").slice(0, FILENAME_LENGTH);
-  return cleaned === "" ? "untitled" : cleaned;
-}
-function exportText(note) {
-  const content = note.content ?? "";
-  const tagLines = note.tags ?? [];
-  if (tagLines.length === 0) return content;
-  return `${content}
-
-Tags:
-  ${tagLines.join(", ")}`;
-}
-function documentsDir(env = process.env) {
-  const xdg = env.XDG_DOCUMENTS_DIR;
-  if (xdg && xdg.trim() !== "") return xdg;
-  return join4(homedir(), "Documents");
-}
-async function exportNote(note, dir) {
-  const base = exportFileName(note.content ?? "");
-  const text = exportText(note);
-  for (let n = 1; ; n++) {
-    const path13 = join4(dir, n === 1 ? `${base}.md` : `${base} ${n}.md`);
-    try {
-      await writeFile(path13, text, { encoding: "utf8", flag: "wx" });
-      return path13;
-    } catch (err) {
-      if (err.code !== "EEXIST") throw err;
-    }
-  }
-}
-
 // src/core/editor-drafts.ts
 import { createHash } from "node:crypto";
-import { closeSync, constants, fstatSync, lstatSync as lstatSync2, openSync, readdirSync, readSync, rmSync } from "node:fs";
-import { join as join6 } from "node:path";
+import { closeSync, fstatSync, lstatSync as lstatSync2, lutimesSync, readdirSync, readSync } from "node:fs";
+import { join as join5 } from "node:path";
 
 // src/core/persistence.ts
 import * as fs2 from "node:fs";
@@ -2512,10 +2484,8 @@ function saveState(state, dir) {
   }
   const file = { version: 1, data: toSave };
   const filePath = path.join(dir, "state.json");
-  const tmpPath = filePath + ".tmp";
   secureMkdir(dir);
-  secureWriteFileSync(tmpPath, JSON.stringify(file, replacer));
-  fs2.renameSync(tmpPath, filePath);
+  secureWriteFileSync(filePath, JSON.stringify(file, replacer));
 }
 function loadState(dir) {
   const filePath = path.join(dir, "state.json");
@@ -2534,13 +2504,31 @@ function loadState(dir) {
   } catch {
     return void 0;
   }
-  if (file.version !== 1) {
+  if (file?.version !== 1) {
     return void 0;
   }
   const revivedData = {};
-  for (const [key, value] of Object.entries(file.data)) {
-    revivedData[key] = reviver(key, value);
+  let drawable = false;
+  try {
+    for (const [key, value] of Object.entries(file.data)) {
+      revivedData[key] = reviver(key, value);
+    }
+    drawable = [...Map.prototype.values.call(revivedData.notes)].every(
+      (n) => typeof n.content === "string" && [n.tags, n.systemTags].every((v) => !Array.isArray(v) || v.every((x) => typeof x === "string"))
+    );
+  } catch {
   }
+  if (!drawable || ["noteTags", "preferences", "tags"].some((k) => k in revivedData && !(revivedData[k] instanceof Map))) {
+    return void 0;
+  }
+  const { tags: tags2, noteTags: noteTags2 } = revivedData;
+  tags2?.forEach((v, k) => {
+    if (typeof v?.name !== "string") tags2.delete(k);
+  });
+  noteTags2?.forEach((v, k) => {
+    if (!(v instanceof Set)) noteTags2.delete(k);
+  });
+  delete revivedData.noteRevisions;
   return { data: revivedData };
 }
 var afterSave = [];
@@ -2589,21 +2577,22 @@ var SOURCE_MAX_BYTES = 4096;
 var NOTE_ID_SHAPE = /^[A-Za-z0-9_-]{1,64}$/;
 var SHA256_SHAPE = /^[0-9a-f]{64}$/;
 var sha256 = (text) => createHash("sha256").update(text, "utf8").digest("hex");
-function writeSource(folder, noteId, text) {
+function writeSource(folder, noteId, text, draft) {
   try {
-    secureWriteFileSync(join6(folder, SOURCE_FILE), JSON.stringify({ v: 1, noteId, sha256: sha256(text) }));
+    secureWriteFileSync(join5(folder, SOURCE_FILE), JSON.stringify({ v: 1, noteId, sha256: sha256(text) }));
+    if (draft) lutimesSync(join5(folder, SOURCE_FILE), Date.now() / 1e3, lstatSync2(draft).mtimeMs / 1e3 - 1.5);
   } catch {
   }
 }
 function readSource(folder) {
-  const read = readDraft(join6(folder, SOURCE_FILE), SOURCE_MAX_BYTES);
+  const read = readDraft(join5(folder, SOURCE_FILE), SOURCE_MAX_BYTES);
   if (read === null || !("text" in read)) return null;
   try {
     const j = JSON.parse(read.text);
     if (typeof j !== "object" || j === null) return null;
     const { v, noteId, sha256: hash } = j;
     if (v !== 1 || typeof noteId !== "string" || typeof hash !== "string") return null;
-    return NOTE_ID_SHAPE.test(noteId) && SHA256_SHAPE.test(hash) ? { noteId, sha256: hash } : null;
+    return NOTE_ID_SHAPE.test(noteId) && SHA256_SHAPE.test(hash) ? { noteId, sha256: hash, at: lstatSync2(join5(folder, SOURCE_FILE)).mtimeMs } : null;
   } catch {
     return null;
   }
@@ -2614,8 +2603,8 @@ function setDraftsDir(dir) {
 }
 function draftsDir(env = process.env) {
   if (accountDrafts !== null) return accountDrafts;
-  const state = env.XDG_STATE_HOME ? env.XDG_STATE_HOME : join6(env.HOME ?? "", ".local", "state");
-  return join6(state, "snote", "drafts");
+  const state = env.XDG_STATE_HOME ? env.XDG_STATE_HOME : join5(env.HOME ?? "", ".local", "state");
+  return join5(state, "snote", "drafts");
 }
 function isRealDir(p) {
   try {
@@ -2636,12 +2625,12 @@ function ensureDraftsDir() {
   secureMkdir(dir);
   return dir;
 }
-function readDraft(path13, cap = MAX_DRAFT_BYTES) {
+function readDraft(path10, cap = MAX_DRAFT_BYTES) {
   let fd;
   try {
-    fd = openSync(path13, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+    fd = secureOpenForRead(path10, { nonBlock: true });
   } catch {
-    const st = lstatSync2(path13, { throwIfNoEntry: false });
+    const st = lstatSync2(path10, { throwIfNoEntry: false });
     return st && !st.isSymbolicLink() ? { unreadable: true } : null;
   }
   try {
@@ -2649,7 +2638,12 @@ function readDraft(path13, cap = MAX_DRAFT_BYTES) {
     if (!st.isFile()) return null;
     if (st.size > cap) return { tooLarge: st.size };
     const buf = Buffer.alloc(st.size + 1);
-    const n = readSync(fd, buf, 0, buf.length, 0);
+    let n = 0;
+    while (n < buf.length) {
+      const got = readSync(fd, buf, n, buf.length - n, n);
+      if (got === 0) break;
+      n += got;
+    }
     if (n > st.size) return { tooLarge: n };
     return { text: buf.toString("utf-8", 0, n) };
   } catch {
@@ -2661,7 +2655,7 @@ function readDraft(path13, cap = MAX_DRAFT_BYTES) {
 function removeDrafts(folders) {
   for (const folder of folders) {
     try {
-      rmSync(folder, { recursive: true, force: true });
+      secureRemoveTree(folder);
     } catch {
     }
   }
@@ -2677,14 +2671,16 @@ function recoverDrafts(store, dir = draftsDir(), tooLarge, report) {
   const restored = [];
   let count = 0;
   for (const name of folders) {
-    const folder = join6(dir, name);
+    const folder = join5(dir, name);
     const texts = [];
     let kept = 0;
+    let at = 0;
     try {
       if (!isRealDir(folder)) continue;
       for (const f of readdirSync(folder).filter((n) => n.endsWith(".md"))) {
-        const draft = readDraft(join6(folder, f));
+        const draft = readDraft(join5(folder, f));
         if (draft === null) continue;
+        at = lstatSync2(join5(folder, f)).mtimeMs;
         if ("text" in draft) texts.push(draft.text);
         else {
           kept++;
@@ -2698,6 +2694,10 @@ function recoverDrafts(store, dir = draftsDir(), tooLarge, report) {
     const fresh = texts.filter((t) => t.trim() !== "" && !notes2.includes(t));
     const source = fresh.length === 1 && texts.length === 1 && kept === 0 ? readSource(folder) : null;
     const target = source ? store.getState().data.notes.get(source.noteId) : void 0;
+    if (source && target && !target.deleted && sha256(fresh[0]) === source.sha256 && Math.abs(at - source.at - 1500) < 2) {
+      removeDrafts([folder]);
+      continue;
+    }
     if (source && target && !target.deleted && sha256(target.content ?? "") === source.sha256) {
       store.dispatch({ type: "EDIT_NOTE", noteId: source.noteId, changes: { content: fresh[0] } });
     } else {
@@ -2719,8 +2719,8 @@ function recoverDrafts(store, dir = draftsDir(), tooLarge, report) {
 }
 function recoveryNotice(restored, tooLarge, changed = 0) {
   const parts = [];
-  const plain = restored - changed;
-  if (plain > 0) parts.push(`Restored ${plain} ${plain === 1 ? "note" : "notes"} from an unfinished editor session`);
+  const plain2 = restored - changed;
+  if (plain2 > 0) parts.push(`Restored ${plain2} ${plain2 === 1 ? "note" : "notes"} from an unfinished editor session`);
   if (changed > 0) parts.push(`Restored ${changed} ${changed === 1 ? "note as a new note" : "notes as new notes"}: the original changed meanwhile`);
   if (tooLarge.length === 1) {
     parts.push(`Draft too large to restore (${Math.ceil(tooLarge[0].bytes / 1024)} KB), kept on disk: ${tooLarge[0].folder}`);
@@ -2759,6 +2759,31 @@ function nvimHintArgs() {
     "autocmd BufWinEnter,WinEnter * lua " + guard
   ];
 }
+async function runChild(cmd, args, stdio, stdin) {
+  const shared = stdio === "inherit";
+  if (shared) {
+    await new Promise((r) => setImmediate(r));
+    stdin.pause();
+  }
+  const result = await new Promise((resolve) => {
+    let done = false;
+    const finish = (r) => {
+      if (done) return;
+      done = true;
+      resolve(r);
+    };
+    try {
+      const child = spawn(cmd, args, { stdio });
+      child.once("error", (error) => finish({ error, status: null }));
+      child.once("close", (status) => finish({ status }));
+    } catch (error) {
+      finish({ error, status: null });
+    }
+  });
+  if (shared) stdin.resume();
+  return result;
+}
+var QUICK_RETURN = "Set SNOTE_EDITOR to a command that waits, e.g. code --wait. Nothing was saved";
 async function editInEditor(initial, opts) {
   const editor = opts?.editor ?? selectEditor(process.env);
   const noteId = editing;
@@ -2766,17 +2791,50 @@ async function editInEditor(initial, opts) {
   const parts = editor.split(/\s+/);
   const cmd = parts[0];
   const args = parts.slice(1);
-  const tmpDir = mkdtempSync(join7(ensureDraftsDir(), "snote-"));
+  const tmpDir = secureMkdtemp(join6(ensureDraftsDir(), "snote-"));
   const stem = exportFileName(initial);
-  const tmpFile = join7(tmpDir, `${stem}.md`);
+  const tmpFile = join6(tmpDir, `${stem}.md`);
   secureWriteFileSync(tmpFile, initial);
   if (noteId !== null) writeSource(tmpDir, noteId, initial);
+  let stopWatch;
+  let closed = false;
+  let renewSidecar;
+  const onWrite = opts?.onWrite;
+  if (onWrite && noteId !== null) {
+    let sidecar;
+    let stampedText;
+    const handOn = (text) => {
+      stampedText = void 0;
+      onWrite(text);
+      const waiting = sidecar !== void 0;
+      sidecar = text;
+      if (!waiting) {
+        afterNextSave(() => {
+          if (sidecar !== void 0) {
+            writeSource(tmpDir, noteId, sidecar, tmpFile);
+            stampedText = sidecar;
+          }
+          sidecar = void 0;
+        });
+      }
+    };
+    renewSidecar = (text) => {
+      if (sidecar === void 0 && text === stampedText) writeSource(tmpDir, noteId, text, tmpFile);
+    };
+    void import("./chunks/editor-write-watch-7EGQOFVS.js").then((m) => {
+      if (!closed) stopWatch = m.watchDraftWrites(tmpFile, initial, readDraft, handOn, void 0, renewSidecar);
+    }).catch(() => void 0);
+  }
   const direct = process.env.SNOTE_EDITOR_DIRECT === "1";
   const uwsm = direct ? null : findOnPath("uwsm", process.env.PATH);
   const hint = basename2(cmd) === "nvim" ? nvimHintArgs() : [];
-  const result = isTerminalEditor(cmd) ? spawnSync(cmd, [...args, ...hint, tmpFile], { stdio: "inherit" }) : uwsm ? spawnSync("uwsm", ["app", "-S", "both", "--", cmd, ...args, tmpFile], {
-    stdio: ["ignore", "ignore", "ignore"]
-  }) : spawnSync(cmd, [...args, tmpFile], { stdio: ["ignore", "ignore", "ignore"] });
+  const stdin = opts?.stdin ?? process.stdin;
+  const ignored = ["ignore", "ignore", "ignore"];
+  const terminal = isTerminalEditor(cmd);
+  const startedAt = performance.now();
+  const result = terminal ? await runChild(cmd, [...args, ...hint, tmpFile], "inherit", stdin) : uwsm ? await runChild("uwsm", ["app", "-S", "both", "--", cmd, ...args, tmpFile], ignored, stdin) : await runChild(cmd, [...args, tmpFile], ignored, stdin);
+  closed = true;
+  const last = stopWatch?.() ?? initial;
   const kept = ". Your text is kept in " + tmpFile;
   if (result.error) {
     throw new Error(
@@ -2787,10 +2845,16 @@ async function editInEditor(initial, opts) {
     throw new Error("editor failed: exit " + result.status + kept);
   }
   const edited = readFileSync4(tmpFile, "utf-8");
-  if (edited === initial) {
+  if (edited === initial && last === initial) {
     removeDrafts([tmpDir]);
+    const raw = process.env.SNOTE_EDITOR_QUICK_MS;
+    const quick = raw !== void 0 && /^\d{1,7}$/.test(raw) ? parseInt(raw, 10) : 2e3;
+    if (!terminal && quick > 0 && performance.now() - startedAt <= quick) {
+      throw new Error(QUICK_RETURN);
+    }
     return null;
   }
+  if (edited === last) renewSidecar?.(edited);
   handedBack.push(tmpDir);
   return edited;
 }
@@ -2803,14 +2867,19 @@ function newNoteFields(collection2, topNote) {
 }
 
 // src/core/clipboard.ts
-import { spawnSync as spawnSync2 } from "node:child_process";
+import { spawnSync } from "node:child_process";
+var COPY_TIMEOUT_MS = 1e3;
 function copyToClipboard(text, command = ["wl-copy"]) {
   if (!text || command.length === 0) {
     return false;
   }
-  const result = spawnSync2(command[0], command.slice(1), {
+  const result = spawnSync(command[0], command.slice(1), {
     input: text,
-    stdio: ["pipe", "ignore", "ignore"]
+    stdio: ["pipe", "ignore", "ignore"],
+    timeout: COPY_TIMEOUT_MS,
+    killSignal: "SIGKILL",
+    // #219, see the docstring
+    maxBuffer: 1048576
   });
   return result.error === void 0 && result.status === 0;
 }
@@ -2887,18 +2956,32 @@ function insertChecklistItem(content, afterIndex, text) {
 
 // src/core/editor-conflict-merge.ts
 var import_change = __toESM(require_change(), 1);
-function mergeEditorReturn(base, local, current4) {
-  if (current4 === base) {
+var conflictBlock = (local, current2) => `${local}
+
+--- conflicting change from another device ---
+${current2}`;
+var MERGE_MAX_CHARS = 5e4;
+function wholeMerge(base, local, current2, merged) {
+  const expected = current2.length + local.length - base.length;
+  return Math.abs(merged.length - expected) <= Math.max(1024, Math.max(base.length, local.length, current2.length) / 4);
+}
+var mendOwn = (base, own) => own === base ? own : own.replace(new RegExp("\\p{Cs}", "gu"), "\uFFFD");
+function mergeEditorReturn(base, edited, current2, maxChars = MERGE_MAX_CHARS) {
+  const local = mendOwn(base, edited);
+  if (current2 === base) {
     return { content: local, conflict: false };
+  }
+  if (local === base) {
+    return { content: current2, conflict: false };
+  }
+  if (Math.max(base.length, local.length, current2.length) > maxChars || new RegExp("\\p{Cs}", "u").test(`${base} ${current2}`)) {
+    return { content: conflictBlock(local, current2), conflict: true };
   }
   const b = { content: base };
   const l = { content: local };
-  const c = { content: current4 };
+  const c = { content: current2 };
   const localDiff = (0, import_change.diff)(b, l);
   const remoteDiff = (0, import_change.diff)(b, c);
-  if (local === base) {
-    return { content: current4, conflict: false };
-  }
   let merged;
   try {
     const transformed = (0, import_change.transform)(localDiff, remoteDiff, b);
@@ -2908,16 +2991,33 @@ function mergeEditorReturn(base, local, current4) {
   } catch {
     merged = void 0;
   }
-  if (merged && typeof merged.content === "string") {
+  if (merged && typeof merged.content === "string" && wholeMerge(base, local, current2, merged.content)) {
     return { content: merged.content, conflict: false };
   }
   return {
-    content: `${local}
-
---- conflicting change from another device ---
-${current4}`,
+    content: conflictBlock(local, current2),
     conflict: true
   };
+}
+
+// src/core/line-inclusion.ts
+function lineCounts(text) {
+  const counts = /* @__PURE__ */ new Map();
+  for (const line of text.split("\n")) counts.set(line, (counts.get(line) ?? 0) + 1);
+  return counts;
+}
+function editIncluded(base, edited, current2) {
+  const b = lineCounts(base);
+  const l = lineCounts(edited);
+  const c = lineCounts(current2);
+  for (const line of /* @__PURE__ */ new Set([...b.keys(), ...l.keys()])) {
+    const inBase = b.get(line) ?? 0;
+    const inEdited = l.get(line) ?? 0;
+    const inCurrent = c.get(line) ?? 0;
+    if (inEdited > inBase && inCurrent < inEdited) return false;
+    if (inEdited < inBase && inCurrent > inEdited) return false;
+  }
+  return true;
 }
 
 // vendor/simplenote/state/data/actions.ts
@@ -2980,6 +3080,172 @@ var toggleAnalytics = () => ({
   type: "TOGGLE_ANALYTICS"
 });
 
+// src/core/held-lines.ts
+var MAX_PAIRS = 4e6;
+function align(a, b, preferA) {
+  const map = new Int32Array(a.length).fill(-1);
+  let lo = 0;
+  while (lo < a.length && lo < b.length && a[lo] === b[lo]) {
+    map[lo] = lo;
+    lo++;
+  }
+  let ea = a.length;
+  let eb = b.length;
+  while (ea > lo && eb > lo && a[ea - 1] === b[eb - 1]) {
+    ea--;
+    eb--;
+    map[ea] = eb;
+  }
+  const n = ea - lo;
+  const k = eb - lo;
+  if (n === 0 || k === 0) return map;
+  if (n * k > MAX_PAIRS) return void 0;
+  const w = k + 1;
+  const t = new Int32Array((n + 1) * w);
+  for (let i2 = n - 1; i2 >= 0; i2--) {
+    for (let j2 = k - 1; j2 >= 0; j2--) {
+      t[i2 * w + j2] = a[lo + i2] === b[lo + j2] ? t[(i2 + 1) * w + j2 + 1] + 1 : Math.max(t[(i2 + 1) * w + j2], t[i2 * w + j2 + 1]);
+    }
+  }
+  let i = 0;
+  let j = 0;
+  while (i < n && j < k) {
+    if (a[lo + i] === b[lo + j]) {
+      map[lo + i] = lo + j;
+      i++;
+      j++;
+    } else {
+      const down = t[(i + 1) * w + j];
+      const right = t[i * w + j + 1];
+      if (down > right || down === right && !preferA) i++;
+      else j++;
+    }
+  }
+  return map;
+}
+function alignSure(a, b) {
+  const x = align(a, b, true);
+  const y = align(a, b, false);
+  if (!x || !y) return void 0;
+  return x.map((v, i) => v === y[i] ? v : -1);
+}
+function heldBase(base, edited, current2) {
+  const b = base.split("\n");
+  const e = edited.split("\n");
+  const c = current2.split("\n");
+  const be = alignSure(b, e);
+  const bc = alignSure(b, c);
+  const ec = alignSure(e, c);
+  if (!be || !bc || !ec) return base;
+  const usedByBase = /* @__PURE__ */ new Set();
+  for (const y of bc) if (y !== -1) usedByBase.add(y);
+  const aligned = new Set(ec);
+  const out = [];
+  let next = 0;
+  let lastKept = -1;
+  let removed = [];
+  for (let i = 0; i <= b.length; i++) {
+    if (i < b.length && be[i] === -1) {
+      removed.push(i);
+      continue;
+    }
+    const end = i < b.length ? be[i] : e.length;
+    const added = [];
+    let allHeld = true;
+    const left = lastKept === -1 ? -1 : bc[lastKept];
+    const right = i === b.length ? c.length : bc[i];
+    let otherInsert = false;
+    if ((left !== -1 || lastKept === -1) && right !== -1) for (let y = left + 1; y < right; y++) otherInsert ||= !aligned.has(y);
+    for (let x = next; x < end; x++) {
+      if (ec[x] !== -1 && !usedByBase.has(ec[x]) && !otherInsert) added.push(e[x]);
+      else allHeld = false;
+    }
+    for (const r of removed) if (!allHeld || bc[r] !== -1) out.push(b[r]);
+    out.push(...added);
+    removed = [];
+    if (i < b.length) {
+      out.push(b[i]);
+      next = end + 1;
+      lastKept = i;
+    }
+  }
+  return out.join("\n");
+}
+function mergeLoses(base, local, remote, merged) {
+  const [b, l, r, m] = [base, local, remote, merged].map(lineCounts);
+  for (const line of /* @__PURE__ */ new Set([...b.keys(), ...l.keys(), ...r.keys()])) {
+    const [nb, nl, nr, nm] = [b, l, r, m].map((c) => c.get(line) ?? 0);
+    if (nm < Math.min(nb, nl, nr) + Math.max(0, nl - nb) + Math.max(0, nr - nb)) return true;
+    if (nl < nb !== nr < nb && nm > nl + nr - nb) return true;
+  }
+  return false;
+}
+function mergeLines(base, local, remote) {
+  const b = base.split("\n");
+  const l = local.split("\n");
+  const r = remote.split("\n");
+  for (let k = 0; k < 4; k++) {
+    const bl = align(b, l, k < 2);
+    const br = align(b, r, k % 2 === 0);
+    if (!bl || !br) return void 0;
+    const ends = [[...bl, l.length], [...br, r.length]];
+    const out = [];
+    let at = [0, 0, 0];
+    for (let i = 0; i <= b.length; i++) {
+      const [le, re] = [ends[0][i], ends[1][i]];
+      if (le === -1 || re === -1) continue;
+      const B = b.slice(at[0], i).join("\n");
+      const L = l.slice(at[1], le);
+      const R = r.slice(at[2], re);
+      const Lj = L.join("\n");
+      const Rj = R.join("\n");
+      if (Lj === B) out.push(...R);
+      else if (Rj === B || Lj === Rj) out.push(...L);
+      else if (at[0] === i) out.push(...L, ...R);
+      else break;
+      if (i < b.length) out.push(b[i]);
+      at = [i + 1, le + 1, re + 1];
+      if (i === b.length) return out.join("\n");
+    }
+  }
+  return void 0;
+}
+function mergeKeepingText(base, edited, current2) {
+  const local = mendOwn(base, edited);
+  const char = mergeEditorReturn(base, local, current2);
+  if (char.conflict || !mergeLoses(base, local, current2, char.content)) return char;
+  const lines = mergeLines(base, local, current2);
+  return lines === void 0 ? { content: conflictBlock(local, current2), conflict: true } : { content: lines, conflict: false };
+}
+function mergeEditorKeepingText(base, edited, current2) {
+  const local = mendOwn(base, edited);
+  const char = mergeEditorReturn(base, local, current2);
+  return char.conflict || !mergeLoses(base, local, current2, char.content) ? char : { content: conflictBlock(local, current2), conflict: true };
+}
+function noteWriter(store, noteId, initial) {
+  let base = initial;
+  let conflict = false;
+  return {
+    write(text) {
+      const current2 = store.getState().data.notes.get(noteId)?.content ?? "";
+      const merged = mergeEditorKeepingText(base, text, current2);
+      try {
+        store.dispatch(editNote(noteId, { content: merged.content }));
+      } catch (err) {
+        if (store.getState().data.notes.get(noteId)?.content === merged.content) {
+          base = text;
+          conflict = conflict || merged.conflict;
+        }
+        throw err;
+      }
+      base = text;
+      if (merged.conflict) conflict = true;
+    },
+    base: () => base,
+    conflicted: () => conflict
+  };
+}
+
 // src/tui/app-actions.ts
 var editorOpen = false;
 function editSelectedNote(ctx) {
@@ -2989,6 +3255,7 @@ function editSelectedNote(ctx) {
     setRawMode(false);
     const editor = runEditor ?? editInEditor;
     let result = null;
+    const w = noteWriter(store, selectedEntry.id, selectedEntry.note.content ?? "");
     let editorError;
     let editorFailed = false;
     let settle;
@@ -2999,7 +3266,7 @@ function editSelectedNote(ctx) {
       try {
         announceEditorIfGui();
         expectNote(selectedEntry.id);
-        result = await editor(selectedEntry.note.content ?? "");
+        result = await editor(selectedEntry.note.content ?? "", { onWrite: w.write });
       } catch (err) {
         editorError = err;
         editorFailed = true;
@@ -3015,15 +3282,15 @@ function editSelectedNote(ctx) {
         return;
       }
       if (result !== null) {
-        const current4 = store.getState().data.notes.get(selectedEntry.id)?.content ?? "";
-        const merged = mergeEditorReturn(selectedEntry.note.content ?? "", result, current4);
-        store.dispatch({
+        const current2 = store.getState().data.notes.get(selectedEntry.id)?.content ?? "";
+        const merged = mergeEditorKeepingText(w.base(), result, current2);
+        if (result !== w.base()) store.dispatch({
           type: "EDIT_NOTE",
           noteId: selectedEntry.id,
           changes: { content: merged.content }
         });
         releaseDraftsAfterSave();
-        if (merged.conflict) {
+        if (merged.conflict || w.conflicted()) {
           onEditorError?.("A change from another device could not be merged automatically - both versions were kept.");
         }
       }
@@ -3034,8 +3301,8 @@ function editSelectedNote(ctx) {
 function saveInlineEdit(ctx) {
   const { store, selectedEntry, base, local, onEditorError } = ctx;
   if (!selectedEntry) return;
-  const current4 = store.getState().data.notes.get(selectedEntry.id)?.content ?? "";
-  const merged = mergeEditorReturn(base, local, current4);
+  const current2 = store.getState().data.notes.get(selectedEntry.id)?.content ?? "";
+  const merged = mergeEditorKeepingText(base, local, current2);
   store.dispatch(editNote(selectedEntry.id, { content: merged.content }));
   if (merged.conflict) {
     onEditorError?.("A change from another device could not be merged automatically - both versions were kept.");
@@ -3122,8 +3389,7 @@ function announceEditorIfGui() {
   const cmd = selectEditor(process.env);
   if (isTerminalEditor(cmd) || !process.stdout.isTTY) return;
   const first = cmd.trim().split(/\s+/)[0] ?? "";
-  const name = basename3(first);
-  const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+  const displayName = sanitizeForTerminal(basename3(first)).replace(/^./, (c) => c.toUpperCase());
   process.stdout.write(`Editing in ${displayName} \u2014 ${editorFinishHint(cmd)}
 `);
 }
@@ -3131,9 +3397,9 @@ function exportSelectedNote(ctx) {
   const { selectedEntry, value, setNotice, setNoticeError } = ctx;
   if (!selectedEntry) return;
   const base = exportFileName(selectedEntry.note.content ?? "");
-  const target = value.trim() !== "" ? value : join8(documentsDir(), `${base}.md`);
+  const target = value.trim() !== "" ? value : join7(documentsDir(), `${base}.md`);
   const dir = dirname(target);
-  exportNote(selectedEntry.note, dir).then((path13) => setNotice(`exported: ${path13}`)).catch(
+  import("./chunks/export-note-MQMBOQIT.js").then((m) => m.exportNote(selectedEntry.note, dir)).then((path10) => setNotice(`exported: ${path10}`)).catch(
     (err) => setNoticeError(`export failed: ${err instanceof Error ? err.message : String(err)}`)
   );
 }
@@ -3826,7 +4092,7 @@ var reducer_default = (0, import_redux.combineReducers)({
 
 // vendor/simplenote/state/ui/reducer.ts
 var import_redux2 = __toESM(require_redux(), 1);
-var emptyList = [];
+var emptyList = Object.freeze([]);
 var editorSelection = (state = /* @__PURE__ */ new Map(), action) => {
   switch (action.type) {
     case "REMOTE_NOTE_UPDATE": {
@@ -5072,6 +5338,7 @@ var stopSyncing = () => {
 
 // vendor/simplenote/state/simperium/middleware.ts
 var debug = (0, import_debug2.default)("simperium-middleware");
+var REVISION_ID_CAP = 5e3;
 var initSimperium = (appId, logout3, token, username, clientOptions, ghostStoreProvider, noteEditDelayMs = 2e3) => (store) => {
   const { dispatch, getState } = store;
   const client = simperium_default(appId, token, {
@@ -5297,8 +5564,13 @@ var initSimperium = (appId, logout3, token, username, clientOptions, ghostStoreP
         const noteId = action.noteId ?? action.meta?.nextNoteToOpen ?? getState().ui.openedNote;
         if (noteId && !nextState.data.noteRevisions.get(noteId)?.size && !hasRequestedRevisions.has(noteId)) {
           hasRequestedRevisions.add(noteId);
+          if (hasRequestedRevisions.size > REVISION_ID_CAP) {
+            hasRequestedRevisions.delete(
+              hasRequestedRevisions.values().next().value
+            );
+          }
           setTimeout(() => {
-            if (getState().ui.openedNote === noteId) {
+            if (getState().ui.openedNote === noteId && !getState().ui.showRevisions) {
               noteBucket.getRevisions(noteId).then((revisions) => {
                 dispatch({
                   type: "LOAD_REVISIONS",
@@ -5463,7 +5735,7 @@ function installSimperiumVersionFix(client) {
 
 // src/core/simperium-reconnect-fix.ts
 var openNetworkQueues = /* @__PURE__ */ new WeakMap();
-function guardUntilIdle(obj, key, countOpen, beforeCall, capture) {
+function guardUntilIdle(obj, key, countOpen, beforeCall, invoke, capture) {
   const original = obj[key];
   if (typeof original !== "function" || original.__reconnectFix) {
     return;
@@ -5474,7 +5746,8 @@ function guardUntilIdle(obj, key, countOpen, beforeCall, capture) {
     const retry = () => {
       if (countOpen() === 0) {
         beforeCall?.(captured);
-        callOriginal(...args);
+        if (invoke) invoke(captured, () => callOriginal(...args));
+        else callOriginal(...args);
       } else {
         setTimeout(retry, 10);
       }
@@ -5525,12 +5798,50 @@ function installOnChannel(channel) {
     }
     drainedSinceLastPurge.clear();
   };
+  let authGen = 0;
+  const sentOnGen = /* @__PURE__ */ new WeakMap();
+  channel?.message?.on("auth", (data) => {
+    try {
+      JSON.parse(data);
+    } catch {
+      authGen += 1;
+    }
+  });
+  localQueue.on?.("send", (change) => {
+    sentOnGen.set(change, authGen);
+  });
+  const sentOnCurrentConnection = (change) => authGen > 0 && typeof change === "object" && change !== null && sentOnGen.get(change) === authGen;
   guardUntilIdle(localQueue, "start", countOpen);
   guardUntilIdle(
     localQueue,
     "resendSentChanges",
     countOpen,
     purgeStaleSent,
+    // #337 — the vendored resend re-emits EVERY `sent` entry. A change that went
+    // out after this resend was requested (a held change the hand-off dispatched
+    // once the catch-up was applied, which `processQueue` already sent) is not
+    // an in-flight leftover; re-emitting it sent the same ccid twice and the
+    // server answered the copy 409. So the original sees only the entries that
+    // existed at invocation and are still the same change; the rest are put back.
+    (snapshot2, callOriginal) => {
+      const sent = localQueue.sent;
+      if (!sent || !snapshot2) {
+        callOriginal();
+        return;
+      }
+      const hidden2 = [];
+      for (const id of Object.keys(sent)) {
+        if (sent[id] !== snapshot2.get(id) || sentOnCurrentConnection(sent[id])) {
+          hidden2.push([id, sent[id]]);
+          delete sent[id];
+        }
+      }
+      try {
+        callOriginal();
+      } finally {
+        for (const [id, change] of hidden2) sent[id] = change;
+      }
+    },
     () => (
       // 'ready' is emitted synchronously in `onChanges` (channel.js:702-714)
       // before any queued change has run, so this synchronous snapshot holds
@@ -5668,6 +5979,7 @@ function installSimperiumStaleDeleteFix(client, store) {
 
 // src/core/simperium-removed-note-fix.ts
 var installed2 = /* @__PURE__ */ new WeakSet();
+var REMOVED_ID_CAP = 5e3;
 function installOnChannel3(channel) {
   if (!channel || typeof channel.on !== "function" || typeof channel.emit !== "function") {
     return;
@@ -5679,7 +5991,9 @@ function installOnChannel3(channel) {
   const removed = /* @__PURE__ */ new Set();
   channel.on("remove", (id) => {
     if (typeof id === "string") {
+      removed.delete(id);
       removed.add(id);
+      if (removed.size > REMOVED_ID_CAP) removed.delete(removed.values().next().value);
     }
   });
   const originalEmit = channel.emit.bind(channel);
@@ -5807,6 +6121,22 @@ function installSimperiumRevisionCacheFix(client) {
   }
 }
 
+// src/core/simperium-local-queue-fix.ts
+function installSimperiumLocalQueueFix(client) {
+  for (const b of client?.buckets ?? []) {
+    const lq = b?.channel?.localQueue;
+    const orig = lq?.queue;
+    if (!lq || typeof orig !== "function" || orig.fixed) continue;
+    const fn = function(c) {
+      orig.call(this, c);
+      const q = this.queues?.[c.id];
+      if (q && q.length > 1) q.splice(0, q.length, q.find((x) => x.type === "remove") ?? q[q.length - 1]);
+    };
+    fn.fixed = true;
+    lq.queue = fn;
+  }
+}
+
 // src/core/websocket-provider.ts
 var import_websocket = __toESM(require_websocket(), 1);
 import * as http from "node:http";
@@ -5815,7 +6145,7 @@ import * as https from "node:https";
 // package.json
 var package_default = {
   name: "snote",
-  version: "0.2.8",
+  version: "0.2.9",
   description: "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
   license: "GPL-2.0",
   type: "module",
@@ -5857,13 +6187,14 @@ var package_default = {
     "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
-    "@vitest/mocker": "4.1.11",
+    "@vitest/mocker": "4.1.12",
     esbuild: "0.28.2",
     eslint: "^9.0.0",
     "ink-testing-library": "^4.0.0",
     tsx: "^4.19.0",
     typescript: "^5.6.0",
-    vitest: "4.1.11",
+    vite: "7.3.7",
+    vitest: "4.1.12",
     ws: "^8.18.0"
   }
 };
@@ -5873,16 +6204,29 @@ var VERSION = package_default.version;
 
 // src/core/websocket-provider.ts
 var SNOTE_USER_AGENT = `snote/${VERSION}`;
+var HANDSHAKE_TIMEOUT_MS = 15e3;
 var sockets = /* @__PURE__ */ new Set();
+var unanswered = 0;
 function hasOpenSocket() {
   for (const s of sockets) if (s.readyState === s.OPEN) return true;
   return false;
 }
-function snoteWebsocketProvider(url) {
+function snoteWebsocketProvider(url, handshakeTimeoutMs = HANDSHAKE_TIMEOUT_MS) {
   const agent = url.startsWith("wss:") ? new https.Agent() : new http.Agent();
   const socket = new import_websocket.w3cwebsocket(url, void 0, void 0, { "User-Agent": SNOTE_USER_AGENT }, { agent });
   sockets.add(socket);
+  const giveUp = setTimeout(() => {
+    if (socket.readyState !== socket.CONNECTING) return;
+    if (++unanswered >= 2) publishProblem(`sync server not answering, retrying (attempt ${unanswered})`);
+    socket.close();
+  }, handshakeTimeoutMs);
+  giveUp.unref();
+  socket.addEventListener("open", () => {
+    clearTimeout(giveUp);
+    unanswered = 0;
+  });
   socket.addEventListener("close", () => {
+    clearTimeout(giveUp);
     agent.destroy();
     sockets.delete(socket);
   });
@@ -5921,8 +6265,24 @@ var rootReducer = (state, action) => {
   }
   return next;
 };
+var fillTags = (n) => Array.isArray(n.tags) && Array.isArray(n.systemTags) ? n : { ...n, tags: Array.isArray(n.tags) ? n.tags : [], systemTags: Array.isArray(n.systemTags) ? n.systemTags : [] };
+var mendWrite = (cur, t) => {
+  const n = t.endsWith(cur) ? t.length - cur.length : t.length;
+  return t.slice(0, n).replace(new RegExp("\\p{Cs}", "gu"), "\uFFFD") + t.slice(n);
+};
+var mendMiddleware = (api) => (next) => (action0) => {
+  const action = action0.note ? { ...action0, note: fillTags(action0.note) } : action0;
+  const a = action;
+  const key = a.changes ? "changes" : "note";
+  const text = a[key]?.content;
+  if (/^(EDIT|CREATE|IMPORT|RESTORE)_NOTE/.test(a.type) && typeof text === "string") {
+    const content = mendWrite(api.getState().data.notes.get(a.noteId)?.content ?? "", text);
+    if (content !== text) return next({ ...a, [key]: { ...a[key], content } });
+  }
+  return next(action);
+};
 function makeStore(opts = {}) {
-  let middleware = (0, import_redux4.applyMiddleware)();
+  let middleware = (0, import_redux4.applyMiddleware)(mendMiddleware);
   let stopSync;
   let client;
   const armAuthWatchdog = (c) => {
@@ -5946,11 +6306,13 @@ function makeStore(opts = {}) {
       opts.sync.ghostStoreProvider,
       opts.sync.noteEditDelayMs
     );
-    middleware = (0, import_redux4.applyMiddleware)(syncMiddleware);
+    middleware = (0, import_redux4.applyMiddleware)(mendMiddleware, syncMiddleware);
   }
   const preloadedBase = opts.preloadedState || {};
+  preloadedBase.data?.notes?.forEach((n, id, m) => m.set(id, fillTags(n)));
   const preloaded = opts.sync && !opts.stubClient && !preloadedBase.simperium ? { ...preloadedBase, simperium: { ...initialState, tracking: true } } : preloadedBase;
   const enhancedStore = (0, import_redux4.createStore)(rootReducer, preloaded, middleware);
+  opts = { ...opts, preloadedState: void 0 };
   const store = enhancedStore;
   if (opts.sync && !opts.stubClient) {
     store.stopSync = () => {
@@ -6001,14 +6363,15 @@ function makeStore(opts = {}) {
     installSimperiumStaleDeleteFix(client, store);
     installSimperiumRemovedNoteFix(client);
     installSimperiumRevisionCacheFix(client);
+    installSimperiumLocalQueueFix(client);
     store.client = client;
   }
   return store;
 }
 
 // src/core/ghost-store.ts
-import { readFileSync as readFileSync5, renameSync as renameSync3, existsSync as existsSync4 } from "node:fs";
-import { join as join9 } from "node:path";
+import { readFileSync as readFileSync5, existsSync as existsSync4 } from "node:fs";
+import { join as join8 } from "node:path";
 var COALESCE_WINDOW_MS = 100;
 var FileGhostStore = class {
   dir;
@@ -6022,7 +6385,7 @@ var FileGhostStore = class {
   // OMARCHY: boundary cast
   constructor(dir, bucketName) {
     this.dir = dir;
-    this.filePath = join9(dir, `ghosts-${bucketName}.json`);
+    this.filePath = join8(dir, `ghosts-${bucketName}.json`);
     this.cv = "";
     this.ghosts = /* @__PURE__ */ new Map();
     this._dirExists = existsSync4(this.filePath);
@@ -6062,9 +6425,7 @@ var FileGhostStore = class {
         data: g.data
       }))
     };
-    const tmpPath = this.filePath + ".tmp";
-    secureWriteFileSync(tmpPath, JSON.stringify(file));
-    renameSync3(tmpPath, this.filePath);
+    secureWriteFileSync(this.filePath, JSON.stringify(file));
     this._dirExists = true;
   }
   // write everything now, cancelling any delayed write.
@@ -6136,6 +6497,7 @@ var FileGhostStore = class {
 import * as fs3 from "node:fs";
 import * as path2 from "node:path";
 var UNSYNCED_FILE = "unsynced.json";
+var UNSYNCED_NOTES_FILE = "unsynced-notes.json";
 function loadUnsynced(dir) {
   const filePath = path2.join(dir, UNSYNCED_FILE);
   if (!fs3.existsSync(filePath)) {
@@ -6158,13 +6520,40 @@ function loadUnsynced(dir) {
     return {};
   }
 }
-var writeRecord = (dir, record) => {
-  const filePath = path2.join(dir, UNSYNCED_FILE);
-  const tmpPath = filePath + ".tmp";
+function loadUnsyncedNotes(dir) {
+  try {
+    const parsed = JSON.parse(fs3.readFileSync(path2.join(dir, UNSYNCED_NOTES_FILE), "utf8"));
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? Object.fromEntries(Object.entries(parsed).filter(([, v]) => typeof v?.content === "string" && Number.isFinite(Number(v.modificationDate)) && v.modificationDate !== "" && v.modificationDate !== null)) : {};
+  } catch {
+    return {};
+  }
+}
+function overlayUnsyncedNotes(preloaded, record, saved) {
+  const notes2 = preloaded?.data?.notes;
+  if (!preloaded || !notes2) {
+    return preloaded;
+  }
+  let next;
+  for (const [id, note] of Object.entries(saved)) {
+    const recorded = record[id];
+    const date = Number(note?.modificationDate);
+    if (recorded !== void 0 && date < Number(recorded)) {
+      continue;
+    }
+    const have = notes2.get(id);
+    if (have !== void 0 && Number(have.modificationDate) >= date) {
+      continue;
+    }
+    next ??= new Map(notes2);
+    next.set(id, note);
+  }
+  return next ? { ...preloaded, data: { ...preloaded.data, notes: next } } : preloaded;
+}
+var writeJson = (dir, name, value) => {
+  const filePath = path2.join(dir, name);
   try {
     secureMkdir(dir);
-    secureWriteFileSync(tmpPath, JSON.stringify(record));
-    fs3.renameSync(tmpPath, filePath);
+    secureWriteFileSync(filePath, JSON.stringify(value));
   } catch {
   }
 };
@@ -6182,9 +6571,12 @@ var recordEquals = (a, b) => {
   }
   return aIds.every((id) => Object.prototype.hasOwnProperty.call(b, id) && a[id] === b[id]);
 };
-function trackUnsynced(store, dir) {
+function trackUnsynced(store, dir, stateBroken = false) {
+  let stateGood = !stateBroken;
+  let lastNotes = store.getState().data.notes;
   let carried = loadUnsynced(dir);
   let written = { ...carried };
+  let savedNotes = loadUnsyncedNotes(dir);
   const seenPending = /* @__PURE__ */ new Set();
   const build = (snap) => {
     const next = {};
@@ -6204,16 +6596,34 @@ function trackUnsynced(store, dir) {
     return next;
   };
   const onStoreChange = () => {
+    const prevNotes = lastNotes;
+    lastNotes = store.getState().data.notes;
     const next = build(snapshot(store.getState()));
     if (recordEquals(next, written)) {
       return;
     }
     written = next;
-    try {
-      saveState(store.getState(), dir);
-    } catch {
+    const notesNow = store.getState().data.notes;
+    const keep = {};
+    for (const [id, date] of Object.entries(written)) {
+      const note = notesNow.get(id);
+      if (note !== void 0 && Number(note.modificationDate) === date) {
+        keep[id] = note;
+      } else if (savedNotes[id] !== void 0 && Number(savedNotes[id].modificationDate) === date) {
+        keep[id] = savedNotes[id];
+      }
     }
-    writeRecord(dir, written);
+    savedNotes = keep;
+    const back = Object.keys(written).some((id) => Number(notesNow.get(id)?.modificationDate) < Number(prevNotes.get(id)?.modificationDate));
+    if (!stateGood || back || !fs3.existsSync(path2.join(dir, "state.json"))) {
+      try {
+        saveState(store.getState(), dir);
+        stateGood = true;
+      } catch {
+      }
+    }
+    writeJson(dir, UNSYNCED_NOTES_FILE, savedNotes);
+    writeJson(dir, UNSYNCED_FILE, written);
   };
   const unsubscribe = store.subscribe(onStoreChange);
   const settle = () => {
@@ -6261,41 +6671,16 @@ function restoreNotesFromGhosts(store, ghosts, unsynced = {}) {
   return restored;
 }
 
-// src/core/line-inclusion.ts
-function lineCounts(text) {
-  const counts = /* @__PURE__ */ new Map();
-  for (const line of text.split("\n")) counts.set(line, (counts.get(line) ?? 0) + 1);
-  return counts;
-}
-function inOrder(edited, current4) {
-  const have = current4.split("\n");
-  let at = 0;
-  for (const line of edited.split("\n")) {
-    while (at < have.length && have[at] !== line) at++;
-    if (at === have.length) return false;
-    at++;
-  }
-  return true;
-}
-function editIncluded(base, edited, current4) {
-  const b = lineCounts(base);
-  const l = lineCounts(edited);
-  const c = lineCounts(current4);
-  for (const line of /* @__PURE__ */ new Set([...b.keys(), ...l.keys()])) {
-    const inBase = b.get(line) ?? 0;
-    const inEdited = l.get(line) ?? 0;
-    const inCurrent = c.get(line) ?? 0;
-    if (inEdited > inBase && inCurrent < inEdited) return false;
-    if (inEdited < inBase && inCurrent > inEdited) return false;
-  }
-  return true;
-}
-function editIncludedInOrder(base, edited, current4) {
-  return inOrder(edited, current4) && editIncluded(base, edited, current4);
-}
-
 // src/core/requeue.ts
+var mendGhost = (ghosts) => ({
+  get: async (id) => {
+    const r = await ghosts.get(id);
+    const d = r.data;
+    return d ? { ...r, data: { ...d, tags: Array.isArray(d.tags) ? d.tags : [], systemTags: Array.isArray(d.systemTags) ? d.systemTags : [] } } : r;
+  }
+});
 async function unsyncedNoteIds2(notes2, ghosts, unsynced = {}) {
+  ghosts = mendGhost(ghosts);
   const result = [];
   for (const [id, note] of notes2) {
     const g = (await ghosts.get(id)).data;
@@ -6362,44 +6747,48 @@ function sessionSet(into, held2, server, now) {
   }
   return out;
 }
-function withSessionChanges(note, held2, current4, now) {
-  const newest = Math.max(Number(held2.modificationDate) || 0, Number(current4.modificationDate) || 0);
+function withSessionChanges(note, held2, current2, now) {
+  const newest = Math.max(Number(held2.modificationDate) || 0, Number(current2.modificationDate) || 0);
   if (!(Number(now.modificationDate) > newest)) return note;
   const merged = { ...note };
   for (const key of Object.keys(held2)) {
     if (key === "content" || key === "modificationDate") continue;
     const k = key;
-    if (SET_FIELDS.has(key)) merged[key] = sessionSet(merged[key], held2[k], current4[k], now[k]);
-    else if (!same(now[k], held2[k]) && !same(now[k], current4[k])) merged[key] = now[k];
+    if (SET_FIELDS.has(key)) merged[key] = sessionSet(merged[key], held2[k], current2[k], now[k]);
+    else if (!same(now[k], held2[k]) && !same(now[k], current2[k])) merged[key] = now[k];
   }
   return merged;
 }
 function noteFieldsEqual(a, b) {
   return a.content === b.content && !!a.deleted === !!b.deleted && asSet(a.tags).size === asSet(b.tags ?? []).size && [...a.tags].every((tag) => asSet(b.tags ?? []).has(tag)) && asSet(a.systemTags).size === asSet(b.systemTags ?? []).size && [...a.systemTags].every((tag) => asSet(b.systemTags ?? []).has(tag));
 }
-function rebaseOfflineEdit(base, local, current4) {
-  const merged = { ...current4 };
+function rebaseOfflineEdit(base, local, current2) {
+  const merged = { ...current2 };
   for (const key of Object.keys(local)) {
     if (key === "content") continue;
     const k = key;
     if (SET_FIELDS.has(key)) merged[key] = mergeSet(merged[key], base[k], local[k]);
     else if (!same(local[k], base[k])) merged[key] = local[k];
   }
-  merged.content = mergeEditorReturn(
-    String(base.content ?? ""),
-    String(local.content ?? ""),
-    String(current4.content ?? "")
-  ).content;
+  const kept = mergeKeepingText(String(base.content ?? ""), String(local.content ?? ""), String(current2.content ?? ""));
+  if (kept.conflict) publishProblem(`kept both versions of ${sanitizeForTerminal(kept.content.split("\n").find((line) => line.trim()) ?? "").trim().slice(0, 60)}`);
+  merged.content = kept.content;
   merged.modificationDate = Math.max(Number(local.modificationDate) || 0, Date.now() / 1e3);
   return merged;
 }
 async function requeueUnsynced(store, ghosts, whenCaughtUp, unsynced = {}, loadedNotes) {
+  ghosts = mendGhost(ghosts);
   const notes2 = store.getState().data.notes;
   const ids = await unsyncedNoteIds2(notes2, ghosts, unsynced);
   const held2 = [];
   for (const id of ids) {
-    const note = store.getState().data.notes.get(id);
+    let note = store.getState().data.notes.get(id);
     if (!note) continue;
+    const content = mendOwn("", note.content ?? "");
+    if (content !== note.content) {
+      note = { ...note, content };
+      store.dispatch({ type: "REMOTE_NOTE_UPDATE", noteId: id, note });
+    }
     const base = (await ghosts.get(id)).data;
     if (whenCaughtUp) {
       holdId(store, id);
@@ -6418,13 +6807,19 @@ async function requeueUnsynced(store, ghosts, whenCaughtUp, unsynced = {}, loade
     });
   }
   if (held2.length > 0 && whenCaughtUp) {
+    const client = store.client;
+    const holdBucket = client?.buckets?.find((b) => b?.name === "note");
+    holdBucket?.beforeNetworkChange?.((id, _data, base) => {
+      const h = held2.find((x) => x.id === id);
+      return h && same(store.getState().data.notes.get(id), h.local) ? base : null;
+    });
     await whenCaughtUp();
     try {
       for (const { id, base, local: heldLocal, hadGhost } of held2) {
-        const current4 = (await ghosts.get(id)).data ?? base;
+        const current2 = (await ghosts.get(id)).data ?? base;
         if (!hadGhost) {
-          if (current4.modificationDate) {
-            if (!noteFieldsEqual(heldLocal, current4) && heldLocal.modificationDate > current4.modificationDate) {
+          if (current2.modificationDate) {
+            if (!noteFieldsEqual(heldLocal, current2) && heldLocal.modificationDate > current2.modificationDate) {
               store.dispatch({
                 type: "IMPORT_NOTE_WITH_ID",
                 noteId: id,
@@ -6442,14 +6837,15 @@ async function requeueUnsynced(store, ghosts, whenCaughtUp, unsynced = {}, loade
         }
         const now = store.getState().data.notes.get(id);
         if (!now) continue;
-        if (now.content !== heldLocal.content && now.content !== current4.content) continue;
+        if (now.content !== heldLocal.content && now.content !== current2.content) continue;
         const offline = String((loadedNotes?.get(id) ?? heldLocal).content ?? "");
-        if (offline !== String(base.content ?? "") && editIncluded(String(base.content ?? ""), offline, String(current4.content ?? "")))
-          continue;
-        const serverHeld = String(current4.content ?? "") !== String(base.content ?? "") && editIncludedInOrder(String(base.content ?? ""), String(current4.content ?? ""), String(heldLocal.content ?? ""));
-        const mergeBase = serverHeld ? { ...base, content: current4.content } : base;
-        const note = withSessionChanges(rebaseOfflineEdit(mergeBase, heldLocal, current4), heldLocal, current4, now);
-        if (same({ ...note, modificationDate: 0 }, { ...current4, modificationDate: 0 })) continue;
+        const baseText = String(base.content ?? "");
+        const currentText = String(current2.content ?? "");
+        if (offline !== baseText && heldBase(baseText, offline, currentText) === offline) continue;
+        const mergeBase = { ...base, content: heldBase(baseText, String(heldLocal.content ?? ""), currentText) };
+        const note = withSessionChanges(rebaseOfflineEdit(mergeBase, heldLocal, current2), heldLocal, current2, now);
+        if (same({ ...note, modificationDate: 0 }, { ...current2, modificationDate: 0 })) continue;
+        if (store.getState().simperium.pendingNotes[id] && noteFieldsEqual(note, now)) continue;
         store.dispatch({
           type: "IMPORT_NOTE_WITH_ID",
           noteId: id,
@@ -6458,6 +6854,7 @@ async function requeueUnsynced(store, ghosts, whenCaughtUp, unsynced = {}, loade
       }
     } finally {
       releaseAll(store);
+      holdBucket?.beforeNetworkChange?.(null);
     }
   }
   return ids;
@@ -6492,13 +6889,11 @@ function loadSentChanges(dir) {
     return {};
   }
 }
-var writeRecord2 = (dir, record) => {
+var writeRecord = (dir, record) => {
   const filePath = path3.join(dir, SENT_CHANGES_FILE);
-  const tmpPath = filePath + ".tmp";
   try {
     secureMkdir(dir);
-    secureWriteFileSync(tmpPath, JSON.stringify(record));
-    fs4.renameSync(tmpPath, filePath);
+    secureWriteFileSync(filePath, JSON.stringify(record));
   } catch {
   }
 };
@@ -6506,21 +6901,21 @@ function createSentChanges(dir) {
   const loaded = loadSentChanges(dir);
   const fresh = {};
   const superseded = {};
-  const current4 = () => ({ ...loaded, ...fresh });
+  const current2 = () => ({ ...loaded, ...fresh });
   return {
     sent(id, ccid) {
       fresh[id] = ccid;
       if (loaded[id] !== void 0) superseded[id] = loaded[id];
       delete loaded[id];
-      writeRecord2(dir, current4());
+      writeRecord(dir, current2());
     },
     acknowledged(id, ccid) {
-      const record = current4();
+      const record = current2();
       if (record[id] === ccid) {
         delete loaded[id];
         delete fresh[id];
       }
-      writeRecord2(dir, current4());
+      writeRecord(dir, current2());
     },
     settle() {
       for (const id of Object.keys(loaded)) {
@@ -6529,7 +6924,7 @@ function createSentChanges(dir) {
       for (const id of Object.keys(superseded)) {
         delete superseded[id];
       }
-      writeRecord2(dir, current4());
+      writeRecord(dir, current2());
     },
     echoes(data, inFlight) {
       let changes;
@@ -6593,10 +6988,8 @@ function loadTombstones(dir) {
 }
 function saveTombstones(dir, ids) {
   const filePath = path4.join(dir, TOMBSTONE_FILE);
-  const tmpPath = filePath + ".tmp";
   secureMkdir(dir);
-  secureWriteFileSync(tmpPath, JSON.stringify(ids));
-  fs5.renameSync(tmpPath, filePath);
+  secureWriteFileSync(filePath, JSON.stringify(ids));
 }
 function addTombstone(dir, id) {
   const list = loadTombstones(dir);
@@ -6679,7 +7072,7 @@ function trackOwnEchoes(client, dir, loadedNotes) {
     });
     return local;
   };
-  const same2 = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const same3 = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const notHeld = (change, ghost, alone) => {
     const keys = Object.keys(change.v ?? {});
     if (keys.length === 0) return [];
@@ -6687,7 +7080,7 @@ function trackOwnEchoes(client, dir, loadedNotes) {
     try {
       const target = (0, import_change2.apply)(change.v, ghost);
       return keys.filter(
-        (k) => !same2(local?.[k], target[k]) && !(alone && k === "modificationDate" && Number(local?.[k]) > Number(target[k]))
+        (k) => !same3(local?.[k], target[k]) && !(alone && k === "modificationDate" && Number(local?.[k]) > Number(target[k]))
       );
     } catch {
       return void 0;
@@ -6697,7 +7090,7 @@ function trackOwnEchoes(client, dir, loadedNotes) {
     try {
       const target = (0, import_change2.apply)(change.v ?? {}, ghost);
       return Object.keys({ ...local, ...target }).some(
-        (k) => k !== "modificationDate" && !same2(local[k], target[k])
+        (k) => k !== "modificationDate" && !same3(local[k], target[k])
       );
     } catch {
       return false;
@@ -6710,7 +7103,7 @@ function trackOwnEchoes(client, dir, loadedNotes) {
     const newest = Math.max(Number(loaded.modificationDate) || 0, Number(ghost.modificationDate) || 0);
     if (!(Number(local.modificationDate) > newest)) return false;
     const fields = keys.filter((k) => k !== "modificationDate");
-    return fields.length > 0 && fields.every((k) => !same2(local[k], loaded[k]));
+    return fields.length > 0 && fields.every((k) => !same3(local[k], loaded[k]));
   };
   const savedOnTop = (change, keys, ghost) => {
     const loaded = loadedNotes?.get(change.id);
@@ -6775,6 +7168,7 @@ function trackOwnEchoes(client, dir, loadedNotes) {
   return {
     settle: () => {
       if (!stopped) record.settle();
+      loadedNotes = void 0;
     },
     stop: () => {
       stopped = true;
@@ -6785,6 +7179,104 @@ function trackOwnEchoes(client, dir, loadedNotes) {
     }
   };
 }
+
+// src/core/simperium-tombstone-index-fix.ts
+function withoutTombstoned(data, dir) {
+  let page;
+  try {
+    page = JSON.parse(data);
+  } catch {
+    return data;
+  }
+  if (!page || typeof page !== "object" || !Array.isArray(page.index)) return data;
+  const gone = new Set(loadTombstones(dir));
+  if (gone.size === 0) return data;
+  const index = page.index.filter((o) => !(o && typeof o.id === "string" && gone.has(o.id)));
+  return index.length === page.index.length ? data : JSON.stringify({ ...page, index });
+}
+function installTombstoneIndexFix(client, dir) {
+  const buckets = client?.buckets ?? [];
+  const message = buckets.find((b) => b?.name === "note")?.channel?.message;
+  if (!message || typeof message.listeners !== "function") return;
+  for (const original of message.listeners("i")) {
+    message.removeListener("i", original);
+    message.on("i", (data) => original(withoutTombstoned(data, dir)));
+  }
+}
+
+// src/core/simperium-stale-change-fix.ts
+var import_change3 = __toESM(require_change(), 1);
+var same2 = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+var empty = (d) => !d || Object.keys(d).length === 0;
+function installStaleChangeFix(client) {
+  for (const b of client?.buckets ?? []) {
+    const ch = b?.channel;
+    if (ch?.message && ch.store && !ch.staleFix) install(ch);
+  }
+}
+function install(ch) {
+  ch.staleFix = true;
+  const records = /* @__PURE__ */ new Map();
+  ch.message.prependListener("c", (frame) => {
+    const now = Date.now();
+    for (const [k, l] of records) if (now - l[0].at > 6e4) records.delete(k);
+    try {
+      for (const c of JSON.parse(frame)) {
+        if (c?.o !== "M" || c.error || typeof c.sv !== "number" || typeof c.ev !== "number") continue;
+        const k = c.id + "." + c.sv;
+        records.set(k, [...records.get(k) ?? [], { c, at: now }]);
+      }
+    } catch {
+    }
+  });
+  const send = ch.send.bind(ch);
+  ch.send = (d) => {
+    const m = /^e:(.+)\.(\d+)$/.exec(String(d));
+    const k = m ? m[1] + "." + m[2] : "";
+    const l = records.get(k);
+    const fns = m ? ch.rawListeners("version." + k) : [];
+    if (!l || !fns.length) return send(d);
+    const { c } = l.shift();
+    if (!l.length) records.delete(k);
+    const fn = fns[fns.length - 1];
+    ch.removeListener("version." + k, fn);
+    const ask = () => (ch.once("version." + k, fn), send(d));
+    void ch.store.get(c.id).then((g) => {
+      if (typeof g?.version !== "number" || c.ev > g.version) return ask();
+      const s = ch.localQueue.sent[c.id];
+      if (s?.ccid && (c.ccids ?? []).includes(s.ccid)) {
+        ch.localQueue.acknowledge(s);
+        ch.emit("acknowledge", c.id, s);
+      }
+    }, ask);
+    return void 0;
+  };
+  const before = ch.onBeforeNetworkChange.bind(ch);
+  ch.onBeforeNetworkChange = async (id, data, base, patch) => {
+    const local = await before(id, data, base, patch);
+    const g = (await ch.store.get(id).catch(() => void 0))?.data;
+    if (!local || !base || !g || same2(g, base) || same2(local, base)) return local;
+    try {
+      return fix(g, local, base);
+    } catch {
+      try {
+        const w = wf(base);
+        Object.assign(base, w);
+        return fix(wf(g), wf(local), w);
+      } catch {
+        return local;
+      }
+    }
+  };
+}
+var LONE = /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g;
+var wf = (o) => JSON.parse(JSON.stringify(o), (_k, v) => typeof v === "string" ? v.replace(LONE, "\uFFFD") : v);
+var fix = (g, l, b) => {
+  const edits = (0, import_change3.diff)(g, l);
+  if (empty(edits)) return b;
+  const gap = (0, import_change3.diff)(g, b);
+  return (0, import_change3.apply)(empty(gap) ? edits : (0, import_change3.transform)(edits, gap, g), b);
+};
 
 // src/cli/args.ts
 import { parseArgs } from "node:util";
@@ -6842,37 +7334,28 @@ var USAGE = [
   "  --server <value>     Simperium server URL",
   "  --report        Write a bundle for your coding agent",
   "  --new            Open the editor for a new note at start",
-  "  --notify-new     Ask a running snote to open a new note, then exit"
+  "  --notify-new     Ask a running snote to open a new note, then exit",
+  "  --screen-reader      Screen-reader mode: one linear column, no colour; Help and the editor hand-off work (or SNOTE_SCREEN_READER=1)",
+  "  --no-screen-reader   Leave it off even when SNOTE_SCREEN_READER=1 is set"
 ].join("\n");
+
+// src/cli/screen-reader.ts
+var SCREEN_READER_FLAG = "--screen-reader";
+var NO_SCREEN_READER_FLAG = "--no-screen-reader";
+function screenReaderMode(argv, env) {
+  const off = argv.includes(NO_SCREEN_READER_FLAG);
+  const on = argv.includes(SCREEN_READER_FLAG);
+  const args = argv.filter((a) => a !== SCREEN_READER_FLAG && a !== NO_SCREEN_READER_FLAG);
+  if (off) return { args, on: false };
+  if (on) return { args, on: true };
+  return { args, on: env.SNOTE_SCREEN_READER === "1" };
+}
 
 // src/core/status-file.ts
 import * as fs6 from "node:fs";
 import * as path5 from "node:path";
-
-// src/core/update-signal.ts
-var current2 = null;
-var listeners2 = /* @__PURE__ */ new Set();
-function publishUpdate(u) {
-  if (current2 !== null && current2.kind === u.kind) {
-    return;
-  }
-  current2 = u;
-  for (const listener2 of listeners2) {
-    listener2(u);
-  }
-}
-function currentUpdate() {
-  return current2;
-}
-function onUpdate(listener2) {
-  listeners2.add(listener2);
-  return () => {
-    listeners2.delete(listener2);
-  };
-}
-
-// src/core/status-file.ts
 var MAX_TITLE_CHARS = 40;
+var RELEASE_VERSION = /^\d{1,6}\.\d{1,6}\.\d{1,6}$/;
 function statusTitle(note) {
   let title = sanitizeForTerminal(note_utils_default(note).title);
   title = title.replace(/[\n\r\t]/g, " ").trim();
@@ -6881,7 +7364,7 @@ function statusTitle(note) {
   }
   return title;
 }
-function buildStatus(state, synced, update) {
+function buildStatus(state, synced, update, updateVersion) {
   const live = [];
   for (const [id, note] of state.data.notes) {
     if (!note.deleted) {
@@ -6906,15 +7389,16 @@ function buildStatus(state, synced, update) {
   };
   if (update) {
     status.update = update.kind;
+    if (typeof updateVersion === "string" && RELEASE_VERSION.test(updateVersion)) {
+      status.updateVersion = updateVersion;
+    }
   }
   return status;
 }
 function writeStatusFile(dir, status) {
-  fs6.mkdirSync(dir, { recursive: true });
+  ensureDir(dir);
   const filePath = path5.join(dir, "status.json");
-  const tmpPath = filePath + ".tmp";
-  secureWriteFileSync(tmpPath, JSON.stringify(status) + "\n");
-  fs6.renameSync(tmpPath, filePath);
+  secureWriteFileSync(filePath, JSON.stringify(status) + "\n");
 }
 function statusDir(env) {
   const override = env.SNOTE_STATUS_DIR;
@@ -6927,7 +7411,7 @@ function statusDir(env) {
 function removeStatusFile(dir) {
   for (const name of ["status.json", "status.json.tmp"]) {
     try {
-      fs6.rmSync(path5.join(dir, name), { force: true });
+      secureUnlink(path5.join(dir, name));
     } catch {
     }
   }
@@ -6944,6 +7428,10 @@ function clearUpdateStatusFile(dir) {
     let changed = false;
     if ("update" in record) {
       delete record.update;
+      changed = true;
+    }
+    if ("updateVersion" in record) {
+      delete record.updateVersion;
       changed = true;
     }
     if (record.alive !== STOPPED_ALIVE) {
@@ -6971,7 +7459,10 @@ function watchStatus(store, dir, opts) {
       timer = null;
     }
     try {
-      const status = buildStatus(store.getState(), synced, currentUpdate());
+      const signal = currentUpdate();
+      const update = signal !== null && signal.kind === "available" && runningIsNewestRelease() ? null : signal;
+      const version = update === null ? null : update.kind === "restart" ? update.available : currentBanner()?.available ?? null;
+      const status = buildStatus(store.getState(), synced, update, version);
       status.alive = new Date(now()).toISOString();
       writeStatusFile(dir, status);
     } catch {
@@ -6996,12 +7487,14 @@ function watchStatus(store, dir, opts) {
     timer = setTimeout(flush, delayMs);
   };
   const unsubscribe = store.subscribe(schedule);
-  const unsubscribeUpdate = onUpdate(() => {
+  const scheduleSignalWrite = () => {
     if (timer !== null) {
       clearTimeout(timer);
     }
     timer = setTimeout(flush, delayMs);
-  });
+  };
+  const unsubscribeUpdate = onUpdate(scheduleSignalWrite);
+  const unsubscribeBanner = onBanner(scheduleSignalWrite);
   schedule();
   const heartbeat = setInterval(() => {
     if (lastSynced) {
@@ -7014,6 +7507,7 @@ function watchStatus(store, dir, opts) {
     clearInterval(heartbeat);
     unsubscribe();
     unsubscribeUpdate();
+    unsubscribeBanner();
     if (timer !== null) {
       flush();
     }
@@ -7032,45 +7526,6 @@ function statusTag() {
   return shown === void 0 ? "" : `v${shown}`;
 }
 
-// src/core/endpoint-check.ts
-var ENDPOINT_VARS = [
-  "SNOTE_AUTH_BASE",
-  "SNOTE_ACCOUNT_BASE",
-  "SNOTE_BLOG_ORIGIN"
-];
-function isAllowed(value) {
-  let url;
-  try {
-    url = new URL(value);
-  } catch {
-    return false;
-  }
-  if (url.username !== "" || url.password !== "") return false;
-  if (url.protocol === "https:") return url.hostname !== "";
-  if (url.protocol === "http:") {
-    return url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
-  }
-  return false;
-}
-function checkEndpoints(env) {
-  const warnings = [];
-  const errors = [];
-  for (const name of ENDPOINT_VARS) {
-    const value = env[name];
-    if (value !== void 0 && value !== "" && !isAllowed(value)) {
-      errors.push(
-        `error: ${name} must be an https:// address without a username or password (http:// is allowed only for localhost, 127.0.0.1 and [::1])`
-      );
-    }
-  }
-  if (env.NODE_TLS_REJECT_UNAUTHORIZED === "0") {
-    warnings.push(
-      "warning: NODE_TLS_REJECT_UNAUTHORIZED=0 turns off certificate checks for login and sync"
-    );
-  }
-  return { warnings, errors };
-}
-
 // src/core/token.ts
 import * as fs7 from "node:fs";
 import * as os from "node:os";
@@ -7087,8 +7542,7 @@ async function saveToken(dir, { email, token, server }) {
   secureMkdir(dir);
   const payload = server === void 0 ? { email, token } : { email, token, server };
   const data = JSON.stringify(payload);
-  fs7.writeFileSync(filePath, data, { mode: 384 });
-  fs7.chmodSync(filePath, 384);
+  secureWriteFileSync(filePath, data);
 }
 async function loadToken(dir) {
   const filePath = path6.join(dir, "auth.json");
@@ -7116,32 +7570,32 @@ async function loadToken(dir) {
 }
 var SNOTE_FILES = [
   "state.json",
-  "state.json.tmp",
   "tombstones.json",
-  "tombstones.json.tmp",
   "ghosts-account.json",
-  "ghosts-account.json.tmp",
   "ghosts-note.json",
-  "ghosts-note.json.tmp",
   "ghosts-preferences.json",
-  "ghosts-preferences.json.tmp",
   "ghosts-tag.json",
-  "ghosts-tag.json.tmp",
-  "instance.lock",
   "new-note.request",
-  "new-note.request.tmp",
   "unsynced.json",
-  "unsynced.json.tmp",
-  // T523 — the owed-ack record: logout sweeps it like the others.
+  // #336a — the notes behind the record.
+  "unsynced-notes.json",
+  // #545 — an unloadable state.json kept aside at start-up.
+  "state.json.corrupt",
+  // the owed-ack record: logout sweeps it like the others.
   "sent-changes.json",
-  "sent-changes.json.tmp"
-];
+  // #109 - the account id: logout removes it; a forced sign-out keeps it.
+  "account.json"
+  // every name but the lock also lists its `.tmp` sibling (#247)
+].flatMap((n) => [n, n + ".tmp"]);
+function sweepStaleTemps(dir) {
+  for (const n of SNOTE_FILES) if (n.endsWith(".tmp") && !/^(new|acc)/.test(n)) removeIfFile(path6.join(dir, n));
+}
 function isSnoteFile(name) {
-  return SNOTE_FILES.includes(name);
+  return name.startsWith("instance.lock") || SNOTE_FILES.includes(name);
 }
 function removeIfFile(p) {
   try {
-    fs7.unlinkSync(p);
+    secureUnlink(p);
   } catch (e) {
     const code = e.code;
     if (code !== "ENOENT" && code !== "EISDIR") {
@@ -7151,7 +7605,7 @@ function removeIfFile(p) {
 }
 async function logout2(dir) {
   if (fs7.existsSync(dir)) {
-    for (const name of ["auth.json", "blog.json", "blog-sent.json"]) {
+    for (const name of ["auth.json", "auth.json.tmp", "blog.json", "blog.json.tmp", "blog-sent.json", "blog-sent.json.tmp"]) {
       removeIfFile(path6.join(dir, name));
     }
     const entries = fs7.readdirSync(dir, { withFileTypes: true });
@@ -7170,11 +7624,11 @@ async function logout2(dir) {
       if (fs7.lstatSync(drafts, { throwIfNoEntry: false })?.isDirectory()) {
         for (const d of fs7.readdirSync(drafts, { withFileTypes: true })) {
           if (d.isDirectory() && /^snote-[A-Za-z0-9]{6}$/.test(d.name)) {
-            fs7.rmSync(path6.join(drafts, d.name), { recursive: true, force: true });
+            secureRemoveTree(path6.join(drafts, d.name));
             removedAny = true;
           }
         }
-        if (fs7.readdirSync(drafts).length === 0) fs7.rmdirSync(drafts);
+        if (fs7.readdirSync(drafts).length === 0) secureRmdir(drafts);
       }
       for (const child of fs7.readdirSync(sub, { withFileTypes: true })) {
         if (child.isFile() && isSnoteFile(child.name)) {
@@ -7183,11 +7637,88 @@ async function logout2(dir) {
         }
       }
       if (removedAny && fs7.readdirSync(sub).length === 0) {
-        fs7.rmdirSync(sub);
+        secureRmdir(sub);
       }
     }
   }
   secureMkdir(dir);
+}
+function forcedSignOut(dir) {
+  for (const name of ["auth.json", "auth.json.tmp", "blog.json", "blog.json.tmp"]) {
+    removeIfFile(path6.join(dir, name));
+  }
+}
+var KEPT_FILES = ["unsynced.json", "sent-changes.json", "tombstones.json"];
+function realDraftCount(dir) {
+  try {
+    if (!fs7.lstatSync(path6.join(dir, "drafts")).isDirectory()) return 0;
+    return fs7.readdirSync(path6.join(dir, "drafts"), { withFileTypes: true }).filter((d) => d.isDirectory() && d.name.startsWith("snote-")).length;
+  } catch {
+    return 0;
+  }
+}
+function hasKept(dir) {
+  for (const name of KEPT_FILES) {
+    const st = fs7.lstatSync(path6.join(dir, name), { throwIfNoEntry: false });
+    if (st?.isFile() && st.size > 2) return true;
+  }
+  return realDraftCount(dir) > 0;
+}
+function keptCount(dir) {
+  const ids = /* @__PURE__ */ new Set();
+  for (const name of KEPT_FILES) {
+    const file = path6.join(dir, name);
+    const st = fs7.lstatSync(file, { throwIfNoEntry: false });
+    if (!st?.isFile() || st.size > 1e6) continue;
+    try {
+      const parsed = JSON.parse(fs7.readFileSync(file, "utf8"));
+      const list = Array.isArray(parsed) ? parsed : parsed && typeof parsed === "object" ? Object.keys(parsed) : [];
+      for (const id of list) ids.add(String(id));
+    } catch {
+    }
+  }
+  return ids.size + realDraftCount(dir);
+}
+function unsyncedChanges(n) {
+  return `${n} unsynced ${n === 1 ? "change" : "changes"}`;
+}
+function keptElsewhereCount(root2, ownFolder) {
+  const own = path6.basename(ownFolder);
+  let total = 0;
+  try {
+    for (const entry of fs7.readdirSync(root2, { withFileTypes: true })) {
+      const sub = path6.join(root2, entry.name);
+      if (entry.isDirectory() && entry.name !== own && hasKept(sub)) total += Math.max(1, keptCount(sub));
+    }
+  } catch {
+    return Math.max(1, total);
+  }
+  return total;
+}
+function signOutByServer(root2, dir) {
+  if (!hasKept(dir) && keptChangesNotice(root2, dir) === null) {
+    void logout2(root2);
+    return null;
+  }
+  forcedSignOut(root2);
+  if (!hasKept(dir)) return null;
+  const n = Math.max(1, keptCount(dir));
+  return `Signed out by the server. ${unsyncedChanges(n)} ${n === 1 ? "is" : "are"} kept in ${sanitizeForTerminal(path6.basename(dir))}. Log in again to sync them, or log out to remove them.`;
+}
+function keptChangesNotice(root2, ownFolder) {
+  const own = path6.basename(ownFolder);
+  const kept = [];
+  let entries = [];
+  try {
+    entries = fs7.readdirSync(root2, { withFileTypes: true });
+  } catch {
+    return null;
+  }
+  for (const entry of entries) {
+    if (!entry.isDirectory() || entry.name === own) continue;
+    if (hasKept(path6.join(root2, entry.name))) kept.push(sanitizeForTerminal(entry.name));
+  }
+  return kept.length === 0 ? null : `Unsynced changes from the previous account are kept on disk: ${kept.sort().join(", ")}`;
 }
 function accountDir(root2, email) {
   const name = email.trim().toLowerCase().replace(/[^a-z0-9 @._+\-]/g, "_");
@@ -7196,18 +7727,12 @@ function accountDir(root2, email) {
 }
 var LEGACY_ROOT_FILES = [
   "state.json",
-  "state.json.tmp",
   "tombstones.json",
-  "tombstones.json.tmp",
   "ghosts-account.json",
-  "ghosts-account.json.tmp",
   "ghosts-note.json",
-  "ghosts-note.json.tmp",
   "ghosts-preferences.json",
-  "ghosts-preferences.json.tmp",
-  "ghosts-tag.json",
-  "ghosts-tag.json.tmp"
-];
+  "ghosts-tag.json"
+].flatMap((n) => [n, n + ".tmp"]);
 function migrateLegacyData(root2, email) {
   if (!fs7.existsSync(root2)) {
     return [];
@@ -7217,7 +7742,7 @@ function migrateLegacyData(root2, email) {
     const from = path6.join(acctPath, name);
     const to = path6.join(root2, name);
     if (fs7.existsSync(from) && !fs7.existsSync(to)) {
-      fs7.renameSync(from, to);
+      secureRename(from, to);
     }
   }
   const entries = fs7.readdirSync(root2, { withFileTypes: true });
@@ -7232,7 +7757,7 @@ function migrateLegacyData(root2, email) {
     const from = path6.join(root2, entry.name);
     const to = path6.join(acctPath, entry.name);
     if (!fs7.existsSync(to)) {
-      fs7.renameSync(from, to);
+      secureRename(from, to);
       moved.push(entry.name);
     }
   }
@@ -7251,443 +7776,32 @@ var root = null;
 function setDataRoot(dir) {
   root = dir;
 }
+var account = null;
+function setActiveAccount(root2, ownFolder) {
+  account = { root: root2, ownFolder };
+}
+function keptElsewhere() {
+  return account === null ? 0 : keptElsewhereCount(account.root, account.ownFolder);
+}
 function dataRoot() {
   return root ?? defaultDataDir();
 }
 
-// src/core/update-state.ts
+// src/core/account-id.ts
+import { createHash as createHash2 } from "node:crypto";
 import * as fs8 from "node:fs";
 import * as path7 from "node:path";
-var VERSION_RE = /^\d+(\.\d+)*$/;
-function compareVersions(a, b) {
-  const pa = a.trim().split(".");
-  const pb = b.trim().split(".");
-  const len = Math.max(pa.length, pb.length);
-  for (let i = 0; i < len; i++) {
-    const na = Number(pa[i] ?? "0");
-    const nb = Number(pb[i] ?? "0");
-    if (na !== nb) {
-      return na - nb;
-    }
-  }
-  return 0;
-}
-function pluginCloneDir(home) {
-  return path7.join(
-    home,
-    ".config",
-    "omarchy",
-    "plugins",
-    "io.github.donnishcomau.snote-simplenote"
-  );
-}
-function checkLocalUpdate(running, cloneDir, read = (file) => fs8.readFileSync(file, "utf8")) {
-  let raw;
-  try {
-    raw = read(path7.join(cloneDir, "plugin-dist", "VERSION"));
-  } catch {
-    return { state: "current" };
-  }
-  const available = raw.trim();
-  if (!VERSION_RE.test(available)) {
-    return { state: "current" };
-  }
-  if (compareVersions(available, running) > 0) {
-    return { state: "restart", installed: running, available };
-  }
-  return { state: "current" };
-}
-
-// src/core/update-check.ts
-import { execFile } from "node:child_process";
-import * as fs9 from "node:fs";
-import * as path8 from "node:path";
-function updateCheckEnabled(env) {
-  const v = env.SNOTE_UPDATE_CHECK;
-  return !(v === "off" || v === "0");
-}
-var GIT_TIMEOUT_MS = 5e3;
-var CACHE_TTL_MS = 24 * 60 * 60 * 1e3;
-var TAG_CACHE_FILE = "update-tag-check.json";
-function gitEnv(env) {
-  const out = {};
-  for (const [key, value] of Object.entries(env)) {
-    if (!key.startsWith("GIT_")) {
-      out[key] = value;
-    }
-  }
-  out.GIT_TERMINAL_PROMPT = "0";
-  out.GIT_CONFIG_NOSYSTEM = "1";
-  return out;
-}
-var REMOTE_GIT_FLAGS = [
-  "-c",
-  "credential.helper=",
-  "-c",
-  "core.hooksPath=/dev/null",
-  "-c",
-  "core.fsmonitor=false",
-  "-c",
-  "protocol.allow=never",
-  "-c",
-  "protocol.https.allow=always"
-];
-function remoteGitFlags(url) {
-  return url.startsWith("/") ? [...REMOTE_GIT_FLAGS, "-c", "protocol.file.allow=always"] : REMOTE_GIT_FLAGS;
-}
-function readOriginUrl(cloneDir) {
-  let text;
-  try {
-    text = fs9.readFileSync(path8.join(cloneDir, ".git", "config"), "utf8");
-  } catch {
-    return null;
-  }
-  let inOrigin = false;
-  for (const line of text.split("\n")) {
-    const header = /^\s*\[([^\]]*)\]\s*$/.exec(line);
-    if (header) {
-      const name = header[1].split(/\s+/g).map((part) => part.trim().replace(/^"(.*)"$/s, "$1")).join(" ");
-      inOrigin = name === "remote origin";
-      continue;
-    }
-    if (inOrigin) {
-      const match = /^\s*url\s*=\s*(.*)$/.exec(line);
-      if (match) {
-        return match[1].trim() || null;
-      }
-    }
-  }
-  return null;
-}
-function isSafeRemoteUrl(url) {
-  return url.startsWith("https://") || url.startsWith("/");
-}
-var defaultGitRunner = (args, opts) => new Promise((resolve) => {
-  const child = execFile(
-    "git",
-    args,
-    { cwd: opts.cwd, timeout: opts.timeoutMs, env: opts.env },
-    (error, stdout) => {
-      if (!error) {
-        resolve({ code: 0, stdout: String(stdout ?? "") });
-        return;
-      }
-      const err = error;
-      if (err.killed === true || err.signal != null) {
-        resolve({ code: null, stdout: String(stdout ?? "") });
-      } else if (typeof err.code === "number") {
-        resolve({ code: err.code, stdout: String(stdout ?? "") });
-      } else {
-        resolve({ code: null, stdout: String(stdout ?? "") });
-      }
-    }
-  );
-  if (!child) {
-    resolve({ code: null, stdout: "" });
-  }
-});
-function runInClone(run, cloneDir, env, args) {
-  return run(args, {
-    cwd: cloneDir,
-    timeoutMs: GIT_TIMEOUT_MS,
-    env: gitEnv(env)
-  });
-}
-async function remoteIsAhead(run, cloneDir, env, localHead, remoteHead) {
-  const hasRemote = await runInClone(run, cloneDir, env, [
-    "cat-file",
-    "-e",
-    `${remoteHead}^{commit}`
-  ]);
-  if (hasRemote.code === null) {
-    return "unknown";
-  }
-  if (hasRemote.code !== 0) {
-    return "available";
-  }
-  const ancestor = await runInClone(run, cloneDir, env, [
-    "merge-base",
-    "--is-ancestor",
-    localHead,
-    remoteHead
-  ]);
-  if (ancestor.code === 0) {
-    return "available";
-  }
-  if (ancestor.code === 1) {
-    return "current";
-  }
-  return "unknown";
-}
-function isValidCommitId(head) {
-  return /^[0-9a-f]{1,64}$/.test(head);
-}
-function readCache(file) {
-  try {
-    const parsed = JSON.parse(fs9.readFileSync(file, "utf8"));
-    if (parsed && typeof parsed.checkedAt === "number" && typeof parsed.remoteHead === "string" && parsed.remoteHead.length > 0 && isValidCommitId(parsed.remoteHead)) {
-      return { checkedAt: parsed.checkedAt, remoteHead: parsed.remoteHead };
-    }
-  } catch {
-  }
-  return null;
-}
-async function checkRemoteUpdate(o) {
-  if (!updateCheckEnabled(o.env)) {
-    return { state: "disabled" };
-  }
-  if (!fs9.existsSync(path8.join(o.cloneDir, ".git"))) {
-    return { state: "unknown" };
-  }
-  const run = o.run ?? defaultGitRunner;
-  const cacheFile = path8.join(o.stateDir, "update-check.json");
-  const cache = readCache(cacheFile);
-  let remoteHead = null;
-  if (cache !== null && o.now - cache.checkedAt < CACHE_TTL_MS) {
-    remoteHead = cache.remoteHead;
-  } else {
-    const url = readOriginUrl(o.cloneDir);
-    if (url === null || !isSafeRemoteUrl(url)) {
-      return { state: "unknown" };
-    }
-    let res;
-    try {
-      res = await run([...remoteGitFlags(url), "ls-remote", url, "HEAD"], {
-        cwd: "/",
-        timeoutMs: GIT_TIMEOUT_MS,
-        env: gitEnv(o.env)
-      });
-    } catch {
-      return { state: "unknown" };
-    }
-    const sha = res.stdout.trim().split(/\s+/)[0] ?? "";
-    if (res.code !== 0 || sha === "") {
-      return { state: "unknown" };
-    }
-    if (!isValidCommitId(sha)) {
-      return { state: "unknown" };
-    }
-    remoteHead = sha;
-    try {
-      fs9.mkdirSync(o.stateDir, { recursive: true });
-      secureWriteFileSync(
-        cacheFile,
-        JSON.stringify({ checkedAt: o.now, remoteHead: sha }) + "\n"
-      );
-    } catch {
-    }
-  }
-  try {
-    const local = await run(["rev-parse", "HEAD"], {
-      cwd: o.cloneDir,
-      timeoutMs: GIT_TIMEOUT_MS,
-      env: gitEnv(o.env)
-    });
-    if (local.code !== 0) {
-      return { state: "unknown" };
-    }
-    const localHead = local.stdout.trim();
-    if (!isValidCommitId(localHead)) {
-      return { state: "unknown" };
-    }
-    if (localHead === remoteHead) {
-      return { state: "current" };
-    }
-    const verdict = await remoteIsAhead(run, o.cloneDir, o.env, localHead, remoteHead);
-    return { state: verdict };
-  } catch {
-    return { state: "unknown" };
-  }
-}
-var RELEASE_TAG_LINE = /^([0-9a-f]{1,64})\s+refs\/tags\/v(\d{1,6}\.\d{1,6}\.\d{1,6}(?:\.\d{1,6})?)(\^\{\})?$/;
-var TAG_VERSION = /^\d{1,6}\.\d{1,6}\.\d{1,6}(?:\.\d{1,6})?$/;
-var TAG_CACHE_MAX_BYTES = 4096;
-function readTagCache(file, now) {
-  try {
-    if (fs9.statSync(file).size > TAG_CACHE_MAX_BYTES) {
-      return null;
-    }
-    const parsed = JSON.parse(fs9.readFileSync(file, "utf8"));
-    if (parsed !== null && typeof parsed === "object" && typeof parsed.checkedAt === "number" && Number.isFinite(parsed.checkedAt) && parsed.checkedAt <= now && now - parsed.checkedAt < CACHE_TTL_MS && typeof parsed.version === "string" && TAG_VERSION.test(parsed.version) && typeof parsed.commit === "string" && isValidCommitId(parsed.commit)) {
-      return { version: parsed.version, commit: parsed.commit };
-    }
-  } catch {
-  }
-  return null;
-}
-async function checkRemoteVersion(o) {
-  if (!updateCheckEnabled(o.env)) {
-    return null;
-  }
-  const clock = o.now ?? Date.now;
-  const startedAt = clock();
-  const cacheFile = o.stateDir === void 0 ? null : path8.join(o.stateDir, TAG_CACHE_FILE);
-  if (cacheFile !== null) {
-    const cached = readTagCache(cacheFile, startedAt);
-    if (cached !== null) {
-      return cached;
-    }
-  }
-  const url = readOriginUrl(o.cloneDir);
-  if (url === null || !isSafeRemoteUrl(url)) {
-    return null;
-  }
-  try {
-    const res = await (o.run ?? defaultGitRunner)([...remoteGitFlags(url), "ls-remote", "--tags", url], {
-      cwd: "/",
-      timeoutMs: GIT_TIMEOUT_MS,
-      env: gitEnv(o.env)
-    });
-    if (res.code !== 0) {
-      return null;
-    }
-    let newest = null;
-    for (const line of res.stdout.split("\n")) {
-      const match = RELEASE_TAG_LINE.exec(line.trim());
-      if (match === null) {
-        continue;
-      }
-      const [, commit, version, peeled] = match;
-      const cmp = newest === null ? 1 : compareVersions(version, newest.version);
-      if (cmp > 0 || cmp === 0 && peeled !== void 0) {
-        newest = { version, commit };
-      }
-    }
-    if (newest !== null && cacheFile !== null) {
-      try {
-        fs9.mkdirSync(o.stateDir, { recursive: true });
-        secureWriteFileSync(
-          cacheFile,
-          JSON.stringify({ checkedAt: startedAt, version: newest.version, commit: newest.commit }) + "\n"
-        );
-      } catch {
-      }
-    }
-    return newest;
-  } catch {
-    return null;
-  }
-}
-
-// src/core/update-run.ts
-async function runUpdateChecks(o) {
-  try {
-    const cloneDir = pluginCloneDir(o.home);
-    const local = checkLocalUpdate(o.version, cloneDir);
-    if (local.state === "restart") {
-      publishUpdate({ kind: "restart", available: local.available });
-      return;
-    }
-    const remote = await checkRemoteUpdate({
-      cloneDir,
-      stateDir: o.stateDir,
-      env: o.env,
-      now: o.now ?? Date.now(),
-      run: o.run
-    });
-    if (remote.state === "available") {
-      publishUpdate({ kind: "available" });
-    }
-  } catch {
-  }
-}
-
-// src/core/update-banner.ts
-var current3 = null;
-var dismissed = null;
-var listeners3 = /* @__PURE__ */ new Set();
-function notify() {
-  for (const listener2 of listeners3) {
-    try {
-      listener2();
-    } catch {
-    }
-  }
-}
-function publishBanner(running, available) {
-  if (current3 !== null && current3.running === running && current3.available === available) {
-    return;
-  }
-  current3 = { running, available };
-  if (dismissed === available) {
-    return;
-  }
-  notify();
-}
-function currentBanner() {
-  return current3 !== null && current3.available !== dismissed ? current3 : null;
-}
-function dismissBanner() {
-  if (current3 === null) {
-    return;
-  }
-  dismissed = current3.available;
-  notify();
-}
-function onBanner(listener2) {
-  listeners3.add(listener2);
-  return () => {
-    listeners3.delete(listener2);
-  };
-}
-
-// src/core/update-watch.ts
-var WATCH_INTERVAL_MS = 24 * 60 * 60 * 1e3;
-var realSchedule = (fn, ms) => {
-  const timer = setInterval(fn, ms);
-  timer.unref();
-  return () => clearInterval(timer);
-};
-var stopActive = null;
-function startUpdateWatch(o) {
-  stopActive?.();
-  stopActive = null;
-  if (!updateCheckEnabled(o.env)) {
-    return () => {
-    };
-  }
-  const cloneDir = pluginCloneDir(o.home);
-  const check = async () => {
-    try {
-      const newest = await checkRemoteVersion({
-        cloneDir,
-        env: o.env,
-        run: o.run,
-        stateDir: o.stateDir,
-        now: o.now
-      });
-      if (newest !== null && compareVersions(newest.version, o.version) > 0) {
-        publishBanner(o.version, newest.version);
-      }
-    } catch {
-    }
-  };
-  void check();
-  const cancel = (o.schedule ?? realSchedule)(() => {
-    void check();
-  }, WATCH_INTERVAL_MS);
-  const stop = () => {
-    cancel();
-    if (stopActive === stop) {
-      stopActive = null;
-    }
-  };
-  stopActive = stop;
-  return stop;
-}
 
 // src/core/instance-lock.ts
-import {
-  closeSync as closeSync2,
-  existsSync as existsSync10,
-  openSync as openSync2,
-  readFileSync as readFileSync13,
-  statSync as statSync3,
-  unlinkSync as unlinkSync3,
-  writeSync
-} from "node:fs";
-import { join as join17 } from "node:path";
+import { spawnSync as spawnSync2 } from "node:child_process";
+import { closeSync as closeSync2, existsSync as existsSync9, readFileSync as readFileSync11, statSync as statSync2 } from "node:fs";
+import { join as join14 } from "node:path";
 var LOCK_FILE2 = "instance.lock";
+var UNLOCKED_NOTICE = {
+  missing: "No kernel lock (flock not installed): two copies started at once may both run.",
+  refused: "No kernel lock (folder may refuse it): two copies started at once may both run.",
+  timeout: "No kernel lock (flock timed out): two copies started at once may both run."
+};
 var heldByProcess = /* @__PURE__ */ new Set();
 function isPidAlive2(pid) {
   if (!Number.isInteger(pid) || pid <= 0) {
@@ -7700,7 +7814,7 @@ function isPidAlive2(pid) {
     return err.code === "EPERM";
   }
 }
-var RECLAIM_AFTER_START_MARGIN_MS = 2e3;
+var START_MARGIN_MS = 2e3;
 var bootTimeMs;
 function systemBootTimeMs() {
   if (bootTimeMs === void 0) {
@@ -7710,7 +7824,7 @@ function systemBootTimeMs() {
 }
 function readBootTimeMs() {
   try {
-    for (const line of readFileSync13("/proc/stat", "utf8").split("\n")) {
+    for (const line of readFileSync11("/proc/stat", "utf8").split("\n")) {
       if (line.startsWith("btime ")) {
         const seconds = Number.parseInt(line.slice("btime ".length).trim(), 10);
         return Number.isFinite(seconds) ? seconds * 1e3 : null;
@@ -7723,7 +7837,7 @@ function readBootTimeMs() {
 }
 function processStartMs(pid) {
   try {
-    const stat = readFileSync13(`/proc/${pid}/stat`, "utf8");
+    const stat = readFileSync11(`/proc/${pid}/stat`, "utf8");
     const close = stat.lastIndexOf(")");
     const fields = stat.slice(close + 1).trim().split(/\s+/);
     const ticks = Number.parseInt(fields[19] ?? "", 10);
@@ -7744,191 +7858,194 @@ function startedAfterLockWrite(pid, lockMtimeMs2) {
     return false;
   }
   const started = processStartMs(pid);
-  return started !== null && started - lockMtimeMs2 > RECLAIM_AFTER_START_MARGIN_MS;
+  return started !== null && started - lockMtimeMs2 > START_MARGIN_MS;
 }
 function lockMtimeMs(lockPath) {
   try {
-    return statSync3(lockPath).mtimeMs;
+    return statSync2(lockPath).mtimeMs;
   } catch {
     return null;
   }
 }
 function readLockPid(lockPath) {
   try {
-    return existsSync10(lockPath) ? readFileSync13(lockPath, "utf8").trim() : "";
+    return existsSync9(lockPath) ? readFileSync11(lockPath, "utf8").trim() : "";
   } catch {
     return "";
   }
 }
 function acquireInstanceLock(dir) {
-  const lockPath = join17(dir, LOCK_FILE2);
+  const lockPath = join14(dir, LOCK_FILE2);
   const writeLock = () => {
-    const fd = openSync2(lockPath, "wx", 384);
+    secureExclusiveCreate(lockPath, String(process.pid));
+  };
+  const sweep = `${lockPath}.sweep`;
+  const live = () => {
+    const owner = readLockPid(lockPath);
+    const pid = Number.parseInt(owner, 10);
+    return heldByProcess.has(lockPath) ? String(process.pid) : isPidAlive2(pid) && !startedAfterLockWrite(pid, lockMtimeMs(lockPath)) ? String(pid) : !owner && young(lockPath) ? "?" : "";
+  };
+  const young = (path10) => Math.abs(Date.now() - (lockMtimeMs(path10) ?? Date.now())) < 2e3;
+  const rm = (path10) => {
     try {
-      writeSync(fd, String(process.pid));
-    } finally {
-      closeSync2(fd);
+      secureUnlink(path10);
+    } catch {
     }
   };
-  let acquired = false;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  const refuse = (pid) => {
+    closeSync2(fd);
+    throw new Error(`another snote is already using ${dir}${pid ? ` (pid ${pid})` : ""} \u2014 it holds the instance lock`);
+  };
+  const fd = secureOpenForRead(`${dir}/.`);
+  let unlocked;
+  for (let retry = 0; ; retry++) {
+    const r = spawnSync2("/usr/bin/flock", ["-n", "0"], { stdio: [fd, "ignore", "ignore"], timeout: retry ? 5e3 : 1e3, killSignal: "SIGKILL", maxBuffer: 1048576 });
+    const code = r.error?.code;
+    if (r.status === 1) {
+      refuse(live());
+    }
+    unlocked = r.status === 0 ? void 0 : code === "ENOENT" ? "missing" : !code && typeof r.status === "number" ? "refused" : "timeout";
+    if (unlocked !== "timeout" || retry) {
+      break;
+    }
+  }
+  for (let attempt = 0; ; attempt++) {
     try {
       writeLock();
-      acquired = true;
       break;
     } catch (err) {
       if (err.code !== "EEXIST") {
+        closeSync2(fd);
         throw err;
       }
-      const fileOwner = Number.parseInt(readLockPid(lockPath), 10);
-      const heldByUs = heldByProcess.has(lockPath);
-      const ownerAlive = heldByUs || isPidAlive2(fileOwner) && !startedAfterLockWrite(fileOwner, lockMtimeMs(lockPath));
-      if (ownerAlive) {
-        const owner = heldByUs ? String(process.pid) : String(fileOwner);
-        throw new Error(
-          `another snote is already using ${dir} (pid ${owner}) \u2014 it holds the instance lock`
-        );
+      if (live() || attempt > 1) {
+        refuse(live());
       }
       try {
-        unlinkSync3(lockPath);
+        secureExclusiveCreate(sweep, "");
       } catch {
+        if (!young(sweep)) {
+          rm(sweep);
+        }
+        refuse("");
+      }
+      try {
+        if (live()) {
+          refuse(live());
+        }
+        rm(lockPath);
+      } finally {
+        rm(sweep);
       }
     }
   }
-  if (!acquired) {
-    const owner = readLockPid(lockPath);
-    const mtime = lockMtimeMs(lockPath);
-    const alive = /^\d+$/.test(owner) && isPidAlive2(Number(owner)) && !startedAfterLockWrite(Number(owner), mtime);
-    throw new Error(
-      `another snote is already using ${dir}${alive ? ` (pid ${owner})` : ""} \u2014 it holds the instance lock`
-    );
-  }
+  rm(sweep);
   heldByProcess.add(lockPath);
   let released = false;
   return {
+    unlocked,
     release: () => {
       if (released) {
         return;
       }
       released = true;
       heldByProcess.delete(lockPath);
-      try {
-        unlinkSync3(lockPath);
-      } catch {
-      }
+      rm(lockPath);
+      closeSync2(fd);
     }
   };
 }
 
-// src/core/config.ts
-var APP_ID = process.env.SNOTE_APP_ID ?? "chalk-bump-f49";
-var API_KEY = process.env.SNOTE_API_KEY ?? "c8c2b86337154cdabc989b23e30c6bf4";
-var ACCOUNT_BASE = process.env.SNOTE_ACCOUNT_BASE ?? "https://app.simplenote.com";
-var AUTH_BASE = process.env.SNOTE_AUTH_BASE ?? "https://auth.simperium.com";
-
-// src/core/auth.ts
-var DEFAULT_TIMEOUT_MS = 15e3;
-function summarizeErrorText(text) {
-  return text.replace(/\s+/g, " ").trim().slice(0, 200);
+// src/core/account-id.ts
+var ACCOUNT_ID_FILE = "account.json";
+var DEFAULT_SERVER = "default";
+var MAX_ID_BYTES = 2048;
+var MAX_TRIES = 4;
+var normaliseEmail = (email) => email.trim().normalize("NFC").toLowerCase();
+function identityOf(email, server) {
+  return { email: normaliseEmail(email), server: server === void 0 || server === "" ? DEFAULT_SERVER : server };
 }
-async function fetchBounded(url, init, timeoutMs) {
-  const host = new URL(url).host;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+var hasControl = (s) => {
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    if (c < 32 || c >= 127 && c <= 159) return true;
+  }
+  return false;
+};
+function readAccountId(folder) {
+  const p = path7.join(folder, ACCOUNT_ID_FILE);
+  let raw;
   try {
-    const res = await fetch(url, { ...init, signal: controller.signal });
-    return res;
-  } catch (e) {
-    const err = e;
-    if (err.name === "AbortError") {
-      throw new Error(`no answer from ${host} within ${Math.ceil(timeoutMs / 1e3)} s`);
-    }
-    if (err.cause) {
-      throw new Error(`could not reach ${host}`);
-    }
-    throw err;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-async function requestLoginCode(email, opts) {
-  const accountUrl = opts?.accountBase ?? ACCOUNT_BASE;
-  const url = `${accountUrl}/account/request-login`;
-  const timeoutMs = opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const res = await fetchBounded(
-    url,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: email.trim().toLowerCase(),
-        request_source: "electron"
-      })
-    },
-    timeoutMs
-  );
-  if (!res.ok) {
-    throw new Error(`${res.status} ${summarizeErrorText(await res.text())}`);
-  }
-}
-async function completeLogin(email, code, opts) {
-  const accountUrl = opts?.accountBase ?? ACCOUNT_BASE;
-  const url = `${accountUrl}/account/complete-login`;
-  const timeoutMs = opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const res = await fetchBounded(
-    url,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: email.trim().toLowerCase(),
-        auth_code: code.trim().toUpperCase()
-      })
-    },
-    timeoutMs
-  );
-  if (!res.ok) {
-    let message = `completeLogin failed: ${res.status}`;
+    const st = fs8.lstatSync(p);
+    if (!st.isFile() || st.size > MAX_ID_BYTES) return null;
+    const fd = secureOpenForRead(p);
     try {
-      const errBody = await res.json();
-      if (errBody.message) message = String(errBody.message);
-    } catch {
+      raw = fs8.readFileSync(fd, "utf8");
+    } finally {
+      fs8.closeSync(fd);
     }
-    throw new Error(`${res.status} ${summarizeErrorText(message)}`);
+  } catch {
+    return null;
   }
-  const json = await res.json();
-  return json.sync_token;
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+  const o = parsed;
+  if (o.v !== 1 || typeof o.email !== "string" || typeof o.server !== "string") return null;
+  if (o.email === "" || o.server === "" || hasControl(o.email) || hasControl(o.server)) return null;
+  if (o.email !== normaliseEmail(o.email)) return null;
+  return { email: o.email, server: o.server };
 }
-async function loginWithPassword(email, password, opts) {
-  const authUrl = opts?.authBase ?? AUTH_BASE;
-  const appId = opts?.appId ?? APP_ID;
-  const apiKey = opts?.apiKey ?? API_KEY;
-  const url = `${authUrl}/1/${appId}/authorize/`;
-  const timeoutMs = opts?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const res = await fetchBounded(
-    url,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Simperium-API-Key": apiKey
-      },
-      body: JSON.stringify({
-        username: email.trim().toLowerCase(),
-        password
-      })
-    },
-    timeoutMs
-  );
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`${res.status} ${summarizeErrorText(text)}`);
+var sameIdentity = (a, b) => a.email === b.email && a.server === b.server;
+function resolveAccountDir(root2, email, server) {
+  const want = identityOf(email, server);
+  const suffix = createHash2("sha256").update(want.email + "\n" + want.server).digest("hex").slice(0, 12);
+  let dir = accountDir(root2, email);
+  for (let i = 0; i < MAX_TRIES; i++) {
+    const id = readAccountId(dir);
+    if (id === null || sameIdentity(id, want)) return dir;
+    dir = dir + "~" + suffix;
   }
-  const json = await res.json();
-  return json.access_token;
+  throw new Error("Could not choose a data folder for this account.");
+}
+function writeAccountId(folder, id) {
+  secureWriteFileSync(
+    path7.join(folder, ACCOUNT_ID_FILE),
+    JSON.stringify({ v: 1, email: id.email, server: id.server })
+  );
+}
+function recordAccountId(folder, email, server) {
+  const want = identityOf(email, server);
+  const id = readAccountId(folder);
+  if (id === null) writeAccountId(folder, want);
+  else if (!sameIdentity(id, want)) throw new Error("This data folder belongs to another account.");
+}
+async function recordSavedAccountId(root2) {
+  const saved = await loadToken(root2);
+  if (!saved) return;
+  let lock;
+  let folder;
+  try {
+    folder = resolveAccountDir(root2, saved.email, saved.server);
+    if (!fs8.lstatSync(folder).isDirectory() || readAccountId(folder) !== null) return;
+    lock = acquireInstanceLock(folder);
+  } catch {
+    return;
+  }
+  try {
+    writeAccountId(folder, identityOf(saved.email, saved.server));
+  } catch {
+  } finally {
+    lock.release();
+  }
 }
 
 // src/cli/login-calls.ts
+var auth = () => import("./chunks/auth-XPLO4XPH.js");
 function loginCalls(server, appId) {
   let opts;
   if (server) {
@@ -7938,9 +8055,9 @@ function loginCalls(server, appId) {
     opts = { appId };
   }
   return {
-    requestCode: (email) => requestLoginCode(email, opts),
-    completeLogin: (email, code) => completeLogin(email, code, opts),
-    passwordLogin: (email, password) => loginWithPassword(email, password, opts)
+    requestCode: async (email) => (await auth()).requestLoginCode(email, opts),
+    completeLogin: async (email, code) => (await auth()).completeLogin(email, code, opts),
+    passwordLogin: async (email, password) => (await auth()).loginWithPassword(email, password, opts)
   };
 }
 
@@ -7951,7 +8068,10 @@ var isInlineEditOpen = () => editOpenNow;
 function useInlineEditorState() {
   const [open, setOpen] = (0, import_react3.useState)(false);
   const [base, setBase] = (0, import_react3.useState)("");
-  const openEdit = (content) => {
+  const session = (0, import_react3.useRef)({ entry: null, stored: "" });
+  const openEdit = (entry) => {
+    const content = entry.note.content ?? "";
+    session.current = { entry, stored: content };
     setBase(content);
     setOpen(true);
   };
@@ -7962,7 +8082,7 @@ function useInlineEditorState() {
       editOpenNow = false;
     };
   }, [open]);
-  return { open, base, openEdit, closeEdit };
+  return { open, base, session, openEdit, closeEdit };
 }
 var INLINE_EDIT_MAX_LINE = 1e4;
 var INLINE_EDIT_TOO_LONG = "A line is over 10,000 characters: press e to edit in your editor";
@@ -7979,7 +8099,7 @@ function inlineEditRefusal(content) {
 }
 
 // src/tui/Root.tsx
-var import_react22 = __toESM(require_react(), 1);
+var import_react23 = __toESM(require_react(), 1);
 
 // src/tui/read-gate.ts
 var import_react4 = __toESM(require_react(), 1);
@@ -7996,7 +8116,7 @@ function readOf(gate, data) {
   if (last && last.text.endsWith(data)) return last;
   return { text: data, delivered: 0, ended: false, reported: false };
 }
-function install(stdin, em) {
+function install2(stdin, em) {
   const realEmit = em.emit;
   const realRead = stdin.read;
   const ownRead = Object.prototype.hasOwnProperty.call(stdin, "read");
@@ -8102,7 +8222,7 @@ function useReadGate(role) {
   roleRef.current = role;
   (0, import_react4.useLayoutEffect)(() => {
     if (!stdin || !em) return;
-    const gate = gates.get(em) ?? install(stdin, em);
+    const gate = gates.get(em) ?? install2(stdin, em);
     gates.set(em, gate);
     gate.users += 1;
     gate.roles.add(roleRef);
@@ -8142,7 +8262,7 @@ function Login({
   width,
   height,
   requestCode,
-  completeLogin: completeLogin2,
+  completeLogin,
   onLoggedIn,
   passwordLogin
 }) {
@@ -8177,7 +8297,7 @@ function Login({
         }
         setError("");
         setPending(true);
-        completeLogin2(email.trim(), code.trim()).then((token) => {
+        completeLogin(email.trim(), code.trim()).then((token) => {
           onLoggedIn({ email: email.trim(), token });
         }).catch((err) => {
           setError(err.message);
@@ -8286,7 +8406,7 @@ function Login({
 }
 
 // src/tui/App.tsx
-var import_react21 = __toESM(require_react(), 1);
+var import_react22 = __toESM(require_react(), 1);
 
 // src/core/keymap.ts
 var keymap = [
@@ -8531,6 +8651,8 @@ function Section({
 }
 function Help({ width, height, entries, editor }) {
   const [scroll, setScroll] = (0, import_react6.useState)(0);
+  const screenReader = use_is_screen_reader_enabled_default();
+  const withVersion2 = (t) => withVersion(t) + (screenReader ? "  screen-reader mode" : "");
   const contentRows = Math.max(1, height - 4);
   const displayEntries = entries ?? keymap;
   const columns = helpColumns(displayEntries, contentRows);
@@ -8558,7 +8680,7 @@ function Help({ width, height, entries, editor }) {
   const sectionRowWidth = twoCols ? width - 4 : innerWidth;
   const sectioned = width >= 100 && height >= 30 || width >= 80 && height >= 24 || width >= 50 && width < 100 && height >= 30 && sectionCols <= maxFitColumns(width);
   const list = entries === void 0 && !sectioned;
-  const listLines = list ? helpListLines(editor ?? "nvim").map((l, i) => i === 0 ? { ...l, text: withVersion(l.text) } : l) : [];
+  const listLines = list ? helpListLines(editor ?? "nvim").map((l, i) => i === 0 ? { ...l, text: withVersion2(l.text) } : l) : [];
   const win = helpListWindow(listLines, scroll, Math.max(1, width - 2), Math.max(1, height - 2));
   use_input_default(
     (input, key) => {
@@ -8571,7 +8693,7 @@ function Help({ width, height, entries, editor }) {
   const wide = entries === void 0 && !list && width >= 100 && height >= 30;
   const wideLines = wide ? layoutHelp(width, height, editor ?? "nvim") : [];
   const flatContent = /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(Box_default, { flexDirection: "column", width, height, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: withVersion("Help - Keyboard Shortcuts") }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: withVersion2("Help - Keyboard Shortcuts") }) }),
     /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", paddingX: 2, children: columns.map((colEntries, ci) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "column", width: colWidth, children: colEntries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", children: (() => {
       const full = entry.key.padEnd(8) + "  " + entry.description;
       const sliced = full.slice(0, colWidth - 1);
@@ -8603,8 +8725,8 @@ function Help({ width, height, entries, editor }) {
           l.text.slice(l.keyLen)
         ] }, i)),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: win.counter })
-      ] }) : wide ? wideLines.map((line, i) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: i === 0 ? withVersion(line) : line }, i)) : narrow ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: withVersion("Help - Keyboard Shortcuts") }) }),
+      ] }) : wide ? wideLines.map((line, i) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: i === 0 ? withVersion2(line) : line }, i)) : narrow ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: withVersion2("Help - Keyboard Shortcuts") }) }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "row", paddingX: 2, children: narrowCols.map((colEntries, ci) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "column", width: narrowColWidth, children: colEntries.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(Box_default, { flexDirection: "row", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { ...theme2.accent, children: entry.key.padEnd(8) }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { children: cutLine(entry.description, narrowColWidth - 9) })
@@ -8615,7 +8737,7 @@ function Help({ width, height, entries, editor }) {
           editorHint
         ] }) })
       ] }) : entries !== void 0 ? flatContent : /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: withVersion("Help - Keyboard Shortcuts") }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { paddingX: 2, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Text, { bold: true, children: withVersion2("Help - Keyboard Shortcuts") }) }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(Box_default, { flexDirection: twoCols ? "row" : "column", paddingX: 2, children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Box_default, { flexDirection: "column", children: leftSections.map((sec, i) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
             Section,
@@ -8650,7 +8772,7 @@ function Help({ width, height, entries, editor }) {
 
 // src/tui/BottomArea.tsx
 var import_react11 = __toESM(require_react(), 1);
-import { join as join21 } from "node:path";
+import { join as join17 } from "node:path";
 
 // src/tui/TagEditor.tsx
 var import_react7 = __toESM(require_react(), 1);
@@ -8788,7 +8910,7 @@ function StatusBar({ connected, word, count, width, label, pending }) {
     { text: " " },
     { text: `${count} ${count === 1 ? "note" : "notes"}`, role: theme2.muted }
   ];
-  if (pending && pending > 0) parts.push({ text: ` ${pending} pending`, role: theme2.warning });
+  if (pending && pending > 0) parts.push({ text: ` ${pending} pending${connected ? "" : " (no sync)"}`, role: theme2.warning });
   if (label) parts.push({ text: ` ${label}`, role: theme2.warning });
   const tag = statusTag();
   const gap = width - parts.reduce((n, p) => n + p.text.length, 0) - tag.length;
@@ -8879,6 +9001,7 @@ function Confirm({ question, onYes, onNo, destructive }) {
 }
 
 // src/tui/dialog-actions.ts
+var logoutWarning = (n, m) => `${unsyncedChanges(n)}${m > 0 ? ` (${m} more kept for other accounts)` : ""} will be deleted.`;
 var logoutHandlers = (setLogoutAsk, onLogout) => {
   const yes = () => {
     setLogoutAsk(false);
@@ -8936,250 +9059,8 @@ var deleteTagHandlers = (store, tagDialog, setTagDialog) => {
 
 // src/tui/blog-send-ask.ts
 var import_react9 = __toESM(require_react(), 1);
-import * as fs12 from "node:fs";
-import * as path11 from "node:path";
-
-// src/core/blog-config.ts
-import * as fs10 from "node:fs";
-import * as path9 from "node:path";
-var BLOG_FILE = "blog.json";
-var DEFAULT_BLOG_ORIGIN = "https://skryf.art";
-function blogOriginFromEnv(env) {
-  const fromEnv = env.SNOTE_BLOG_ORIGIN;
-  return fromEnv && fromEnv.length > 0 ? fromEnv : DEFAULT_BLOG_ORIGIN;
-}
-async function saveBlogConfig(dir, { origin, token }) {
-  if (!origin.startsWith("https://")) {
-    throw new Error(
-      `Invalid blog origin: must start with https://, got "${origin}"`
-    );
-  }
-  if (!token || token.length === 0) {
-    throw new Error("Blog token must be a non-empty string");
-  }
-  const filePath = path9.join(dir, BLOG_FILE);
-  const trimmedOrigin = origin.replace(/\/+$/, "");
-  const payload = { origin: trimmedOrigin, token };
-  const data = JSON.stringify(payload);
-  secureMkdir(dir);
-  fs10.writeFileSync(filePath, data, { mode: 384 });
-  fs10.chmodSync(filePath, 384);
-}
-async function loadBlogConfig(dir) {
-  const filePath = path9.join(dir, BLOG_FILE);
-  let raw;
-  try {
-    raw = fs10.readFileSync(filePath, "utf8");
-  } catch {
-    return null;
-  }
-  let parsed;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return null;
-  }
-  if (parsed === null || typeof parsed !== "object" || !("origin" in parsed) || !("token" in parsed) || typeof parsed.origin !== "string" || typeof parsed.token !== "string") {
-    return null;
-  }
-  return {
-    origin: parsed.origin,
-    token: parsed.token
-  };
-}
-
-// src/core/blog-client.ts
-function normalizeBlogUrl(url, origin) {
-  const base = origin.replace(/\/+$/, "");
-  if (url.startsWith("//")) {
-    const scheme = /^(https?:)\/\//i.exec(base)?.[1] ?? "https:";
-    return scheme + url;
-  }
-  if (url.startsWith("/")) {
-    return base + url;
-  }
-  return url;
-}
-async function postBlogDraft({
-  origin,
-  token,
-  title,
-  markdown
-}) {
-  const trimmedOrigin = origin.replace(/\/+$/, "");
-  const url = `${trimmedOrigin}/api/agent/posts`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ title, markdown, draft: true }),
-    redirect: "error"
-  });
-  if (response.status === 201) {
-    const body = await response.json();
-    return { id: body.id, url: normalizeBlogUrl(body.url, origin) };
-  }
-  if (response.status === 401) {
-    throw new Error("unauthorized");
-  }
-  if (response.status === 422) {
-    const body = await response.json();
-    throw new Error(body.error);
-  }
-  if (response.status === 429) {
-    throw new Error("rate limited");
-  }
-  throw new Error(`HTTP ${response.status}`);
-}
-
-// src/core/blog-markdown.ts
-var CHECKBOX_UNCHECKED = /^- \[ \] (.+)$/;
-var CHECKBOX_CHECKED = /^- \[[xX]\] (.+)$/;
-function checklistGlyphs(content) {
-  const lines = content.split("\n");
-  const result = lines.map((line) => {
-    const uncheckedMatch = line.match(CHECKBOX_UNCHECKED);
-    if (uncheckedMatch) {
-      return "- \u2610 " + uncheckedMatch[1];
-    }
-    const checkedMatch = line.match(CHECKBOX_CHECKED);
-    if (checkedMatch) {
-      return "- \u2611 " + checkedMatch[1];
-    }
-    return line;
-  });
-  return result.join("\n");
-}
-
-// src/core/blog-draft.ts
-function noteToBlogDraft(content) {
-  const lines = content.split("\n");
-  let titleLineIndex = -1;
-  let titleLine = "";
-  for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i].trim();
-    if (trimmed.length > 0) {
-      titleLineIndex = i;
-      titleLine = trimmed;
-      break;
-    }
-  }
-  if (titleLineIndex === -1) {
-    throw new Error("title is required");
-  }
-  let title = titleLine;
-  if (title.startsWith("# ")) {
-    title = title.slice(2);
-  }
-  if (title.length > 200) {
-    throw new Error("title is too long");
-  }
-  const remainingLines = lines.slice(titleLineIndex + 1);
-  const markdownBody = remainingLines.join("\n");
-  const markdown = checklistGlyphs(markdownBody);
-  return { title, markdown };
-}
-
-// src/core/blog-sent.ts
-import * as fs11 from "node:fs";
-import * as path10 from "node:path";
-var BLOG_SENT_FILE = "blog-sent.json";
-function blogStatusLine(record) {
-  if (!record) {
-    return null;
-  }
-  const rawUrl = record.url.startsWith("//") ? "https:" + record.url : record.url;
-  const url = sanitizeForTerminal(rawUrl).replace(/[\n\t]/g, " ");
-  return "Sent as draft \xB7 " + record.sentAt.slice(0, 10) + " \xB7 " + url;
-}
-function recordBlogSend(dir, noteId, { postId, url, sentAt }) {
-  const filePath = path10.join(dir, BLOG_SENT_FILE);
-  let data = {};
-  if (fs11.existsSync(filePath)) {
-    try {
-      const raw = fs11.readFileSync(filePath, "utf8");
-      data = JSON.parse(raw);
-    } catch {
-      data = {};
-    }
-  }
-  data[noteId] = { postId, url, sentAt };
-  secureMkdir(dir);
-  secureWriteFileSync(filePath, JSON.stringify(data));
-}
-function loadBlogSend(dir, noteId) {
-  const filePath = path10.join(dir, BLOG_SENT_FILE);
-  if (!fs11.existsSync(filePath)) {
-    return null;
-  }
-  try {
-    const raw = fs11.readFileSync(filePath, "utf8");
-    const data = JSON.parse(raw);
-    if (data === null || typeof data !== "object" || Array.isArray(data)) {
-      return null;
-    }
-    const record = data;
-    if (!(noteId in record)) {
-      return null;
-    }
-    const value = record[noteId];
-    if (value === null || typeof value !== "object" || !("postId" in value) || !("url" in value) || !("sentAt" in value) || typeof value.postId !== "string" || typeof value.url !== "string" || typeof value.sentAt !== "string") {
-      return null;
-    }
-    return {
-      postId: value.postId,
-      url: value.url,
-      sentAt: value.sentAt
-    };
-  } catch {
-    return null;
-  }
-}
-
-// src/core/blog-send.ts
-async function sendNoteToBlog({
-  dir,
-  noteId,
-  content,
-  force,
-  now
-}) {
-  const config = await loadBlogConfig(dir);
-  if (!config) {
-    throw new Error("blog is not configured");
-  }
-  if (!isAllowed(config.origin)) {
-    throw new Error(
-      "blog origin is not allowed: use https (http only for localhost)"
-    );
-  }
-  const existing = loadBlogSend(dir, noteId);
-  if (existing && !force) {
-    return { already: true };
-  }
-  const { title, markdown } = noteToBlogDraft(content);
-  const result = await postBlogDraft({
-    origin: config.origin,
-    token: config.token,
-    title,
-    markdown
-  });
-  recordBlogSend(dir, noteId, {
-    postId: result.id,
-    url: result.url,
-    sentAt: now
-  });
-  return {
-    url: result.url,
-    sentAt: now,
-    postId: result.id,
-    already: false
-  };
-}
-
-// src/tui/blog-send-ask.ts
+import * as fs9 from "node:fs";
+import * as path8 from "node:path";
 var cell = {
   current: {
     blogSendAsk: null,
@@ -9224,13 +9105,15 @@ function useBlogSendAskState(noteId, content, setNotice, setNoticeError) {
       request("close");
       const id = noteIdRef.current;
       if (!id) return;
-      sendNoteToBlog({
-        dir: dataRoot(),
+      const dir = dataRoot();
+      const force = resend || Boolean(loadBlogSend(dir, id));
+      import("./chunks/blog-send-6BZ7V5Q4.js").then((m) => m.sendNoteToBlog({
+        dir,
         noteId: id,
         content: contentRef.current,
-        force: resend,
+        force,
         now: (/* @__PURE__ */ new Date()).toISOString()
-      }).then(
+      })).then(
         () => setNotice("draft sent to your blog"),
         (error) => {
           const msg = error instanceof Error ? error.message.trim().toLowerCase() : "";
@@ -9245,7 +9128,7 @@ function useBlogSendAskState(noteId, content, setNotice, setNoticeError) {
       return;
     }
     const dir = dataRoot();
-    const configured = fs12.existsSync(path11.join(dir, "blog.json"));
+    const configured = fs9.existsSync(path8.join(dir, "blog.json"));
     const id = noteIdRef.current;
     if (!configured) request({ kind: "token", origin: blogOriginFromEnv(process.env) });
     else if (id && loadBlogSend(dir, id)) request({ kind: "resend" });
@@ -9293,7 +9176,7 @@ function BlogSendDialog({
         initial: "",
         onSubmit: (token) => {
           const dir = dataRoot();
-          saveBlogConfig(dir, { origin, token }).then(
+          import("./chunks/blog-config-XGBNPL7I.js").then((m) => m.saveBlogConfig(dir, { origin, token })).then(
             () => request({ kind: "send" }),
             (error) => {
               const msg = error instanceof Error ? error.message : "blog setup failed";
@@ -9357,7 +9240,9 @@ function visibleHints(entries, width) {
 }
 function KeyHints({ context, width, pin }) {
   const base = hintsForContext(context);
-  const hints = visibleHints(context === "list" && pin ? [...base.slice(0, -1), { key: "p", label: pin }, ...base.slice(-1)] : base, width);
+  const withPin = context === "list" && pin ? [...base.slice(0, -1), { key: "p", label: pin }, ...base.slice(-1)] : base;
+  const extra = context === "list" ? [{ key: "\u2190\u2192", label: "Panes" }] : context === "tags" ? [{ key: "Tab/\u2192", label: "Notes" }] : [];
+  const hints = visibleHints([...withPin, ...extra], width);
   return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Box_default, { children: hints.map((h, i) => /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_react10.default.Fragment, { children: [
     i > 0 && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Text, { children: "  " }),
     /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Text, { ...theme2.accent, children: h.key }),
@@ -9435,7 +9320,7 @@ function BottomArea({
     if (kind === "rename") return sanitizeForTerminal(tagDialog.tagName);
     if (exportPathRef.current === null) {
       const base = exportFileName(selectedEntry?.note.content ?? "");
-      exportPathRef.current = join21(documentsDir(), `${base}.md`);
+      exportPathRef.current = join17(documentsDir(), `${base}.md`);
     }
     return exportPathRef.current;
   };
@@ -9522,12 +9407,12 @@ function BottomArea({
       setNoticeError: (message) => setNoticeError?.(message),
       request
     }
-  ) : logoutAsk ? pendingCount(store.getState().simperium) > 0 ? (() => {
+  ) : logoutAsk ? pendingCount(store.getState().simperium) > 0 || keptElsewhere() > 0 ? (() => {
     const unsynced = pendingCount(store.getState().simperium);
     return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
       Prompt,
       {
-        label: "log out: " + unsynced + " unsynced notes will be lost - type 'logout' to confirm",
+        label: "log out: " + logoutWarning(unsynced, keptElsewhere()) + " Please type 'logout' to confirm",
         initial: "",
         onSubmit: logout3.submit,
         onCancel: logout3.no
@@ -9572,7 +9457,10 @@ function Divider({ height }) {
 
 // src/tui/PaneHeading.tsx
 var import_jsx_runtime10 = __toESM(require_jsx_runtime(), 1);
-function PaneHeading({ label, focused = false }) {
+function PaneHeading({ label, focused = false, width }) {
+  if (focused && width !== void 0) {
+    return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Box_default, { height: 1, overflow: "hidden", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Text, { ...theme2.headingFocused, ...theme2.accent, children: label.padEnd(width) }) });
+  }
   return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Text, { ...focused ? theme2.headingFocused : { ...theme2.accent, ...theme2.heading }, children: label });
 }
 
@@ -9600,16 +9488,16 @@ function TagPane({
     return sanitizeForTerminal(String(tag ?? ""));
   });
   const content = /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(Box_default, { flexDirection: "column", width, height, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(PaneHeading, { label: "Tags", focused }),
+    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(PaneHeading, { label: "Tags", focused, width: divider ? width - 1 : width }),
     labels.map((label, idx) => {
       const actualIndex = visibleStart + idx;
       const isSelected = actualIndex === selectedIndex;
       const isMore = idx === moreAboveSlot || idx === moreBelowSlot && idx !== moreAboveSlot;
       const isSystem = actualIndex === 0 || actualIndex === rows.length - 1 || trashRow && actualIndex === rows.length - 2;
-      const labelStyle = isSelected ? theme2.accent : isSystem && !isMore ? theme2.muted : {};
+      const labelStyle = isSelected ? focused ? { ...theme2.selection, ...theme2.accent } : theme2.accent : isSystem && !isMore ? theme2.muted : {};
       return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(Box_default, { children: [
-        isMore ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: "\xA0" }) : isSelected ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { bold: true, children: ">" }) : actualIndex === 0 || actualIndex === rows.length - 1 || trashRow && actualIndex === rows.length - 2 ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: "\xB7" }) : /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: " " }),
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { ...labelStyle, children: label.slice(0, width - 2) })
+        isMore ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: "\xA0" }) : isSelected ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { ...focused ? { ...theme2.selection, ...theme2.accent } : { bold: true }, children: ">" }) : actualIndex === 0 || actualIndex === rows.length - 1 || trashRow && actualIndex === rows.length - 2 ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: "\xB7" }) : /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { children: " " }),
+        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Text, { ...labelStyle, children: label.length > width - 2 ? label.slice(0, width - 3) + "\u2026" : label })
       ] }, actualIndex);
     })
   ] });
@@ -9675,11 +9563,17 @@ function wrapLines(content, width) {
 }
 
 // src/core/note-row.ts
+var segmenter2 = new Intl.Segmenter("en", { granularity: "grapheme" });
+function displayCells(s) {
+  let cells = 0;
+  for (const { segment } of segmenter2.segment(s)) cells += cellWidth(segment);
+  return cells;
+}
 function noteRow(note, width, query) {
   const { title: rawTitle, preview: rawPreview } = note_utils_default(note, query);
   const title = sanitizeForTerminal(rawTitle);
   const preview = sanitizeForTerminal(rawPreview);
-  const truncatedTitle = title.length > width - 2 ? wrapLines(title, width - 4)[0].text + ".." : title;
+  const truncatedTitle = displayCells(title) > width - 2 ? wrapLines(title, width - 4)[0].text + ".." : title;
   const marker = "";
   const rows = wrapLines(preview, width - 4);
   const previewLines = rows.slice(0, 2).map((r) => r.text).filter((t) => t !== "");
@@ -9707,9 +9601,10 @@ function NoteList({
   const bodyHeight = listHeight - 1;
   const perNote = 4;
   const boundaryExists = notes2.some((_, i) => isBoundary(notes2, i));
+  const labelExists = notes2.length > 0 && notes2[0].systemTags.includes("pinned");
   const visibleCount = Math.max(
     1,
-    Math.floor((listHeight - (boundaryExists ? 1 : 0)) / perNote)
+    Math.floor((listHeight - (boundaryExists ? 1 : 0) - (labelExists ? 1 : 0)) / perNote)
   );
   const maxStart = Math.max(0, notes2.length - visibleCount);
   let visibleStart = Math.min(
@@ -9718,12 +9613,17 @@ function NoteList({
   );
   const visibleEnd = Math.min(notes2.length, visibleStart + visibleCount);
   return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Box_default, { flexDirection: "column", height: listHeight, width: colWidth, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(PaneHeading, { label: "Notes", focused }),
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(PaneHeading, { label: "Notes", focused, width: colWidth }),
     /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Box_default, { flexDirection: "column", height: bodyHeight, children: notes2.slice(visibleStart, visibleEnd).map((note, idx) => {
       const actualIndex = visibleStart + idx;
       const isSelected = actualIndex === selectedIndex;
       const { title, marker, previewLines } = noteRow(note, colWidth, query);
       const lines = [];
+      if (labelExists && actualIndex === 0) {
+        lines.push(
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { wrap: "truncate", ...theme2.muted, children: "Pinned" }, "pinned-label")
+        );
+      }
       if (isBoundary(notes2, actualIndex)) {
         lines.push(
           /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { wrap: "truncate", ...theme2.muted, children: "\u2500".repeat(colWidth - 2) }, `rule-${idx}`)
@@ -9731,8 +9631,8 @@ function NoteList({
       }
       lines.push(
         /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Box_default, { children: [
-          isSelected ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { ...theme2.selection, ...theme2.accent, children: ">" }) : /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { children: " " }),
-          /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Text, { ...isSelected ? theme2.selection : theme2.heading, ...isSelected ? theme2.accent : {}, children: [
+          isSelected && focused ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { ...theme2.selection, ...theme2.accent, children: ">" }) : isSelected ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { bold: true, ...theme2.accent, children: ">" }) : /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Text, { children: " " }),
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(Text, { ...isSelected && focused ? theme2.selection : theme2.heading, ...isSelected ? theme2.accent : {}, children: [
             title,
             marker
           ] })
@@ -9769,7 +9669,7 @@ function History({
     return text;
   };
   return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(Box_default, { flexDirection: "column", height: listHeight, width: colWidth, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(PaneHeading, { label: "History", focused: true }),
+    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(PaneHeading, { label: "History", focused: true, width: colWidth }),
     /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Box_default, { flexDirection: "column", children: rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Box_default, { children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Text, { children: loading ? "loading..." : "no earlier versions" }) }) : rows.slice(visibleStart, visibleEnd).map((row, idx) => {
       const actualIndex = visibleStart + idx;
       const isSelected = actualIndex === selectedIndex;
@@ -9794,6 +9694,7 @@ var CHECK_EMPTY = "\uE005";
 var CHECK_DONE = "\uE006";
 var IMG_OPEN = "\uE007";
 var IMG_CLOSE = "\uE008";
+var OWN_SENTINELS = new RegExp(`[${LINK_OPEN}-${IMG_CLOSE}]`, "g");
 function expandMasked(stripped, markerPrefix) {
   const spans = [];
   let text = "";
@@ -9822,12 +9723,13 @@ function expandMasked(stripped, markerPrefix) {
   return { text, spans };
 }
 function markdownBodyLine(raw) {
-  const masked = raw.replace(/^#{1,6}\s+/, "").replace(
+  const clean = raw.replace(OWN_SENTINELS, "");
+  const masked = clean.replace(/^#{1,6}\s+/, "").replace(
     /^([-*])\s+\[([ xX])\]\s+/,
     (_match, _marker, state) => state === " " ? CHECK_EMPTY : CHECK_DONE
   ).replace(/^([-*])\s+/, BULLET).replace(/!\[([^\]]*)\]\([^)]*\)/g, (_match, alt) => IMG_OPEN + alt + IMG_CLOSE).replace(/\[([^\]]*)\]\([^)]*\)/g, (_match, label) => LINK_OPEN + label + LINK_CLOSE).replace(/`([^`]*)`/g, (_match, content) => CODE_OPEN + content + CODE_CLOSE);
   const stripped = (0, import_remove_markdown2.default)(masked);
-  const isHeading = /^#{1,6}\s/.test(raw);
+  const isHeading = /^#{1,6}\s/.test(clean);
   const markerPrefix = stripped.startsWith(CHECK_EMPTY) ? "\u2610 " : stripped.startsWith(CHECK_DONE) ? "\u2611 " : stripped.startsWith(BULLET) ? "\u2022 " : "";
   const { text, spans } = expandMasked(stripped, markerPrefix);
   return { text, isHeading, spans };
@@ -9937,7 +9839,7 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
           height: previewHeight,
           width: colWidth,
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(PaneHeading, { label: "Preview", focused }),
+            /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(PaneHeading, { label: "Preview", focused, width: colWidth }),
             /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Box_default, { flexDirection: "column", children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Text, { children: "Select a note to preview" }) })
           ]
         }
@@ -10002,7 +9904,7 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
     });
   }
   const visibleRows = rows.slice(start2, start2 + avail);
-  const titleText = /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(PaneHeading, { label: "Preview: " + title, focused });
+  const titleText = /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(PaneHeading, { label: "Preview: " + title, focused, width: colWidth });
   return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(Box_default, { flexDirection: "row", children: [
     /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, { height: previewHeight }),
     /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(
@@ -10044,13 +9946,13 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
 }
 
 // src/tui/InlineEditor.tsx
-var import_react17 = __toESM(require_react(), 1);
+var import_react18 = __toESM(require_react(), 1);
 
-// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/TextArea.js
+// node_modules/react-ink-textarea/dist/TextArea.js
 var import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
 var import_react16 = __toESM(require_react(), 1);
 
-// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/constants.js
+// node_modules/react-ink-textarea/dist/constants.js
 var DEFAULT_CURSOR_INTERVAL = 500;
 var DEFAULT_TYPING_PAUSE = 450;
 var DEFAULT_MAX_UNDO = 128;
@@ -10092,7 +9994,7 @@ var NAV_KEYBINDINGS = [
   "Ctrl+E"
 ];
 
-// ../../localdev/simplenote/node_modules/react-ink-textarea/node_modules/ansi-styles/index.js
+// node_modules/react-ink-textarea/node_modules/ansi-styles/index.js
 var ANSI_BACKGROUND_OFFSET = 10;
 var wrapAnsi16 = (offset = 0) => (code) => `\x1B[${code + offset}m`;
 var wrapAnsi256 = (offset = 0) => (code) => `\x1B[${38 + offset};5;${code}m`;
@@ -10277,8 +10179,8 @@ function assembleStyles() {
 }
 var ansiStyles = assembleStyles();
 
-// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/textUtils.js
-var segmenter2 = new Intl.Segmenter("en", { granularity: "grapheme" });
+// node_modules/react-ink-textarea/dist/textUtils.js
+var segmenter3 = new Intl.Segmenter("en", { granularity: "grapheme" });
 var graphemeWidth = (g, tabWidth = 1) => {
   if (g.length === 0)
     return 0;
@@ -10319,7 +10221,7 @@ var prevGraphemeOffset = (value, cursor) => {
     return cursor - 1;
   }
   let lastStart = 0;
-  for (const seg of segmenter2.segment(value)) {
+  for (const seg of segmenter3.segment(value)) {
     if (seg.index >= cursor)
       break;
     lastStart = seg.index;
@@ -10336,7 +10238,7 @@ var nextGraphemeOffset = (value, cursor) => {
   if (here < 128 && !isHighSurrogate(here) && (next === -1 || !isLikelyCombining(next))) {
     return cursor + 1;
   }
-  for (const seg of segmenter2.segment(value)) {
+  for (const seg of segmenter3.segment(value)) {
     const segEnd = seg.index + seg.segment.length;
     if (segEnd > cursor)
       return segEnd;
@@ -10564,7 +10466,7 @@ var buildVisualRows = (lines, lineWidthAt, cursorLine, cursorColumn, initialLine
           flushChunk(i >= lineText.length);
         }
       } else {
-        for (const seg of segmenter2.segment(lineText)) {
+        for (const seg of segmenter3.segment(lineText)) {
           const g = seg.segment;
           const gw = graphemeWidth(g, tabWidth);
           if (chunkVisualWidth + gw > widthForCurrentChunk() && chunkBuf.length > 0) {
@@ -10654,7 +10556,7 @@ var getCursorFromLineColumn = (value, line, column) => {
   return { cursor, clampedLine, clampedCol };
 };
 
-// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/hooks/useCursorState.js
+// node_modules/react-ink-textarea/dist/hooks/useCursorState.js
 var import_react12 = __toESM(require_react(), 1);
 var normalizeNewlines = (s) => s.indexOf("\r") === -1 ? s : s.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 var useCursorState = ({ controlledValue, controlledPosition, onChange, onCursorAttempt }) => {
@@ -10709,7 +10611,7 @@ var useCursorState = ({ controlledValue, controlledPosition, onChange, onCursorA
   return { value, cursor, setValue, setCursor };
 };
 
-// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/hooks/useUndo.js
+// node_modules/react-ink-textarea/dist/hooks/useUndo.js
 var import_react13 = __toESM(require_react(), 1);
 var useUndo = ({ maxUndo, undoGroupDelay }) => {
   const undoStack = (0, import_react13.useRef)([]);
@@ -10755,7 +10657,7 @@ var useUndo = ({ maxUndo, undoGroupDelay }) => {
   return { pushUndo, undo, redo, resetMutationTracking };
 };
 
-// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/hooks/useCursorBlink.js
+// node_modules/react-ink-textarea/dist/hooks/useCursorBlink.js
 var import_react14 = __toESM(require_react(), 1);
 var useCursorBlink = ({ isActive, cursorInterval, typingPause, disableCursorBlink }) => {
   const [cursorVisible, setCursorVisible] = (0, import_react14.useState)(true);
@@ -10803,7 +10705,7 @@ var useCursorBlink = ({ isActive, cursorInterval, typingPause, disableCursorBlin
   return { cursorVisible, resetBlink };
 };
 
-// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/hooks/useKeyboardInput.js
+// node_modules/react-ink-textarea/dist/hooks/useKeyboardInput.js
 var useKeyboardInput = ({ isActive, value, cursor, keybindings, autoNewLineLimit, onSubmit, onFirstLineUp, onLastLineDown, onFirstCharacterLeft, onLastCharacterRight, onTab, setValue, setCursor, pushUndo, undo, redo, resetMutationTracking, resetBlink, lineWidth, visualRows: visualRows2 }) => {
   use_paste_default((text) => {
     const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
@@ -11099,7 +11001,7 @@ var useKeyboardInput = ({ isActive, value, cursor, keybindings, autoNewLineLimit
   }, { isActive });
 };
 
-// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/hooks/useViewport.js
+// node_modules/react-ink-textarea/dist/hooks/useViewport.js
 var import_react15 = __toESM(require_react(), 1);
 var useViewport = ({ rowCount, viewportLines, cursorRowIndex }) => {
   const [scrollOffset, setScrollOffset] = (0, import_react15.useState)(0);
@@ -11129,7 +11031,7 @@ var useViewport = ({ rowCount, viewportLines, cursorRowIndex }) => {
   return { visibleRowStart: start2, visibleRowEnd: end };
 };
 
-// ../../localdev/simplenote/node_modules/react-ink-textarea/dist/TextArea.js
+// node_modules/react-ink-textarea/dist/TextArea.js
 var MAX_MEASURE_PASSES = 24;
 var DEFAULT_TEXT_STYLE = {};
 var DEFAULT_INVISIBLE_STYLE = { color: "gray", dim: true };
@@ -11606,7 +11508,7 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
 // src/tui/caretMoves.ts
 var AUTO_NEW_LINE_LIMIT = 3;
 var INITIAL_LINE_COUNT = 2;
-var segmenter3 = new Intl.Segmenter("en", { granularity: "grapheme" });
+var segmenter4 = new Intl.Segmenter("en", { granularity: "grapheme" });
 var isHigh = (c) => c >= 55296 && c <= 56319;
 var isLow = (c) => c >= 56320 && c <= 57343;
 var isCombining = (c) => c >= 768 && c <= 879 || c >= 6832 && c <= 6911 || c >= 7616 && c <= 7679 || c >= 8400 && c <= 8447 || c >= 65056 && c <= 65071;
@@ -11616,7 +11518,7 @@ function prevGrapheme(value, caret) {
   const prev = value.charCodeAt(at - 1);
   if (prev < 128 && !isLow(prev)) return at - 1;
   let last = 0;
-  for (const seg of segmenter3.segment(value)) {
+  for (const seg of segmenter4.segment(value)) {
     if (seg.index >= at) break;
     last = seg.index;
   }
@@ -11628,7 +11530,7 @@ function nextGrapheme(value, caret) {
   const here = value.charCodeAt(at);
   const next = at + 1 < value.length ? value.charCodeAt(at + 1) : -1;
   if (here < 128 && !isHigh(here) && (next === -1 || !isCombining(next))) return at + 1;
-  for (const seg of segmenter3.segment(value)) {
+  for (const seg of segmenter4.segment(value)) {
     const end = seg.index + seg.segment.length;
     if (end > at) return end;
   }
@@ -11685,7 +11587,7 @@ function visualRows(lines, width, caretLine, caretColumn) {
           flush();
         }
       } else {
-        for (const seg of segmenter3.segment(text)) {
+        for (const seg of segmenter4.segment(text)) {
           const w = cellWidth(seg.segment);
           if (bufWidth + w > Math.max(1, width) && buf.length > 0) flush();
           buf += seg.segment;
@@ -11797,6 +11699,41 @@ function remapEdit(real, before, after, shownCursor) {
   return real.slice(0, realCursor) + typed + real.slice(real.length - s);
 }
 
+// src/tui/inline-autosave.ts
+var import_react17 = __toESM(require_react(), 1);
+var AUTOSAVE_MS = 1500;
+var AUTOSAVE_MAX_MS = 5e3;
+function useInlineAutosave(text, store) {
+  const storeRef = (0, import_react17.useRef)(store);
+  storeRef.current = store;
+  const ref = (0, import_react17.useRef)(null);
+  if (!ref.current) ref.current = { stored: text.current, seen: text.current, live: true, last: void 0, max: void 0 };
+  const s = ref.current;
+  const flush = () => {
+    clearTimeout(s.last);
+    clearTimeout(s.max);
+    s.last = s.max = void 0;
+    const now = text.current;
+    if (s.live && now !== s.stored) {
+      s.stored = now;
+      storeRef.current(now);
+    }
+  };
+  const changed = () => {
+    if (!s.live || text.current === s.seen) return;
+    s.seen = text.current;
+    clearTimeout(s.last);
+    s.last = setTimeout(flush, AUTOSAVE_MS);
+    if (!s.max) s.max = setTimeout(flush, AUTOSAVE_MAX_MS);
+  };
+  const close = () => {
+    flush();
+    s.live = false;
+  };
+  (0, import_react17.useLayoutEffect)(() => close, []);
+  return { changed, close };
+}
+
 // src/tui/InlineEditor.tsx
 var import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
 function endPosition(text) {
@@ -11832,30 +11769,27 @@ function KeyHook({ active, onKey }) {
   use_input_default(onKey, { isActive: active });
   return null;
 }
-var DISCARD_PROMPT_LONG = "discard changes? (y/n, Esc keeps editing)";
-var DISCARD_PROMPT_SHORT = "discard changes? (y/n)";
-var FOOTER_HINT = "Ctrl+S save \xB7 Esc cancel \xB7 Enter new line";
+var FOOTER_HINT = "Autosaves \xB7 Esc close \xB7 Ctrl+S save now";
 function InlineEditor({ width, height, base, onClose, onSave }) {
   const colWidth = previewColWidth(width);
   const rows = Math.max(1, height - 2);
-  const discardPrompt = colWidth >= DISCARD_PROMPT_LONG.length ? DISCARD_PROMPT_LONG : DISCARD_PROMPT_SHORT;
   const footerRows = Math.max(1, Math.ceil(FOOTER_HINT.length / Math.max(1, colWidth)));
-  const [cursorPosition, setCursorPosition] = (0, import_react17.useState)(() => endPosition(base));
-  const [confirmDiscard, setConfirmDiscard] = (0, import_react17.useState)(false);
-  useReadGate({ confirm: confirmDiscard });
-  const ref = (0, import_react17.useRef)(null);
-  const realRef = (0, import_react17.useRef)(base);
-  const shownRef = (0, import_react17.useRef)(standInText(base));
-  const [value, setValueState] = (0, import_react17.useState)(shownRef.current);
-  const caretRef = (0, import_react17.useRef)(shownRef.current.length);
-  const reportedRef = (0, import_react17.useRef)(null);
-  const reportModeRef = (0, import_react17.useRef)(null);
-  const moveRef = (0, import_react17.useRef)(null);
-  const widthRef = (0, import_react17.useRef)(0);
+  const [cursorPosition, setCursorPosition] = (0, import_react18.useState)(() => endPosition(base));
+  const ref = (0, import_react18.useRef)(null);
+  const realRef = (0, import_react18.useRef)(base);
+  const autosave = useInlineAutosave(realRef, onSave);
+  const shownRef = (0, import_react18.useRef)(standInText(base));
+  const [value, setValueState] = (0, import_react18.useState)(shownRef.current);
+  const caretRef = (0, import_react18.useRef)(shownRef.current.length);
+  const reportedRef = (0, import_react18.useRef)(null);
+  const reportModeRef = (0, import_react18.useRef)(null);
+  const moveRef = (0, import_react18.useRef)(null);
+  const widthRef = (0, import_react18.useRef)(0);
   const renderedCaret = offsetAt(value, cursorPosition);
   const stale = () => shownRef.current !== value || caretRef.current !== renderedCaret;
   const show = (nextReal, caret) => {
     realRef.current = nextReal;
+    autosave.changed();
     shownRef.current = standInText(nextReal);
     caretRef.current = Math.max(0, Math.min(caret, shownRef.current.length));
     setValueState(shownRef.current);
@@ -11868,6 +11802,7 @@ function InlineEditor({ width, height, base, onClose, onSave }) {
     if (!edit) {
       const fresh2 = !stale();
       realRef.current = remapEdit(realRef.current, shownRef.current, next, next.length);
+      autosave.changed();
       shownRef.current = standInText(realRef.current);
       setValueState(shownRef.current);
       reportModeRef.current = fresh2 ? "absolute" : "skip";
@@ -11920,35 +11855,21 @@ function InlineEditor({ width, height, base, onClose, onSave }) {
     moveRef.current = null;
   };
   use_input_default((input, key) => {
-    if (confirmDiscard) {
-      if (input === "y" || input === "Y") {
-        setConfirmDiscard(false);
-        onClose();
-      } else if (input === "n" || input === "N" || key.escape) {
-        setConfirmDiscard(false);
-      }
-      return;
-    }
-    if (key.ctrl && input === "s") {
-      onSave(realRef.current);
-      return;
-    }
-    if (key.escape) {
-      if (realRef.current !== base) setConfirmDiscard(true);
-      else onClose();
+    if (key.ctrl && input === "s" || key.escape) {
+      autosave.close();
+      onClose();
     }
   });
   return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(Box_default, { flexDirection: "row", children: [
     /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Divider, { height: rows }),
     /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(Box_default, { flexDirection: "column", width: colWidth, height: rows, children: [
-      confirmDiscard ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: discardPrompt }) : null,
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(KeyHook, { active: !confirmDiscard, onKey: beforeTextArea }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(KeyHook, { active: true, onKey: beforeTextArea }),
       /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
         TextArea,
         {
           ref,
-          focus: !confirmDiscard,
-          viewportLines: Math.max(1, rows - (confirmDiscard ? 1 : 0) - footerRows),
+          focus: true,
+          viewportLines: Math.max(1, rows - footerRows),
           onSubmit: () => ref.current?.insert("\n"),
           value,
           cursorPosition,
@@ -11959,7 +11880,7 @@ function InlineEditor({ width, height, base, onClose, onSave }) {
           }
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(KeyHook, { active: !confirmDiscard, onKey: afterTextArea }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(KeyHook, { active: true, onKey: afterTextArea }),
       /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: FOOTER_HINT })
     ] })
   ] });
@@ -12040,7 +11961,7 @@ function MainPanes({
 }
 
 // src/tui/useAppState.ts
-var import_react18 = __toESM(require_react(), 1);
+var import_react19 = __toESM(require_react(), 1);
 
 // src/tui/app-model.ts
 function sortEntries(entries, sortType2, sortReversed2, inTrash) {
@@ -12117,26 +12038,26 @@ function connectionWord(sim, socketOpen) {
 
 // src/tui/useAppState.ts
 function useAppState(store) {
-  const [noteEntries, setNoteEntries] = (0, import_react18.useState)([]);
-  const selectedIdRef = (0, import_react18.useRef)(null);
-  const openedRef = (0, import_react18.useRef)(null);
-  const [selectedIndex, setSelectedIndex] = (0, import_react18.useState)(0);
-  const [connected, setConnected] = (0, import_react18.useState)(false);
-  const [word, setWord] = (0, import_react18.useState)("connecting");
-  const [pending, setPending] = (0, import_react18.useState)(0);
-  const [allTagNames, setAllTagNames] = (0, import_react18.useState)([]);
-  const [query, setQuery] = (0, import_react18.useState)("");
-  const [tagNames, setTagNames] = (0, import_react18.useState)([]);
-  const [collection2, setCollection] = (0, import_react18.useState)({ type: "all" });
-  const [inTrash, setInTrash] = (0, import_react18.useState)(false);
-  const [sortLabelStr, setSortLabelStr] = (0, import_react18.useState)("");
-  const sortCacheRef = (0, import_react18.useRef)(null);
-  const externalSelectRef = (0, import_react18.useRef)(null);
-  (0, import_react18.useEffect)(() => {
+  const [noteEntries, setNoteEntries] = (0, import_react19.useState)([]);
+  const selectedIdRef = (0, import_react19.useRef)(null);
+  const openedRef = (0, import_react19.useRef)(null);
+  const [selectedIndex, setSelectedIndex] = (0, import_react19.useState)(0);
+  const [connected, setConnected] = (0, import_react19.useState)(false);
+  const [word, setWord] = (0, import_react19.useState)("connecting");
+  const [pending, setPending] = (0, import_react19.useState)(0);
+  const [allTagNames, setAllTagNames] = (0, import_react19.useState)([]);
+  const [query, setQuery] = (0, import_react19.useState)("");
+  const [tagNames, setTagNames] = (0, import_react19.useState)([]);
+  const [collection2, setCollection] = (0, import_react19.useState)({ type: "all" });
+  const [inTrash, setInTrash] = (0, import_react19.useState)(false);
+  const [sortLabelStr, setSortLabelStr] = (0, import_react19.useState)("");
+  const sortCacheRef = (0, import_react19.useRef)(null);
+  const externalSelectRef = (0, import_react19.useRef)(null);
+  (0, import_react19.useEffect)(() => {
     if (externalSelectRef.current !== null) return;
     selectedIdRef.current = noteEntries[selectedIndex]?.id ?? null;
   }, [noteEntries, selectedIndex]);
-  (0, import_react18.useEffect)(() => {
+  (0, import_react19.useEffect)(() => {
     const render = () => {
       const state = store.getState();
       const inTrashNow = state.ui.collection.type === "trash";
@@ -12216,11 +12137,15 @@ function useAppState(store) {
   };
   return { noteEntries, selectedIndex, setSelectedIndex, setExternalSelect, connected, word, pending, allTagNames, query, setQuery, tagNames, collection: collection2, inTrash, sortLabelStr };
 }
+function noteKeyOrNotice(input, id, state, setNotice) {
+  if (input === "d" && !id) setNotice("Nothing selected");
+  return noteKeyAction(input, id, state);
+}
 
 // src/tui/notice.ts
-var import_react19 = __toESM(require_react(), 1);
+var import_react20 = __toESM(require_react(), 1);
 function useNotice() {
-  const [notice, setNoticeState] = (0, import_react19.useState)(() => {
+  const [notice, setNoticeState] = (0, import_react20.useState)(() => {
     const info = currentProblemIsInfo();
     const problem = currentProblem();
     if (problem !== null) {
@@ -12232,7 +12157,7 @@ function useNotice() {
   const setNotice = (message) => setNoticeState({ message, isError: false });
   const setNoticeError = (message) => setNoticeState({ message, isError: true });
   const clearNotice = () => setNoticeState(null);
-  (0, import_react19.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     const offUpdate = onUpdate(
       (u) => setNoticeState({ message: updateMessage(u), isError: false, isUpdate: true })
     );
@@ -12258,11 +12183,11 @@ function noticeColor(notice) {
 }
 
 // src/tui/banner.tsx
-var import_react20 = __toESM(require_react(), 1);
+var import_react21 = __toESM(require_react(), 1);
 var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
 function BannerRow() {
-  const [banner, setBanner] = (0, import_react20.useState)(currentBanner);
-  (0, import_react20.useEffect)(() => {
+  const [banner, setBanner] = (0, import_react21.useState)(currentBanner);
+  (0, import_react21.useEffect)(() => {
     setBanner(currentBanner());
     return onBanner(() => setBanner(currentBanner()));
   }, []);
@@ -12371,30 +12296,30 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
   const { setRawMode } = use_stdin_default();
   const view = useAppState(store);
   const { noteEntries, selectedIndex, setSelectedIndex, connected, pending, allTagNames, query, setQuery, tagNames, collection: collection2, inTrash, sortLabelStr } = view;
-  const [rendered, setRendered] = (0, import_react21.useState)(false);
-  const [helpOpen, setHelpOpen] = (0, import_react21.useState)(false);
-  const [tagEditorOpen, setTagEditorOpen] = (0, import_react21.useState)(false);
-  const [logoutAsk, setLogoutAsk] = (0, import_react21.useState)(false);
-  const [searchOpen, setSearchOpen] = (0, import_react21.useState)(false);
-  const [tagsOpen, setTagsOpen] = (0, import_react21.useState)(false);
-  const [tagsFocused, setTagsFocused] = (0, import_react21.useState)(false);
-  const [noteFocused, setNoteFocused] = (0, import_react21.useState)(false);
-  const [itemIndex, setItemIndex] = (0, import_react21.useState)(0);
-  const [tagIndex, setTagIndex] = (0, import_react21.useState)(0);
-  const [tagDialog, setTagDialog] = (0, import_react21.useState)(null);
-  const [emptyAsk, setEmptyAsk] = (0, import_react21.useState)(0);
-  const [copyResult, setCopyResult] = (0, import_react21.useState)(null);
-  const [historyOpen, setHistoryOpen] = (0, import_react21.useState)(false);
-  const [historyIndex, setHistoryIndex] = (0, import_react21.useState)(0);
-  const [reading, setReading] = (0, import_react21.useState)(false);
+  const [rendered, setRendered] = (0, import_react22.useState)(false);
+  const [helpOpen, setHelpOpen] = (0, import_react22.useState)(false);
+  const [tagEditorOpen, setTagEditorOpen] = (0, import_react22.useState)(false);
+  const [logoutAsk, setLogoutAsk] = (0, import_react22.useState)(false);
+  const [searchOpen, setSearchOpen] = (0, import_react22.useState)(false);
+  const [tagsOpen, setTagsOpen] = (0, import_react22.useState)(false);
+  const [tagsFocused, setTagsFocused] = (0, import_react22.useState)(false);
+  const [noteFocused, setNoteFocused] = (0, import_react22.useState)(false);
+  const [itemIndex, setItemIndex] = (0, import_react22.useState)(0);
+  const [tagIndex, setTagIndex] = (0, import_react22.useState)(0);
+  const [tagDialog, setTagDialog] = (0, import_react22.useState)(null);
+  const [emptyAsk, setEmptyAsk] = (0, import_react22.useState)(0);
+  const [copyResult, setCopyResult] = (0, import_react22.useState)(null);
+  const [historyOpen, setHistoryOpen] = (0, import_react22.useState)(false);
+  const [historyIndex, setHistoryIndex] = (0, import_react22.useState)(0);
+  const [reading, setReading] = (0, import_react22.useState)(false);
   const { itemAsk, setItemAsk } = useItemAsk();
   const { exportAsk, setExportAsk } = useExportAsk();
   const { setBlogSendAsk } = useBlogSendAsk();
-  const { open: inlineEditOpen, base: inlineEditBase, openEdit: openInlineEdit, closeEdit: closeInlineEdit } = useInlineEditorState();
+  const { open: inlineEditOpen, base: inlineEditBase, session: inlineSession, openEdit: openInlineEdit, closeEdit: closeInlineEdit } = useInlineEditorState();
   const { notice, setNotice, setNoticeError, clearNotice } = useNotice();
-  const [syncedAt, setSyncedAt] = (0, import_react21.useState)(null);
-  const syncedTimerRef = (0, import_react21.useRef)(null);
-  const tagsAutoOpenedRef = (0, import_react21.useRef)(false);
+  const [syncedAt, setSyncedAt] = (0, import_react22.useState)(null);
+  const syncedTimerRef = (0, import_react22.useRef)(null);
+  const tagsAutoOpenedRef = (0, import_react22.useRef)(false);
   useAppEffects(width, tagNames.length, setTagsOpen, syncedTimerRef, () => handleKey("n", EXTERNAL_KEY), startNew);
   const handleKey = (input, key) => {
     recordKeyEvent(input, key, Boolean(searchOpen || tagEditorOpen || tagDialog?.kind === "rename" || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen || inlineEditOpen));
@@ -12452,7 +12377,7 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
       const noteKeyCtx = { store, selectedEntry, itemIndex, setItemIndex, setItemAsk, setNotice, setExportAsk, setBlogSendAsk };
       if (handleNoteKey(input, keyName, noteKeyCtx)) return;
     }
-    const action = dismissOnEscape(keyName) ? null : noteKeyAction(input, selectedEntry?.id ?? null, store.getState());
+    const action = dismissOnEscape(keyName) ? null : noteKeyOrNotice(input, selectedEntry?.id ?? null, store.getState(), setNotice);
     if (action) {
       store.dispatch(action);
       if (action.type === "SELECT_TRASH") setTagIndex(tagNames.length + 2);
@@ -12510,7 +12435,7 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
         const c = selectedEntry.note.content ?? "";
         const r = inlineEditRefusal(c);
         if (r) setNotice(r);
-        else openInlineEdit(c);
+        else openInlineEdit(selectedEntry);
       }
     }
   };
@@ -12519,7 +12444,7 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
   use_input_default((input, key) => {
     for (const ch of splitPastedInput(input) ?? [input]) handleKey(ch, key);
   }, { isActive: emptyAsk === 0 });
-  const listCount = import_react21.default.useMemo(() => {
+  const listCount = import_react22.default.useMemo(() => {
     const st = store.getState();
     let count = 0;
     for (const note of st.data.notes.values()) {
@@ -12555,8 +12480,9 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
         onCloseEdit: closeInlineEdit,
         inlineEditBase,
         onSaveEdit: (value) => {
-          saveInlineEdit({ store, selectedEntry, base: inlineEditBase, local: value, onEditorError: setNoticeError });
-          closeInlineEdit();
+          const s = inlineSession.current;
+          saveInlineEdit({ store, selectedEntry: s.entry, base: s.stored, local: value, onEditorError: setNoticeError });
+          s.stored = value;
         }
       }
     ),
@@ -12613,31 +12539,32 @@ function endSyncClient(s) {
   }
 }
 function Root(props) {
-  const [phase, setPhase] = (0, import_react22.useState)("loading");
-  const [store, setStore] = (0, import_react22.useState)(null);
-  const [error, setError] = (0, import_react22.useState)("");
-  const userLogoutRef = (0, import_react22.useRef)(false);
-  const [lockMessage, setLockMessage] = (0, import_react22.useState)(null);
-  const [size, setSize] = (0, import_react22.useState)({
+  const [phase, setPhase] = (0, import_react23.useState)("loading");
+  const [store, setStore] = (0, import_react23.useState)(null);
+  const [error, setError] = (0, import_react23.useState)("");
+  const [forced, setForced] = (0, import_react23.useState)(null);
+  const userLogoutRef = (0, import_react23.useRef)(false);
+  const [lockMessage, setLockMessage] = (0, import_react23.useState)(null);
+  const [size, setSize] = (0, import_react23.useState)({
     width: props.width,
     height: props.height
   });
   const { stdout } = use_stdout_default();
   const { exit } = use_app_default();
   const tooSmall = size.width < MIN_W || size.height < MIN_H;
-  const roomy = (0, import_react22.useRef)(size);
+  const roomy = (0, import_react23.useRef)(size);
   if (!tooSmall) roomy.current = size;
-  const quitRef = (0, import_react22.useRef)(() => {
+  const quitRef = (0, import_react23.useRef)(() => {
   });
   quitRef.current = props.onQuit ?? exit;
   useReadGate({
     onCtrlC: () => quitRef.current(),
-    // T538R-5: Ctrl+C quits only as a read of its own
+    // Ctrl+C quits only as a read of its own
     whileSmall: tooSmall ? (input) => {
       if (input === "q" && !isInlineEditOpen()) quitRef.current();
     } : void 0
   });
-  (0, import_react22.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     const onResize = () => {
       setSize({
         width: stdout.columns ?? props.width,
@@ -12649,24 +12576,26 @@ function Root(props) {
       stdout.off("resize", onResize);
     };
   }, [stdout, props.width, size.height]);
-  (0, import_react22.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     let cancelled = false;
-    loadToken(props.dataDir).then((auth) => {
+    loadToken(props.dataDir).then((auth2) => {
       if (cancelled) return;
-      if (auth === null || auth.server !== props.server) {
+      if (auth2 === null || auth2.server !== props.server) {
         setPhase("login");
       } else {
         let made = null;
         const onLogout = () => {
           if (!userLogoutRef.current) endSyncClient(made);
-          logout2(props.dataDir);
+          if (userLogoutRef.current) logout2(props.dataDir);
+          else setForced(signOutByServer(props.dataDir, resolveAccountDir(props.dataDir, auth2.email, props.server)));
           setStore(null);
           if (!userLogoutRef.current) {
             setError("Your session has expired or was revoked. Log in again.");
           }
           setPhase("login");
         };
-        made = props.makeStoreFor(auth, onLogout);
+        made = props.makeStoreFor(auth2, onLogout);
+        setActiveAccount(props.dataDir, resolveAccountDir(props.dataDir, auth2.email, props.server));
         setStore(made);
         setPhase("app");
       }
@@ -12684,30 +12613,35 @@ function Root(props) {
       cancelled = true;
     };
   }, [props.dataDir, props.server, props.makeStoreFor]);
-  const handleLogout = (0, import_react22.useCallback)(() => {
+  const handleLogout = (0, import_react23.useCallback)(() => {
     logout2(props.dataDir);
     setStore(null);
     setPhase("login");
   }, [props.dataDir]);
-  const onLoggedIn = (0, import_react22.useCallback)(
-    async (auth) => {
+  const onLoggedIn = (0, import_react23.useCallback)(
+    async (auth2) => {
       try {
-        await saveToken(props.dataDir, { ...auth, server: props.server });
+        await saveToken(props.dataDir, { ...auth2, server: props.server });
         userLogoutRef.current = false;
         setError("");
+        setForced(null);
         let made = null;
         const onLogout = () => {
           if (!userLogoutRef.current) endSyncClient(made);
-          logout2(props.dataDir);
+          if (userLogoutRef.current) logout2(props.dataDir);
+          else setForced(signOutByServer(props.dataDir, resolveAccountDir(props.dataDir, auth2.email, props.server)));
           setStore(null);
           if (!userLogoutRef.current) {
             setError("Your session has expired or was revoked. Log in again.");
           }
           setPhase("login");
         };
-        made = props.makeStoreFor(auth, onLogout);
+        made = props.makeStoreFor(auth2, onLogout);
+        setActiveAccount(props.dataDir, resolveAccountDir(props.dataDir, auth2.email, props.server));
         setStore(made);
         setPhase("app");
+        const kept = keptChangesNotice(props.dataDir, resolveAccountDir(props.dataDir, auth2.email, props.server));
+        if (kept) publishProblem(kept);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         if (msg.includes("holds the instance lock")) {
@@ -12724,7 +12658,7 @@ function Root(props) {
   if (phase === "loading") {
     screen = /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Box_default, { flexDirection: "column", children: [
       /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Text, { children: "Loading..." }),
-      lockMessage ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Text, { ...theme2.error, children: lockMessage }) : null
+      lockMessage ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Text, { ...theme2.error, children: sanitizeForTerminal(lockMessage) }) : null
     ] });
   } else if (phase === "login") {
     screen = /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Box_default, { flexDirection: "column", children: [
@@ -12741,8 +12675,9 @@ function Root(props) {
       ),
       error ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Text, { ...theme2.error, children: [
         "Error: ",
-        error
-      ] }) : null
+        sanitizeForTerminal(error)
+      ] }) : null,
+      forced ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Text, { children: forced }) : null
     ] });
   } else {
     screen = /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
@@ -12769,13 +12704,19 @@ function Root(props) {
 
 // src/core/output-guard.ts
 import { StringDecoder } from "node:string_decoder";
-var ESC2 = 27;
+var ESC = 27;
 var MAX_HELD = 64;
 var DISPLAY_FINALS = new Set("ABCDEFGHJKSTfmsu");
 var MODES_KEPT = /* @__PURE__ */ new Set(["25", "1049", "2004", "2026"]);
 var STRING_INTRODUCERS = /* @__PURE__ */ new Set(["]", "P", "X", "^", "_"]);
 var C1_STRING_INTRODUCERS = /* @__PURE__ */ new Set([144, 152, 157, 158, 159]);
+var plain = false;
+var BIDI = /[\u061c\u200b\u200c\u200e\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
+function setPlainOutput(on) {
+  plain = on;
+}
 function keepCsi(params, final) {
+  if (plain && final === "m") return false;
   if (final === "h" || final === "l") {
     return params.startsWith("?") && params.slice(1).split(";").every((m) => MODES_KEPT.has(m));
   }
@@ -12792,7 +12733,7 @@ function createFilter() {
     while (i < s.length) {
       const c = s.charCodeAt(i);
       if (inString) {
-        if (c === ESC2) {
+        if (c === ESC) {
           if (i + 1 >= s.length) {
             held2 = s.slice(i);
             break;
@@ -12805,7 +12746,7 @@ function createFilter() {
         i += 1;
         continue;
       }
-      if (c === ESC2) {
+      if (c === ESC) {
         if (i + 1 >= s.length) {
           held2 = s.slice(i);
           break;
@@ -12838,7 +12779,7 @@ function createFilter() {
       if (C1_STRING_INTRODUCERS.has(c)) {
         inString = true;
       } else if (c >= 32 ? c < 127 || c > 159 : c === 9 || c === 10 || c === 13) {
-        out += s[i];
+        if (!(plain && (c === 13 || BIDI.test(s[i])))) out += s[i];
       }
       i += 1;
     }
@@ -12866,19 +12807,45 @@ function guardOutputStream(stream) {
   return stream;
 }
 
+// src/core/quit-target.ts
+function quitTarget() {
+  let current2;
+  return {
+    current: () => current2,
+    track(onLogout) {
+      let mine;
+      return {
+        onLogout: () => {
+          if (mine !== void 0 && current2 === mine) current2 = void 0;
+          onLogout();
+        },
+        bind: (store) => {
+          mine = store;
+          current2 = store;
+        }
+      };
+    }
+  };
+}
+
 // src/cli/main.tsx
-function buildStore(opts, auth, onLogout) {
+function buildStore(opts, auth2, onLogout) {
   const instanceLock = acquireInstanceLock(opts.dataDir);
+  if (instanceLock.unlocked) publishInfo(UNLOCKED_NOTICE[instanceLock.unlocked]);
+  sweepStaleTemps(opts.dataDir);
   let stopSaving = instanceLock.release;
   let noteGhosts;
   const unsynced = loadUnsynced(opts.dataDir);
-  const preloadedState = dropTombstonedNotes(opts.dataDir, loadState(opts.dataDir));
+  const loadedState = loadState(opts.dataDir);
+  const savedNotes = loadUnsyncedNotes(opts.dataDir);
+  const basisState = loadedState ?? (Object.keys(savedNotes).length > 0 ? { data: { notes: /* @__PURE__ */ new Map() } } : void 0);
+  const preloadedState = dropTombstonedNotes(opts.dataDir, overlayUnsyncedNotes(basisState, unsynced, savedNotes));
   const store = makeStore({
     preloadedState,
     sync: {
       appId: opts.appId,
-      token: auth.token,
-      username: auth.email,
+      token: auth2.token,
+      username: auth2.email,
       clientOptions: opts.server ? { url: opts.server } : void 0,
       ghostStoreProvider: (b) => {
         const g = new FileGhostStore(opts.dataDir, b.name);
@@ -12898,22 +12865,22 @@ function buildStore(opts, auth, onLogout) {
       }
     }
   });
-  if (noteGhosts) {
-    const ghosts = noteGhosts;
-    setTimeout(() => {
-      restoreNotesFromGhosts(store, ghosts, unsynced);
-    }, 0);
-  }
   const ownEchoes = trackOwnEchoes(store.client, opts.dataDir, preloadedState?.data?.notes);
   const startSaving = persistOnChange(store, opts.dataDir);
-  setDraftsDir(path12.join(opts.dataDir, "drafts"));
+  setDraftsDir(path9.join(opts.dataDir, "drafts"));
   setTimeout(() => {
     const tooLarge = [];
     const report = { changed: 0 };
     const notice = recoveryNotice(recoverDrafts(store, draftsDir(), tooLarge, report), tooLarge, report.changed);
     if (notice !== null) publishInfo(notice);
   }, 0);
-  const unsyncedTracker = trackUnsynced(store, opts.dataDir);
+  const unsyncedTracker = trackUnsynced(store, opts.dataDir, loadedState === void 0 && fs10.existsSync(path9.join(opts.dataDir, "state.json")));
+  if (loadedState === void 0) {
+    try {
+      secureRename(path9.join(opts.dataDir, "state.json"), path9.join(opts.dataDir, "state.json.corrupt"));
+    } catch {
+    }
+  }
   const stopUnsynced = unsyncedTracker.stop;
   const stopStatus = opts.statusDir ? watchStatus(store, opts.statusDir, { delayMs: opts.statusDelayMs }) : () => {
   };
@@ -12933,14 +12900,14 @@ function buildStore(opts, auth, onLogout) {
     void requeueUnsynced(
       store,
       noteGhosts,
-      // T313/T314 — offline edits wait for the note bucket's catch-up, then rebase
+      // offline edits wait for the note bucket's catch-up, then rebase
       () => whenCatchUpApplied(store.client, "note"),
-      // T493 — a change the record says the server never confirmed is
+      // a change the record says the server never confirmed is
       // re-sent even when the ghost's date is newer.
       unsynced,
       preloadedState?.data?.notes
     ).then(
-      // T502 — the start-up re-send is over: a carried entry that never went
+      // the start-up re-send is over: a carried entry that never went
       // pending with it was found equal to its ghost, so it leaves the record.
       () => unsyncedTracker.settle(),
       (err) => {
@@ -12951,7 +12918,13 @@ function buildStore(opts, auth, onLogout) {
     () => ownEchoes.settle(),
     () => ownEchoes.settle()
   );
+  void whenCatchUpApplied(store.client, "note").then(() => {
+    store[/* @__PURE__ */ Symbol.for("snote.noteCatchUpApplied")] = true;
+  });
+  if (noteGhosts) restoreNotesFromGhosts(store, noteGhosts, unsynced);
   trackDeletions(store, opts.dataDir);
+  installTombstoneIndexFix(store.client, opts.dataDir);
+  installStaleChangeFix(store.client);
   if (noteGhosts) {
     void resendDeletions(
       store,
@@ -12963,25 +12936,32 @@ function buildStore(opts, auth, onLogout) {
   }
   return { store, stopSaving };
 }
-function accountStore(opts, auth, onLogout) {
-  const dir = accountDir(opts.dataDir, auth.email);
+function accountStore(opts, auth2, onLogout) {
+  const dir = resolveAccountDir(opts.dataDir, auth2.email, opts.server);
   secureMkdir(dir);
-  return buildStore({ ...opts, dataDir: dir }, auth, onLogout);
+  const built = buildStore({ ...opts, dataDir: dir }, auth2, onLogout);
+  try {
+    recordAccountId(dir, auth2.email, opts.server);
+  } catch (e) {
+    built.stopSaving();
+    throw e;
+  }
+  return built;
 }
 function stateDir() {
   const xdg = process.env.XDG_STATE_HOME;
   if (xdg && xdg !== "") {
-    return path12.join(xdg, "snote");
+    return path9.join(xdg, "snote");
   }
-  return path12.join(os2.homedir(), ".local", "state", "snote");
+  return path9.join(os2.homedir(), ".local", "state", "snote");
 }
 async function writeReport(log, dataDir) {
   const dir = stateDir();
   let bundle;
   try {
-    const crashes = fs13.readdirSync(dir).filter((f) => f.startsWith("crash-") && f.endsWith(".json")).sort();
+    const crashes = fs10.readdirSync(dir).filter((f) => f.startsWith("crash-") && f.endsWith(".json")).sort();
     if (crashes.length > 0) {
-      const raw = fs13.readFileSync(path12.join(dir, crashes.at(-1)), "utf8");
+      const raw = fs10.readFileSync(path9.join(dir, crashes.at(-1)), "utf8");
       bundle = storedCrashBundle(JSON.parse(raw), os2.homedir());
     }
   } catch (err) {
@@ -12993,7 +12973,7 @@ async function writeReport(log, dataDir) {
   if (!bundle) {
     try {
       const saved = await loadToken(dataDir);
-      const stateFolder = saved ? accountDir(dataDir, saved.email) : dataDir;
+      const stateFolder = saved ? resolveAccountDir(dataDir, saved.email, saved.server) : dataDir;
       const store = makeStore({ preloadedState: loadState(stateFolder), stubClient: {} });
       const session = sessionSnapshot(store.getState(), getKeyLog(), {
         columns: process.stdout.columns ?? 80,
@@ -13006,7 +12986,7 @@ async function writeReport(log, dataDir) {
       return 0;
     }
   }
-  const file = path12.join(
+  const file = path9.join(
     dir,
     `report-${(/* @__PURE__ */ new Date()).toISOString().replaceAll(":", "-")}.json`
   );
@@ -13024,12 +13004,14 @@ async function writeReport(log, dataDir) {
   return 0;
 }
 async function main(argv, io) {
-  const log = io?.log ?? console.log;
+  const rawLog = io?.log ?? console.log;
+  const log = (text) => rawLog(sanitizeForTerminal(text));
   const reportOnly = argv.includes("--report");
   const { args: argsWithoutReport, notifyNew } = splitNotifyFlag(
     argv.filter((a) => a !== "--report")
   );
-  const { args, startNew } = splitNewFlag(argsWithoutReport);
+  const { args: argsWithoutNew, startNew } = splitNewFlag(argsWithoutReport);
+  const { args, on: screenReader } = screenReaderMode(argsWithoutNew, process.env);
   if (argv.includes("--version") || argv.includes("-v")) {
     log(`snote ${VERSION}`);
     return 0;
@@ -13052,6 +13034,10 @@ async function main(argv, io) {
   if (o.help) {
     log(USAGE);
     return 0;
+  }
+  if ([dataDir, statusDir(process.env)].some(isSymlinkFolder)) {
+    log("snote data folder is a symlink: remove it and start again");
+    return 2;
   }
   const endpoints = checkEndpoints(process.env);
   for (const w of endpoints.warnings) log(w);
@@ -13082,39 +13068,48 @@ async function main(argv, io) {
     if (!saved) {
       return 3;
     }
-    return requestNewNote(accountDir(dataDir, saved.email)) === "sent" ? 0 : 3;
+    return requestNewNote(resolveAccountDir(dataDir, saved.email, saved.server)) === "sent" ? 0 : 3;
   }
   await prepareDataDir(dataDir);
+  await recordSavedAccountId(dataDir);
   const calls = loginCalls(o.server, appId);
   let stopSaving = () => {
   };
   let lastStore;
-  const makeStoreFor = (auth, onLogout) => {
+  const quit = quitTarget();
+  const makeStoreFor = (auth2, onLogout) => {
+    const tracked = quit.track(onLogout);
     const dir = statusDir(process.env);
     const built = accountStore(
-      { dataDir, appId, server: o.server, statusDir: fs13.existsSync(dir) ? dir : void 0 },
-      auth,
-      onLogout
+      { dataDir, appId, server: o.server, statusDir: fs10.existsSync(dir) ? dir : void 0 },
+      auth2,
+      tracked.onLogout
     );
     stopSaving = built.stopSaving;
     lastStore = built.store;
-    if (updateCheckEnabled(process.env) && process.env.SNOTE_UPDATE_CHECK !== "disabled") {
-      void runUpdateChecks({
-        version: VERSION,
-        home: os2.homedir(),
-        env: process.env,
-        stateDir: statusDir(process.env)
-      }).catch(() => {
+    tracked.bind(built.store);
+    if (process.env.SNOTE_UPDATE_CHECK !== "disabled") {
+      void (async () => {
+        const { updateCheckEnabled } = await import("./chunks/update-check-E2O2HFE5.js");
+        if (!updateCheckEnabled(process.env)) return;
+        const { homepageGuard, runningInstallKind, updateChecksFor } = await import("./chunks/install-kind-7RNUYSJQ.js");
+        if (!updateChecksFor(runningInstallKind())) return;
+        const { runUpdateChecks } = await import("./chunks/update-run-4OBOZV7M.js");
+        const { startUpdateWatch } = await import("./chunks/update-watch-3ENWHUED.js");
+        void runUpdateChecks({ version: VERSION, home: os2.homedir(), env: process.env, stateDir: statusDir(process.env), run: homepageGuard() }).catch(() => {
+        });
+        startUpdateWatch({ version: VERSION, home: os2.homedir(), env: process.env, stateDir: statusDir(process.env), run: homepageGuard() });
+      })().catch(() => {
       });
-      startUpdateWatch({ version: VERSION, home: os2.homedir(), env: process.env, stateDir: statusDir(process.env) });
     }
     return built.store;
   };
   let locked = false;
+  setPlainOutput(screenReader);
   guardOutputStream(process.stdout);
   guardOutputStream(process.stderr);
   const { waitUntilExit, unmount, clear } = render_default(
-    import_react23.default.createElement(Root, {
+    import_react24.default.createElement(Root, {
       dataDir,
       server: o.server,
       width: process.stdout.columns ?? 80,
@@ -13124,7 +13119,7 @@ async function main(argv, io) {
       requestCode: calls.requestCode,
       completeLogin: calls.completeLogin,
       passwordLogin: calls.passwordLogin,
-      // T304: when another process holds the instance lock, show the message
+      // when another process holds the instance lock, show the message
       // and return non-zero instead of swallowing into the login screen.
       onLockError: (msg) => {
         try {
@@ -13138,11 +13133,12 @@ async function main(argv, io) {
         }
       }
     }),
-    // T402 — never take Ink's screen-reader output path (it skips the
-    // stage that drops OSC sequences). T538R-5: Ink's own exit on Ctrl+C is
-    // off; Root quits on Ctrl+C through the read gate, only when Ctrl+C is a
-    // read of its own.
-    { isScreenReaderEnabled: false, exitOnCtrlC: false }
+    // #17 — Ink's screen-reader output path is taken only on the opt-in
+    // above, never from the environment Ink reads (an explicit boolean beats it); the
+    // output guard filters that path too. Ink's own exit on Ctrl+C
+    // is off; Root quits on Ctrl+C through the read gate, only when Ctrl+C is
+    // a read of its own.
+    { isScreenReaderEnabled: screenReader, exitOnCtrlC: false }
   );
   let crashed;
   const crash = (err) => {
@@ -13158,7 +13154,7 @@ async function main(argv, io) {
       home: os2.homedir()
     });
     const dir = stateDir();
-    const file = path12.join(
+    const file = path9.join(
       dir,
       `crash-${report.record.when.replaceAll(":", "-")}.json`
     );
@@ -13210,7 +13206,7 @@ async function main(argv, io) {
     }
     process.stderr.write(report.message.replace("{path}", pathText) + "\n");
     try {
-      fs13.fsyncSync(1);
+      fs10.fsyncSync(1);
     } catch {
     }
     process.exit(1);
@@ -13228,18 +13224,18 @@ async function main(argv, io) {
   const win = globalThis;
   if (win.window && typeof win.window.addEventListener === "function") {
     const g = globalThis;
-    const listeners4 = /* @__PURE__ */ new Map();
+    const listeners2 = /* @__PURE__ */ new Map();
     g.addEventListener ??= (type, l) => {
-      let set = listeners4.get(type);
+      let set = listeners2.get(type);
       if (!set) {
         set = /* @__PURE__ */ new Set();
-        listeners4.set(type, set);
+        listeners2.set(type, set);
       }
       set.add(l);
     };
     g.dispatchEvent ??= (e) => {
       const type = e.type ?? "error";
-      for (const l of listeners4.get(type) ?? []) l(e);
+      for (const l of listeners2.get(type) ?? []) l(e);
       return e.defaultPrevented !== true;
     };
     win.window.error ??= class ErrorEvent {
@@ -13272,6 +13268,23 @@ async function main(argv, io) {
   process.off("uncaughtException", onUncaught);
   process.off("unhandledRejection", onRejection);
   if (code !== 0) return code;
+  const quitStore = quit.current();
+  if (quitStore && !locked && !crashed) {
+    try {
+      (await import("./chunks/editor-write-watch-7EGQOFVS.js")).settleDraftWrites();
+    } catch {
+    }
+    try {
+      const { sendBeforeQuit, unsentLine } = await import("./chunks/quit-send-JTY42C5K.js");
+      const unsent = await sendBeforeQuit(quitStore);
+      if (unsent > 0) log(unsentLine(unsent));
+    } catch {
+    }
+    try {
+      (await import("./chunks/editor-write-watch-7EGQOFVS.js")).settleDraftWrites();
+    } catch {
+    }
+  }
   stopSaving();
   if (locked) return 1;
   return 0;

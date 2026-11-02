@@ -1,5 +1,5 @@
 /**
- * T306: security review 2 — G1 (tag editor drew raw tags), G2 (data dir
+ * security review 2 — G1 (tag editor drew raw tags), G2 (data dir
  * created 0755), G4 (export followed symlinks). One it() per Acceptance line.
  */
 
@@ -67,7 +67,7 @@ describe('security review 2 (G1 G2 G4)', () => {
 
     // The tag editor's own line in the frame: from `tags:` to the end of
     // the frame. Asserted on this slice because the Preview pane draws the
-    // note's tag line raw (out of T306's Edit scope); this is exactly what
+    // note's tag line raw (out of's Edit scope); this is exactly what
     // G1 puts on screen via BottomArea:  sanitized chips `ax`, no ESC byte.
     const editorLines = (lastFrame() ?? '').split('\n').filter((l) => l.includes('tags:'));
     expect(editorLines.length).toBeGreaterThan(0);

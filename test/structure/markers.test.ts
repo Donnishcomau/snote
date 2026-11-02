@@ -50,7 +50,7 @@ describe('markers', () => {
     const content = read('src/core/store.ts');
     expect(content).toContain('store.forceSync = () =>');
     expect(content).toContain('tracking: true');
-    expect(content).toContain('onClient: (c) => { client = c; }');
+    expect(content).toContain('onClient: (c) => { client = c; installSimperiumAuthWatchdog(');
   });
 
   it('4: WHEN src/core/simperium-reducer.ts is read THEN it still contains REMOVE_NOTE_ACTIONS, case \'CHANGE_CONNECTION_STATUS\' and pendingNotes.', () => {

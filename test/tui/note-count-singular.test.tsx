@@ -25,7 +25,7 @@ const inkChalk = (
 
 const eid = (id: string): EntityId => id as unknown as EntityId;
 
-describe('T426 status line note count is singular for 1', () => {
+describe('status line note count is singular for 1', () => {
   it("1: WHEN <StatusBar connected={false} count={1} width={80} /> renders THEN the frame contains `1 note` and does not contain `1 notes`", async () => {
     const { lastFrame } = render(<StatusBar connected={false} count={1} width={80} />);
     const frame = await waitForFrame(lastFrame, '1 note');

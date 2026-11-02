@@ -1,6 +1,6 @@
 /**
  * Help cuts a long description with an ellipsis instead of a hard cut,
- * and never cuts a key name (T517).
+ * and never cuts a key name.
  * The brief lists four Acceptance lines; one `it()` per line.
  */
 import { describe, it, expect } from 'vitest';

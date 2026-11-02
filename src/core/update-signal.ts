@@ -1,5 +1,5 @@
 /**
- * The one update signal (T387): a single module-level slot holding the
+ * The one update signal: a single module-level slot holding the
  * current update notice, shared between the update checks, the status
  * file and the on-screen notice. Same shape as the `useNotice` state
  * seen from outside: one stored value, many subscribers, nothing

@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "id": "io.github.donnishcomau.snote-simplenote",
   "name": "snote: Simplenote in your terminal",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "author": "qteamdon",
   "license": "GPL-2.0-only",
   "homepage": "https://github.com/donnishcomau/snote",
-  "description": "Unofficial Simplenote client for your terminal. Browse, search and write your Simplenote notes from the keyboard, with a one-click bar button, and send a note to your Skryf blog as a draft. The first click installs snote; no build step. The first click may install Node.js through Omarchy (mise).",
+  "description": "Unofficial Simplenote client for your terminal. Browse, search and write your Simplenote notes from the keyboard, with a one-click bar button, and send a note to your Skryf blog as a draft. The first click installs snote; no build step. It needs Node.js 22 or newer on your machine; setup does not add it and stops with a one-line hint if none is found.",
   "kinds": [
     "bar-widget"
   ],

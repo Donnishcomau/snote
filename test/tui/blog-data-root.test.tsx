@@ -1,5 +1,5 @@
 /**
- * T408: the blog status line and the blog prompt use the data directory
+ * the blog status line and the blog prompt use the data directory
  * snote was started with. src/core/data-root.ts holds the root main()
  * resolved; BottomArea's `Sent as draft` line and the blog send prompt
  * (blog-send-ask, blog-send-dialog) read/write blog.json and
@@ -91,7 +91,7 @@ afterEach(() => {
   setDataRoot(null);
 });
 
-describe('blog data root (T408)', () => {
+describe('blog data root', () => {
   it('1: WHEN `setDataRoot(A)` ran for a temp dir A, A\'s blog-sent.json has a record for `s1` with url `https://a.example/w/1`, and the one in `defaultDataDir()` has url `https://default.example/w/1` for `s1` THEN the App frame with s1 selected contains `https://a.example/w/1` and not `https://default.example/w/1`', async () => {
     await withRoots(async (dir, a) => {
       recordBlogSend(a, 's1', { postId: 'p1', url: A_URL, sentAt: '2026-09-28T00:00:00.000Z' });

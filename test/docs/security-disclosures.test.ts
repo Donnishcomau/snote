@@ -1,4 +1,4 @@
-// Acceptance tests for T428: SECURITY.md, README.md and manifest.json must
+// Acceptance tests for SECURITY.md, README.md and manifest.json must
 // disclose what snote sends over the network, what the bar shows, and what
 // install, update and uninstall do or leave behind.
 import { describe, it, expect } from 'vitest';
@@ -14,7 +14,7 @@ function section(md: string, heading: string): string {
   return next === -1 ? md.slice(start) : md.slice(start, next);
 }
 
-describe('security disclosures in SECURITY.md, README.md and manifest.json (T428)', () => {
+describe('security disclosures in SECURITY.md, README.md and manifest.json', () => {
   it('1: WHEN SECURITY.md is read THEN it contains `## What snote sends over the network`, `auth.simperium.com`, `app.simplenote.com`, `skryf.art`, `bearer token`, `SNOTE_UPDATE_CHECK=off` and `no telemetry`.', () => {
     expect(security).toContain('## What snote sends over the network');
     expect(security).toContain('auth.simperium.com');
@@ -25,12 +25,12 @@ describe('security disclosures in SECURITY.md, README.md and manifest.json (T428
     expect(security).toContain('no telemetry');
   });
 
-  it('2: WHEN SECURITY.md is read THEN it contains `## What the bar shows`, `40 characters` and `status.json`, and `## Install, update and uninstall` with `omarchy-install-dev-env node`, `mise`, `~/.local/share/snote`, `~/.local/state/snote` and `reviewed, released commits`.', () => {
+  it('2: WHEN SECURITY.md is read THEN it contains `## What the bar shows`, `40 characters` and `status.json`, and `## Install, update and uninstall` without `omarchy-install-dev-env`, with `mise`, `~/.local/share/snote`, `~/.local/state/snote` and `reviewed, released commits`.', () => {
     expect(security).toContain('## What the bar shows');
     expect(security).toContain('40 characters');
     expect(security).toContain('status.json');
     expect(security).toContain('## Install, update and uninstall');
-    expect(security).toContain('omarchy-install-dev-env node');
+    expect(security).not.toContain('omarchy-install-dev-env');
     expect(security).toContain('mise');
     expect(security).toContain('~/.local/share/snote');
     expect(security).toContain('~/.local/state/snote');
@@ -51,9 +51,10 @@ describe('security disclosures in SECURITY.md, README.md and manifest.json (T428
     expect(readme).toContain('INK_SCREEN_READER');
   });
 
-  it('5: WHEN manifest.json is parsed THEN `description` contains `install Node.js through Omarchy (mise)` and `no build step` and has at most `500` characters.', () => {
+  it('5: WHEN manifest.json is parsed THEN `description` contains `Node.js 22` and `no build step`, does not contain `install Node.js`, and has at most `500` characters.', () => {
     const manifest = JSON.parse(readFileSync('manifest.json', 'utf8')) as { description: string };
-    expect(manifest.description).toContain('install Node.js through Omarchy (mise)');
+    expect(manifest.description).toContain('Node.js 22');
+    expect(manifest.description).not.toContain('install Node.js');
     expect(manifest.description).toContain('no build step');
     expect(manifest.description.length).toBeLessThanOrEqual(500);
   });

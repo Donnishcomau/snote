@@ -1,5 +1,5 @@
 /**
- * T294: the layout and frame-width tests must not assert after a fixed
+ * the layout and frame-width tests must not assert after a fixed
  * 50 ms wait. This test reads test/tui/layout.test.tsx and
  * test/tui/frame-width.test.tsx as text and pins that every assertion
  * runs inside `vi.waitFor` and that the cases are all still there.

@@ -1,4 +1,4 @@
-/** F162: the login screen draws pasted email/code through sanitizeForTerminal; values sent stay as typed. */
+/** the login screen draws pasted email/code through sanitizeForTerminal; values sent stay as typed. */
 import { describe, it, expect, vi } from 'vitest';
 import { render } from 'ink-testing-library';
 import React from 'react';
@@ -21,7 +21,7 @@ function setup() {
 }
 const clean = (f: string) => !f.includes('\x1b[45m') && !f.includes('‮');
 
-describe('login paste sanitised (F162)', () => {
+describe('login paste sanitised', () => {
   it('1: WHEN `a\\x1b[45mb@c.co‮d` is pasted into the email step THEN the frame contains `Email: ab@c.cod` and neither `\\x1b[45m` nor `‮`', async () => {
     const { stdin, lastFrame } = setup();
     await waitForInput(stdin);

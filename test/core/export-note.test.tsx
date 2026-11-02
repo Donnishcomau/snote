@@ -1,5 +1,5 @@
 /**
- * T298: export the selected note to a .md file (`w`).
+ * export the selected note to a .md file (`w`).
  * Pure naming/tags tests plus one end-to-end render test of <App> that
  * writes into a temp documents dir set via XDG_DOCUMENTS_DIR. The file
  * carries a .tsx extension because it renders <App /> with JSX.

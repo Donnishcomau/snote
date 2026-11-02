@@ -1,5 +1,5 @@
 /**
- * T518 (F177): on a clean quit the status file snote leaves makes the
+ * on a clean quit the status file snote leaves makes the
  * bar say "snote is not running" at once — `alive` becomes the epoch —
  * while every other key survives untouched.
  */
@@ -116,7 +116,7 @@ const stopRig = async (rig: Rig | undefined): Promise<void> => {
   fs.rmSync(rig.dir, { recursive: true, force: true });
 };
 
-describe('T518 a clean quit tells the bar at once', () => {
+describe('a clean quit tells the bar at once', () => {
   it('1: WHEN the file was polled to `count` `2` with a string `synced` and a running `alive` THEN after `stopSaving()` its `alive` is `1970-01-01T00:00:00.000Z`, `count` is `2`, `synced` is unchanged, the keys are `alive`, `count`, `last`, `synced`, `version`, and the status dir holds only `status.json`', async () => {
     let rig: Rig | undefined;
     try {

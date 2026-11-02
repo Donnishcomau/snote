@@ -37,7 +37,7 @@ async function withChalk<T>(fn: () => T): Promise<T> {
 
 async function colourFrame(): Promise<string[]> {
   const frame = await withChalk(() => {
-    const r = render(<NoteList notes={notes} selectedIndex={1} width={60} height={26} />);
+    const r = render(<NoteList notes={notes} selectedIndex={1} width={60} height={26} focused />);
     const f = r.lastFrame() ?? '';
     r.unmount();
     return f;

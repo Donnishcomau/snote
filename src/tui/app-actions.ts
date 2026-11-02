@@ -8,22 +8,23 @@ import { selectEditor, isTerminalEditor, editorFinishHint } from '../core/editor
 import { newNoteFields } from '../core/new-note';
 import { publishLink } from '../core/note-keys';
 import { copyToClipboard } from '../core/clipboard';
+import { sanitizeForTerminal } from '../core/sanitize';
 import { checklistItems, insertChecklistItem } from '../core/checklist';
-import { mergeEditorReturn } from '../core/editor-conflict-merge';
-import { documentsDir, exportFileName, exportNote } from '../core/export-note';
+import { mergeEditorKeepingText, noteWriter } from '../core/held-lines';
+import { documentsDir, exportFileName } from '../core/export-name';
 // use the vendored action creator so the raw type string stays in one place (editor-suspend gate)
 import { editNote } from '@vendor/state/data/actions';
 
 import type { EntityId, Note } from '@vendor/types';
 
-// T375: true while an editor session owns the terminal; no second session starts.
+// true while an editor session owns the terminal; no second session starts.
 let editorOpen = false;
 
 interface EditSelectedNoteCtx {
   store: Store<State>;
   selectedEntry: { id: EntityId; note: Note } | null;
   setRawMode: (mode: boolean) => void;
-  runEditor?: (initial: string) => Promise<string | null>;
+  runEditor?: (initial: string, opts?: { onWrite?: (text: string) => void }) => Promise<string | null>;
   onEditorError?: (message: string) => void;
   suspend?: (run: () => Promise<void>) => Promise<unknown>;
 }
@@ -42,7 +43,7 @@ export function editSelectedNote(ctx: EditSelectedNoteCtx): void {
     // The editor is started exactly once; raw mode is restored off the editor's
     // own completion (never off the handover's settle), so a terminal that is
     // suspended and comes back is never mistaken for the editor failing.
-    let result: string | null = null;
+    let result: string | null = null; const w = noteWriter(store, selectedEntry.id, selectedEntry.note.content ?? ''); // #97: each :w
     let editorError: unknown;
     let editorFailed = false;
     let settle!: () => void;
@@ -52,7 +53,7 @@ export function editSelectedNote(ctx: EditSelectedNoteCtx): void {
     const run = async () => {
       try {
         announceEditorIfGui();
-        expectNote(selectedEntry.id); result = await editor(selectedEntry.note.content ?? '');
+        expectNote(selectedEntry.id); result = await editor(selectedEntry.note.content ?? '', { onWrite: w.write });
       } catch (err) {
         editorError = err;
         editorFailed = true;
@@ -70,17 +71,17 @@ export function editSelectedNote(ctx: EditSelectedNoteCtx): void {
         return;
       }
       if (result !== null) {
-        // T299: a remote change may have landed while the editor was open;
+        // a remote change may have landed while the editor was open;
         // merge against the store's current content instead of overwriting it.
         const current = store.getState().data.notes.get(selectedEntry.id)?.content ?? '';
-        const merged = mergeEditorReturn(selectedEntry.note.content ?? '', result, current);
-        store.dispatch({
+        const merged = mergeEditorKeepingText(w.base(), result, current);
+        if (result !== w.base()) store.dispatch({
           type: 'EDIT_NOTE',
           noteId: selectedEntry.id,
           changes: { content: merged.content },
         } as never);
         releaseDraftsAfterSave(); // #65: the draft goes once state.json holds the text
-        if (merged.conflict) {
+        if (merged.conflict || w.conflicted()) {
           onEditorError?.('A change from another device could not be merged automatically - both versions were kept.');
         }
       }
@@ -101,17 +102,17 @@ interface SaveInlineEditCtx {
 }
 
 /**
- * T315.3: Ctrl+S save path for the built-in inline editor — mirrors
+ *.3: Ctrl+S save path for the built-in inline editor — mirrors
  * `editSelectedNote`'s merge-on-save (above) but with no external process:
  * `local` is already in hand, so there's no suspend/runEditor/setRawMode.
  */
 export function saveInlineEdit(ctx: SaveInlineEditCtx): void {
   const { store, selectedEntry, base, local, onEditorError } = ctx;
   if (!selectedEntry) return;
-  // T299-style: a remote change may have landed while the editor was open;
+  //-style: a remote change may have landed while the editor was open;
   // merge against the store's current content instead of overwriting it.
   const current = store.getState().data.notes.get(selectedEntry.id)?.content ?? '';
-  const merged = mergeEditorReturn(base, local, current);
+  const merged = mergeEditorKeepingText(base, local, current);
   // editor-suspend.test.tsx's structural guard counts this file's literal
   // action-type occurrences; the vendored action creator (already imported
   // for insertCheckItem below) keeps that count unchanged.
@@ -243,7 +244,7 @@ interface InsertCheckItemCtx {
 }
 
 /**
- * T293: insert a checklist item after the item at the cursor (same `at`
+ * insert a checklist item after the item at the cursor (same `at`
  * note-focus.ts computes for `c`), else at the end — insertChecklistItem
  * decides placement itself.
  */
@@ -263,8 +264,7 @@ function announceEditorIfGui(): void {
   const cmd = selectEditor(process.env);
   if (isTerminalEditor(cmd) || !process.stdout.isTTY) return;
   const first = cmd.trim().split(/\s+/)[0] ?? '';
-  const name = basename(first);
-  const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+  const displayName = sanitizeForTerminal(basename(first)).replace(/^./, (c) => c.toUpperCase()); // #221: the name comes from the environment
   process.stdout.write(`Editing in ${displayName} — ${editorFinishHint(cmd)}\n`);
 }
 
@@ -278,11 +278,11 @@ interface ExportSelectedNoteCtx {
 }
 
 /**
- * T298: write the selected note to a .md file (the `w` prompt). The path
+ * write the selected note to a .md file (the `w` prompt). The path
  * shown in the prompt is only a suggestion: the file name is rebuilt from
  * the note (upstream's naming) and a free path is picked next to it — an
- * existing file is never overwritten. Success and failure both answer with
- * a notice line.
+ * existing file is never overwritten. Success and failure both answer with a notice
+ * line. snote-diet: export-note loads only here. proof: test/core/export-note.test.tsx
  */
 export function exportSelectedNote(ctx: ExportSelectedNoteCtx): void {
   const { selectedEntry, value, setNotice, setNoticeError } = ctx;
@@ -290,7 +290,7 @@ export function exportSelectedNote(ctx: ExportSelectedNoteCtx): void {
   const base = exportFileName(selectedEntry.note.content ?? '');
   const target = value.trim() !== '' ? value : join(documentsDir(), `${base}.md`);
   const dir = dirname(target);
-  exportNote(selectedEntry.note, dir)
+  import('../core/export-note').then((m) => m.exportNote(selectedEntry.note, dir))
     .then((path) => setNotice(`exported: ${path}`))
     .catch((err: unknown) =>
       setNoticeError(`export failed: ${err instanceof Error ? err.message : String(err)}`),

@@ -1,5 +1,5 @@
 /**
- * T338: `b` on a note not in the trash opens the send-to-blog question,
+ * `b` on a note not in the trash opens the send-to-blog question,
  * rendered by BottomArea's Confirm. `n` and Escape close it and nothing is
  * written to blog-sent.json. App.tsx keeps its 247 physical lines.
  */
@@ -88,7 +88,7 @@ async function lastSeen(r: ReturnType<typeof render>): Promise<string> {
   return stripAnsi(r.lastFrame());
 }
 
-describe('blog confirm (T338)', () => {
+describe('blog confirm', () => {
   it('1: WHEN `b` is pressed on a selected note whose content is `Hello` THEN the frame contains `Send this note to your blog as a draft?`', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'blog-confirm-'));
     const prev = process.env.XDG_DATA_HOME;

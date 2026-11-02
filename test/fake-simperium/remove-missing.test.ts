@@ -1,5 +1,5 @@
 /**
- * T302 Fake server: a remove for a note it no longer has must not be
+ * Fake server: a remove for a note it no longer has must not be
  * broadcast (two clients ping-pong forever).
  *
  * A remote remove makes simperium's Bucket.onChannelRemove call
@@ -129,7 +129,7 @@ async function closeRaw(f: {
   await new Promise((r) => setTimeout(r, 50));
 }
 
-describe('T302 remove for a missing id', () => {
+describe('remove for a missing id', () => {
   it('1: WHEN a connected client sends a `-` change for an id the bucket does not hold THEN that client receives a `c:` message containing "error":412 and a second connected client receives no message for that id within 500 ms', async () => {
     const f = await rawFixture();
     try {

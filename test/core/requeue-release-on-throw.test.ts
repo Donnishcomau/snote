@@ -1,6 +1,6 @@
 /**
- * T501 — notes held for the catch-up are released even when the hand-off
- * after the catch-up throws (F143, data-safety hardening from the T499
+ * notes held for the catch-up are released even when the hand-off
+ * after the catch-up throws (, data-safety hardening from the
  * review).
  *
  * `requeueUnsynced` (src/core/requeue.ts) holds every unsynced note with
@@ -49,7 +49,7 @@ function rig(): { store: Store<State, A.ActionType> } {
   return { store };
 }
 
-describe('T501 holds release even when the post-catch-up hand-off throws', () => {
+describe('holds release even when the post-catch-up hand-off throws', () => {
   it("1: WHEN requeueUnsynced runs with the rig whose ghost read after the catch-up rejects THEN it rejects with `ghost read failed` and afterwards `isHeld(store, 'n1')` is `false`", async () => {
     const { store } = rig();
     let caughtUp = false;

@@ -1,5 +1,5 @@
 /**
- * T351: the theme module defines every text style the TUI uses, as semantic
+ * the theme module defines every text style the TUI uses, as semantic
  * roles with literal final values. Named ANSI colours only.
  */
 import { readFileSync } from 'node:fs';
@@ -27,7 +27,7 @@ function isInkColorName(value: string): boolean {
   return INK_PLAIN_NAMES.some((name) => value === `${name}Bright`);
 }
 
-describe('T351 theme roles', () => {
+describe('theme roles', () => {
   it("1: WHEN `theme` is imported THEN `Object.keys(theme).sort()` equals `['accent', 'code', 'error', 'heading', 'headingFocused', 'link', 'muted', 'selection', 'success', 'warning']`", () => {
     expect(Object.keys(theme).sort()).toEqual([
       'accent',

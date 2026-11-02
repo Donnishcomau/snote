@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 const makefilePath = resolve(__dirname, '../../Makefile');
 const makefileContent = readFileSync(makefilePath, 'utf-8');
 
-describe('Makefile vitest timeout guard (T216)', () => {
+describe('Makefile vitest timeout guard', () => {
   it('1: WHEN Makefile is read THEN it contains VITEST_TIMEOUT ?= 600 and the check recipe contains timeout $(VITEST_TIMEOUT) npx vitest run --passWithNoTests', () => {
     expect(makefileContent).toContain('VITEST_TIMEOUT ?= 600');
     expect(makefileContent).toContain('timeout $(VITEST_TIMEOUT) npx vitest run --passWithNoTests');

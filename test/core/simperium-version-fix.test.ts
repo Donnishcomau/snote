@@ -1,5 +1,5 @@
 /**
- * T272 Stuck `1 pending`: a brand-new note's own change-confirmation
+ * Stuck `1 pending`: a brand-new note's own change-confirmation
  * never arrives.
  *
  * simperium@1.1.4 waits for the echo of a new object's own change under
@@ -132,7 +132,7 @@ function editNote(id: string, content: string) {
   };
 }
 
-describe('T272 installSimperiumVersionFix', () => {
+describe('installSimperiumVersionFix', () => {
   it('0: WHEN a fake client has a channel with a send that receives e:new1.undefined THEN the stub real send never sees that message, the version.new1.undefined listener fires once with {}, a c:{} send reaches the stub real send unchanged, and a client without buckets does not throw', async () => {
     const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
     const realSend = vi.fn();
@@ -177,7 +177,7 @@ describe('T272 installSimperiumVersionFix', () => {
   });
 });
 
-describe('T272 a brand-new note gets acknowledged against the fake server', () => {
+describe('a brand-new note gets acknowledged against the fake server', () => {
   it('1: WHEN CREATE_NOTE_WITH_ID for new1 with content Title\\nbody one is dispatched THEN within 8 s the server\'s new1 has content Title\\nbody one and pendingCount is 0', async () => {
     const f = await fixture();
     try {
@@ -225,7 +225,11 @@ describe('T272 a brand-new note gets acknowledged against the fake server', () =
       const content = 'created\nedited late';
       f.store.dispatch(createWithId('new3', 'created'));
 
-      await new Promise((r) => setTimeout(r, 2500));
+      await waitFor(
+        () => serverContent(f, 'new3') === 'created' && count(f) === 0,
+        2000,
+        'create confirmed'
+      );
 
       f.store.dispatch(editNote('new3', content));
 

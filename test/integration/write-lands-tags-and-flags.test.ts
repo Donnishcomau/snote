@@ -1,5 +1,5 @@
 /**
- * T278 Regression: tag and per-note-flag writes (pin, markdown) land on the server.
+ * Regression: tag and per-note-flag writes (pin, markdown) land on the server.
  *
  * Prove with the REAL client wiring (buildStore, disk FileGhostStore) that tag
  * edits and note flags actually reach the fake server's stored state.
@@ -159,7 +159,7 @@ const count = (f: Fixture): number => pendingCount(f.store.getState().simperium)
 const serverNote = (f: Fixture, id: string): Record<string, unknown> | undefined =>
   f.server.getObject(APP_ID, 'note', id)?.data;
 
-describe('T278 tag and per-note-flag writes land on the server', () => {
+describe('tag and per-note-flag writes land on the server', () => {
   it('1: WHEN ADD_NOTE_TAG for the pre-seeded existing1 (tags: []) with tagName work is dispatched THEN within 5 s the server existing1 has tags containing work and pendingCount is 0', async () => {
     const f = await fixture();
     try {

@@ -5,7 +5,7 @@ import * as path from 'node:path';
 const filePath = path.join(__dirname, '..', 'tui', 'root-auth.test.tsx');
 const content = fs.readFileSync(filePath, 'utf8');
 
-describe('T177 stable-root-auth structure checks', () => {
+describe('stable-root-auth structure checks', () => {
   it('1: WHEN the file is read THEN it contains const waitFor exactly 1 time and contains no throw new Error', () => {
     const waitForMatches = (content.match(/const waitFor/g) || []).length;
     expect(waitForMatches).toBe(1);

@@ -1,12 +1,10 @@
 // T73: the three login calls the root screen hands to the login screen.
 // No side effects when this module loads or when loginCalls() runs.
 
-import {
-  requestLoginCode,
-  completeLogin,
-  loginWithPassword,
-  type AuthOpts,
-} from '../core/auth';
+import type { AuthOpts } from '../core/auth';
+
+// diet2 (#30): the login requests load on the first call, so a signed-in start never parses them.
+const auth = (): Promise<typeof import('../core/auth')> => import('../core/auth');
 
 interface LoginCalls {
   requestCode: (email: string) => Promise<unknown>;
@@ -30,8 +28,8 @@ export function loginCalls(server: string | undefined, appId: string): LoginCall
     opts = { appId };
   }
   return {
-    requestCode: (email) => requestLoginCode(email, opts),
-    completeLogin: (email, code) => completeLogin(email, code, opts),
-    passwordLogin: (email, password) => loginWithPassword(email, password, opts),
+    requestCode: async (email) => (await auth()).requestLoginCode(email, opts),
+    completeLogin: async (email, code) => (await auth()).completeLogin(email, code, opts),
+    passwordLogin: async (email, password) => (await auth()).loginWithPassword(email, password, opts),
   };
 }

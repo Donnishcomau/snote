@@ -12,7 +12,7 @@ import { randomUUID } from 'node:crypto';
 const VALID_TOKENS = new Map<string, string>([
   ['test-token', 'test@example.com'],
   ['good', 'user@example.com'],
-  // T296: distinct tokens per account so dropClient(email) can match one
+  // distinct tokens per account so dropClient(email) can match one
   // connection (conn.email is derived from the token, not the client's claim).
   ['store1-token', 'store1@example.com'],
   ['store2-token', 'store2@example.com'],
@@ -30,7 +30,7 @@ type Bucket = {
   cv: number; // monotonically increasing change version counter
   cvString: string; // string representation for protocol
   log: BroadcastChange[]; // T66: log of applied changes for cv resume
-  // T319: id → full version history kept after `serverRemove` deletes the
+  // id → full version history kept after `serverRemove` deletes the
   // entry, so `e:<id>.<version>` can still answer old versions of removed
   // objects (the real service does, and that is how live notes came back).
   removed?: Map<string, Array<{ version: number; data: Record<string, unknown> }>>;
@@ -83,10 +83,21 @@ type BroadcastChange = {
 const jsonDiff = new JSONDiff();
 
 export class FakeSimperiumServer {
+  /**
+   * #10: what the server does with a change whose `sv` is behind the held version.
+   * 'reject' (default,): error 405, nothing applied. 'rebase' (the live service, measured
+   * 29 Sep: no error frame in 25 runs): transform the patch over the changes made since `sv`, apply
+   * it as the next version and broadcast the REBASED patch with `sv` = the previous version.
+   */
+  staleSvModel: 'reject' | 'rebase' = 'reject';
+  /** #10: how many stale-sv changes the 'rebase' model rebased (proof that a test hit the race). */
+  staleRebases = 0;
+  /** #10: when > 0, every server-to-client frame is sent this many ms late (one-way latency). */
+  sendDelayMs = 0;
   /** Delay (ms) before answering a `cv:` catch-up request; 0 = immediate (default). */
   catchUpDelayMs = 0;
   /**
-   * T313/T314 — opt-in: when true, a `cv:` catch-up request that has no
+   * opt-in: when true, a `cv:` catch-up request that has no
    * changes to report (since === bucket.cv, i.e. the client is already
    * current) is silently swallowed — no `c:[]` reply is sent at all.
    * Live trials on the real Simplenote service (5 real "edit offline,
@@ -105,29 +116,39 @@ export class FakeSimperiumServer {
    */
   dropEmptyCatchUpReply = false;
   /**
-   * T319: when > 0, every `e:` (entity/version) reply is sent this many
+   * when > 0, every `e:` (entity/version) reply is sent this many
    * ms after the request, so a catch-up version request can be answered
    * AFTER the REMOVE queued behind it has already been applied.
    */
   versionReplyDelayMs = 0;
   /**
-   * T319: records `<id>.<version>` for every `e:` reply sent WITH data
+   * records `<id>.<version>` for every `e:` reply sent WITH data
    * (never the `?` not-found answers), in the order they were sent.
    */
   versionRepliesSent: string[] = [];
   /**
-   * T320: when > 0, for the FIRST N connections the server never replies
+   * when > 0, for the FIRST N connections the server never replies
    * to init messages (neither the `N:init:` form nor the legacy `init:`
    * form) — the login just hangs — while heartbeats keep being answered,
    * exactly like the live stuck starts the auth watchdog recovers from.
    * Connections opened while this is 0 are never ignored, so arm it before
    * the client's first socket opens.
    */
-  /** T320: for the first N websocket CONNECTIONS, ignore every init
+  /** for the first N websocket CONNECTIONS, ignore every init
    * message (no auth reply at all) while heartbeats keep being answered.
    * Per-connection, not per-message: see `handleInit`. */
   ignoreInitConnections = 0;
-  /** T320: counts every new websocket connection opened against this server */
+  /**
+   * #97: when > 0, a connection that sends no `h:` heartbeat for this many ms is
+   * closed by the server, as the real service closes a client that went quiet
+   * (the client's own limit is 2 x heartbeatInterval seconds). Default 0 = never.
+   */
+  closeAfterMissedBeats = 0;
+  /** #97: the time (Date.now()) each `h:` heartbeat was received. */
+  beatTimes: number[] = [];
+  /** #97: how many connections were closed for missed heartbeats. */
+  missedBeatCloses = 0;
+  /** counts every new websocket connection opened against this server */
   connectionsOpened = 0;
   private httpServer: http.Server | null = null;
   private wsServer: WebSocketServer | null = null;
@@ -138,7 +159,7 @@ export class FakeSimperiumServer {
   private nextMark = 1; // for pagination
   /** Public log of every raw message received, in order */
   received: string[] = [];
-  /** T302: counts every `-` (remove) change received per id, existing or missing */
+  /** counts every `-` (remove) change received per id, existing or missing */
   removesReceived: Map<string, number> = new Map();
   /** Public record of every HTTP request (method, url, apiKey, body) */
   httpRequests: Array<{ method: string; url: string; apiKey: string | undefined; body: Record<string, unknown> | null }> = [];
@@ -151,6 +172,8 @@ export class FakeSimperiumServer {
   refuseAllHandshakes = false;
   /** #85: how many handshakes were refused. */
   handshakesRefused = 0;
+  /** #196: how many of the next WebSocket upgrades to leave unanswered (the TCP connection stays open and silent). */
+  silentUpgrades = 0;
   /** #85: TCP connections to this server that are still open. */
   openSockets: Set<Socket> = new Set();
   private refusedSockets: Set<Socket> = new Set();
@@ -178,6 +201,13 @@ export class FakeSimperiumServer {
         this.httpServer!.on('upgrade', (req: http.IncomingMessage, socket: Socket, head: Buffer) => {
           this.handshakeHeaders.push(req.headers);
           const ua = req.headers['user-agent'];
+          if (this.silentUpgrades > 0) {
+            this.silentUpgrades--;
+            this.refusedSockets.add(socket);
+            socket.resume();
+            socket.on('end', () => socket.end()); // a client that gives up is seen giving up
+            return;
+          }
           if (this.refuseAllHandshakes || (this.refuseHandshakesWithoutUserAgent && !ua)) {
             this.handshakesRefused++;
             this.refusedSockets.add(socket);
@@ -188,7 +218,13 @@ export class FakeSimperiumServer {
             socket.on('end', () => socket.end());
             return;
           }
-          this.wsServer!.handleUpgrade(req, socket, head, (ws) => this.wsServer!.emit('connection', ws, req));
+          // #179: an upgrade that arrives after stop() (wsServer already null) closes the socket instead of throwing.
+          const wss = this.wsServer;
+          if (!wss) {
+            socket.destroy();
+            return;
+          }
+          wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
         });
 
         this.wsServer.on('connection', (ws: WebSocket) => {
@@ -247,7 +283,7 @@ export class FakeSimperiumServer {
   }
 
   /**
-   * T301: delete an object from a bucket's index (the map a re-index page
+   * delete an object from a bucket's index (the map a re-index page
    * is built from) and bump the bucket's cv, WITHOUT pushing anything to
    * `log` and WITHOUT broadcasting. This simulates a removal whose
    * change-log entry has already rotated out of history — exactly the
@@ -278,7 +314,7 @@ export class FakeSimperiumServer {
   }
 
   /**
-   * T296: simulate a dropped connection for one account — close every
+   * simulate a dropped connection for one account — close every
    * open socket of connections authenticated as `email`. The client's
    * ReconnectionTimer reconnects on its own (~1 s later).
    */
@@ -401,16 +437,33 @@ export class FakeSimperiumServer {
     };
     conn.ws = ws; // Set ws after conn is created
     this.connections.add(conn);
-    this.connectionsOpened++; // T320
+    this.connectionsOpened++;
 
+    let lastBeat = Date.now();
+    const limit = this.closeAfterMissedBeats;
+    const watch =
+      limit > 0
+        ? setInterval(() => {
+            if (Date.now() - lastBeat > limit) {
+              this.missedBeatCloses++;
+              clearInterval(watch);
+              ws.close();
+            }
+          }, 100)
+        : null;
     ws.on('message', (data: Buffer) => {
       const message = data.toString();
+      if (message.startsWith('h:')) {
+        lastBeat = Date.now();
+        this.beatTimes.push(lastBeat);
+      }
       // Record every raw message received
       this.received.push(message);
       this.handleMessage(conn, ws, message);
     });
 
     ws.on('close', () => {
+      if (watch) clearInterval(watch);
       this.connections.delete(conn);
     });
 
@@ -478,7 +531,7 @@ export class FakeSimperiumServer {
         this.handleIndex(conn, ws, data, channel);
         break;
       case 'cv':
-        // T313/T314: a real server answers the catch-up request after a network round
+        // a real server answers the catch-up request after a network round
         // trip; `catchUpDelayMs` reproduces that so a client's resend can race it.
         if (this.catchUpDelayMs > 0) {
           setTimeout(() => this.handleCV(conn, ws, data, channel), this.catchUpDelayMs);
@@ -497,7 +550,7 @@ export class FakeSimperiumServer {
   }
 
   private handleInit(conn: Connection, ws: WebSocket, data: string, channel: number): void {
-    // T320: for the first `ignoreInitConnections` websocket connections
+    // for the first `ignoreInitConnections` websocket connections
     // (this one's index is `connectionsOpened`, already bumped when the
     // socket opened), swallow the init entirely — both the `N:init:` and
     // legacy `init:` forms route here — with no auth reply at all, while
@@ -651,7 +704,7 @@ export class FakeSimperiumServer {
     const versionStr = data.slice(dotIndex + 1);
     const version = parseInt(versionStr, 10);
 
-    // T281: spec-strict — a non-numeric version token (e.g. the
+    // spec-strict — a non-numeric version token (e.g. the
     // `e:<id>.undefined` a brand-new object's own echo triggers) is an
     // "invalid version" request; answer `\n?` immediately, before the
     // "fetch current version" fallback below.
@@ -677,7 +730,7 @@ export class FakeSimperiumServer {
     const entry = bucket.entries.get(id);
 
     // Resolve the reply body for this request (null = the `?` not-found
-    // answer). T319: an id no longer in `entries` is answered from the
+    // answer). an id no longer in `entries` is answered from the
     // per-bucket removed-objects history — the real service keeps
     // answering old versions of removed notes.
     const resolveEntity = (): { data: Record<string, unknown> } | null => {
@@ -694,7 +747,7 @@ export class FakeSimperiumServer {
           return { data: historyEntry.data };
         }
 
-        // T319: not in `entries` anymore — answer from the removed history.
+        // not in `entries` anymore — answer from the removed history.
         const removedEntry = bucket.removed?.get(id)?.find((h) => h.version === version);
         if (removedEntry) {
           return { data: removedEntry.data };
@@ -722,7 +775,7 @@ export class FakeSimperiumServer {
     };
 
     const body = resolveEntity();
-    // T319: a real service answers the version request after a network
+    // a real service answers the version request after a network
     // round trip; `versionReplyDelayMs` lets the reply land after the
     // REMOVE queued behind it on the client.
     if (this.versionReplyDelayMs > 0) {
@@ -776,10 +829,10 @@ export class FakeSimperiumServer {
 
     // Handle remove
     if (change.o === '-') {
-      // T302: count every remove received for this id, existing or missing
+      // count every remove received for this id, existing or missing
       this.removesReceived.set(change.id, (this.removesReceived.get(change.id) ?? 0) + 1);
 
-      // T302: the bucket no longer holds this id. Acknowledge the sender
+      // the bucket no longer holds this id. Acknowledge the sender
       // with 412 (the client library treats it as "change causes no
       // change, just acknowledge it") and do NOT broadcast — broadcasting
       // would make the other client echo the remove back and the two
@@ -859,8 +912,36 @@ export class FakeSimperiumServer {
       }
 
       // Check source version matches
+      if (change.sv !== undefined && change.sv !== entry.version && this.staleSvModel === 'rebase') {
+        const base = entry.history.find((h) => h.version === change.sv);
+        if (base) {
+          const remote = jsonDiff.object_diff(base.data, entry.data);
+          const rebased = jsonDiff.transform_object_diff(change.v ?? {}, remote, base.data);
+          entry.history.push({ version: entry.version, data: { ...entry.data } });
+          const prev = entry.version;
+          this.staleRebases++;
+          entry.version++;
+          entry.data = jsonDiff.apply_object_diff(entry.data, rebased);
+          bucket.cv++;
+          bucket.cvString = String(bucket.cv);
+          conn.seenCcid.add(change.ccid);
+          const rebasedBroadcast: BroadcastChange = {
+            id: change.id,
+            o: 'M',
+            v: rebased,
+            sv: prev,
+            ev: entry.version,
+            cv: bucket.cvString,
+            ccids: [change.ccid],
+            clientid: conn.email,
+          };
+          bucket.log.push(rebasedBroadcast);
+          this.broadcastChange(rebasedBroadcast, bucketName);
+          return;
+        }
+      }
       if (change.sv !== undefined && change.sv !== entry.version) {
-        // T296: the real service rejects a change whose source version is
+        // the real service rejects a change whose source version is
         // stale (error 405) and does NOT apply the patch or bump versions;
         // reproduce that so the reconnect race is observable in tests.
         const ack: Ack = {
@@ -873,7 +954,7 @@ export class FakeSimperiumServer {
         return;
       }
 
-      // T296: a full-object resend (a change carrying `d`, the object the
+      // a full-object resend (a change carrying `d`, the object the
       // client wants it to hold) replaces the entry instead of patching it.
       if (change.d !== undefined && change.d !== null) {
         entry.history.push({ version: entry.version, data: { ...entry.data } });
@@ -951,6 +1032,12 @@ export class FakeSimperiumServer {
   }
 
   private send(ws: WebSocket, message: string): void {
+    if (this.sendDelayMs > 0) {
+      setTimeout(() => {
+        if (ws.readyState === ws.OPEN) ws.send(message);
+      }, this.sendDelayMs);
+      return;
+    }
     if (ws.readyState === ws.OPEN) {
       ws.send(message);
     }
@@ -1055,7 +1142,7 @@ export class FakeSimperiumServer {
   }
 
   /**
-   * T319: remove an object "from the server" (another device), the
+   * remove an object "from the server" (another device), the
    * removal twin of `serverChange`. The entry's full version history
    * (every past version plus the current one) is kept in the bucket's
    * removed-objects map so `e:<id>.<version>` keeps answering afterwards;

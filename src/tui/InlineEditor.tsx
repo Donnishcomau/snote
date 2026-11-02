@@ -9,7 +9,7 @@ import { caretMove } from './caretMoves';
 import { Divider } from './Divider';
 import { previewColWidth } from './Preview';
 import { remapEdit, standInText } from './standin';
-import { useReadGate } from './read-gate';
+import { useInlineAutosave } from './inline-autosave';
 
 interface InlineEditorProps {
   note: Note | null;
@@ -18,6 +18,7 @@ interface InlineEditorProps {
   // the note's content when the editor opened (useInlineEditorState's `base`)
   base: string;
   onClose: () => void;
+  // #387: store this text in the note; the editor stays open
   onSave: (value: string) => void;
 }
 
@@ -43,7 +44,7 @@ function offsetAt(text: string, [line, col]: [number, number]): number {
 }
 
 /**
- * F161: one TextArea edit, described relative to the caret it was made at:
+ * one TextArea edit, described relative to the caret it was made at:
  * `before`/`after` units removed on each side of the caret, `text` put in
  * their place (the caret ends after `text`). The TextArea builds every edit
  * from the value and caret of its last render, so a key that arrives before
@@ -73,7 +74,7 @@ function caretEdit(
 }
 
 /**
- * S6-01: a `useInput` listener with no output. Ink calls listeners in the
+ * a `useInput` listener with no output. Ink calls listeners in the
  * order they were added, and siblings add theirs in tree order (again in
  * tree order when `active` flips, since the TextArea's `focus` flips in the
  * same render). One placed before the TextArea sees each key first; one
@@ -84,25 +85,19 @@ function KeyHook({ active, onKey }: { active: boolean; onKey: (input: string, ke
   return null;
 }
 
-// T315.6 (director addition A): the long form names the Esc-keeps-editing
-// behaviour explicitly; it only renders when the pane is wide enough,
-// otherwise the short form is kept (still honouring Escape either way).
-const DISCARD_PROMPT_LONG = 'discard changes? (y/n, Esc keeps editing)';
-const DISCARD_PROMPT_SHORT = 'discard changes? (y/n)';
-
-// T315.6 (director addition B): static footer hint, always shown while the
-// editor is open, so Ctrl+S-to-save is obvious without opening Help.
-const FOOTER_HINT = 'Ctrl+S save · Esc cancel · Enter new line';
+//.6 (director addition B): static footer hint, always shown while the
+// editor is open. #387: the text saves itself; Esc closes and keeps it.
+const FOOTER_HINT = 'Autosaves · Esc close · Ctrl+S save now';
 
 /**
- * T315.2/T315.3/T315.4: mounts `react-ink-textarea` in the Preview pane's
+ *.2/.3/.4: mounts `react-ink-textarea` in the Preview pane's
  * slot. Typing goes through the controlled `value`/`cursorPosition` pair
  * (TextArea's own documented controlled-input shape); Enter is wired to
  * `onSubmit` → the ref's own `insert('\n')`, since the library's default
  * treats Enter as submit, not newline. Ctrl+S (`key.ctrl && input === 's'`)
  * saves via `onSave`.
  *
- * The `discard changes?` confirm (T315.4) is modelled on blog-send-ask.ts's
+ * The `discard changes?` confirm (.4) is modelled on blog-send-ask.ts's
  * documented fix for Ink's useInput passive-effect registration gap: rather
  * than mounting a fresh child "Confirm" component when Escape fires (which
  * would have its own useInput registered one render late, dropping a fast
@@ -115,33 +110,32 @@ const FOOTER_HINT = 'Ctrl+S save · Esc cancel · Enter new line';
  * The prompt line sits above the text so a long note cannot push it out of
  * the pane.
  */
+// #387: the discard prompt above is gone: the text is stored as it is typed
+// (src/tui/inline-autosave.ts), Esc and Ctrl+S store the rest and close.
 export function InlineEditor({ width, height, base, onClose, onSave }: InlineEditorProps): React.JSX.Element {
-  // T315.5: match Preview.tsx's own width scale-down (previewColWidth) so
+  //.5: match Preview.tsx's own width scale-down (previewColWidth) so
   // the narrow-terminal "reading" layout (which pre-inflates the width prop
   // for Preview's 0.6 factor, src/core/layout.ts) wraps the editor's text
   // at the real terminal width instead of the inflated one. viewportLines
   // caps react-ink-textarea's rendered rows so a 10,000-line note renders
-  // in one frame instead of laying out every row (the discard prompt takes
-  // one row above the text, so the budget shrinks by 1 while it's shown).
+  // in one frame instead of laying out every row.
   const colWidth = previewColWidth(width);
-  // T461: the same rows as the Preview it replaces (height - 2) and its divider
+  // the same rows as the Preview it replaces (height - 2) and its divider
   const rows = Math.max(1, height - 2);
-  const discardPrompt = colWidth >= DISCARD_PROMPT_LONG.length ? DISCARD_PROMPT_LONG : DISCARD_PROMPT_SHORT;
   const footerRows = Math.max(1, Math.ceil(FOOTER_HINT.length / Math.max(1, colWidth)));
   const [cursorPosition, setCursorPosition] = useState<[number, number]>(() => endPosition(base));
-  const [confirmDiscard, setConfirmDiscard] = useState(false);
-  useReadGate({ confirm: confirmDiscard }); // T538R: only a one-key read answers (F224)
   const ref = useRef<TextAreaHandle>(null);
 
-  // T412: the TextArea only ever sees stand-in text (control/bidi/zero-width
+  // the TextArea only ever sees stand-in text (control/bidi/zero-width
   // characters drawn as visible pictures, one unit for one, so [line, col]
   // offsets match). `real` stays the note's bytes; `value` is what gets
   // drawn; `shownRef` is the exact string the TextArea was last given, so
   // an edit's changed middle can be remapped back onto the real text.
   const realRef = useRef(base);
+  const autosave = useInlineAutosave(realRef, onSave);
   const shownRef = useRef(standInText(base));
   const [value, setValueState] = useState(shownRef.current);
-  // F161: the caret offset into shownRef.current after the latest key; the
+  // the caret offset into shownRef.current after the latest key; the
   // last position the TextArea reported (it drops a report equal to the
   // previous one); and how to read its next report: 'skip' when it is the
   // caret of an edit already placed here, 'absolute' when it is the caret
@@ -149,7 +143,7 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
   const caretRef = useRef(shownRef.current.length);
   const reportedRef = useRef<string | null>(null);
   const reportModeRef = useRef<'skip' | 'absolute' | null>(null);
-  // S6-01: set while the TextArea handles a caret-move key that was already
+  // set while the TextArea handles a caret-move key that was already
   // applied here ('fresh': its caret report is exact and is taken; 'stale':
   // it was worked out on an old render and is ignored); and the TextArea's
   // wrap width, so Up/Down move by the same rows it draws
@@ -161,6 +155,7 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
 
   const show = (nextReal: string, caret: number): void => {
     realRef.current = nextReal;
+    autosave.changed();
     shownRef.current = standInText(nextReal);
     caretRef.current = Math.max(0, Math.min(caret, shownRef.current.length));
     setValueState(shownRef.current);
@@ -172,19 +167,20 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
     // stand-in text (the pictures for CR/C1 survive as single units), so the
     // shown text is exactly the real text's stand-in when nothing changed
     if (next === value) return;
-    // S6-01: Down on the last row adds a line; that key was applied here
+    // Down on the last row adds a line; that key was applied here
     if (moveRef.current) return;
     const edit = caretEdit(value, renderedCaret, next);
     if (!edit) {
       // not a caret edit (undo/redo): take the TextArea's text and caret
       const fresh = !stale();
       realRef.current = remapEdit(realRef.current, shownRef.current, next, next.length);
+      autosave.changed();
       shownRef.current = standInText(realRef.current);
       setValueState(shownRef.current);
       reportModeRef.current = fresh ? 'absolute' : 'skip';
       return;
     }
-    // F161: the TextArea built `next` on the value of its last render; when
+    // the TextArea built `next` on the value of its last render; when
     // an earlier key of the same burst already changed the text, replacing
     // the text with `next` would drop that key. Replay this key's edit at
     // the latest caret instead (identical to `next` when nothing is stale).
@@ -218,13 +214,13 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
       setCursorPosition(position);
       return;
     }
-    // F161: a caret move made on an old render: apply it as a move
+    // a caret move made on an old render: apply it as a move
     const moved = caretRef.current + offsetAt(value, position) - renderedCaret;
     caretRef.current = Math.max(0, Math.min(moved, shownRef.current.length));
     setCursorPosition(positionAt(shownRef.current, caretRef.current));
   };
 
-  // S6-01: runs before the TextArea for every key. A caret move is applied
+  // runs before the TextArea for every key. A caret move is applied
   // here from the latest caret, so each key of a burst moves once, in
   // order; the TextArea would move every key of a burst from the caret of
   // its last render and drops a report equal to its previous one.
@@ -248,23 +244,10 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
   };
 
   useInput((input, key) => {
-    if (confirmDiscard) {
-      if (input === 'y' || input === 'Y') {
-        setConfirmDiscard(false);
-        onClose();
-      } else if (input === 'n' || input === 'N' || key.escape) {
-        // T315.6 (director addition A): a second Escape also keeps editing.
-        setConfirmDiscard(false);
-      }
-      return;
-    }
-    if (key.ctrl && input === 's') {
-      onSave(realRef.current);
-      return;
-    }
-    if (key.escape) {
-      if (realRef.current !== base) setConfirmDiscard(true);
-      else onClose();
+    // #387: Ctrl+S and Esc both store any text not stored yet, then close
+    if ((key.ctrl && input === 's') || key.escape) {
+      autosave.close();
+      onClose();
     }
   });
 
@@ -272,12 +255,11 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
     <Box flexDirection="row">
       <Divider height={rows} />
       <Box flexDirection="column" width={colWidth} height={rows}>
-      {confirmDiscard ? <Text>{discardPrompt}</Text> : null}
-      <KeyHook active={!confirmDiscard} onKey={beforeTextArea} />
+      <KeyHook active onKey={beforeTextArea} />
       <TextArea
         ref={ref}
-        focus={!confirmDiscard}
-        viewportLines={Math.max(1, rows - (confirmDiscard ? 1 : 0) - footerRows)}
+        focus
+        viewportLines={Math.max(1, rows - footerRows)}
         onSubmit={() => ref.current?.insert('\n')}
         value={value}
         cursorPosition={cursorPosition}
@@ -287,7 +269,7 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
           widthRef.current = w;
         }}
       />
-      <KeyHook active={!confirmDiscard} onKey={afterTextArea} />
+      <KeyHook active onKey={afterTextArea} />
       <Text>{FOOTER_HINT}</Text>
       </Box>
     </Box>

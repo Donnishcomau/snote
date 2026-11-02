@@ -1,5 +1,5 @@
 /**
- * T500 (F142): test/tui/root-auth.test.tsx now waits for what it asserts.
+ * test/tui/root-auth.test.tsx now waits for what it asserts.
  * Every fixed sleep between keys became a frame wait (the sleep strings are
  * assembled here via join so this file stays lint-clean), so the file
  * passes on a loaded machine. This test reads the file as text.

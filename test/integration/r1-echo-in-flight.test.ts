@@ -1,5 +1,5 @@
 /**
- * R1 sync-4 (#28, F194; REQUIRED-LINES section A row 8 and section D).
+ * R1 sync-4 (#28,; REQUIRED-LINES section A row 8 and section D).
  * After a restart the server's echo of a change sent before the quit only
  * confirms that change, also when the user acted on the note at once: a local
  * modificationDate later than the echo's counts as held, an in-flight change
@@ -62,21 +62,21 @@ function setup(inFlight: { ccid: string; sv: number } | undefined, localCopy: Co
 
 describe('R1 sync-4: an action just after a restart never doubles the pre-quit change', () => {
   it('1: WHEN the edit `MK` was sent before a quit and not acknowledged, snote restarts with every reply 500 ms late and the user edits n1 back to `line1\\nline2` at once THEN the server and the store hold content `line1\\nline2`, verdict `KEPT`', async () => {
-    const o = await runScenario('D1-5-undo-edit');
+    const o = await runScenario('late-catch-up-undo-edit');
     expect(o.server?.content).toBe(BASE);
     expect(o.store?.content).toBe(BASE);
     expect(o.verdict).toBe('KEPT');
   }, 45000);
 
   it('2: WHEN the edit `MK` was sent before a quit and not acknowledged, snote restarts with every reply 500 ms late and the user adds a line `X` at once THEN the server and the store hold content `line1\\nline2\\nMK\\nX`, verdict `KEPT`', async () => {
-    const o = await runScenario('D1-3-edit');
+    const o = await runScenario('late-catch-up-edit');
     expect(o.server?.content).toBe(MK + '\nX');
     expect(o.store?.content).toBe(MK + '\nX');
     expect(o.verdict).toBe('KEPT');
   }, 45000);
 
   it('3: WHEN the edit `MK` was sent before a quit and not acknowledged, n1 is pinned in a session with no server, and snote restarts online THEN the server holds content `line1\\nline2\\nMK` with system tag `pinned`, verdict `KEPT`', async () => {
-    const o = await runScenario('T531-P4-offline-pin');
+    const o = await runScenario('P4-offline-pin');
     expect(o.server?.content).toBe(MK);
     expect(o.server?.systemTags).toContain('pinned');
     expect(o.verdict).toBe('KEPT');

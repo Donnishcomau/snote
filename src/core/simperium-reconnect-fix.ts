@@ -1,5 +1,5 @@
 /**
- * T296 — a queued local edit can be lost for good on reconnect.
+ * a queued local edit can be lost for good on reconnect.
  *
  * On reconnect with a known change version, `Channel.prototype.onAuth`
  * (node_modules/simperium/lib/simperium/channel.js:609-637) calls
@@ -55,10 +55,14 @@ interface LocalQueueLike {
   // OMARCHY: boundary cast — sent/processQueue are untyped on LocalQueue.
   sent?: Record<string, unknown>;
   processQueue(id: string): unknown;
+  // #337c: the vendored LocalQueue is an EventEmitter; 'send' carries the change object.
+  on?(event: 'send', listener: (change: object) => void): unknown;
 }
 
 interface ChannelLike {
   localQueue?: LocalQueueLike;
+  // #337c: the channel's incoming-message emitter (channel.js:390); 'auth' fires per connection.
+  message?: { on(event: 'auth', listener: (data: string) => void): unknown };
   networkQueue?: NetworkQueueLike;
 }
 
@@ -89,7 +93,7 @@ const openNetworkQueues = new WeakMap<object, Set<string>>();
  * vacuous; only a deferred re-check can observe the catch-up reply.) The
  * original is invoked EXACTLY once per wrapper call, optionally preceded by
  * `beforeCall`, which receives the value `capture` returned — `capture`
- * runs SYNCHRONOUSLY at wrapper-invocation time (T321: snapshot the state
+ * runs SYNCHRONOUSLY at wrapper-invocation time (snapshot the state
  * of the world before the deferred work, e.g. which `sent` entries already
  * existed when the resend was requested). Never wraps twice.
  */
@@ -98,6 +102,8 @@ function guardUntilIdle<T extends object, C = undefined>(
   key: keyof T,
   countOpen: () => number,
   beforeCall?: (captured: C | undefined) => void,
+  // #337: runs the original; given the capture so it can limit what the original sees.
+  invoke?: (captured: C | undefined, callOriginal: () => unknown) => void,
   capture?: () => C
 ): void {
   const original = obj[key] as unknown as Flagged<(...args: unknown[]) => unknown> | undefined;
@@ -106,7 +112,7 @@ function guardUntilIdle<T extends object, C = undefined>(
   }
   const callOriginal = original.bind(obj) as (...args: unknown[]) => unknown;
   const wrapped = function (this: T, ...args: unknown[]): unknown {
-    // T321: snapshot synchronously at invocation, before anything this
+    // snapshot synchronously at invocation, before anything this
     // call defers can happen.
     const captured = capture?.();
     // Always defer the first check: the catch-up reply cannot have been
@@ -115,7 +121,8 @@ function guardUntilIdle<T extends object, C = undefined>(
     const retry = () => {
       if (countOpen() === 0) {
         beforeCall?.(captured);
-        callOriginal(...args);
+        if (invoke) invoke(captured, () => callOriginal(...args));
+        else callOriginal(...args);
       } else {
         setTimeout(retry, 10);
       }
@@ -181,7 +188,7 @@ function installOnChannel(channel: ChannelLike | undefined): void {
   // that ALREADY EXISTED when `resendSentChanges` was invoked (per the
   // snapshot the wrapper captured synchronously at that moment) AND whose
   // network queue has since drained — the genuinely stale ones from before
-  // the reconnect. T321: entries created AFTER that invocation must be kept
+  // the reconnect. entries created AFTER that invocation must be kept
   // even when their id drained. During the catch-up the OT rebase queues a
   // correctly-rebased merged change and `processQueue` sends it, marking it
   // `sent[id]` while it waits for its acknowledgement; its id drains in the
@@ -207,12 +214,63 @@ function installOnChannel(channel: ChannelLike | undefined): void {
     drainedSinceLastPurge.clear();
   };
 
+  // #337c — which connection a `sent` change last went out on. `authGen` counts the
+  // successful 'auth' replies this channel has seen (one per connection: a drop and
+  // reconnect authenticates again); each 'send' of a change records the count then.
+  // A change stamped with the CURRENT count was emitted after this connection
+  // authenticated, so the server has received it (it will acknowledge it, or answer
+  // the duplicate 409). A change stamped with an older count (or left unstamped, or
+  // emitted while no auth had been seen: authGen 0) went out on a connection that
+  // has since ended, or before this one was usable, and the resend must keep
+  // re-sending it: that is the resend's whole purpose. Fails safe: anything this
+  // is unable to prove was sent on the current connection is re-sent, as before. proof: test/integration/held-send-current-connection.test.ts
+  let authGen = 0;
+  const sentOnGen = new WeakMap<object, number>();
+  channel?.message?.on('auth', (data: string) => {
+    try {
+      JSON.parse(data); // a JSON reply is the failure form (onAuth, channel.js:609-637)
+    } catch {
+      authGen += 1;
+    }
+  });
+  localQueue.on?.('send', (change: object) => {
+    sentOnGen.set(change, authGen);
+  });
+  const sentOnCurrentConnection = (change: unknown): boolean =>
+    authGen > 0 && typeof change === 'object' && change !== null && sentOnGen.get(change) === authGen;
+
   guardUntilIdle(localQueue, 'start', countOpen);
   guardUntilIdle<LocalQueueLike, Map<string, unknown>>(
     localQueue,
     'resendSentChanges',
     countOpen,
     purgeStaleSent,
+    // #337 — the vendored resend re-emits EVERY `sent` entry. A change that went
+    // out after this resend was requested (a held change the hand-off dispatched
+    // once the catch-up was applied, which `processQueue` already sent) is not
+    // an in-flight leftover; re-emitting it sent the same ccid twice and the
+    // server answered the copy 409. So the original sees only the entries that
+    // existed at invocation and are still the same change; the rest are put back.
+    (snapshot, callOriginal) => {
+      const sent = localQueue.sent;
+      if (!sent || !snapshot) {
+        callOriginal();
+        return;
+      }
+      const hidden: Array<[string, unknown]> = [];
+      for (const id of Object.keys(sent)) {
+        // #337c: also hide a change already sent on the current connection (R1)
+        if (sent[id] !== snapshot.get(id) || sentOnCurrentConnection(sent[id])) {
+          hidden.push([id, sent[id]]);
+          delete sent[id];
+        }
+      }
+      try {
+        callOriginal();
+      } finally {
+        for (const [id, change] of hidden) sent[id] = change;
+      }
+    },
     () =>
       // 'ready' is emitted synchronously in `onChanges` (channel.js:702-714)
       // before any queued change has run, so this synchronous snapshot holds
@@ -236,7 +294,7 @@ export function installSimperiumReconnectFix(client: unknown): void {
 }
 
 /**
- * T313/T314 — resolves once the named bucket's first catch-up after connect
+ * resolves once the named bucket's first catch-up after connect
  * has been applied: the channel has emitted `'ready'` (after the change-version
  * reply, channel.js:714, or a full re-index, channel.js:276) AND every per-object
  * network queue that reply opened has drained, so the ghost store holds the
@@ -244,7 +302,7 @@ export function installSimperiumReconnectFix(client: unknown): void {
  * to have wrapped the channel (it keeps the open-queue count). Resolves at once
  * when the client has no such bucket.
  *
- * FALLBACK (T313/T314, live finding 2026-09-25): a live-service trial (4/5
+ * FALLBACK (, live finding 2026-09-25): a live-service trial (4/5
  * kept both edits, 1/5 lost the offline edit) proved 'ready' can simply
  * never fire. `Channel.prototype.onChanges` (channel.js:702-714) and
  * `indexingComplete` (channel.js:273-276) are the ONLY two places that emit

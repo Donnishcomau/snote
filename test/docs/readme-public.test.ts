@@ -11,7 +11,7 @@ function extractSection(readme: string, heading: string): string {
   return readme.slice(start, end);
 }
 
-describe('README — public-facing sections (T280)', () => {
+describe('README — public-facing sections', () => {
   it('1: ## First run and login exists and contains Tab and password', () => {
     const section = extractSection(readme, 'First run and login');
     expect(section).toContain('Tab');

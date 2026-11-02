@@ -1,3 +1,4 @@
+// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-09-23).
 import { filterTags } from '../tag-suggestions';
 import { getTerms } from '../utils/filter-notes';
 import { tagHashOf as t } from '../utils/tag-hash';
@@ -8,7 +9,7 @@ import type * as S from '../state';
 import type * as T from '../types';
 import { showAllNotes } from '../state/ui/actions';
 
-const emptyList = [] as unknown[];
+const emptyList = Object.freeze([]) as unknown[]; // OMARCHY: #222 frozen: a push on the shared empty tag list throws instead of growing it
 
 // @TODO: Refactor search state into Redux for access
 //        and to prevent needing to recalculate separately

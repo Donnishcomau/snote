@@ -1,5 +1,5 @@
 /**
- * Tests for src/core/auth.ts — error text bound to one line of 200 chars (T423).
+ * Tests for src/core/auth.ts — error text bound to one line of 200 chars.
  *
  * A local node:http server on 127.0.0.1 port 0 answers with any status and
  * body so we can pin how the thrown message looks for each auth function.
@@ -14,7 +14,7 @@ import {
   loginWithPassword,
 } from '../../src/core/auth';
 
-describe('auth error messages are bounded (F100)', () => {
+describe('auth error messages are bounded', () => {
   let server: Server;
   let base: string;
   let status = 500;

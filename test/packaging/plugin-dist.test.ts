@@ -1,5 +1,5 @@
 /**
- * T341: `npm run build:plugin` produces the pre-built plugin distribution:
+ * `npm run build:plugin` produces the pre-built plugin distribution:
  * readable .js chunks small enough for the marketplace scanner, a cli.js
  * launcher that runs, no package-manager strings, byte-identical rebuilds,
  * and a VERSION file.
@@ -35,7 +35,7 @@ function listFiles(dir: string, base = dir): { abs: string; rel: string }[] {
   return out;
 }
 
-describe('T341 buildPluginDist output', () => {
+describe('buildPluginDist output', () => {
   let dirA: string;
   let dirB: string;
   const dirs: string[] = [];

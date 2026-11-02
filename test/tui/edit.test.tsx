@@ -51,7 +51,7 @@ describe('edit_note / new_note', () => {
 
     // Editor should have been called with original content
     expect(mockEditor).toHaveBeenCalledTimes(1);
-    expect(mockEditor).toHaveBeenCalledWith('original content');
+    expect(mockEditor).toHaveBeenCalledWith('original content', { onWrite: expect.any(Function) });
 
     // Editor returns edited content
     // The store should have dispatched EDIT_NOTE

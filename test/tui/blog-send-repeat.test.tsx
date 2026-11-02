@@ -100,12 +100,136 @@ describe('blog send repeat', () => {
         r.stdin.write('b');
         await pollUntil(r.lastFrame, (f) => f.includes(QUESTION));
         r.stdin.write('y');
-        await pollUntil(r.lastFrame, (f) => f.includes('draft sent') || !f.includes(QUESTION));
+        await pollUntil(r.lastFrame, (f) => f.includes('draft sent'));
         await delay(100);
 
         status = 401;
         r.stdin.write('b');
         await pollUntil(r.lastFrame, (f) => f.includes('Already sent'));
+        r.stdin.write('y');
+        const frame = await pollUntil(r.lastFrame, (f) => f.includes('unauthorized'));
+        expect(frame).toContain('unauthorized');
+        r.unmount();
+      } finally {
+        server.close();
+      }
+    });
+  }, 10000);
+
+  // #235: the send record is written only after the POST succeeds, so a
+  // question opened while a send is in flight said "send" with no record
+  // behind it; by the time `y` answers it the record exists, and a send
+  // with force=false comes back `{ already: true }` having asked the server
+  // nothing. The force decision must be re-made at `y`.
+  it('1: WHEN a blog send is confirmed, `b` opens a second send question before the first send finishes, and the first send then finishes THEN pressing `y` on the second question sends the draft', async () => {
+    await withTempDataDir(async (dir) => {
+      let requests = 0;
+      const server = createServer((req, res) => {
+        const chunks: Buffer[] = [];
+        req.on('data', (c: Buffer) => chunks.push(c));
+        req.on('end', () => {
+          requests += 1;
+          // answer after 300 ms, so the send is still in flight between keys
+          setTimeout(() => {
+            res.writeHead(201, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ id: 'p1', url: 'https://blog.example/write/p1' }));
+          }, 300);
+        });
+      });
+      await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+      const port = (server.address() as AddressInfo).port;
+      const url = `http://127.0.0.1:${port}`;
+      writeFileSync(join(dir, 'blog.json'), JSON.stringify({ origin: url, token: 'tok' }));
+      try {
+        const store = makeStore({ stubClient: {} });
+        store.dispatch({
+          type: 'IMPORT_NOTE_WITH_ID',
+          noteId: 'k1' as never,
+          note: {
+            content: 'Hello',
+            tags: [],
+            systemTags: [],
+            deleted: false,
+            creationDate: 1000,
+            modificationDate: 1000,
+          } as never,
+        });
+        const r = render(<App store={store} width={80} height={24} />);
+        await pollUntil(r.lastFrame, (f) => f.includes('All notes'));
+        r.stdin.write('\t');
+        await delay(50);
+        r.stdin.write('b');
+        await pollUntil(r.lastFrame, (f) => f.includes(QUESTION));
+        // first send confirmed; the server answers after 300 ms
+        r.stdin.write('y');
+        await pollUntil(r.lastFrame, (f) => !f.includes(QUESTION));
+        // the second send question opens while the first send is still in flight
+        r.stdin.write('b');
+        await pollUntil(r.lastFrame, (f) => f.includes(QUESTION));
+        // the first send finishes while the second question is open
+        await pollUntil(r.lastFrame, (f) => f.includes('draft sent'));
+        r.stdin.write('y');
+        const frame = await pollUntil(
+          r.lastFrame,
+          (f) => requests >= 2 && f.includes('draft sent'),
+        );
+        expect(requests).toBe(2);
+        expect(frame).toContain('draft sent');
+        r.unmount();
+      } finally {
+        server.close();
+      }
+    });
+  }, 10000);
+
+  it('2: WHEN the fake blog server answers after 300 ms THEN the second `y` still shows `unauthorized` in the frame, with the wait inside the poll', async () => {
+    await withTempDataDir(async (dir) => {
+      let status = 201;
+      const server = createServer((req, res) => {
+        const chunks: Buffer[] = [];
+        req.on('data', (c: Buffer) => chunks.push(c));
+        req.on('end', () => {
+          const code = status;
+          status = 401; // the first answer succeeded; every later one is 401
+          // the wait lives here, inside the poll's reach, never in a sleep
+          setTimeout(() => {
+            res.writeHead(code, { 'Content-Type': 'application/json' });
+            res.end(code === 201 ? JSON.stringify({ id: 'p1', url: 'https://blog.example/write/p1' }) : '');
+          }, 300);
+        });
+      });
+      await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+      const port = (server.address() as AddressInfo).port;
+      const url = `http://127.0.0.1:${port}`;
+      writeFileSync(join(dir, 'blog.json'), JSON.stringify({ origin: url, token: 'tok' }));
+      try {
+        const store = makeStore({ stubClient: {} });
+        store.dispatch({
+          type: 'IMPORT_NOTE_WITH_ID',
+          noteId: 'k1' as never,
+          note: {
+            content: 'Hello',
+            tags: [],
+            systemTags: [],
+            deleted: false,
+            creationDate: 1000,
+            modificationDate: 1000,
+          } as never,
+        });
+        const r = render(<App store={store} width={80} height={24} />);
+        await pollUntil(r.lastFrame, (f) => f.includes('All notes'));
+        r.stdin.write('\t');
+        await delay(50);
+        r.stdin.write('b');
+        await pollUntil(r.lastFrame, (f) => f.includes(QUESTION));
+        // first send confirmed; the server answers after 300 ms
+        r.stdin.write('y');
+        await pollUntil(r.lastFrame, (f) => !f.includes(QUESTION));
+        // the second send question opens while the first send is still in flight
+        r.stdin.write('b');
+        await pollUntil(r.lastFrame, (f) => f.includes(QUESTION));
+        // the first send finishes while the second question is open
+        await pollUntil(r.lastFrame, (f) => f.includes('draft sent'));
         r.stdin.write('y');
         const frame = await pollUntil(r.lastFrame, (f) => f.includes('unauthorized'));
         expect(frame).toContain('unauthorized');

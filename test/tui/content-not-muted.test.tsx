@@ -1,4 +1,4 @@
-// T275: content text must not render in the theme's `muted` slot (bright0 /
+// content text must not render in the theme's `muted` slot (bright0 /
 // ANSI 90), which is reserved for chrome. Content uses the default text colour.
 import { createRequire } from 'module';
 import { pathToFileURL } from 'url';
@@ -15,7 +15,7 @@ import { makeNote } from './fixtures';
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Portable way to force ink's bundled chalk to emit ANSI (the T244 recipe).
+ * Portable way to force ink's bundled chalk to emit ANSI (the recipe).
  */
 async function forceInkChalk(): Promise<{ restore: () => void }> {
   const inkResolved = createRequire(import.meta.url).resolve('ink');
@@ -31,7 +31,7 @@ async function forceInkChalk(): Promise<{ restore: () => void }> {
   };
 }
 
-describe('T275 content not muted', () => {
+describe('content not muted', () => {
   // A content string is "muted" when the ANSI escape immediately before it
   // is bright-black (the theme's muted slot, \u001b[90m). The divider glyph │
   // legitimately renders muted, so strip the divider run ("│" plus whatever

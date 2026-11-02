@@ -9,9 +9,9 @@ import { selectEditor } from '../core/editor-select';
 import { BottomArea, useItemAsk, useExportAsk } from './BottomArea'; import { useBlogSendAsk } from './blog-send-ask';
 import { MainPanes } from './MainPanes';
 import { shouldAutoOpenTags } from '../core/layout';
-import { noteKeyAction, emptyTrashActions } from '../core/note-keys';
+import { emptyTrashActions } from '../core/note-keys';
 import { checklistItems } from '../core/checklist';
-import { useAppState } from './useAppState'; import { useNotice, noticeColor } from './notice'; import { BannerRow, dismissOnEscape } from './banner';
+import { useAppState, noteKeyOrNotice } from './useAppState'; import { useNotice, noticeColor } from './notice'; import { BannerRow, dismissOnEscape } from './banner';
 import { handleSearchKey, handleSearchClearKey, handleTagsKey, handleHistoryKey, handleIdleKey, useAppEffects, recordKeyEvent, openHistory, EXTERNAL_KEY } from './app-keys';
 import { handleNoteKey } from './note-focus'; import { handlePaneArrow } from './pane-arrows';
 import { useReselect } from './use-reselect'; import { useReadGate, SEVERAL_KEYS } from './read-gate';
@@ -54,8 +54,8 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [reading, setReading] = useState(false);
-  // T293/T298/T338: prompts whose state lives in BottomArea, read via cells
-  const { itemAsk, setItemAsk } = useItemAsk(); const { exportAsk, setExportAsk } = useExportAsk(); const { setBlogSendAsk } = useBlogSendAsk(); const { open: inlineEditOpen, base: inlineEditBase, openEdit: openInlineEdit, closeEdit: closeInlineEdit } = useInlineEditorState();
+  // prompts whose state lives in BottomArea, read via cells
+  const { itemAsk, setItemAsk } = useItemAsk(); const { exportAsk, setExportAsk } = useExportAsk(); const { setBlogSendAsk } = useBlogSendAsk(); const { open: inlineEditOpen, base: inlineEditBase, session: inlineSession, openEdit: openInlineEdit, closeEdit: closeInlineEdit } = useInlineEditorState();
   const { notice, setNotice, setNoticeError, clearNotice } = useNotice();
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
   const syncedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -65,7 +65,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
 
   // Handle keyboard input
   const handleKey = (input: string, key: import('ink').Key) => {
-    // T291: with a text prompt open the ring stores '<text>', never the typed char
+    // with a text prompt open the ring stores '<text>', never the typed char
     recordKeyEvent(input, key, Boolean(searchOpen || tagEditorOpen || tagDialog?.kind === 'rename' || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen || inlineEditOpen));
     if (notice) clearNotice();
     const keyName = keyNameFromEvent(key);
@@ -138,17 +138,17 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
       if (handleNoteKey(input, keyName, noteKeyCtx)) return;
     }
 
-    const action = dismissOnEscape(keyName) ? null : noteKeyAction(input, selectedEntry?.id ?? null, store.getState());
+    const action = dismissOnEscape(keyName) ? null : noteKeyOrNotice(input, selectedEntry?.id ?? null, store.getState(), setNotice);
     if (action) {
       store.dispatch(action);
-      // T283: keep the tags-pane marker in sync when `T` toggles the trash
+      // keep the tags-pane marker in sync when `T` toggles the trash
       // from the generic handler; TagPane's `>` follows tagIndex, not ui.collection.
       if (action.type === 'SELECT_TRASH') setTagIndex(tagNames.length + 2);
       else if (action.type === 'SHOW_ALL_NOTES') setTagIndex(0);
       return;
     }
 
-    // T286: trash keeps only upstream's actions; g/p/P/m/h no-op with a notice
+    // trash keeps only upstream's actions; g/p/P/m/h no-op with a notice
     if (inTrash && selectedEntry && 'gpPhmw'.includes(input)) {
       setNotice('In trash: press u to restore first'); return;
     }
@@ -188,13 +188,13 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
       if (onLogout) {
         setLogoutAsk(true);
       }
-    } else if (input === 'i') { if (selectedEntry) { const c = selectedEntry.note.content ?? ''; const r = inlineEditRefusal(c); if (r) setNotice(r); else openInlineEdit(c); } }
+    } else if (input === 'i') { if (selectedEntry) { const c = selectedEntry.note.content ?? ''; const r = inlineEditRefusal(c); if (r) setNotice(r); else openInlineEdit(selectedEntry); } }
   };
 
-  // T300: after a search clear, keep the same note selected by id
+  // after a search clear, keep the same note selected by id
   const remember = useReselect({ store, setExternalSelect: view.setExternalSelect });
 
-  // T538R-3 (F217, F220): the per-read rule; the text-entry mode on screen and its closing key
+  // the per-read rule; the text-entry mode on screen and its closing key
   useReadGate({ entry: () => (inlineEditOpen ? '\x13' : searchOpen || tagDialog || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen ? '\r' : tagEditorOpen ? 'whole' : null), onDropped: () => setNotice(SEVERAL_KEYS) });
   useInput((input, key) => { for (const ch of splitPastedInput(input) ?? [input]) handleKey(ch, key); }, { isActive: emptyAsk === 0 });
 
@@ -210,7 +210,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
 
   const selectedEntry = noteEntries[selectedIndex] || null;
   const selectedNote = selectedEntry?.note ?? null;
-  // Gutter row for the note pane: the checklist item under the cursor (T194)
+  // Gutter row for the note pane: the checklist item under the cursor
   const noteItems = noteFocused && selectedEntry ? checklistItems(selectedEntry.note.content ?? '') : [];
   const cursorLine = noteItems.length > 0 ? noteItems[Math.min(itemIndex, noteItems.length - 1)].line : null;
 
@@ -223,7 +223,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
           <BannerRow /><MainPanes store={store} view={view} width={width} height={height} tagsOpen={tagsOpen} tagsFocused={tagsFocused}
             tagIndex={tagIndex} rendered={rendered} searchOpen={searchOpen} selectedNote={selectedNote}
             historyOpen={historyOpen} historyIndex={historyIndex} reading={reading}
-            noteFocused={noteFocused} cursorLine={cursorLine} inlineEditOpen={inlineEditOpen} onCloseEdit={closeInlineEdit} inlineEditBase={inlineEditBase} onSaveEdit={(value: string) => { saveInlineEdit({ store, selectedEntry, base: inlineEditBase, local: value, onEditorError: setNoticeError }); closeInlineEdit(); }} />
+            noteFocused={noteFocused} cursorLine={cursorLine} inlineEditOpen={inlineEditOpen} onCloseEdit={closeInlineEdit} inlineEditBase={inlineEditBase} onSaveEdit={(value: string) => { const s = inlineSession.current; saveInlineEdit({ store, selectedEntry: s.entry, base: s.stored, local: value, onEditorError: setNoticeError }); s.stored = value; }} />
           {notice ? <Text color={noticeColor(notice)} wrap="truncate-end">{sanitizeForTerminal(notice.message)}</Text> : null}
           <BottomArea
             store={store}

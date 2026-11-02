@@ -1,5 +1,5 @@
 /**
- * T529 — an echo is seeded as our own only when the local note holds it.
+ * an echo is seeded as our own only when the local note holds it.
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { EventEmitter } from 'node:events';
@@ -39,7 +39,7 @@ function setup(local: Record<string, unknown>) {
   return { localQueue, tracker, echo };
 }
 
-describe('T529 an echo is our own only when the local note holds it', () => {
+describe('an echo is our own only when the local note holds it', () => {
   it('1: WHEN the local n1 content is `line1\\nline2\\nMK` and an echo adding MK arrives THEN the in-flight n1 entry has ccid `echo-ccid`', () => {
     const { localQueue, tracker, echo } = setup({ ...GHOST, content: 'line1\nline2\nMK' });
     echo({ content: ADD_MK });

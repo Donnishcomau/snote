@@ -5,10 +5,14 @@ import { useReadGate } from './read-gate';
 
 import { Login } from './Login';
 import { App } from './App';
-import { loadToken, saveToken, logout } from '../core/token';
+import { loadToken, saveToken, logout, signOutByServer, keptChangesNotice } from '../core/token';
+import { publishProblem } from '../core/problem-signal';
+import { setActiveAccount } from '../core/data-root';
+import { resolveAccountDir } from '../core/account-id';
 import type { Store } from 'redux';
 import type { State } from '../core/store';
 import { theme } from './theme';
+import { sanitizeForTerminal } from '../core/sanitize';
 
 export type Auth = { email: string; token: string; server?: string };
 
@@ -22,7 +26,7 @@ interface RootProps {
   completeLogin: (email: string, code: string) => Promise<string>;
   passwordLogin?: (email: string, password: string) => Promise<string>;
   onQuit?: () => void;
-  // T304: called when an instance-lock error is detected
+  // called when an instance-lock error is detected
   onLockError?: (message: string) => void;
   startNew?: boolean;
 }
@@ -59,6 +63,7 @@ export function Root(props: RootProps): React.JSX.Element {
   const [phase, setPhase] = useState<Phase>('loading');
   const [store, setStore] = useState<Store<State> | null>(null);
   const [error, setError] = useState<string>('');
+  const [forced, setForced] = useState<string | null>(null); // the login notice after a server-forced sign-out
   const userLogoutRef = useRef(false);
   const [lockMessage, setLockMessage] = useState<string | null>(null);
   const [size, setSize] = useState({
@@ -74,12 +79,12 @@ export function Root(props: RootProps): React.JSX.Element {
   const quitRef = useRef<() => void>(() => {});
   quitRef.current = props.onQuit ?? exit;
 
-  // While too small, the read gate drops every key and paste but `q` (T538R: one wrapper, F221).
+  // While too small, the read gate drops every key and paste but `q` (one wrapper,).
   useReadGate({
-    onCtrlC: () => quitRef.current(), // T538R-5: Ctrl+C quits only as a read of its own
+    onCtrlC: () => quitRef.current(), // Ctrl+C quits only as a read of its own
     whileSmall: tooSmall
       ? (input) => {
-          if (input === 'q' && !isInlineEditOpen()) quitRef.current(); // S6-02: keep unsaved inline text
+          if (input === 'q' && !isInlineEditOpen()) quitRef.current(); // keep unsaved inline text
         }
       : undefined,
   });
@@ -111,7 +116,7 @@ export function Root(props: RootProps): React.JSX.Element {
           let made: Store<State> | null = null;
           const onLogout = () => {
             if (!userLogoutRef.current) endSyncClient(made);
-            logout(props.dataDir);
+            if (userLogoutRef.current) logout(props.dataDir); else setForced(signOutByServer(props.dataDir, resolveAccountDir(props.dataDir, auth.email, props.server)));
             setStore(null);
             // The middleware also calls this after the user's own logout;
             // only a server-forced sign-out (expired or revoked token)
@@ -122,6 +127,7 @@ export function Root(props: RootProps): React.JSX.Element {
             setPhase('login');
           };
           made = props.makeStoreFor(auth, onLogout);
+          setActiveAccount(props.dataDir, resolveAccountDir(props.dataDir, auth.email, props.server)); // F237b
           setStore(made);
           setPhase('app');
         }
@@ -153,10 +159,11 @@ export function Root(props: RootProps): React.JSX.Element {
         await saveToken(props.dataDir, { ...auth, server: props.server });
         userLogoutRef.current = false;
         setError('');
+        setForced(null);
         let made: Store<State> | null = null;
         const onLogout = () => {
           if (!userLogoutRef.current) endSyncClient(made);
-          logout(props.dataDir);
+          if (userLogoutRef.current) logout(props.dataDir); else setForced(signOutByServer(props.dataDir, resolveAccountDir(props.dataDir, auth.email, props.server)));
           setStore(null);
           // Same rule as the saved-token path above: a forced sign-out
           // explains itself, the user's own logout stays silent.
@@ -166,8 +173,11 @@ export function Root(props: RootProps): React.JSX.Element {
           setPhase('login');
         };
         made = props.makeStoreFor(auth, onLogout);
+        setActiveAccount(props.dataDir, resolveAccountDir(props.dataDir, auth.email, props.server)); // F237b
         setStore(made);
         setPhase('app');
+        const kept = keptChangesNotice(props.dataDir, resolveAccountDir(props.dataDir, auth.email, props.server)); // another account's kept changes
+        if (kept) publishProblem(kept);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         if (msg.includes('holds the instance lock')) {
@@ -186,7 +196,7 @@ export function Root(props: RootProps): React.JSX.Element {
     screen = (
       <Box flexDirection="column">
         <Text>Loading...</Text>
-        {lockMessage ? <Text {...theme.error}>{lockMessage}</Text> : null}
+        {lockMessage ? <Text {...theme.error}>{sanitizeForTerminal(lockMessage)}</Text> : null}
       </Box>
     );
   } else if (phase === 'login') {
@@ -200,7 +210,8 @@ export function Root(props: RootProps): React.JSX.Element {
           passwordLogin={props.passwordLogin}
           onLoggedIn={onLoggedIn}
         />
-        {error ? <Text {...theme.error}>Error: {error}</Text> : null}
+        {error ? <Text {...theme.error}>Error: {sanitizeForTerminal(error)}</Text> : null}
+        {forced ? <Text>{forced}</Text> : null}
       </Box>
     );
   } else {

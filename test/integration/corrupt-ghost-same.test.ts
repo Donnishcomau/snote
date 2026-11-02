@@ -1,6 +1,6 @@
 /**
- * T479: After a corrupt ghost file, a note whose content is unchanged is not
- * re-sent just because its date is newer (Closes: F125, corrects T444).
+ * After a corrupt ghost file, a note whose content is unchanged is not
+ * re-sent just because its date is newer (Closes:, corrects).
  *
  * Same rig as test/integration/corrupt-ghost.test.ts: `ghosts-note.json` holds
  * the text `{not json`, state.json carries the saved notes, the store opens
@@ -53,7 +53,7 @@ const serverNote = (content: string): Record<string, unknown> => ({
   tags: [],
 });
 
-describe('T479 corrupt ghost file: same content with a newer date is not re-sent', () => {
+describe('corrupt ghost file: same content with a newer date is not re-sent', () => {
   let server: FakeSimperiumServer;
   let dir: string;
   let stopSaving: (() => void) | undefined;

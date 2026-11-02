@@ -1,4 +1,4 @@
-// Acceptance tests for T362: a middle click on the bar button starts a
+// Acceptance tests for a middle click on the bar button starts a
 // new note. When snote is installed and current, the middle click runs
 // `omarchy-launch-or-focus-tui snote --new`; otherwise it does what a
 // left click does (the install path). The README's ## Launcher section

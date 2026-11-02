@@ -1,5 +1,5 @@
 /**
- * T403: security fix step 2 (#10063) — three render sites that carried
+ * security fix step 2 (#10063) — three render sites that carried
  * outside text to the terminal unsanitised. The export file name now drops
  * DEL and C1 characters, and the notice line / login error are sanitised.
  */

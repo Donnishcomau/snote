@@ -1,5 +1,5 @@
 /**
- * T199: CRASH source — after a restart with saved data no tag without a
+ * CRASH source — after a restart with saved data no tag without a
  * name may enter `data.tags`, and saved named tags come back.
  *
  * A development setup crashed on every second start because the simperium
@@ -37,7 +37,7 @@ const named = (tag: unknown): boolean =>
   typeof (tag as { name?: unknown })?.name === 'string' &&
   (tag as { name: string }).name !== '';
 
-describe('T199 second start keeps named tags', () => {
+describe('second start keeps named tags', () => {
   let server: FakeSimperiumServer;
   let dir: string;
   let stopSaving: (() => void) | undefined;

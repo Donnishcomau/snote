@@ -18,7 +18,7 @@ let stdoutTTY: boolean | undefined;
 let snoteEditor: string | undefined;
 // vi.spyOn keeps the write slot restorable; the recorder on top of it is
 // what the tests read. spyOn throws while an earlier recorder is still in
-// the slot, so beforeEach and afterEach must pair exactly (see F273).
+// the slot, so beforeEach and afterEach must pair exactly (see).
 let writeSpy: { mockRestore: () => void };
 let recorded: string[];
 

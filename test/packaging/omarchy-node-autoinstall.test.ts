@@ -1,5 +1,8 @@
-// Acceptance tests for T368: when no usable Node is found, first-click
-// setup installs it through Omarchy's own installer
+// #203 (decision 2026-10-22): setup no longer
+// installs Node. Cases 1 and 5 below were flipped from "installs" to "never
+// runs the installer"; 2, 3 and 4 hold unchanged. Original header:
+// Acceptance tests for when no usable Node is found, first-click
+// setup installed it through Omarchy's own installer
 // (omarchy-install-dev-env node, which runs `mise use --global node`) in
 // the visible setup terminal, then looks again. It prints the old message
 // and exits 1 only when Node is still missing after that. `--check` never
@@ -137,7 +140,7 @@ function runSetupWithRecord(
 }
 
 describe('packaging/omarchy/setup: auto-install Node through Omarchy', () => {
-  it('1: WHEN SNOTE_NODE points at a missing file and SNOTE_DEV_ENV_INSTALLER at a stub that creates a v22 node there THEN setup exits 0, the stub got the single argument `node`, and the output contains `installing it through Omarchy`', () => {
+  it('1: WHEN SNOTE_NODE points at a missing file and SNOTE_DEV_ENV_INSTALLER at a stub that creates a v22 node there THEN setup exits 1, the stub is never run (its record is empty), and the output does not contain `installing it through Omarchy`', () => {
     const { clone, home, xdg } = scaffold();
     const record = join(tmpDir, 'installer-record');
     const installer = writeCreatingInstaller(record);
@@ -145,10 +148,10 @@ describe('packaging/omarchy/setup: auto-install Node through Omarchy', () => {
 
     const result = runSetupWithRecord(clone, { home, xdg, node: missingNode, installer, record });
 
-    expect(result.status).toBe(0);
-    expect(readFileSync(record, 'utf8')).toBe('node\n');
+    expect(result.status).toBe(1);
+    expect(readFileSync(record, 'utf8')).toBe('');
     const output = `${result.stdout}${result.stderr}`;
-    expect(output).toContain('installing it through Omarchy');
+    expect(output).not.toContain('installing it through Omarchy');
   });
 
   it('2: WHEN the stub installer exits 1 without creating a node THEN setup exits 1 and its output contains `snote needs Node.js 22 or newer`', () => {
@@ -190,11 +193,11 @@ describe('packaging/omarchy/setup: auto-install Node through Omarchy', () => {
     expect(existsSync(`${installer}.record`)).toBe(false);
   });
 
-  it('5: WHEN packaging/omarchy/setup is read THEN it contains `/usr/share/omarchy/bin/omarchy-install-dev-env` and not `Never downloads Node`, and README.md contains `the first click installs it through Omarchy`', () => {
+  it('5: WHEN packaging/omarchy/setup is read THEN it does not contain `/usr/share/omarchy/bin/omarchy-install-dev-env` or `Never downloads Node`, and README.md does not contain `the first click installs it through Omarchy`', () => {
     const setup = readFileSync(REAL_SETUP, 'utf8');
-    expect(setup).toContain('/usr/share/omarchy/bin/omarchy-install-dev-env');
+    expect(setup).not.toContain('/usr/share/omarchy/bin/omarchy-install-dev-env');
     expect(setup).not.toContain('Never downloads Node');
     const readme = readFileSync(join(process.cwd(), 'README.md'), 'utf8');
-    expect(readme).toContain('the first click installs it through Omarchy');
+    expect(readme).not.toContain('the first click installs it through Omarchy');
   });
 });

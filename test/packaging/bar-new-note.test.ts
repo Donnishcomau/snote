@@ -1,4 +1,4 @@
-// Acceptance tests for T376: middle-click on the bar button asks a
+// Acceptance tests for middle-click on the bar button asks a
 // running snote for a new note, then focuses it. `newNote()` in
 // BarWidget.qml now runs one shell line that first tries the shim with
 // `--notify-new` (deliver first) and focuses the running window second;
@@ -41,7 +41,7 @@ function runLine(body: string): string {
   return body.slice(at, end === -1 ? body.length : end);
 }
 
-describe('T376: middle-click asks a running snote for a new note, then focuses it', () => {
+describe('middle-click asks a running snote for a new note, then focuses it', () => {
   it('1: WHEN the `newNote()` body of `BarWidget.qml` is read THEN it contains `--notify-new`, then `omarchy-launch-or-focus-tui snote`, then `omarchy-launch-or-focus-tui snote --new`, in that order', () => {
     const body = newNoteBody(readFileSync(QML, 'utf8'));
     const notify = body.indexOf('--notify-new');

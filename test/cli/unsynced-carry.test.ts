@@ -1,5 +1,5 @@
 /**
- * T502: an unconfirmed local change stays in the unsynced record until the
+ * an unconfirmed local change stays in the unsynced record until the
  * server confirms it, even while its note is held or not yet re-sent.
  * `pendingNotes` alone does not know about a note the start-up re-queue is
  * still holding (offline, it differs from its ghost but has not gone
@@ -17,7 +17,7 @@ import { FakeSimperiumServer } from '../fake-simperium/server';
 import { buildStore } from '../../src/cli/main';
 import { FileGhostStore } from '../../src/core/ghost-store';
 import { makeStore } from '../../src/core/store';
-import { saveState } from '../../src/core/persistence';
+import { loadState, saveState } from '../../src/core/persistence';
 
 import type { EntityId, Note } from '@vendor/types';
 import type * as A from '@vendor/state/action-types';
@@ -50,7 +50,7 @@ const waitFor = async (cond: () => boolean, timeoutMs = 1000) => {
   }
 };
 
-describe('T502 an unconfirmed local change stays in the unsynced record until the server confirms it, even while its note is held or not yet re-sent', () => {
+describe('an unconfirmed local change stays in the unsynced record until the server confirms it, even while its note is held or not yet re-sent', () => {
   let server: FakeSimperiumServer;
   let dir: string;
   let stopSaving: (() => void) | undefined;
@@ -159,11 +159,13 @@ describe('T502 an unconfirmed local change stays in the unsynced record until th
       changes: { content },
     } as A.ActionType);
     await waitFor(() => id in readRecord(), 2000);
-    // state.json lands on the 500 ms debounce; the record is written at once.
-    await sleep(700);
+    // Stopping the saver flushes state.json at once; wait for the edit to land.
     stopSaving?.();
     stopSaving = undefined;
-    await sleep(100);
+    await waitFor(
+      () => loadState(dir)?.data?.notes.get(id as EntityId)?.content === content,
+      2000
+    );
   };
 
   /** Another device's copy of `a`: content `other device`, newer. */

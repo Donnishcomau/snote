@@ -1,5 +1,5 @@
 /**
- * Help overlay: highlight the key, not the whole line (T254).
+ * Help overlay: highlight the key, not the whole line.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -26,7 +26,7 @@ async function forceChalkLevel3(): Promise<void> {
   (chalk.default as any).level = 3;
 }
 
-describe('Help key color (T254)', () => {
+describe('Help key color', () => {
   it('1: WHEN <Help width={80} height={24} entries={[{key:\'j\',action:\'move_down\',description:\'Move down\'}]} /> renders with chalk forced to level 3 THEN the frame contains the exact \\u001b[34mj       \\u001b[39m  Move down', async () => {
     await forceChalkLevel3();
     const { frames, unmount } = render(

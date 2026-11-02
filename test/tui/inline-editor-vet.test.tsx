@@ -1,5 +1,5 @@
 /**
- * T315.1 — standalone vet harness for `react-ink-textarea` 0.4.0. Not wired
+ *.1 — standalone vet harness for `react-ink-textarea` 0.4.0. Not wired
  * to any snote component yet: this proves the library itself handles the
  * cases the built-in editor will need (10,000-line virtualization,
  * bracketed-paste multi-line insert, grapheme-aware backspace, undo, and
@@ -17,9 +17,9 @@ import { useInput } from 'ink';
 import React from 'react';
 import { TextArea } from 'react-ink-textarea';
 
-// T315.1 found that `react-ink-textarea`'s package.json "development"
+//.1 found that `react-ink-textarea`'s package.json "development"
 // export condition (its raw, untranspiled TS source) renders a dead
-// <TextArea> under plain `vitest run`. T315.2 fixed this at the root with
+// <TextArea> under plain `vitest run`..2 fixed this at the root with
 // a `vitest.config.ts` alias that points the bare `react-ink-textarea`
 // specifier straight at the package's built `dist/index.js` — the same
 // file esbuild's own bundling of the real CLI already resolves to. All 5
@@ -38,7 +38,7 @@ async function waitFor(predicate: () => boolean, maxMs = 1500, intervalMs = 15):
   }
 }
 
-describe('T315.1 vet react-ink-textarea', () => {
+describe('.1 vet react-ink-textarea', () => {
   it('1: WHEN a `<TextArea>` is rendered with `value` set to a 10,000-line string (each line `line ${i}`) and `viewportLines` set to `20` THEN `lastFrame()` contains fewer than `25` newline-separated rows', async () => {
     const value = Array.from({ length: 10000 }, (_, i) => `line ${i}`).join('\n');
     const { lastFrame } = render(

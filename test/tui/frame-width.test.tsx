@@ -15,7 +15,7 @@ const stripAnsi = (s: string): string => s.replace(/\x1b\[[0-9;]*m/g, '');
 
 const read = (p: string) => readFileSync(resolve(process.cwd(), p), 'utf8');
 
-describe('T200 frame-width: no line exceeds terminal width', () => {
+describe('frame-width: no line exceeds terminal width', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

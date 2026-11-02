@@ -197,4 +197,41 @@ describe('T58 Note history against the fake server', () => {
     expect(serverVersion('note1')).toBe(3);
     expect(serverContent('note1')).toBe('Third draft');
   });
+
+  it('7: WHEN note1 is opened with OPEN_NOTE then REVISIONS_TOGGLE THEN every e:note1.<v> request appears once per version (one burst), and WHEN a second store opens it with OPEN_NOTE only THEN the preload still loads the 3 versions within 2 s', async () => {
+    const { store } = await makeHistory();
+    server.received.length = 0;
+    openNote(store, 'note1');
+
+    await until(() => revisionsOf(store.getState(), 'note1' as never).length === 3);
+    // Fixed settle: the preload timer fires at 250 ms; only a wait can show a request did not happen
+    await new Promise((r) => setTimeout(r, 800));
+
+    const counts: Record<number, number> = { 1: 0, 2: 0, 3: 0 };
+    for (const m of server.received) {
+      const hit = /e:note1\.(\d+)/.exec(m);
+      if (hit) counts[Number(hit[1])] = (counts[Number(hit[1])] ?? 0) + 1;
+    }
+    for (const v of [1, 2, 3]) {
+      expect(counts[v], `version ${v} requested ${counts[v]} times`).toBe(1);
+    }
+    const revs = revisionsOf(store.getState(), 'note1' as never);
+    expect(revs.map((r) => r.version)).toEqual([3, 2, 1]);
+    expect(revs.find((r) => r.version === 1)?.note.content).toBe('First draft');
+
+    // The preload is kept for the path that never opens the panel
+    const second = makeStore({
+      sync: {
+        appId,
+        token,
+        username,
+        clientOptions: { url: server.url },
+        noteEditDelayMs: 10, // OMARCHY: fast debounce for tests
+      },
+    });
+    await waitForNotes(second, 2500);
+    second.dispatch({ type: 'OPEN_NOTE', noteId: 'note1' as never });
+    await until(() => revisionsOf(second.getState(), 'note1' as never).length === 3);
+    expect(revisionsOf(second.getState(), 'note1' as never).map((r) => r.version)).toEqual([3, 2, 1]);
+  });
 });

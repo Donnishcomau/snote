@@ -51,7 +51,7 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
           height={previewHeight}
           width={colWidth}
         >
-          <PaneHeading label="Preview" focused={focused} />
+          <PaneHeading label="Preview" focused={focused} width={colWidth} />
           <Box flexDirection="column">
             <Text>Select a note to preview</Text>
           </Box>
@@ -76,7 +76,7 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
   }
 
   // Drop the leading body line when it equals the title and we're not in
-  // checklist-cursor mode (T239).
+  // checklist-cursor mode.
   let bodyContent: string;
   let bodyHeadingFlags: boolean[] = [];
   let bodyLines: BodyLine[] = [];
@@ -138,7 +138,7 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
 
   const visibleRows = rows.slice(start, start + avail);
 
-  const titleText = <PaneHeading label={'Preview: ' + title} focused={focused} />;
+  const titleText = <PaneHeading label={'Preview: ' + title} focused={focused} width={colWidth} />;
 
   return (
     <Box flexDirection="row">

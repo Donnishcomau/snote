@@ -25,6 +25,9 @@ import type * as T from '../../types';
 
 const debug = debugFactory('simperium-middleware');
 
+// OMARCHY: #202 how many opened-note ids one session remembers for the revision preload
+export const REVISION_ID_CAP = 5000;
+
 type Buckets = {
   account: T.JSONSerializable;
   note: T.Note;
@@ -328,8 +331,14 @@ export const initSimperium =
             !hasRequestedRevisions.has(noteId)
           ) {
             hasRequestedRevisions.add(noteId);
+            // OMARCHY: #202 keep at most REVISION_ID_CAP ids, oldest dropped first
+            if (hasRequestedRevisions.size > REVISION_ID_CAP) {
+              hasRequestedRevisions.delete(
+                hasRequestedRevisions.values().next().value as T.EntityId
+              );
+            }
             setTimeout(() => {
-              if (getState().ui.openedNote === noteId) {
+              if (getState().ui.openedNote === noteId && !getState().ui.showRevisions) { // OMARCHY: #338 no second burst
                 noteBucket.getRevisions(noteId).then((revisions) => {
                   dispatch({
                     type: 'LOAD_REVISIONS',

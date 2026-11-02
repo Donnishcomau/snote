@@ -10,7 +10,7 @@ function section(md: string, heading: string): string {
   return next === -1 ? md.slice(start) : md.slice(start, next);
 }
 
-describe('README — Updating section and honest update-check disclosure (T392)', () => {
+describe('README — Updating section and honest update-check disclosure', () => {
   it('1: WHEN `README.md` is read THEN `## Updating` appears once, after `## Install on Omarchy` and before `## Pre-built plugin files`.', () => {
     expect(readme.split('## Updating').length - 1).toBe(1);
     expect(readme).toContain('## Updating');
@@ -40,11 +40,11 @@ describe('README — Updating section and honest update-check disclosure (T392)'
     expect(s).toContain('restart any open snote windows');
   });
 
-  it('4: WHEN `README.md` is read THEN it contains neither `builds snote` nor `rebuild`, and it contains `copies the pre-built snote` and `the first click installs it through Omarchy`.', () => {
+  it('4: WHEN `README.md` is read THEN it contains neither `builds snote` nor `rebuild`, and it contains `copies the pre-built snote` and not `the first click installs it through Omarchy`.', () => {
     expect(readme).not.toContain('builds snote');
     expect(readme).not.toContain('rebuild');
     expect(readme).toContain('copies the pre-built snote');
-    expect(readme).toContain('the first click installs it through Omarchy');
+    expect(readme).not.toContain('the first click installs it through Omarchy');
   });
 
   it('5: WHEN `README.md` is read THEN `split(\'\\n\').length` is at most `199`.', () => {

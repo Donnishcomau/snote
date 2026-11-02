@@ -1,5 +1,5 @@
 /**
- * T419: endpoint override safety. A pure check of an env object — nothing
+ * endpoint override safety. A pure check of an env object — nothing
  * here reads the network or mutates state.
  *
  * `SNOTE_AUTH_BASE`, `SNOTE_ACCOUNT_BASE` and `SNOTE_BLOG_ORIGIN` carry

@@ -50,6 +50,29 @@ BarWidget {
   readonly property bool needsAttention: root.snoteStatus === "missing" || root.snoteStale
 
   // tooltip-format:begin
+  // A release version the bar may show or put in a link: plain digits and dots.
+  function validVersion(v) {
+    return typeof v === "string" && /^\d{1,6}\.\d{1,6}\.\d{1,6}$/.test(v)
+  }
+
+  // The only link the bar opens: this repository's release page for one version.
+  function notesUrl(v) {
+    return validVersion(v) ? "https://github.com/Donnishcomau/snote/releases/tag/v" + v : ""
+  }
+
+  // status.json is only kept fresh while snote runs (`alive` is its
+  // heartbeat, written every 30 s): an old heartbeat means "not running".
+  function stoppedSnote(status, nowMs) {
+    return typeof status.alive === "string" && nowMs - Date.parse(status.alive) > 120000
+  }
+
+  // The version a running snote announces as available, or "" when there is
+  // none, the file is old, or the text is not plain digits and dots.
+  function announcedVersionOf(status, nowMs) {
+    if (status === null || status.update !== "available" || stoppedSnote(status, nowMs)) return ""
+    return validVersion(status.updateVersion) ? status.updateVersion : ""
+  }
+
   function formatAgo(diffMs) {
     var sec = Math.floor(diffMs / 1000)
     if (sec < 60) return "just now"
@@ -61,19 +84,18 @@ BarWidget {
     return day + "d ago"
   }
 
-  function formatTooltip(status, nowMs, baseText) {
+  function formatTooltip(status, nowMs, baseText, installed) {
+    var head = validVersion(installed) ? "snote v" + installed : "snote"
     if (status === null) {
-      return baseText + "\nClick: open · Middle-click: new note"
+      return baseText.replace(/^snote/, head) + "\nClick: open · Middle-click: new note"
     }
     var lines = []
     var noun = status.count === 1 ? "note" : "notes"
-    lines.push("snote — " + status.count + " " + noun)
+    lines.push(head + " — " + status.count + " " + noun)
     if (status.last !== null) lines.push("Last: " + status.last.title)
-    // status.json is only kept fresh while snote runs (`alive` is its
-    // heartbeat, written every 30 s), so an old heartbeat means "not
-    // running", not a failed sync. A file without `alive` is shown as before.
-    var notRunning = typeof status.alive === "string" &&
-      nowMs - Date.parse(status.alive) > 120000
+    // An old heartbeat means "not running", not a failed sync. A file
+    // without `alive` is shown as before.
+    var notRunning = stoppedSnote(status, nowMs)
     if (notRunning) {
       if (status.synced === null) {
         lines.push("snote is not running")
@@ -86,10 +108,16 @@ BarWidget {
       var ago = formatAgo(nowMs - Date.parse(status.synced))
       lines.push(ago === "just now" ? "Synced just now" : "Synced " + ago)
     }
-    if (status.update === "available") {
+    // The notice belongs to a running snote: an old process that stopped
+    // (crash, kill) must not keep announcing an update the user has taken.
+    var newVersion = announcedVersionOf(status, nowMs)
+    if (newVersion !== "") {
+      lines.push("Update available v" + newVersion)
+      lines.push("Right-click: See notes")
+    } else if (!notRunning && status.update === "available") {
       lines.push("Update available: omarchy plugin update io.github.donnishcomau.snote-simplenote")
       lines.push("then click this button and run omarchy-restart-shell")
-    } else if (status.update === "restart") {
+    } else if (!notRunning && status.update === "restart") {
       lines.push("Update downloaded: restart snote / the bar to use it")
     }
     lines.push("Click: open · Middle-click: new note")
@@ -118,6 +146,7 @@ BarWidget {
     return dir + "/status.json"
   }
 
+  // status-apply:begin
   // Parse a status.json payload; keep the object only when it actually
   // carries a note count, else fall back to null.
   function applyStatus(raw) {
@@ -127,7 +156,19 @@ BarWidget {
     } catch (e) {
       root.statusData = null
     }
+    // A fresh status.json while the bar shows "update" or "missing" means
+    // something just ran (setup finished and snote started, or an old
+    // process still writes): look at the install again, so the update line
+    // clears without a shell restart. Only the two probes run, not the
+    // status file, so this cannot loop.
+    if (root.needsAttention) root.reprobeVersion()
   }
+
+  function reprobeVersion() {
+    checkSnoteProc.running = true
+    checkVersionProc.running = true
+  }
+  // status-apply:end
 
   // FileView cannot observe a file that does not exist yet (status.json
   // appears only after snote first runs), so reprobe() reloads it
@@ -144,12 +185,30 @@ BarWidget {
     onFileChanged: reload()
   }
 
+  // The installed app's own version stamp, written by setup next to the app
+  // (never the data folder). Only plain digits and dots are kept.
+  property string installedVersion: ""
+  readonly property string installedPath: (Quickshell.env("XDG_DATA_HOME") ||
+    (Quickshell.env("HOME") + "/.local/share")) + "/omarchy-snote-plugin/app/VERSION"
+
+  FileView {
+    id: installedFile
+    path: root.installedPath
+    printErrors: false
+    onLoaded: root.installedVersion = root.validVersion(text().trim()) ? text().trim() : ""
+    onLoadFailed: root.installedVersion = ""
+  }
+
+  // The version the running snote announces, or "" (see announcedVersionOf).
+  // Recomputed with nowMs, so on hover.
+  readonly property string announced: root.announcedVersionOf(root.statusData, root.nowMs)
+
   readonly property string defaultTooltip: "snote — Simplenote in your terminal"
   readonly property string installTooltip: "Click to install snote (copies the pre-built app, no build)"
   readonly property string updateTooltip: "snote — update available, click to install and launch"
   readonly property string tooltipMessage: snoteStatus === "missing" ? root.installTooltip
     : root.snoteStale ? root.updateTooltip
-    : root.formatTooltip(root.statusData, root.nowMs, root.defaultTooltip)
+    : root.formatTooltip(root.statusData, root.nowMs, root.defaultTooltip, root.installedVersion)
 
   // Resolve a file shipped next to this .qml (the plugin's own clone
   // directory) to a plain filesystem path, the same pattern the camera
@@ -162,6 +221,10 @@ BarWidget {
   }
 
   readonly property string setupScript: root.localPath("packaging/omarchy/setup")
+
+  // The update action: brings this clone to the newest release, then runs
+  // setup. A fixed script; no remote text is ever put in a command here.
+  readonly property string updateScript: root.localPath("packaging/omarchy/bar-update")
 
   // Escape a string as one single-quoted POSIX shell word.
   function shellEscapeSingleQuoted(path) {
@@ -195,9 +258,9 @@ BarWidget {
   property int reprobeLeft: 0
 
   function reprobe() {
-    checkSnoteProc.running = true
-    checkVersionProc.running = true
+    root.reprobeVersion()
     statusFile.reload()
+    installedFile.reload()
   }
 
   function settle() {
@@ -211,7 +274,8 @@ BarWidget {
       return
     }
     if (root.bar) {
-      root.bar.run(root.setupCommand(root.setupScript))
+      if (root.snoteStatus === "missing") root.bar.run(root.setupCommand(root.setupScript))
+      else root.bar.run(root.setupCommand(root.updateScript))
       root.reprobeLeft = 15
     }
   }
@@ -231,6 +295,15 @@ BarWidget {
     root.launchOrHint()
   }
 
+  // notes-action:begin
+  // Right-click: open the release notes of the announced version in the
+  // browser, and run nothing else. With no announced version it does nothing.
+  function openNotes() {
+    var url = root.notesUrl(root.announced)
+    if (url !== "") Qt.openUrlExternally(url)
+  }
+  // notes-action:end
+
   Process {
     id: checkSnoteProc
     command: ["test", "-x", root.snoteShim]
@@ -240,17 +313,17 @@ BarWidget {
     }
   }
 
-  // `packaging/omarchy/setup --check` does the same plain-text VERSION
-  // compare setup itself uses for its idempotent fast path (this clone's
-  // plugin-dist/VERSION vs. the installed app's VERSION file, both read
-  // without invoking node) and exits 0/1 accordingly — reusing that single
-  // definition here instead of duplicating the comparison in QML.
+  // `packaging/omarchy/bar-update --check` exits 0 when the bar should offer
+  // no update: the installed app is newer than this clone, or setup's own
+  // `--check` (the plain-text VERSION compare of its idempotent fast path,
+  // read without invoking node) says current. One definition, not a copy in QML.
   Process {
     id: checkVersionProc
-    command: [root.setupScript, "--check"]
+    command: [root.updateScript, "--check"]
     onExited: function(exitCode) {
       root.versionStatus = exitCode === 0 ? "current" : "stale"
       root.settle()
+      installedFile.reload()
     }
   }
 
@@ -273,6 +346,9 @@ BarWidget {
     onTriggered: root.nowMs = Date.now()
   }
 
+  // Shown again (the bar was hidden, or the widget was re-created): look again.
+  onVisibleChanged: if (visible) root.reprobe()
+
   Component.onCompleted: {
     root.reprobe()
   }
@@ -287,7 +363,7 @@ BarWidget {
     onTooltipHoveredChanged: if (tooltipHovered) { root.nowMs = Date.now(); root.reprobe() }
 
     onPressed: function(b) {
-      if (b === Qt.RightButton) return
+      if (b === Qt.RightButton) { root.openNotes(); return }
       if (b === Qt.MiddleButton) { root.newNote(); return }
       root.launchOrHint()
     }

@@ -18,12 +18,12 @@ function Probe({ active }: { active: boolean }) {
   const [n, setN] = useState('');
   useListPaste(active, setN);
   // raw mode only, so Ink attaches its stdin reader even while the paste
-  // hook is inactive; the handler ignores every key (as App would, per T482)
+  // hook is inactive; the handler ignores every key (as App would, per)
   useInput(() => {}, { isActive: true });
   return <Text>{n || 'idle'}</Text>;
 }
 
-describe('list paste hook ignores a bracketed paste (T481)', () => {
+describe('list paste hook ignores a bracketed paste', () => {
   beforeEach(() => {
     resetKeyLog();
   });

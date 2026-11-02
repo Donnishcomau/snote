@@ -1,5 +1,5 @@
 /**
- * T417: quitting snote (the stopSaving buildStore returns) removes the
+ * quitting snote (the stopSaving buildStore returns) removes the
  * update notice from the bar's status file, keeping every other key.
  */
 import * as fs from 'node:fs';
@@ -31,7 +31,7 @@ const readStatus = (file: string): Record<string, unknown> | null => {
   }
 };
 
-describe('T417 quit clears the update notice', () => {
+describe('quit clears the update notice', () => {
   let tmpDir: string;
   let server: FakeSimperiumServer | undefined;
   let stopSaving: (() => void) | undefined;

@@ -3,6 +3,161 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.2.9
+
+Saving with `:w` syncs while the editor is open, a quit sends your
+waiting changes first, and a server sign-out keeps your unsynced
+changes, and saves do less work with many notes. Your saved notes
+are not changed by the upgrade. Each release's checksum list is now
+signed (see Known issues).
+
+### Added
+
+- Writing the file with `:w` in an external editor saves the note and
+  syncs it while the editor is still open.
+- A normal quit hands pending changes to the server and waits a few
+  seconds for the answer. If some could not be sent, snote says how many
+  are kept and that they go out at the next start.
+- `snote --screen-reader` (or `SNOTE_SCREEN_READER=1`) gives a linear,
+  colourless screen for screen readers. `--no-screen-reader` wins over
+  the variable. Help, the editor hand-off, search, tags and history work
+  in it. `INK_SCREEN_READER` is still ignored.
+- When you log out yourself with changes waiting, snote says how many
+  and asks you to type `logout`.
+- Each save does less work with many notes: snote no longer rewrites
+  the whole notes file on every change, only the notes waiting to sync.
+  A kill at any moment keeps your edit, including after restoring a
+  history version.
+- From 0.2.9, each release's list of file checksums (`SHA256SUMS`) is
+  signed by the maintainer with a hardware security key. The signature
+  (`SHA256SUMS.sig`) and the public keys
+  (`packaging/release/allowed_signers`) are published with the release.
+  When a release includes `SHA256SUMS`, setup checks the files it
+  installs against that list and stops with `update refused: the
+  download could not be verified` if one differs.
+
+### Fixed
+
+- A sign-out forced by the server no longer deletes the account's
+  unsynced changes and editor drafts. The notice says how many are kept.
+  Log in to the same account to sync them.
+- Merging when two devices edit one note: both changing the same word
+  or line no longer drops the other device's edit; a very large note is
+  no longer doubled on editor close; a lone surrogate (a stray
+  half-character) in a note no longer crashes snote on editor close or
+  loses an inline save, and in a tag name no longer stops the start-up
+  re-send of offline edits.
+- The inline editor (`i`) stores your text as you type and keeps a
+  draft that survives a quit or a crash.
+- An editor that returns at once (it handed the file to an open window)
+  is detected: snote says `Set SNOTE_EDITOR to a command that waits,
+  e.g. code --wait. Nothing was saved`.
+- Two snotes starting together on one data folder: snote takes a kernel
+  lock on the folder with `/usr/bin/flock`, retries a failed lock once,
+  and the notice line says when a start runs without it.
+- Restarts: an edit that only moves lines is kept. In the usual case an
+  untouched line is no longer dropped when another device moved it, and a
+  note deleted forever is no longer brought back by a restart that
+  downloads every note again. An edit no longer appears twice after a
+  quit and a full re-download.
+- Trash (`d`) is no longer ignored once on the real service. Two `y`
+  presses in one tick no longer send a blog draft twice, and a blog send
+  that finishes while a second question is open no longer makes the next
+  `y` do nothing.
+- A restored editor draft is no longer cut short.
+- Two accounts with similar emails no longer share one local folder.
+- Login, blog send and the bar update have a time limit and a size limit
+  on what they read. Sync no longer hangs if the server never answers the
+  websocket upgrade.
+- snote no longer writes through a symlink at its data folder,
+  `auth.json`, a `.tmp` file or the setup folders. A save cut off
+  halfway leaves no `auth.json.tmp` or `blog.json.tmp`, and logout
+  removes any that remain. Setup and the `snote` shim call
+  `/usr/bin/env`.
+- The bar's update prompt installs the new version (it pulls the plugin
+  clone first). The bar shows the installed version and an update names
+  its version with a link to its release notes, and stops saying "update
+  available" once you are on the latest.
+- A stopped over-size bar download no longer makes git dump core.
+- After two failed connection attempts the notice line reads
+  `sync server not answering, retrying (attempt N)`.
+- A quit from the login screen after a sign-out no longer prints the
+  unsent-changes line for the old account's changes.
+- Two note-id sets no longer grow for the whole session, and the
+  start-up copy of your notes is no longer kept in memory all session.
+- A pin, trash or tag made while snote catches up after a restart is
+  sent once, not twice, and no extra empty version is created.
+- A note created while offline is no longer lost at start-up when
+  snote's saved state cannot be loaded. It is kept and syncs.
+- With three or more devices syncing, a device still catching up no
+  longer adds another device's line to a note a second time. A
+  restarting device can no longer delete another device's text while it
+  catches up (fixed in tests, never seen live). Live trial, 30 Oct: 0
+  duplicates in 110 runs, against 2 in 36 before the fix.
+- A sync change with a broken character (half of an emoji pair) from
+  another device or a misbehaving server no longer makes snote exit. No
+  text is lost.
+- A note synced from another client or a misbehaving server with
+  missing or odd tag fields now shows normally, instead of leaving
+  snote's screen blank.
+- A note whose copy on the server has tags or system tags that are not a
+  list no longer stops snote re-sending your offline edits at start-up.
+- A saved data file (`state.json`) with the wrong contents no longer
+  crashes start-up or costs you offline notes. A tag with no name, a
+  broken tag link or saved history that snote cannot use is dropped
+  and the rest of the file loads. If the notes cannot be read, the
+  file is set aside as `state.json.corrupt` and your offline notes are
+  still kept.
+- An edit is no longer lost when an error happens right after it is
+  applied.
+- Quitting right after an identical `:w` no longer duplicates the note
+  at the next start.
+- Logout no longer leaves an email-named folder behind.
+- Export accepts only real email patterns.
+- Opening a note's history loads each revision once, not twice.
+- The update check's in-clone git calls carry the same safety flags as
+  the other git calls. Setup comments no longer claim signature
+  verification.
+
+### Changed
+
+- Pinned notes have a `Pinned` label row. Only the focused pane shows
+  the inverse selected row, and its heading is a full-width accent bar.
+  The footer names the arrow keys and tag names are no longer cut
+  silently. Note titles are cut by screen width, not character count.
+- Setup and the first click use the Node.js a standard Omarchy already
+  has (through mise). Setup installs nothing but snote.
+- Every kind of install (plugin, source, package) gets the update steps
+  that fit it.
+- snote starts with less code; the update check loads only when it
+  runs.
+- SECURITY.md lists the 24-hour update re-check, the bar update's
+  `git fetch` and the local-path update origin.
+
+### Known issues
+
+- If snote is killed (not quit) within about 150 ms of an identical or
+  new `:w` while the editor is open, the note can appear twice at the
+  next start. Nothing is lost: both copies keep the text.
+- An editor that hands the file to an already open window is not
+  watched for `:w`; the note still saves when the editor closes.
+- Without the kernel lock (no `flock`, or a folder that refuses locks,
+  such as a network drive), two copies started at the same moment can
+  both run. Run one snote at a time on a data folder.
+- Rare restart cases from 0.2.8 that this release does not close remain:
+  see 0.2.8 Known issues. After a restart, check recent edits in History
+  (`h`).
+- snote does not check the signature of the checksum list yet, on
+  install or on update. Setup checks the files it installs against the
+  list, which catches a damaged or changed download but does not show
+  who made the release.
+- If the connection to the sync service opens but sign-in never
+  finishes, the status bar can show `[offline]` with no reason.
+- With `CI=true` set in the environment, snote draws nothing. Run
+  `unset CI` first.
+- When two devices make the same edit, the note can show a conflict
+  block that holds the same text twice. Nothing is lost.
+
 ## 0.2.8
 
 Data-safety fixes for typing, pasting and restarts, a more careful
@@ -593,5 +748,3 @@ Simplenote built for Omarchy.
 - Note export no longer follows a symlink at the destination path.
 - Emoji with a variation selector (e.g. a heart with `U+FE0F`) no longer
   misaligns the panes; the sanitizer now strips variation selectors.
-
-See `docs/release-notes-0.1.0.md` for the fuller release notes.

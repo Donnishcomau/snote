@@ -1,5 +1,5 @@
 /**
- * T421: the vendored InMemoryBucket must not ship dead debug logging.
+ * the vendored InMemoryBucket must not ship dead debug logging.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -9,7 +9,7 @@ const read = (p: string) => readFileSync(resolve(process.cwd(), p), 'utf8');
 
 const BUCKET = 'vendor/simplenote/state/simperium/functions/in-memory-bucket.ts';
 
-describe('T421 vendored in-memory bucket carries no dead debug logging', () => {
+describe('vendored in-memory bucket carries no dead debug logging', () => {
   it('1: WHEN in-memory-bucket.ts is read THEN it contains no `console.log(` and no `[TEST]`, and still contains `put(` and `this.entities.set(id, data)`.', () => {
     const source = read(BUCKET);
     expect(source).not.toContain('console.log(');

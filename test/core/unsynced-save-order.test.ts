@@ -13,7 +13,7 @@ vi.mock('../../src/core/persistence', () => ({
 
 import { trackUnsynced } from '../../src/core/unsynced';
 
-describe('unsynced: state.json is saved before unsynced.json is rewritten (F208)', () => {
+describe('unsynced: state.json is saved before unsynced.json is rewritten', () => {
   it('1: WHEN n1 goes pending THEN saveState runs once, before unsynced.json exists, and unsynced.json then holds `n1`', () => {
     dirUnderTest = mkdtempSync(join(tmpdir(), 'snote-f208-'));
     try {

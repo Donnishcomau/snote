@@ -1,5 +1,5 @@
 /**
- * T304: (1) `w` export from the idle notes list (not just note-focused).
+ * (1) `w` export from the idle notes list (not just note-focused).
  *        (2) Second snote on one account dir shows lock message, exits non-zero.
  */
 
@@ -32,7 +32,7 @@ const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // Ink's ANSI frames break substring checks; search the stripped frame.
 const stripAnsi = (s: string | undefined): string => (s ?? '').replace(/\u001b\[[0-9;]*m/g, '');
 
-describe('T304 list export and instance lock', () => {
+describe('list export and instance lock', () => {
   let dir: string;
   let prevXdg: string | undefined;
 

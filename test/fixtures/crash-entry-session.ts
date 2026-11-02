@@ -1,4 +1,4 @@
-// T232 — mirrors crash-entry.ts's contract (throw `new Error('kaboom')` and
+// mirrors crash-entry.ts's contract (throw `new Error('kaboom')` and
 // exit 1, state dir from process.argv[2], XDG_STATE_HOME decides where the
 // crash file lands) but seeds a session first: two notes ('Hello' = 5 chars,
 // 'Hi there' = 8 chars), one tag ('work') and two recorded key presses
@@ -11,7 +11,7 @@
 // stubClient and are persisted with saveState into the account folder, and a
 // saved token (saveToken) makes Root log in at start-up, so main()'s own
 // makeStoreFor builds lastStore from that state before Boom throws. The keys
-// land in T231's module-scope log via recordKeyEvent, which main() reads via
+// land in's module-scope log via recordKeyEvent, which main() reads via
 // getKeyLog(). sessionSnapshot then sees counts, note lengths and key
 // presses — never note content.
 //

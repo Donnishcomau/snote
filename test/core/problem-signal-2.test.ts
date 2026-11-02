@@ -6,7 +6,7 @@ import {
   resetProblemSignal,
 } from '../../src/core/problem-signal';
 
-describe('problem signal robustness (T484)', () => {
+describe('problem signal robustness', () => {
   beforeEach(() => {
     resetProblemSignal();
   });

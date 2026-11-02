@@ -1,5 +1,5 @@
 /**
- * Help falls back to the scrolling list when columns would be too narrow (T522).
+ * Help falls back to the scrolling list when columns would be too narrow.
  */
 import { describe, it, expect } from 'vitest';
 import { render } from 'ink-testing-library';

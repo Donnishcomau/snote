@@ -1,5 +1,5 @@
 /**
- * R1 sync-6 (#93, F226). A note deleted forever just after a restart that
+ * R1 sync-6 (#93,). A note deleted forever just after a restart that
  * followed a quit before the server confirmed an edit stays deleted: the
  * echo of the pre-quit edit only confirms it when the note is in
  * tombstones.json (deleted forever on this machine), also when the remove is
@@ -54,7 +54,7 @@ function setup(tombstoned: boolean, flying?: Record<string, unknown>, localCopy?
 
 describe('R1 sync-6: delete forever just after a restart stays deleted', () => {
   it('1: WHEN the edit `MK` was sent and not acknowledged, snote quits, restarts with the catch-up 1.5 s late and the user trashes and deletes n1 forever at once THEN the server and the store hold no n1, verdict `KEPT`', async () => {
-    const o = await runScenario('S226-forever-late-echo');
+    const o = await runScenario('forever-late-echo');
     expect(o.server).toBeNull();
     expect(o.store).toBeNull();
     expect(o.verdict).toBe('KEPT');

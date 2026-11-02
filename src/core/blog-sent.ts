@@ -2,41 +2,21 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import { secureMkdir, secureWriteFileSync } from './secure-fs';
-import { sanitizeForTerminal } from './sanitize';
+import { BLOG_SENT_FILE, loadBlogSend } from './blog-status';
 
-const BLOG_SENT_FILE = 'blog-sent.json';
+export { blogStatusLine, loadBlogSend } from './blog-status';
 
-interface BlogSendRecord {
-  postId: string;
-  url: string;
-  sentAt: string;
-}
+type BlogSendRecord = NonNullable<ReturnType<typeof loadBlogSend>>;
 
 interface BlogSentData {
   [noteId: string]: BlogSendRecord;
 }
 
 /**
- * Compose the "Sent as draft" status line: the first 10 characters of
- * `sentAt` (never a locale date) plus the url. `null` renders nothing.
- */
-export function blogStatusLine(
-  record: Pick<BlogSendRecord, 'sentAt' | 'url'> | null | undefined,
-): string | null {
-  if (!record) {
-    return null;
-  }
-  // Records saved before url normalisation may be protocol-relative.
-  const rawUrl = record.url.startsWith('//') ? 'https:' + record.url : record.url;
-  // The url is server text: strip control sequences, fold newlines/tabs (F088).
-  const url = sanitizeForTerminal(rawUrl).replace(/[\n\t]/g, ' ');
-  return 'Sent as draft · ' + record.sentAt.slice(0, 10) + ' · ' + url;
-}
-
-/**
  * Record that a note was sent as a blog draft. Writes `<dir>/blog-sent.json`
  * (mode 0o600), a JSON object keyed by note id; a second call for the same
  * note id replaces the first record, other note ids are left unchanged.
+ * proof: test/core/secure-fs-symlink.test.ts
  */
 export function recordBlogSend(
   dir: string,
@@ -59,55 +39,4 @@ export function recordBlogSend(
 
   secureMkdir(dir);
   secureWriteFileSync(filePath, JSON.stringify(data));
-}
-
-/**
- * Load the blog-sent record for a note id; `null` when the file is missing,
- * not valid JSON, or the note id is not present.
- */
-export function loadBlogSend(
-  dir: string,
-  noteId: string,
-): BlogSendRecord | null {
-  const filePath = path.join(dir, BLOG_SENT_FILE);
-
-  if (!fs.existsSync(filePath)) {
-    return null;
-  }
-
-  try {
-    const raw = fs.readFileSync(filePath, 'utf8');
-    const data: unknown = JSON.parse(raw);
-    if (
-      data === null ||
-      typeof data !== 'object' ||
-      Array.isArray(data)
-    ) {
-      return null;
-    }
-    const record = data as Record<string, unknown>;
-    if (!(noteId in record)) {
-      return null;
-    }
-    const value = record[noteId];
-    if (
-      value === null ||
-      typeof value !== 'object' ||
-      !('postId' in value) ||
-      !('url' in value) ||
-      !('sentAt' in value) ||
-      typeof (value as { postId: unknown }).postId !== 'string' ||
-      typeof (value as { url: unknown }).url !== 'string' ||
-      typeof (value as { sentAt: unknown }).sentAt !== 'string'
-    ) {
-      return null;
-    }
-    return {
-      postId: (value as { postId: string }).postId,
-      url: (value as { url: string }).url,
-      sentAt: (value as { sentAt: string }).sentAt,
-    };
-  } catch {
-    return null;
-  }
 }

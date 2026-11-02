@@ -1,5 +1,5 @@
 /**
- * Update notice U3 wiring (T390): the one entry point `main()` calls
+ * Update notice U3 wiring: the one entry point `main()` calls
  * once per run. The local check comes first: a newer version already
  * downloaded into the plugin clone needs no network at all, so it is
  * published and we stop. Otherwise the once-a-day remote check runs

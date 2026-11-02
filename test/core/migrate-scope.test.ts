@@ -1,5 +1,5 @@
 /*
- * F105: the one-time legacy migration must move ONLY snote's own pre-T156
+ * the one-time legacy migration must move ONLY snote's own pre-
  * files (state.json, tombstones.json, ghosts-<bucket>.json and their `.tmp`
  * siblings) out of the data-dir root into `<root>/<email>/`. Before this fix
  * migrateLegacyData swept every plain file in the root that was not

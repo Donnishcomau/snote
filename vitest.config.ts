@@ -6,13 +6,15 @@ export default defineConfig({
     include: ['test/**/*.test.{ts,tsx}', 'vendor/**/*.test.{ts,tsx}'], 
     environment: 'node', 
     testTimeout: 3000, hookTimeout: 3000,
+    reporters: ['default', './test/helpers/headroom-reporter.ts'],
     setupFiles: ['./test/setup.ts'],
+    globalSetup: ['./test/helpers/global-leak-guard.ts'],
   }, 
-  // T315.2: react-ink-textarea's package.json exports map has a
+  //.2: react-ink-textarea's package.json exports map has a
   // "development" condition pointing at its raw, untranspiled TS source,
   // which Vite's resolver picks under plain `vitest run` (no NODE_ENV set).
   // That source renders a dead <TextArea> in ink-testing-library (confirmed
-  // in T315.1 — lastFrame() stays "\n", no onChange/useInput ever fires),
+  // in.1 — lastFrame() stays "\n", no onChange/useInput ever fires),
   // while the package's built dist/index.js — what esbuild's own bundling
   // of the real CLI already resolves to, since it doesn't apply this
   // condition — works correctly. Alias the bare specifier straight to that

@@ -1,4 +1,4 @@
-// Acceptance tests for T370: the bar tooltip's "Synced X ago" keeps
+// Acceptance tests for the bar tooltip's "Synced X ago" keeps
 // updating while the tooltip stays open. A slow repeating Timer refreshes
 // root.nowMs while the button's tooltip is hovered. QML cannot run in
 // vitest, so these are structural text tests of BarWidget.qml.

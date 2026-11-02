@@ -1,5 +1,5 @@
 /**
- * T364: every status write is best-effort and stop() flushes only a
+ * every status write is best-effort and stop() flushes only a
  * pending write, so the optional bar status can never crash snote.
  */
 import * as fs from 'node:fs';
@@ -54,7 +54,7 @@ const seedNote = (
   } as never);
 };
 
-describe('T364 status writes are safe', () => {
+describe('status writes are safe', () => {
   let tmpDir: string;
   let uncaught: unknown[] = [];
   const uncaughtHandler = (err: unknown) => {

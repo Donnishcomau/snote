@@ -32,7 +32,7 @@ function nonEmptyLines(frame: string): string[] {
   return lines.slice(1).filter(l => stripAnsi(l).trim() !== '');
 }
 
-describe('Note list rows (T211)', () => {
+describe('Note list rows', () => {
   it('1: WHEN the list is rendered THEN the frame contains ">Note one", the line after ">Note one" contains "body one line", and the line after that is empty.', async () => {
     const { lastFrame } = render(
       <NoteList notes={notes} selectedIndex={0} width={60} height={26} />

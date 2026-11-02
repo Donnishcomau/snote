@@ -1,5 +1,5 @@
 /**
- * T410: security fix (F069, S4-07) — terminal text and export file names
+ * security fix — terminal text and export file names
  * drop bidi controls, zero-width characters and line/paragraph
  * separators, keeping the emoji joiner U+200D (ZWJ). Invisible
  * characters are written as \uXXXX escapes, and the element is built
@@ -37,7 +37,7 @@ const family = '👨‍👩‍👧';
 // clipboard sequence; `\n\nbody` on the second and third lines.
 const evilContent = 'inv‮oice.exe\x1b]52;c;QQ\x07\n\nbody';
 
-describe('bidi strip (F069 S4-07)', () => {
+describe('bidi strip ()', () => {
   it("1: WHEN sanitizeForTerminal and exportFileName each get `report‮dm.exe` THEN each returns `reportdm.exe`", () => {
     expect(sanitizeForTerminal(rloTitle)).toBe('reportdm.exe');
     expect(exportFileName(rloTitle)).toBe('reportdm.exe');

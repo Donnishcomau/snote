@@ -1,5 +1,5 @@
 /**
- * T414 — security hardening, step 2 of 2 (F068 / S4-05, wiring part):
+ * security hardening, step 2 of 2 (, wiring part):
  * snote also writes to stderr through the output guard.
  *
  * Ink's `patchConsole` routes `console.error`/`console.warn` to stderr,
@@ -90,7 +90,7 @@ async function until(check: () => boolean, ms = 2000): Promise<void> {
 
 const SMUGGLE = 'note says \x1b]52;c;UFdORUQ=\x07 \x1bc end';
 
-describe('T414 — stderr passes through the output guard', () => {
+describe('stderr passes through the output guard', () => {
   it("1: WHEN an Ink component calls `console.error('note says \\x1b]52;c;UFdORUQ=\\x07 \\x1bc end')` in an effect, rendered with `patchConsole: true` and fake stdout and stderr both wrapped by `guardOutputStream` THEN the stderr text contains `note says` and `end` and contains no `\\x1b]`, no `\\x1bc` and no `\\x07`.", async () => {
     const { stream: stdout, chunks: outChunks } = makeGuardedStream();
     const { stream: stderr, chunks: errChunks } = makeGuardedStream();

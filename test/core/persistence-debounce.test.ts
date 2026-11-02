@@ -10,7 +10,7 @@ import type { EntityId } from '@vendor/types';
 const eid = (id: string): EntityId => id as unknown as EntityId;
 
 // Poll a condition with a 10 ms step so a late timer only makes a test
-// slower, never red (T182).
+// slower, never red.
 const waitFor = async (cond: () => boolean, timeoutMs = 2500) => {
   const start = Date.now();
   while (!cond()) {

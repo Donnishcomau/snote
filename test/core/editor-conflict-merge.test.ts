@@ -55,7 +55,7 @@ const entryFor = (store: StoreT, baseContent: string) => ({
   note: { content: baseContent } as Note,
 });
 
-describe('T299 editor return vs concurrent remote change', () => {
+describe('editor return vs concurrent remote change', () => {
   it('1: WHEN mergeEditorReturn is called with base `Conflict target\\noriginal body`, local `Conflict target\\noriginal body\\nLOCAL EDIT BY e2e`, current equal to base THEN it returns { content: \'Conflict target\\noriginal body\\nLOCAL EDIT BY e2e\', conflict: false }', () => {
     const result = mergeEditorReturn(BASE, LOCAL_APPEND, BASE);
     expect(result).toEqual({

@@ -1,5 +1,5 @@
 /**
- * T182: the persistence debounce tests must not depend on the scheduler
+ * the persistence debounce tests must not depend on the scheduler
  * being on time. This test reads test/core/persistence-debounce.test.ts as
  * text and pins the shapes that make cases 1-3 timing-independent.
  */

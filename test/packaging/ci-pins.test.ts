@@ -1,5 +1,5 @@
 /**
- * T420: supply-chain hardening of the CI workflow. The workflow runs with a
+ * supply-chain hardening of the CI workflow. The workflow runs with a
  * read-only token (`permissions: contents: read`) and both actions are pinned
  * by commit SHA instead of a moving tag. Nothing else in the workflow changes.
  */

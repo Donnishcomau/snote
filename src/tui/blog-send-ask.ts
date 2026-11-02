@@ -3,9 +3,8 @@ import * as path from 'node:path';
 import React, { useRef, useState } from 'react';
 import { useInput } from 'ink';
 
-import { blogOriginFromEnv } from '../core/blog-config';
-import { sendNoteToBlog } from '../core/blog-send';
-import { loadBlogSend } from '../core/blog-sent';
+import { blogOriginFromEnv } from '../core/blog-origin';
+import { loadBlogSend } from '../core/blog-status';
 import { dataRoot } from '../core/data-root';
 import { useReadGate } from './read-gate';
 
@@ -27,7 +26,7 @@ interface BlogSendAskState {
   blogOpen: boolean;
 }
 
-// T338: the send-to-blog question (`b`), a module cell like exportAskRef,
+// the send-to-blog question (`b`), a module cell like exportAskRef,
 // so App/handleNoteKey can open it while BottomArea renders and closes it.
 const cell: { current: BlogSendAskState } = {
   current: {
@@ -92,7 +91,7 @@ export function useBlogSendAskState(
     setTick((t) => t + 1);
   };
 
-  // T538R-4 (F227, F224): the send/resend question is a y/n confirm of the
+  // the send/resend question is a y/n confirm of the
   // read gate, so only a read that is exactly one key answers it
   useReadGate({ confirm: phase?.kind === 'send' || phase?.kind === 'resend' });
   // Always registered (see the doc comment above): only acts while `phase`
@@ -108,13 +107,20 @@ export function useBlogSendAskState(
       request('close');
       const id = noteIdRef.current;
       if (!id) return;
-      sendNoteToBlog({
-        dir: dataRoot(),
+      const dir = dataRoot();
+      // Issue 235: the question said "send" because no record existed when `b`
+      // opened it; if a send finished while it was open a record exists now,
+      // and force=false would come back { already: true } having asked the
+      // server nothing. Re-decide at `y`: this answer sends a draft.
+      const force = resend || Boolean(loadBlogSend(dir, id));
+      // snote-diet: the send code loads only when a send is confirmed.
+      import('../core/blog-send').then((m) => m.sendNoteToBlog({
+        dir,
         noteId: id,
         content: contentRef.current,
-        force: resend,
+        force,
         now: new Date().toISOString(),
-      }).then(
+      })).then(
         () => setNotice('draft sent to your blog'),
         (error: unknown) => {
           const msg = error instanceof Error ? error.message.trim().toLowerCase() : '';

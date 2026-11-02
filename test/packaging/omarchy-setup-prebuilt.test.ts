@@ -1,4 +1,4 @@
-// Acceptance tests for T342: packaging/omarchy/setup installs the
+// Acceptance tests for packaging/omarchy/setup installs the
 // pre-built plugin-dist/ payload instead of running an npm build, finds
 // Node without PATH, and writes a shim that resolves Node at run time.
 //

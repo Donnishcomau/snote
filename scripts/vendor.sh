@@ -27,6 +27,10 @@ FILES=(
   lib/state/simperium/functions/connection-monitor.ts
 )
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
+# a symlinked destination would be written through: refuse before the clone, writing nothing (#412)
+refuse_link() { if [[ -L $1 ]]; then echo "vendor.sh: $1 is a symlink; nothing written" >&2; exit 1; fi; }
+for f in "${FILES[@]}"; do d="$ROOT/vendor/simplenote/${f#lib/}"; while [[ $d != "$ROOT" && $d != / ]]; do refuse_link "$d"; d=$(dirname "$d"); done; done
+for d in "$ROOT/vendor/simplenote/UPSTREAM_COMMIT" "$ROOT/dist" "$ROOT/dist/upstream.diff"; do refuse_link "$d"; done
 WORK=$(mktemp -d)
 git clone -q "$UPSTREAM_REPO" "$WORK/up"
 if [[ ${1:-} == --diff ]]; then

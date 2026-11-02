@@ -1,9 +1,9 @@
-// Acceptance tests for T359: the bar tooltip shows the live note count,
+// Acceptance tests for the bar tooltip shows the live note count,
 // the last note's title and the last sync time, read from the
-// status.json the app publishes (T358). Until that file exists, the
+// status.json the app publishes. Until that file exists, the
 // tooltip falls back to the old default text plus the click hint. The
 // last note appears in the tooltip only — the bar label stays the
-// icon-only glyph of T356, and the install/update tooltips are
+// icon-only glyph of, and the install/update tooltips are
 // unchanged. QML cannot run in vitest, so the two pure formatter
 // functions are sliced out of BarWidget.qml between their marker
 // comments and evaluated as plain JavaScript; everything else is a

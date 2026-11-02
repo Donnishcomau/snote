@@ -1,5 +1,5 @@
 /**
- * T412: the inline editor shows control, bidi and zero-width characters as
+ * the inline editor shows control, bidi and zero-width characters as
  * visible stand-ins and saves the note's bytes unchanged.
  *
  * The TextArea draws each character raw, so SGR escapes inside a note could
@@ -8,12 +8,13 @@
  * unit per replaced unit, so every offset and [line, col] cursor position
  * matches the real text) and maps each edit back onto the real bytes.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from 'ink-testing-library';
 import React from 'react';
 
 import { makeStore } from '../../src/core/store';
 import { App } from '../../src/tui/App';
+import { waitForFrame, waitForInput } from '../helpers/ink-waits';
 import type { EntityId } from '@vendor/types';
 
 const eid = (id: string): EntityId => id as unknown as EntityId;
@@ -34,8 +35,18 @@ function seedNote(store: ReturnType<typeof makeStore>, content: string): void {
   });
 }
 
-const settle = async (): Promise<void> => {
-  await new Promise((r) => setTimeout(r, 50));
+const EDITING = 'Autosaves';
+
+const waitSaved = async (
+  store: ReturnType<typeof makeStore>,
+  expected: string,
+): Promise<void> => {
+  await vi.waitFor(
+    () => {
+      expect(store.getState().data.notes.get(eid('t1'))?.content).toBe(expected);
+    },
+    { timeout: 2000, interval: 10 },
+  );
 };
 
 const sgr = String.fromCharCode(27); // ESC, written so this file never holds a raw control byte
@@ -47,7 +58,7 @@ const colourNote = `Title\n\nred ${sgr}[45mRED${sgr}[0m conceal ${sgr}[8mHIDE${s
 const oscNote =
   `T\n\nb ${sgr}]52;c;UFdORUQ=${bel} ${sgr}]8;;http://evil${sgr}\\L${sgr}]8;;${sgr}\\ ${st}52;c;AA${st} end`;
 
-describe('inline editor control/bidi/zero-width stand-ins (T412)', () => {
+describe('inline editor control/bidi/zero-width stand-ins', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {
@@ -58,10 +69,11 @@ describe('inline editor control/bidi/zero-width stand-ins (T412)', () => {
     seedNote(store, colourNote);
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await settle();
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, '>');
 
     stdin.write('i');
-    await settle();
+    await waitForFrame(lastFrame, EDITING);
 
     const frame = lastFrame() ?? '';
     expect(frame).toContain('␛[45mRED');
@@ -73,16 +85,17 @@ describe('inline editor control/bidi/zero-width stand-ins (T412)', () => {
   it('2: WHEN `X` is typed and Ctrl+S pressed on that note THEN the saved content equals the original plus `X`, byte for byte', async () => {
     seedNote(store, colourNote);
 
-    const { stdin } = render(<App store={store} width={80} height={24} />);
-    await settle();
+    const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, '>');
 
     stdin.write('i');
-    await settle();
+    await waitForFrame(lastFrame, EDITING);
     stdin.write('X');
-    await settle();
+    await waitForFrame(lastFrame, (f) => f.includes('X'));
     stdin.write('\x13');
-    await settle();
 
+    await waitSaved(store, colourNote + 'X');
     expect(store.getState().data.notes.get(eid('t1'))?.content).toBe(colourNote + 'X');
   });
 
@@ -91,18 +104,19 @@ describe('inline editor control/bidi/zero-width stand-ins (T412)', () => {
     seedNote(store, crlfNote);
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await settle();
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, '>');
 
     stdin.write('i');
-    await settle();
+    await waitForFrame(lastFrame, EDITING);
 
     expect(lastFrame() ?? '').toContain('␍');
 
     stdin.write('X');
-    await settle();
+    await waitForFrame(lastFrame, (f) => f.includes('X'));
     stdin.write('\x13');
-    await settle();
 
+    await waitSaved(store, 'Title\r\nline two\r\nX');
     expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('Title\r\nline two\r\nX');
   });
 
@@ -110,23 +124,25 @@ describe('inline editor control/bidi/zero-width stand-ins (T412)', () => {
     const escNote = `a${sgr}b${sgr}[1mc end`;
     seedNote(store, escNote);
 
-    const { stdin } = render(<App store={store} width={80} height={24} />);
-    await settle();
+    const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, '>');
 
     stdin.write('i');
-    await settle();
-    for (let k = 0; k < 4; k++) {
+    await waitForFrame(lastFrame, EDITING);
+    const onChar = (c: string) => (f: string) => f.includes(`${sgr}[7m${c}${sgr}[27m`);
+    for (const c of ['d', 'n', 'e', ' ']) {
       stdin.write('\x1b[D'); // Left, as an xterm cursor sequence (never an Escape event)
-      await new Promise((r) => setTimeout(r, 10));
+      await waitForFrame(lastFrame, onChar(c));
     }
     stdin.write('\x7F'); // Backspace deletes the `c`
-    await new Promise((r) => setTimeout(r, 10));
+    await waitForFrame(lastFrame, (f) => !f.includes('1mc end'));
     stdin.write('␛'); // typed U+241B stays U+241B in the real bytes
-    await new Promise((r) => setTimeout(r, 10));
+    await waitForFrame(lastFrame, (f) => f.includes('[1m␛'));
     stdin.write('Q');
-    await new Promise((r) => setTimeout(r, 10));
+    await waitForFrame(lastFrame, (f) => f.includes('␛Q'));
     stdin.write('\x13');
-    await settle();
+    await waitSaved(store, `a${sgr}b${sgr}[1m␛Q end`);
 
     expect(store.getState().data.notes.get(eid('t1'))?.content).toBe(`a${sgr}b${sgr}[1m␛Q end`);
   });
@@ -136,10 +152,11 @@ describe('inline editor control/bidi/zero-width stand-ins (T412)', () => {
     seedNote(store, bidiNote);
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await settle();
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, '>');
 
     stdin.write('i');
-    await settle();
+    await waitForFrame(lastFrame, EDITING);
 
     const frame = lastFrame() ?? '';
     expect(frame).toContain('�');
@@ -150,10 +167,10 @@ describe('inline editor control/bidi/zero-width stand-ins (T412)', () => {
     expect(frame).not.toContain('⁩');
 
     stdin.write('X');
-    await settle();
+    await waitForFrame(lastFrame, (f) => f.includes('X'));
     stdin.write('\x13');
-    await settle();
 
+    await waitSaved(store, bidiNote + 'X');
     expect(store.getState().data.notes.get(eid('t1'))?.content).toBe(bidiNote + 'X');
   });
 
@@ -161,10 +178,11 @@ describe('inline editor control/bidi/zero-width stand-ins (T412)', () => {
     seedNote(store, oscNote);
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
-    await settle();
+    await waitForInput(stdin);
+    await waitForFrame(lastFrame, '>');
 
     stdin.write('i');
-    await settle();
+    await waitForFrame(lastFrame, EDITING);
 
     const frame = lastFrame() ?? '';
     expect(frame).not.toContain(`${sgr}]`);
@@ -172,10 +190,10 @@ describe('inline editor control/bidi/zero-width stand-ins (T412)', () => {
     expect(/[\u0080-\u009f]/.test(frame)).toBe(false);
 
     stdin.write('X');
-    await settle();
+    await waitForFrame(lastFrame, (f) => f.includes('X'));
     stdin.write('\x13');
-    await settle();
 
+    await waitSaved(store, oscNote + 'X');
     expect(store.getState().data.notes.get(eid('t1'))?.content).toBe(oscNote + 'X');
   });
 });

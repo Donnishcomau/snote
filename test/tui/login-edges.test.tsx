@@ -3,7 +3,7 @@ import { render } from 'ink-testing-library';
 import React from 'react';
 import { Login } from '../../src/tui/Login';
 
-describe('T110 Login screen edge keys', () => {
+describe('Login screen edge keys', () => {
   it("1: WHEN step code is reached, '987' then '\\r' were rejected by completeLogin with new Error('401 bad code'), '12' is typed and '\\u001b' is written THEN the frame contains 'Email: a@b.co' and none of 'Code:', 'Error:', '12'", async () => {
     const requestCode = vi.fn().mockResolvedValue(undefined);
     const completeLogin = vi.fn().mockRejectedValue(new Error('401 bad code'));

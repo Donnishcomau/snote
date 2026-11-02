@@ -78,7 +78,7 @@ function make4NoteStore() {
   return store;
 }
 
-describe('T241 key burst', () => {
+describe('key burst', () => {
   it('1: WHEN the 2-note store renders at 80x24 and s is written once THEN the frame contains sort: created and store.getState().settings.sortType is creationDate', async () => {
     const store = make2NoteStore();
     const { stdin, lastFrame } = render(
@@ -95,7 +95,7 @@ describe('T241 key burst', () => {
     expect(store.getState().settings.sortType).toBe('creationDate');
   });
 
-  it('2: WHEN the 2-note store renders at 80x24 and ss (two characters in one stdin.write call) is written THEN the frame contains sort: created and `Several keys at once: only the first was used`, and store.getState().settings.sortType is creationDate (T538R-3: only the first key of a read acts)', async () => {
+  it('2: WHEN the 2-note store renders at 80x24 and ss (two characters in one stdin.write call) is written THEN the frame contains sort: created and `Several keys at once: only the first was used`, and store.getState().settings.sortType is creationDate (only the first key of a read acts)', async () => {
     const store = make2NoteStore();
     const { stdin, lastFrame } = render(
       <App store={store} width={80} height={24} />
@@ -110,7 +110,7 @@ describe('T241 key burst', () => {
     expect(store.getState().settings.sortType).toBe('creationDate');
   });
 
-  it('3: WHEN the 2-note store renders at 80x24 and sss (three characters in one stdin.write call) is written THEN store.getState().settings.sortType is creationDate, and the frame contains sort: created and not sort: a-z (T538R-3)', async () => {
+  it('3: WHEN the 2-note store renders at 80x24 and sss (three characters in one stdin.write call) is written THEN store.getState().settings.sortType is creationDate, and the frame contains sort: created and not sort: a-z', async () => {
     const store = make2NoteStore();
     const { stdin, lastFrame } = render(
       <App store={store} width={80} height={24} />
@@ -125,7 +125,7 @@ describe('T241 key burst', () => {
     expect(frame).not.toContain('sort: a-z');
   });
 
-  it('4: WHEN the 4-note store renders at 80x24 and jj (two characters in one stdin.write call) is written THEN the frame contains >Note B and does not contain >Note C (T538R-3)', async () => {
+  it('4: WHEN the 4-note store renders at 80x24 and jj (two characters in one stdin.write call) is written THEN the frame contains >Note B and does not contain >Note C', async () => {
     const store = make4NoteStore();
     const { stdin, lastFrame } = render(
       <App store={store} width={80} height={24} />

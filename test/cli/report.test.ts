@@ -1,5 +1,5 @@
 /**
- * T233: `snote --report` — a bundle without needing a crash.
+ * `snote --report` — a bundle without needing a crash.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs';
@@ -13,7 +13,7 @@ import type { EntityId } from '@vendor/types';
 
 const eid = (id: string): EntityId => id as unknown as EntityId;
 
-describe('T233 --report', () => {
+describe('--report', () => {
   let stateDir: string;
   let dataDir: string;
   let logged: string[];

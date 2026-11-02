@@ -1,4 +1,4 @@
-// Acceptance tests for T372: the `snote` shim written by
+// Acceptance tests for the `snote` shim written by
 // packaging/omarchy/setup starts its mise probe from a clean
 // `env -i PATH=/usr/bin:/bin HOME=...` base but carries through each
 // of the caller's XDG_* and MISE_* directory variables that is set

@@ -1,4 +1,4 @@
-// Acceptance tests for T346: the bar widget re-checks whether snote is
+// Acceptance tests for the bar widget re-checks whether snote is
 // installed instead of probing once at start-up. It probes the shim file
 // the setup script installs (no dependence on the shell's PATH), re-probes
 // on a short repeating timer after a setup click, and on tooltip hover.

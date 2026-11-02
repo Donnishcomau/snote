@@ -124,18 +124,18 @@ describe('issue #79 slice C: honest r, no leaked socket', () => {
       return { existed, frame, left: fs.readdirSync(dir) };
     }
 
-    it('3: WHEN a saved-token session is signed out by the server with one unsynced note THEN the server\'s open sockets drop to `0` and the data folder is left `[]` exactly as before this change', { timeout: 15000 }, async () => {
+    it('3: WHEN a saved-token session is signed out by the server with one unsynced note THEN the server\'s open sockets drop to `0` and the data folder holds only the account folder `test@example.com` (the credentials go, the account files stay)', { timeout: 15000 }, async () => {
       const { existed, left } = await forceLogout(true, true);
       expect(existed).toBe(true);
       expect(server!.openSockets.size).toBe(0);
-      expect(left).toEqual([]);
+      expect(left).toEqual([EMAIL]);
     });
 
-    it('4: WHEN a session started from the login screen is signed out by the server with one unsynced note THEN the server\'s open sockets drop to `0` and the data folder is left `[]` exactly as before this change', { timeout: 15000 }, async () => {
+    it('4: WHEN a session started from the login screen is signed out by the server with one unsynced note THEN the server\'s open sockets drop to `0` and the data folder holds only the account folder `test@example.com` (the credentials go, the account files stay)', { timeout: 15000 }, async () => {
       const { existed, left } = await forceLogout(false, true);
       expect(existed).toBe(true);
       expect(server!.openSockets.size).toBe(0);
-      expect(left).toEqual([]);
+      expect(left).toEqual([EMAIL]);
     });
 
     it('5: WHEN the server signs the session out THEN the login screen still shows `Error: Your session has expired or was revoked. Log in again.`', { timeout: 15000 }, async () => {

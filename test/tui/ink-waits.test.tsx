@@ -1,5 +1,5 @@
 /**
- * T473 — tests for test/helpers/ink-waits.ts: waitForFrame resolves when
+ * tests for test/helpers/ink-waits.ts: waitForFrame resolves when
  * a frame matches (string or predicate), rejects with a named error on
  * timeout, and waitForInput waits until Ink's stdin `readable` listener
  * exists so a key written right after is received by `useInput`.
@@ -21,7 +21,7 @@ function Switcher({ afterMs, text }: { afterMs: number; text: string }): React.R
   return <Text>{ready ? text : 'loading'}</Text>;
 }
 
-describe('T473 ink-waits helpers', () => {
+describe('ink-waits helpers', () => {
   it("1: WHEN a component shows `loading` and switches to `ready` after 100 ms THEN `await waitForFrame(lastFrame, 'ready')` resolves with a frame containing `ready`", async () => {
     const { lastFrame } = render(<Switcher afterMs={100} text="ready" />);
     const frame = await waitForFrame(lastFrame, 'ready');

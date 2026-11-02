@@ -1,4 +1,4 @@
-// T285: make it obvious how to add a tag to a note. The list key hint relabels
+// make it obvious how to add a tag to a note. The list key hint relabels
 // `g` as "Add tag", and Preview's spacer slot always shows a `g add tag` hint
 // (except in trash view).
 import { createRequire } from 'module';
@@ -21,7 +21,7 @@ const lines = (frame: string | undefined): string[] => {
 };
 
 /**
- * Portable way to force ink's bundled chalk to emit ANSI (the T244 recipe,
+ * Portable way to force ink's bundled chalk to emit ANSI (the recipe,
  * same as content-not-muted.test.tsx:18-30).
  */
 async function forceInkChalk(): Promise<{ restore: () => void }> {
@@ -38,7 +38,7 @@ async function forceInkChalk(): Promise<{ restore: () => void }> {
   };
 }
 
-describe('Tag hint (T285)', () => {
+describe('Tag hint', () => {
   it('1: WHEN <KeyHints context="list" width={80} /> is rendered THEN the frame contains the exact ? Help  n New  e Edit  g Add tag  / Search  q Quit', async () => {
     const { lastFrame, unmount } = render(<KeyHints context="list" width={80} />);
     await delay(50);

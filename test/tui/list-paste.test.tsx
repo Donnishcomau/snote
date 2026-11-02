@@ -1,5 +1,5 @@
 /**
- * T482 (carrying T463's six acceptance lines): the notes list claims
+ * (carrying's six acceptance lines): the notes list claims
  * bracketed pastes through BottomArea's useListPaste, so a paste there
  * changes nothing and shows a notice — while pastes into prompts, search
  * and the inline editor keep working as before.
@@ -58,7 +58,7 @@ async function waitFor(label: string, cond: () => void): Promise<void> {
   }
 }
 
-describe('notes list uses the paste hook (T482)', () => {
+describe('notes list uses the paste hook', () => {
   beforeEach(() => {
     resetKeyLog();
   });

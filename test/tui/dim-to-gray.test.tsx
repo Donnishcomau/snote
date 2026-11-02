@@ -43,7 +43,7 @@ const forceInkChalk = async (): Promise<() => void> => {
   };
 };
 
-describe('T246 dimColor -> color="gray"', () => {
+describe('dimColor -> color="gray"', () => {
   let restore: (() => void) | null = null;
   afterEach(() => {
     if (restore) {

@@ -33,7 +33,7 @@ function seed(): ReturnType<typeof makeStore> {
 
 const lines = (f: string | undefined): string[] => (f ?? '').split('\n');
 
-describe('T459 too small window', () => {
+describe('too small window', () => {
   let dir: string;
   let store: ReturnType<typeof makeStore>;
   let onQuit: Mock<() => void>;

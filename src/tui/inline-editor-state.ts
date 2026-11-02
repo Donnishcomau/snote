@@ -1,26 +1,37 @@
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
+import type { EntityId, Note } from '@vendor/types';
 
-// S6-02: Root's too-small screen must not quit over unsaved inline-editor text.
+// Root's too-small screen must not quit over unsaved inline-editor text.
 let editOpenNow = false;
 export const isInlineEditOpen = (): boolean => editOpenNow;
 
+/** #387: the note an inline session stores into (by its id, from `i`) and the text it last stored. */
+export interface InlineSession {
+  entry: { id: EntityId; note: Note } | null;
+  stored: string;
+}
+
 /**
- * T315.2/T315.3: whether the built-in inline editor is open, swapping the
+ *.2/.3: whether the built-in inline editor is open, swapping the
  * Preview pane for InlineEditor (src/tui/InlineEditor.tsx) inside MainPanes.
  * `base` is the note's content captured at the moment `openEdit` is called
- * (i.e. when `i` is pressed) — InlineEditor compares its live buffer against
- * `base` to decide whether Escape needs to confirm a discard, and
- * `saveInlineEdit` (app-actions.ts) merges against it on Ctrl+S.
+ * (i.e. when `i` is pressed): the editor's first text. #387: `session` keeps
+ * the note selected at `i` for the whole session and the text last stored,
+ * the base `saveInlineEdit` (app-actions.ts) merges against on each store.
  */
 export function useInlineEditorState(): {
   open: boolean;
   base: string;
-  openEdit: (content: string) => void;
+  session: { current: InlineSession };
+  openEdit: (entry: { id: EntityId; note: Note }) => void;
   closeEdit: () => void;
 } {
   const [open, setOpen] = useState(false);
   const [base, setBase] = useState('');
-  const openEdit = (content: string) => {
+  const session = useRef<InlineSession>({ entry: null, stored: '' });
+  const openEdit = (entry: { id: EntityId; note: Note }) => {
+    const content = entry.note.content ?? '';
+    session.current = { entry, stored: content };
     setBase(content);
     setOpen(true);
   };
@@ -31,15 +42,15 @@ export function useInlineEditorState(): {
       editOpenNow = false;
     };
   }, [open]);
-  return { open, base, openEdit, closeEdit };
+  return { open, base, session, openEdit, closeEdit };
 }
 
-/** T456: a line over this many UTF-16 units makes the inline editor too slow. */
+/** a line over this many UTF-16 units makes the inline editor too slow. */
 export const INLINE_EDIT_MAX_LINE = 10000;
 export const INLINE_EDIT_TOO_LONG = 'A line is over 10,000 characters: press e to edit in your editor';
 
 /**
- * T516: more than this many non-ASCII code points makes the inline editor
+ * more than this many non-ASCII code points makes the inline editor
  * redraw too slow per key (each U+0000-U+007F code point is cheap; long
  * ASCII notes stay editable, so the cap counts non-ASCII only).
  */

@@ -1,4 +1,4 @@
-// T412: the inline editor's display mapping. Characters that could feed
+// the inline editor's display mapping. Characters that could feed
 // terminal control sequences, or that are invisible / bidi-reordering, are
 // shown as visible stand-ins; the note's own bytes are never touched.
 // Every stand-in is exactly one UTF-16 unit for one, so offsets, lengths and

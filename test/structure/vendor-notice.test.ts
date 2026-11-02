@@ -1,5 +1,5 @@
 /**
- * T269: GPLv2 section 2(a) change notices. Every vendored file we modified
+ * GPLv2 section 2(a) change notices. Every vendored file we modified
  * carries the exact header line as its new first line; the unmodified ones
  * are byte-identical to upstream and must not carry it.
  */
@@ -28,10 +28,10 @@ walk('vendor/simplenote');
 const modified = allFiles.filter((f) => read(f).includes('// OMARCHY:'));
 const untouched = allFiles.filter((f) => !read(f).includes('// OMARCHY:'));
 
-describe('T269 GPLv2 change notices on modified vendored files', () => {
-  it('1: WHEN every file under `vendor/simplenote/` is listed THEN there are exactly `45` files and exactly `18` of them contain `// OMARCHY:` somewhere in their content.', () => {
+describe('GPLv2 change notices on modified vendored files', () => {
+  it('1: WHEN every file under `vendor/simplenote/` is listed THEN there are exactly `45` files and exactly `20` of them contain `// OMARCHY:` somewhere in their content.', () => {
     expect(allFiles.length).toBe(45);
-    expect(modified.length).toBe(18);
+    expect(modified.length).toBe(20);
   });
 
   it("2: WHEN each of the files that contains `// OMARCHY:` is read THEN its first line is exactly `// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-09-23).`", () => {
@@ -41,7 +41,7 @@ describe('T269 GPLv2 change notices on modified vendored files', () => {
   });
 
   it("3: WHEN each of the files that does NOT contain `// OMARCHY:` is read THEN its first line is NOT `// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-09-23).`", () => {
-    expect(untouched.length).toBe(27);
+    expect(untouched.length).toBe(25);
     for (const file of untouched) {
       expect(read(file).split('\n')[0]).not.toBe(HEADER);
     }
@@ -53,7 +53,7 @@ describe('T269 GPLv2 change notices on modified vendored files', () => {
     expect(source).toContain('onClient');
   });
 
-  it('5: WHEN `vendor/simplenote/state/simperium/functions/in-memory-ghost.ts` (an unmodified file, not in the 18) is read THEN it does not contain `// OMARCHY:` anywhere and its first line is not the header from line 2 above.', () => {
+  it('5: WHEN `vendor/simplenote/state/simperium/functions/in-memory-ghost.ts` (an unmodified file, not in the 20) is read THEN it does not contain `// OMARCHY:` anywhere and its first line is not the header from line 2 above.', () => {
     const source = read('vendor/simplenote/state/simperium/functions/in-memory-ghost.ts');
     expect(source).not.toContain('// OMARCHY:');
     expect(source.split('\n')[0]).not.toBe(HEADER);

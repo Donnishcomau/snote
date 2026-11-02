@@ -1,6 +1,6 @@
 /**
- * newNoteFields acceptance tests (T207).
- * One `it()` per numbered Acceptance line in task-T207.md.
+ * newNoteFields acceptance tests.
+ * One `it()` per numbered Acceptance line in task-.md.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -11,7 +11,7 @@ import type { Collection } from '@vendor/types';
 // Helper to create a TagName from a string
 const tname = (name: string): string => name;
 
-describe('newNoteFields (T207)', () => {
+describe('newNoteFields', () => {
   it('1: WHEN newNoteFields({ type: all }, makeNote(a, Top, { markdown: true })) is called THEN it returns { systemTags: [markdown], tags: [] }', () => {
     const collection: Collection = { type: 'all' };
     const topNote = makeNote('a', 'Top', { markdown: true });

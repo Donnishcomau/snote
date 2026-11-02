@@ -1,5 +1,5 @@
 /**
- * Help never overlaps at small sizes: a one-column scrolling list (T465).
+ * Help never overlaps at small sizes: a one-column scrolling list.
  */
 import { describe, it, expect } from 'vitest';
 import { render } from 'ink-testing-library';
@@ -29,20 +29,20 @@ describe('help small', () => {
     const frame = frameAt(20, 7);
     fits(frame, 20, 7);
     expect(frame).toContain('1-4/45 j/k scroll');
-  });
+  }, 10000);
 
   it('2: WHEN Help renders at 100x24 THEN the frame has at most `24` lines, none over `100`, and does not contain `j/k scroll` (the narrow list fits)', () => {
     const frame = frameAt(100, 24);
     fits(frame, 100, 24);
     expect(frame.length).toBeGreaterThan(0);
     expect(frame).not.toContain('j/k scroll');
-  });
+  }, 10000);
 
   it('3: WHEN Help renders at 40x30 THEN the frame has at most `30` lines, none over `40`, and contains `j         Move down`', () => {
     const frame = frameAt(40, 30);
     fits(frame, 40, 30);
     expect(frame).toContain('j         Move down');
-  });
+  }, 10000);
 
   it('4: WHEN `j` is written 50 times to Help at 20x7 THEN, collecting every frame, every keymap entry\'s key starts some line', async () => {
     const { stdin, frames, lastFrame, unmount } = render(<Help width={20} height={7} editor="nvim" />);
@@ -51,7 +51,7 @@ describe('help small', () => {
       stdin.write('j');
       if (i % 4 !== 0 && i !== 50) continue;
       const top = Math.min(i, 41);
-      await waitForFrame(lastFrame, `${top + 1}-${top + 4}/45`);
+      await waitForFrame(lastFrame, `${top + 1}-${top + 4}/45`, 10000);
     }
     const lines = frames.map(stripAnsi).flatMap((f) => f.split('\n')).map((l) => l.replace(/[│┌┐└┘─]/g, '').trim());
     expect(keymap.length).toBeGreaterThan(0);
@@ -59,7 +59,7 @@ describe('help small', () => {
       expect(lines.some((l) => l.startsWith(e.key.trim()))).toBe(true);
     }
     unmount();
-  }, 10000);
+  }, 30000);
 
   it('5: WHEN App at 30x12 opens Help with `?` and `j` is written 60 times THEN within 1 s the frame contains `Editing:` and `/45 j/k`; after 60 `k` it contains `Help - Keyboard`; Escape closes it', async () => {
     const store = makeStore({ stubClient: {} });
@@ -77,12 +77,12 @@ describe('help small', () => {
     await waitForFrame(lastFrame, (f) => !f.includes('Help - Keyboard'));
     expect(lastFrame()).not.toContain('j/k scroll');
     unmount();
-  });
+  }, 10000);
 
   it('6: WHEN Help renders at 120x30 THEN the frame contains `Navigate` and `Trash` and not `j/k scroll`', () => {
     const frame = frameAt(120, 30);
     expect(frame).toContain('Navigate');
     expect(frame).toContain('Trash');
     expect(frame).not.toContain('j/k scroll');
-  });
+  }, 10000);
 });

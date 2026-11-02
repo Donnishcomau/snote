@@ -1,5 +1,5 @@
 /**
- * T339: `y` on the send-to-blog question posts the draft.
+ * `y` on the send-to-blog question posts the draft.
  *
  * BottomArea's Confirm answer flows through core's sendNoteToBlog
  * (force false): a 201 reply is recorded for loadBlogSend, a 401 reply
@@ -108,7 +108,7 @@ async function openQuestion(): Promise<ReturnType<typeof render>> {
   return r;
 }
 
-describe('blog send key (T339)', () => {
+describe('blog send key', () => {
   it('1: WHEN `y` is pressed on the question and the server returns 201 with url `https://blog.example/write/p1` THEN `loadBlogSend` returns that url', async () => {
     await withTempDataDir(async (dir) => {
       const { server, url } = await startBlogServer({

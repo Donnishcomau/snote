@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 const read = (p: string) => fs.readFileSync(path.resolve(process.cwd(), p), 'utf8');
 
-describe('SNOTE_NODE comments (T476)', () => {
+describe('SNOTE_NODE comments', () => {
   it('1: WHEN packaging/omarchy/setup is read THEN it does not contain `just like in find_node` and does not contain `(test mode)`, and contains `/usr/bin/node`', () => {
     const setup = read('packaging/omarchy/setup');
     expect(setup.length).toBeGreaterThan(0);

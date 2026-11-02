@@ -16,7 +16,7 @@ import type { State } from '../../src/core/store';
 const strip = (s: string | undefined): string => (s ?? '').replace(/\u001b\[[0-9;]*m/g, '');
 const lines = (s: string | undefined): string[] => strip(s).split('\n');
 
-describe('T466 status line fits its width', () => {
+describe('status line fits its width', () => {
   let dir: string;
   beforeEach(() => {
     dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snote-statusfit-'));

@@ -1,11 +1,11 @@
 /**
- * T538R-5 (F221, F222, the Ctrl+C path): the last per-read lines.
+ * (, the Ctrl+C path): the last per-read lines.
  *
  * Ink's own exit on Ctrl+C is off (src/cli/main.tsx); Root quits on Ctrl+C
  * through the read gate, and only from a read of Ctrl+C bytes alone. As a
  * later key of a read it quits nothing and ends the read. The gate keeps App's
- * role when the app first mounts below 20x7 (F221), dropped keys never reach
- * the key ring (F222), and the gate stays the only wrapper of an input emitter
+ * role when the app first mounts below 20x7, dropped keys never reach
+ * the key ring, and the gate stays the only wrapper of an input emitter
  * or a stdin read in `src/`. Each `stdin.write` below is one read.
  */
 import { describe, it, expect, vi, afterEach, type Mock } from 'vitest';
@@ -58,7 +58,7 @@ async function mount(width = 80, height = 24) {
   return { ...r, size, onQuit, t1, untouched };
 }
 
-describe('T538R-5 Ctrl+C, resize and the key ring', () => {
+describe('Ctrl+C, resize and the key ring', () => {
   it('1: WHEN the list shows note t1 `hello world` and `\\x1b[B\\x03` arrives as one read THEN `onQuit` is called 0 times and the frame still contains `hello world`', async () => {
     const a = await mount();
     await waitForFrame(a.lastFrame, 'hello world');

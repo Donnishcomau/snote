@@ -1,5 +1,5 @@
 /**
- * T151: Tombstones — deletions made offline are sent again at start-up.
+ * Tombstones — deletions made offline are sent again at start-up.
  * A "delete forever" recorded while offline is re-sent for every tombstone
  * whose note the server still holds (FR-5).
  */
@@ -33,7 +33,7 @@ const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms)
 
 const ORIGINAL_MD = 1000;
 
-describe('T151 tombstones: offline deletions resent at start-up', () => {
+describe('tombstones: offline deletions resent at start-up', () => {
   let server: FakeSimperiumServer;
   let dir: string;
   let stopSaving: (() => void) | undefined;

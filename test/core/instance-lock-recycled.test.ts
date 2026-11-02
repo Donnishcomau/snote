@@ -1,8 +1,8 @@
 /**
- * T440: a recycled pid must not lock the user out. A lock file whose
+ * a recycled pid must not lock the user out. A lock file whose
  * still-alive pid started more than 2000 ms after the file was last written
  * cannot have been written by that process, so it is reclaimed; every other
- * refusal from T303 stays exactly as it was.
+ * refusal from stays exactly as it was.
  */
 import { afterAll, describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';

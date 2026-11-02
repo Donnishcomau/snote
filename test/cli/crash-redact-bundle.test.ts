@@ -1,5 +1,5 @@
 /**
- * T506: the bundled crash entry that throws a message holding note-like
+ * the bundled crash entry that throws a message holding note-like
  * text leaves a crash file with only the redacted message. Same rig as
  * test/cli/crash-handler.test.ts (async `spawn`, never spawnSync).
  */
@@ -57,7 +57,7 @@ async function waitForCrashText(dir: string, timeoutMs: number): Promise<string>
   }
 }
 
-describe('T506 crash bundle redaction', () => {
+describe('crash bundle redaction', () => {
   beforeAll(async () => {
     outDir = mkdtempSync(join(tmpdir(), 'crash-redact-'));
     outfile = join(outDir, 'entry.js');

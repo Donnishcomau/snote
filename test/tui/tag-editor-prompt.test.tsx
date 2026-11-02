@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render } from 'ink-testing-library';
 import { TagEditor } from '../../src/tui/TagEditor';
 
-describe('T251 TagEditor prompt hint', () => {
+describe('TagEditor prompt hint', () => {
   it('1: WHEN <TagEditor tags={[]} allTags={[\'home\',\'work\']} onAdd={vi.fn()} onRemove={vi.fn()} onClose={vi.fn()} /> is rendered THEN lastFrame() is exactly tags: + type to add', async () => {
     const { lastFrame, unmount } = render(
       <TagEditor tags={[]} allTags={['home', 'work']} onAdd={vi.fn()} onRemove={vi.fn()} onClose={vi.fn()} />

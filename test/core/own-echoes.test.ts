@@ -1,5 +1,5 @@
 /**
- * T526 — the owed-ack tracker (`trackOwnEchoes`) on a fake note channel
+ * the owed-ack tracker (`trackOwnEchoes`) on a fake note channel
  * built only from `EventEmitter` (node:events).
  *
  * The tracker touches exactly: `client.buckets[i].name` and `.channel`,
@@ -72,7 +72,7 @@ function echoMessage(id: string, ccid: string): string {
 const readSentFile = (dir: string): string =>
   readFileSync(join(dir, 'sent-changes.json'), 'utf8');
 
-describe('T526 the owed-ack tracker on a fake note channel', () => {
+describe('the owed-ack tracker on a fake note channel', () => {
   it("3: WHEN sent-changes.json maps n1 to `echo-ccid`, the channel has n1 in flight with ccid `inflight-ccid`, and a c message echoing `echo-ccid` for n1 arrives THEN the in-flight n1 entry still has ccid `inflight-ccid`", () => {
     const dir = freshDir();
     seedRecord(dir, { n1: 'echo-ccid' });

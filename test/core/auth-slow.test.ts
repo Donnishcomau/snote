@@ -1,5 +1,5 @@
 /**
- * T483 — a slow but working server is not punished: the request waits the
+ * a slow but working server is not punished: the request waits the
  * full timeout, and one timer decides.
  *
  * Line 1 answers a password login after 600 ms with the default timeout and
@@ -16,7 +16,7 @@ import { describe, it, expect } from 'vitest';
 
 import { loginWithPassword } from '../../src/core/auth';
 
-describe('T483 slow but working server', () => {
+describe('slow but working server', () => {
   /**
    * 1: WHEN a local server answers the password login with a valid token
    * after `600` ms and the default timeout is used THEN loginWithPassword

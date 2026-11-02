@@ -10,7 +10,7 @@ const frameLines = (el: React.ReactElement): string[] => {
 
 describe('help layout', () => {
   it('1: WHEN layoutHelp(118, 34, "omawrite") and layoutHelp(312, 81, "omawrite") are called THEN each returns 30 lines, line 0 of each equals "Help - Keyboard Shortcuts", every line of the first is <= 118 long and every line of the second is <= 312 long', () => {
-    // T315.2: keymap grew from 35 to 36 (edit_note_inline), adding 1 row.
+    //.2: keymap grew from 35 to 36 (edit_note_inline), adding 1 row.
     const a = layoutHelp(118, 34, 'omawrite');
     const b = layoutHelp(312, 81, 'omawrite');
     expect(a).toHaveLength(30);
@@ -47,7 +47,7 @@ describe('help layout', () => {
     for (const line of first) expect(line.length).toBeLessThanOrEqual(118);
     expect(first.some((l) => l.includes('Tags (note)'))).toBe(false);
     const second = frameLines(<Help width={312} height={81} editor="omawrite" />);
-    // T315.2: layoutHelp grew from 29 to 30 lines, so wideLines.length+2 is 32.
+    //.2: layoutHelp grew from 29 to 30 lines, so wideLines.length+2 is 32.
     expect(second).toHaveLength(32);
   });
 

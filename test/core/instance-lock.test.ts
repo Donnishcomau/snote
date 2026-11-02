@@ -1,5 +1,5 @@
 /**
- * T303: per-account-dir single-instance lock.
+ * per-account-dir single-instance lock.
  */
 import { afterAll, describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';

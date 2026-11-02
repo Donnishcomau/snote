@@ -1,5 +1,5 @@
 /**
- * T491: the login screen shows where to create a Simplenote account.
+ * the login screen shows where to create a Simplenote account.
  * On the email step only, one muted line points new users at the signup URL.
  */
 import { describe, it, expect, vi } from 'vitest';

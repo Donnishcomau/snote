@@ -1,5 +1,5 @@
 /**
- * F234 + F235 (updater pre-build UP-01, UP-02): the release-tag check runs at
+ * (updater pre-build UP-01, UP-02): the release-tag check runs at
  * most once per 24 h across restarts and while open, and every ls-remote call
  * on the update path carries the credential and config guards. The git runner
  * is a fake and the clock and the timer are injected: no network, no waiting.
@@ -61,7 +61,7 @@ afterEach(() => {
   for (const r of roots.splice(0)) fs.rmSync(r, { recursive: true, force: true });
 });
 
-describe('F234 + F235 tag-check cadence and git guards', () => {
+describe('tag-check cadence and git guards', () => {
   it('1: WHEN snote starts twice within 24 h THEN the runner is called `1` time, the cache file is `{ checkedAt, version, commit }` with mode `600`, and the second start still shows the banner', async () => {
     const { home, stateDir } = makeRoot();
     const { run, calls } = makeRunner(() => ({ code: 0, stdout: tagLines('v0.2.5', 'v0.2.8') }));

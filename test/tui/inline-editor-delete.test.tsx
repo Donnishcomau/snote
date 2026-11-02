@@ -1,5 +1,5 @@
 /**
- * F174 (T515): in the inline editor the Delete key removes the grapheme
+ * in the inline editor the Delete key removes the grapheme
  * after the caret; at the end of the text it does nothing; Backspace still
  * removes the character before the caret.
  */
@@ -39,7 +39,7 @@ function seedNote(store: ReturnType<typeof makeStore>, content: string): void {
   });
 }
 
-describe('inline editor forward delete (T515)', () => {
+describe('inline editor forward delete', () => {
   let store: ReturnType<typeof makeStore>;
   const saved = (): string | undefined => store.getState().data.notes.get(eid('t1'))?.content;
 

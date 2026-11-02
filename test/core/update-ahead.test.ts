@@ -1,5 +1,5 @@
 /**
- * T416: the update check reports `available` only when the remote
+ * the update check reports `available` only when the remote
  * head is something the clone does not already have. Real temp git
  * repos (origin ahead / clone ahead / diverged, fetched or not) run
  * through the real `defaultGitRunner`, so every git call — including

@@ -18,8 +18,7 @@ in `src/core` (`// OMARCHY: boundary cast`); do not redesign vendored types.
 ## Verification
 
 `make check` runs every gate before a change is done: typecheck, lint, all
-tests, the keymap gate, and the ANSI gate (plus the perf bench). See
-[docs/EVALS.md](docs/EVALS.md).
+tests, the keymap gate, and the ANSI gate (plus the perf bench).
 
 ## Test conventions
 

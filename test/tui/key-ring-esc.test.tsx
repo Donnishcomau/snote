@@ -14,7 +14,7 @@ const eid = (id: string): EntityId => id as unknown as EntityId;
 
 const joinedInputs = (): string => getKeyLog().map((e) => e.input).join('');
 
-describe('key ring stores ESC-carrying pastes as <text> (T478)', () => {
+describe('key ring stores ESC-carrying pastes as <text>', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

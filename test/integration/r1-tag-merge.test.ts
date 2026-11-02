@@ -1,5 +1,5 @@
 /**
- * R1 sync-1 (F203; REQUIRED-LINES section A rows 4-6): at the start-up
+ * R1 sync-1 (; REQUIRED-LINES section A rows 4-6): at the start-up
  * hand-off the tag lists of a note edited while snote was closed are merged as
  * sets with the server's copy (tag identity is Simplenote's tag hash), so
  * another device's tag change made while snote was closed is kept and a tag
@@ -22,35 +22,35 @@ const note = (systemTags: string[], tags: string[]) => ({ content: OFF, deleted:
 
 describe('R1 restart hand-off merges tag lists', () => {
   it('1: WHEN n1 has an offline edit `OFF`, another device set tags [`home`] while snote was closed, replies are 1200 ms late and the user tags n1 `work` THEN the server and the store hold content `OFF`, tags [`home`, `work`], verdict `KEPT`', async () => {
-    const o = await runScenario('S12-02-A1-tags');
+    const o = await runScenario('A1-tags');
     expect(o.server).toEqual(note([], ['home', 'work']));
     expect(o.store).toEqual(note([], ['home', 'work']));
     expect(o.verdict).toBe('KEPT');
   }, 45000);
 
   it('2: WHEN n1 has an offline edit `OFF`, another device set system tag `markdown` while snote was closed, replies are 1200 ms late and the user pins n1 THEN the server and the store hold content `OFF`, system tags [`markdown`, `pinned`], verdict `KEPT`', async () => {
-    const o = await runScenario('S12-02-A4-systemTags');
+    const o = await runScenario('A4-systemTags');
     expect(o.server).toEqual(note(['markdown', 'pinned'], []));
     expect(o.store).toEqual(note(['markdown', 'pinned'], []));
     expect(o.verdict).toBe('KEPT');
   }, 45000);
 
   it('3: WHEN n1 has an offline edit `OFF` and an offline pin, another device set tags [`home`] while snote was closed, replies are 1200 ms late and the user tags n1 `work` THEN the server and the store hold content `OFF`, `pinned`, tags [`home`, `work`], verdict `KEPT`', async () => {
-    const o = await runScenario('S12-02-O5-offline-pin-tags');
+    const o = await runScenario('O5-offline-pin-tags');
     expect(o.server).toEqual(note(['pinned'], ['home', 'work']));
     expect(o.store).toEqual(note(['pinned'], ['home', 'work']));
     expect(o.verdict).toBe('KEPT');
   }, 45000);
 
   it('4: WHEN n1 was synced with tags [`old`, `gone`], `old` was removed while snote was closed (content edited to `OFF`), and another device meanwhile removed `gone` and added `home` THEN after the restart the server and the store hold content `OFF` and tags exactly [`home`], verdict `KEPT`', async () => {
-    const o = await runScenario('TAG-1-removed-offline');
+    const o = await runScenario('tags-removed-offline');
     expect(o.server).toEqual(note([], ['home']));
     expect(o.store).toEqual(note([], ['home']));
     expect(o.verdict).toBe('KEPT');
   }, 45000);
 
   it('5: WHEN n1 was synced with tags [`Work`], while snote was closed `Work` was removed and `Home` added (content `OFF`), and another device meanwhile set tags [`work`, `home`] THEN after the restart the server and the store hold tags exactly [`home`] (same tag hash, no duplicate), verdict `KEPT`', async () => {
-    const o = await runScenario('TAG-2-same-tag-hash');
+    const o = await runScenario('tags-same-tag-hash');
     expect(o.server).toEqual(note([], ['home']));
     expect(o.store).toEqual(note([], ['home']));
     expect(o.verdict).toBe('KEPT');

@@ -1,5 +1,5 @@
 /**
- * T243 Sync recovery: `r` must push a note that is stuck pending to the server.
+ * Sync recovery: `r` must push a note that is stuck pending to the server.
  *
  * A note whose change was sent but never acknowledged stays in
  * `simperium.pendingNotes` as `sent` for ever, and the old forceSync only
@@ -97,7 +97,7 @@ const stickNote = (
   }
 };
 
-describe('T243 forceSync re-sends a note stuck pending', () => {
+describe('forceSync re-sends a note stuck pending', () => {
   beforeEach(async () => {
     server = new FakeSimperiumServer();
     url = (await server.start()).url;

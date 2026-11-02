@@ -1,5 +1,5 @@
 /**
- * T386: the once-a-day anonymous remote update check (U2 core).
+ * the once-a-day anonymous remote update check (U2 core).
  * Real temp git repos stand in for the plugin clone and its origin;
  * a fake runner records calls wherever the network would be.
  */

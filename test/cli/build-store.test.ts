@@ -1,5 +1,5 @@
 /**
- * T111: buildStore — saved state in, sync on, save on change.
+ * buildStore — saved state in, sync on, save on change.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'node:fs';
@@ -20,7 +20,7 @@ const waitFor = async (cond: () => boolean, timeoutMs = 2500) => {
   }
 };
 
-describe('T111 buildStore', () => {
+describe('buildStore', () => {
   let server: FakeSimperiumServer;
   let dir: string;
   let stopSaving: (() => void) | undefined;

@@ -1,6 +1,6 @@
 /**
- * T457 — logout removes only the files and account folders snote made;
- * every other file in the data dir stays (F102).
+ * logout removes only the files and account folders snote made;
+ * every other file in the data dir stays.
  */
 import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import { render } from 'ink-testing-library';
@@ -17,7 +17,7 @@ import { waitForInput, waitForFrame } from '../helpers/ink-waits';
 import type { Store } from 'redux';
 import type { State } from '../../src/core/store';
 
-describe('T457 logout scope', () => {
+describe('logout scope', () => {
   let tmpDir: string;
 
   beforeEach(() => {

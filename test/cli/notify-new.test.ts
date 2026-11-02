@@ -1,5 +1,5 @@
 /**
- * T374: `snote --notify-new` asks a running snote to open a new note, and a
+ * `snote --notify-new` asks a running snote to open a new note, and a
  * running snote listens for it. CLI send path + buildStore's watchNewRequests.
  */
 import { spawn, type ChildProcess } from 'node:child_process';
@@ -27,7 +27,7 @@ const waitFor = async (cond: () => boolean, timeoutMs = 2500) => {
 const sleepAlive = (ms: number): Promise<void> =>
   new Promise((r) => setTimeout(r, ms));
 
-describe('T374 --notify-new', () => {
+describe('--notify-new', () => {
   let dir: string;
   let logged: string[];
   let io: { log: (text: string) => void };

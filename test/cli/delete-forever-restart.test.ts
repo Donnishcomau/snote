@@ -1,5 +1,5 @@
 /**
- * T488: A note deleted forever stays deleted when snote is killed before
+ * A note deleted forever stays deleted when snote is killed before
  * state.json is saved. The delete reaches the server and the ghost file at
  * once, but state.json lands 500 ms later; killed inside that window the
  * restart must not load the stale state and re-create the note on the server.
@@ -50,7 +50,7 @@ const noteData = (id: string): Note =>
     tags: [],
   }) as unknown as Note;
 
-describe('T488 delete forever survives a kill before state.json is saved', () => {
+describe('delete forever survives a kill before state.json is saved', () => {
   let server: FakeSimperiumServer;
   let dir: string;
   let stopSaving: (() => void) | undefined;

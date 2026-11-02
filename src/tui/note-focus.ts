@@ -12,10 +12,10 @@ interface NoteKeyCtx {
   setItemIndex: Dispatch<SetStateAction<number>>;
   setItemAsk?: (v: boolean) => void;
   setNotice?: (v: string | null) => void;
-  // T298: opens the export prompt (BottomArea owns the state, App passes it down)
+  // opens the export prompt (BottomArea owns the state, App passes it down)
   setExportAsk?: (v: boolean) => void;
-  // T337: opens the send-to-blog question (BottomArea owns the state).
-  // T338: the value is the Confirm's actions, captured while it is open.
+  // opens the send-to-blog question (BottomArea owns the state).
+  // the value is the Confirm's actions, captured while it is open.
   setBlogSendAsk?: (v: BlogSendAskActions | null) => void;
 }
 
@@ -67,13 +67,13 @@ export function handleNoteKey(
     if (selectedEntry && !selectedEntry.note.deleted) {
       setItemAsk?.(true);
     } else if (selectedEntry?.note.deleted) {
-      // T293: consistent with T286 — trash blocks `a` with the same notice
+      // consistent with trash blocks `a` with the same notice
       setNotice?.('In trash: press u to restore first');
     }
     return true;
   }
 
-  // w — export the note to a .md file (T298); trash blocks it with T286's notice
+  // w — export the note to a .md file; trash blocks it with's notice
   if (input === 'w') {
     if (selectedEntry && !selectedEntry.note.deleted) {
       setExportAsk?.(true);
@@ -83,12 +83,12 @@ export function handleNoteKey(
     return true;
   }
 
-  // b — send the note to the blog (T337/T338); trash blocks it with T286's notice
+  // b — send the note to the blog; trash blocks it with's notice
   if (input === 'b') {
     if (selectedEntry?.note.deleted) {
       setNotice?.('In trash: press u to restore first');
     } else if (selectedEntry) {
-      // T338: onNo closes the question. The note pane keeps focus, so a
+      // onNo closes the question. The note pane keeps focus, so a
       // later `b` opens it again; that is upstream's toggle behaviour.
       setBlogSendAsk?.({ onYes: () => {}, onNo: () => setBlogSendAsk(null) });
     }

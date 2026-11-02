@@ -50,7 +50,7 @@ function seedNotes(): ReturnType<typeof makeStore> {
   return store;
 }
 
-describe('T361 --new opens the editor for a new note once', () => {
+describe('--new opens the editor for a new note once', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

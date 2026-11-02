@@ -1,5 +1,5 @@
 /**
- * T419: endpoint overrides must use https (http only for localhost), and
+ * endpoint overrides must use https (http only for localhost), and
  * turning off TLS checks prints a warning.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -9,7 +9,7 @@ import * as path from 'node:path';
 
 import { main } from '../../src/cli/main';
 
-describe('T419 endpoint-check', () => {
+describe('endpoint-check', () => {
   let dir: string;
   let logged: string[];
   let io: { log: (text: string) => void };

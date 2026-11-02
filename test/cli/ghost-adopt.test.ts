@@ -1,5 +1,5 @@
 /**
- * T487: after a kill inside the save delay, an edited or trashed note comes
+ * after a kill inside the save delay, an edited or trashed note comes
  * back as the server has it. state.json is written 500 ms after the last
  * change while the ghost file lands at once when the server confirms, so a
  * kill inside that window leaves state.json stale. At start-up, a note the
@@ -48,7 +48,7 @@ const waitFor = async (cond: () => boolean, timeoutMs = 1000) => {
   }
 };
 
-describe('T487 after a kill inside the save delay, an edited or trashed note comes back as the server has it', () => {
+describe('after a kill inside the save delay, an edited or trashed note comes back as the server has it', () => {
   let server: FakeSimperiumServer;
   let dir: string;
   let stopSaving: (() => void) | undefined;

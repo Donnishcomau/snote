@@ -1,5 +1,5 @@
 /**
- * T198: crash fix — a tag without a name never crashes the tags pane
+ * crash fix — a tag without a name never crashes the tags pane
  */
 import { describe, it, expect } from 'vitest';
 import { render } from 'ink-testing-library';
@@ -29,7 +29,7 @@ const mixedTags: Map<TagHash, Tag> = new Map([
 
 // ---------- 1: tagRows(mixed) returns ['work','home'], Map untouched ----------
 
-describe('T198 tagRows skips nameless entries', () => {
+describe('tagRows skips nameless entries', () => {
   it('1: WHEN tagRows(mixed) is called THEN it returns exactly [work, home] and mixed.size is still 5', () => {
     const sizeBefore = mixedTags.size;
     const result = tagRows(mixedTags);

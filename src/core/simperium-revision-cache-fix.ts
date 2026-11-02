@@ -1,5 +1,5 @@
 /**
- * T536 — simperium's note-history cache never lets go.
+ * simperium's note-history cache never lets go.
  *
  * In the pinned `simperium@1.1.4` client, `Channel.getRevisions` fills the
  * module-level `revisionCache` (a `Map` keyed `<id>.<version>`,
@@ -29,7 +29,7 @@ interface ClientWithBuckets {
 }
 
 /**
- * Fail safe (T537): if a simperium update removes, renames or retypes the
+ * Fail safe: if a simperium update removes, renames or retypes the
  * `revisionCache` export, the patch does nothing, so history opens and works
  * as before, only without the memory release.
  */

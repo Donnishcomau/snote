@@ -1,4 +1,4 @@
-import { readFileSync, renameSync, existsSync, rmSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { problemText, publishProblem } from './problem-signal';
@@ -93,9 +93,7 @@ export class FileGhostStore<U> implements GhostStore<U> {
         data: g.data,
       })),
     };
-    const tmpPath = this.filePath + '.tmp';
-    secureWriteFileSync(tmpPath, JSON.stringify(file));
-    renameSync(tmpPath, this.filePath);
+    secureWriteFileSync(this.filePath, JSON.stringify(file));
     this._dirExists = true;
   }
 

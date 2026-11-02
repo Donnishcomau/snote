@@ -1,5 +1,5 @@
 /**
- * T375: a running snote opens the new-note editor when a same-process
+ * a running snote opens the new-note editor when a same-process
  * request arrives (emitNewRequest), and drops it while an editor is already
  * open, while search is open, or while the inline editor is open.
  */
@@ -52,7 +52,7 @@ function seedNotes(): ReturnType<typeof makeStore> {
   return store;
 }
 
-describe('T375 external new-note request', () => {
+describe('external new-note request', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

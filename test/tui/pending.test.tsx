@@ -170,7 +170,7 @@ describe('T83 Status bar shows changes waiting to be sent', () => {
     expect(frame).not.toContain('offline');
   });
 
-  it('6: WHEN <StatusBar connected={false} count={4} width={80} pending={0} /> and then the same with pending={2} label="trash" are rendered alone THEN the frames, trimmed, are exactly [offline] 4 notes and [offline] 4 notes 2 pending trash', async () => {
+  it('6: WHEN <StatusBar connected={false} count={4} width={80} pending={0} /> and then the same with pending={2} label="trash" are rendered alone THEN the frames, trimmed, are exactly [offline] 4 notes and [offline] 4 notes 2 pending (no sync) trash', async () => {
     const { lastFrame: lastFrame1, frames: frames1 } = render(
       <StatusBar connected={false} count={4} width={80} pending={0} />
     );
@@ -183,6 +183,6 @@ describe('T83 Status bar shows changes waiting to be sent', () => {
     );
     await new Promise((r) => setTimeout(r, 0));
     const frame2 = lastFrame2() ?? frames2.join('\n');
-    expect(statusLine(frame2)).toBe('[offline] 4 notes 2 pending trash');
+    expect(statusLine(frame2)).toBe('[offline] 4 notes 2 pending (no sync) trash');
   });
 });

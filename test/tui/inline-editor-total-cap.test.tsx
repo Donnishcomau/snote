@@ -38,7 +38,7 @@ function seed(content: string): ReturnType<typeof makeStore> {
 }
 const content = (s: ReturnType<typeof makeStore>) => s.getState().data.notes.get(eid('t1'))?.content;
 
-describe('inline editor non-ASCII total cap (T516)', () => {
+describe('inline editor non-ASCII total cap', () => {
   it('1: WHEN OVER (`Title` and 20001 `漢` in lines of 99) is selected at width 80 and `i` is written THEN the frame contains `Preview:` and `The note has over 20,000 non-ASCII characters: press e to edit in your editor`, and the note is unchanged', async () => {
     const store = seed(OVER);
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);

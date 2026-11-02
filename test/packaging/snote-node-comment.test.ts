@@ -1,4 +1,4 @@
-// Acceptance tests for T422. The old comments in packaging/omarchy/setup
+// Acceptance tests for. The old comments in packaging/omarchy/setup
 // claimed SNOTE_NODE "exists ONLY for the tests" and that "real users
 // never have it set", but the generated shim honours SNOTE_NODE at run
 // time for whoever runs snote. Behaviour is unchanged; the comments now

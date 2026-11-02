@@ -8,9 +8,13 @@ import { secureMkdir, secureWriteFileSync } from './secure-fs';
 import type { State } from './store';
 
 const UNSYNCED_FILE = 'unsynced.json';
+const UNSYNCED_NOTES_FILE = 'unsynced-notes.json';
+
+// #336a: the pending notes themselves (a write costs the pending count, not the library). proof: test/core/unsynced-notes.test.ts
+export type UnsyncedNotes = Record<string, { modificationDate?: number | string }>;
 
 /**
- * T493 — the record of local changes the server has not confirmed:
+ * the record of local changes the server has not confirmed:
  * noteId → the modificationDate the note had when the change went out.
  * `saveState` only ever writes `state.data`, and the sync engine's
  * `pendingNotes` lives in memory, so without this file a restart cannot
@@ -45,13 +49,47 @@ export function loadUnsynced(dir: string): UnsyncedRecord {
   }
 }
 
-const writeRecord = (dir: string, record: UnsyncedRecord): void => {
-  const filePath = path.join(dir, UNSYNCED_FILE);
-  const tmpPath = filePath + '.tmp';
+export function loadUnsyncedNotes(dir: string): UnsyncedNotes {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(path.join(dir, UNSYNCED_NOTES_FILE), 'utf8')) as unknown;
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (Object.fromEntries(Object.entries(parsed).filter(([, v]) => typeof (v as { content?: unknown } | null)?.content === 'string' && Number.isFinite(Number((v as { modificationDate?: unknown }).modificationDate)) && (v as { modificationDate?: unknown }).modificationDate !== '' && (v as { modificationDate?: unknown }).modificationDate !== null)) as UnsyncedNotes) : {}; // only entries with string content and a finite date
+  } catch {
+    return {};
+  }
+}
+
+// Lay each saved copy (unrecorded, or not older than the record: a kill can fall between the two writes) over an older or missing state.json copy; `preloaded` itself when nothing changes.
+export function overlayUnsyncedNotes<T extends { data?: { notes?: Map<EntityId, unknown> } }>(
+  preloaded: T | undefined,
+  record: UnsyncedRecord,
+  saved: UnsyncedNotes
+): T | undefined {
+  const notes = preloaded?.data?.notes;
+  if (!preloaded || !notes) {
+    return preloaded;
+  }
+  let next: Map<EntityId, unknown> | undefined;
+  for (const [id, note] of Object.entries(saved)) {
+    const recorded = record[id];
+    const date = Number(note?.modificationDate);
+    if (recorded !== undefined && date < Number(recorded)) {
+      continue;
+    }
+    const have = notes.get(id as EntityId) as { modificationDate?: number | string } | undefined;
+    if (have !== undefined && Number(have.modificationDate) >= date) {
+      continue;
+    }
+    next ??= new Map(notes);
+    next.set(id as EntityId, note);
+  }
+  return next ? { ...preloaded, data: { ...preloaded.data, notes: next } } : preloaded;
+}
+
+const writeJson = (dir: string, name: string, value: unknown): void => {
+  const filePath = path.join(dir, name);
   try {
     secureMkdir(dir);
-    secureWriteFileSync(tmpPath, JSON.stringify(record));
-    fs.renameSync(tmpPath, filePath);
+    secureWriteFileSync(filePath, JSON.stringify(value));
   } catch {
     // A failed write (EACCES, ENOSPC, EISDIR) must not crash the app;
     // the record is a safety net, the notes themselves live in state.json.
@@ -105,10 +143,14 @@ export function trackUnsynced(
     getState: () => State;
     subscribe: (listener: () => void) => () => void;
   },
-  dir: string
+  dir: string,
+  stateBroken = false
 ): UnsyncedTracker {
+  let stateGood = !stateBroken;
+  let lastNotes = store.getState().data.notes;
   let carried: UnsyncedRecord = loadUnsynced(dir);
   let written: UnsyncedRecord = { ...carried };
+  let savedNotes: UnsyncedNotes = loadUnsyncedNotes(dir);
   // Carried ids seen in `pendingNotes` this session: leaving it confirmed.
   const seenPending = new Set<string>();
 
@@ -134,21 +176,37 @@ export function trackUnsynced(
   };
 
   const onStoreChange = () => {
+    const prevNotes = lastNotes;
+    lastNotes = store.getState().data.notes;
     const next = build(snapshot(store.getState()));
     if (recordEquals(next, written)) {
       return;
     }
     written = next;
-    // F198 — the record holds only ids and dates; the change itself lives in
-    // state.json, which the debounced saver writes up to 500 ms later. Save
-    // it now, before the record, so a kill inside that window cannot leave
-    // a record entry pointing at a change that exists only in memory.
-    try {
-      saveState(store.getState(), dir);
-    } catch {
-      // the debounced saver retries and shows the failure on the notice line
+    //, #336a: the pending notes go to unsynced-notes.json before the record (a kill inside the 500 ms save window keeps them). proof: test/core/unsynced-notes.test.ts
+    const notesNow = store.getState().data.notes;
+    const keep: UnsyncedNotes = {};
+    for (const [id, date] of Object.entries(written)) {
+      const note = notesNow.get(id as EntityId);
+      if (note !== undefined && Number(note.modificationDate) === date) {
+        keep[id] = note;
+      } else if (savedNotes[id] !== undefined && Number(savedNotes[id].modificationDate) === date) {
+        keep[id] = savedNotes[id];
+      }
     }
-    writeRecord(dir, written);
+    savedNotes = keep;
+    // a full save while state.json is missing or was not loadable, and when a pending note's date goes back (a history restore keeps the revision's older date)
+    const back = Object.keys(written).some((id) => Number(notesNow.get(id as EntityId)?.modificationDate) < Number(prevNotes.get(id as EntityId)?.modificationDate));
+    if (!stateGood || back || !fs.existsSync(path.join(dir, 'state.json'))) {
+      try {
+        saveState(store.getState(), dir);
+        stateGood = true;
+      } catch {
+        // the debounced saver retries
+      }
+    }
+    writeJson(dir, UNSYNCED_NOTES_FILE, savedNotes);
+    writeJson(dir, UNSYNCED_FILE, written);
   };
 
   const unsubscribe = store.subscribe(onStoreChange);

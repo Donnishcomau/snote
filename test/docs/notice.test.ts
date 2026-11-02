@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 const notice = readFileSync('NOTICE', 'utf8');
 const lines = notice.split('\n');
 
-describe('NOTICE — upstream attribution (T268)', () => {
+describe('NOTICE — upstream attribution', () => {
   it('1: WHEN NOTICE is read THEN it is non-empty and its first line is exactly NOTICE', () => {
     expect(notice.length).toBeGreaterThan(0);
     expect(lines[0]).toBe('NOTICE');

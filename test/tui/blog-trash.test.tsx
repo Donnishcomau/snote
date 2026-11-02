@@ -1,5 +1,5 @@
 /**
- * T337: `b` on a trashed note is blocked inside handleNoteKey — it sets the
+ * `b` on a trashed note is blocked inside handleNoteKey — it sets the
  * trash notice and never opens the send question.
  */
 
@@ -38,7 +38,7 @@ const entry = (store: ReturnType<typeof makeStore>, id: string) => ({
   note: store.getState().data.notes.get(eid(id)) as Note,
 });
 
-describe('blog trash (T337)', () => {
+describe('blog trash', () => {
   it('1: WHEN `b` is pressed and the selected note is in the trash THEN the frame contains `In trash: press u to restore first`', () => {
     const store = makeStore({ stubClient: {} });
     seedNote(store, makeNote('note-1', 'Trashed note\nDeleted content', { deleted: true }), 'note-1');

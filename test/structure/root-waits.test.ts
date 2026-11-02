@@ -1,5 +1,5 @@
 /**
- * T495 (F138): the four load-fragile cases now wait for what they assert.
+ * the four load-fragile cases now wait for what they assert.
  * Case 3 and 4 of test/tui/root.test.tsx, case 4 of
  * test/tui/root-server.test.tsx and case 1 of test/core/status-quit.test.ts
  * keep their titles and asserted values while every fixed sleep between

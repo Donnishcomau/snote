@@ -1,12 +1,10 @@
 node_modules/
 dist/
-# export: drop next line
-
 *.tgz
 .env
 .env.*
 !.env.example
 
-
+# machine-specific paths for local tool folders
 .claude/skill-context/local.md
-
+.claude/skill-context/*/spool/

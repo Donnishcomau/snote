@@ -1,5 +1,5 @@
-// T383: colour pass step 7. In Preview the tag hint's ` add tag` text is dim
-// (theme.muted) while the `g` key letter keeps the accent (the T352
+// colour pass step 7. In Preview the tag hint's ` add tag` text is dim
+// (theme.muted) while the `g` key letter keeps the accent (the
 // key-name convention). Checklist boxes stay dim/green.
 import { createRequire } from 'module';
 import { pathToFileURL } from 'url';
@@ -13,7 +13,7 @@ import { makeNote } from './fixtures';
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Portable way to force ink's bundled chalk to emit ANSI (the T244 recipe,
+ * Portable way to force ink's bundled chalk to emit ANSI (the recipe,
  * same as content-not-muted.test.tsx).
  */
 async function forceInkChalk(): Promise<{ restore: () => void }> {
@@ -30,7 +30,7 @@ async function forceInkChalk(): Promise<{ restore: () => void }> {
   };
 }
 
-describe('preview hint dim (T383)', () => {
+describe('preview hint dim', () => {
   it("1: WHEN <Preview note={makeNote('t', 'No tags note\\nbody', { tags: [] })} width={80} height={12} /> renders with chalk forced THEN the frame contains \\u001b[34mg\\u001b[39m\\u001b[2m add tag\\u001b[22m", async () => {
     const { restore } = await forceInkChalk();
     try {

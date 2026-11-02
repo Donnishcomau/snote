@@ -1,5 +1,5 @@
 /**
- * The column-fit rule for the sectioned Help layout (T522).
+ * The column-fit rule for the sectioned Help layout.
  *
  * At widths 50-99 the sectioned layout is readable only when each of its
  * sub-columns is at least 23 cells wide. The inner width available to the

@@ -1,7 +1,7 @@
 import { Box, Text } from 'ink';
 import React from 'react';
 
-import { DEFAULT_BLOG_ORIGIN, saveBlogConfig } from '../core/blog-config';
+import { DEFAULT_BLOG_ORIGIN } from '../core/blog-origin';
 import { dataRoot } from '../core/data-root';
 import { Prompt } from './Prompt';
 import type { BlogPhase } from './blog-send-ask';
@@ -43,7 +43,8 @@ export function BlogSendDialog({
         initial=""
         onSubmit={(token) => {
           const dir = dataRoot();
-          saveBlogConfig(dir, { origin, token }).then(
+          // snote-diet: the code that writes blog.json loads only when a token is entered.
+          import('../core/blog-config').then((m) => m.saveBlogConfig(dir, { origin, token })).then(
             () => request({ kind: 'send' }),
             (error: unknown) => {
               const msg = error instanceof Error ? error.message : 'blog setup failed';
@@ -57,7 +58,7 @@ export function BlogSendDialog({
     );
   }
 
-  // T340-401fix: the y/n keys for send/resend are handled by a persistent
+  //-401fix: the y/n keys for send/resend are handled by a persistent
   // useInput in useBlogSendAskState (see its doc comment) rather than by a
   // freshly-mounted <Confirm>, so this is display-only.
   const resend = phase.kind === 'resend';

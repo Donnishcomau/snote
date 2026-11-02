@@ -1,5 +1,5 @@
 /**
- * chunk-keys slice 2 (F193): the bundle size is measured the same in any
+ * chunk-keys slice 2: the bundle size is measured the same in any
  * checkout. esbuild's module path lines run through a symlinked node_modules'
  * target; bundleSize counts them as a normal checkout writes them.
  */

@@ -4,7 +4,7 @@
  * (`own-echoes.ts`).
  */
 
-function lineCounts(text: string): Map<string, number> {
+export function lineCounts(text: string): Map<string, number> {
   const counts = new Map<string, number>();
   for (const line of text.split('\n')) counts.set(line, (counts.get(line) ?? 0) + 1);
   return counts;
@@ -44,7 +44,7 @@ export function editIncluded(base: string, edited: string, current: string): boo
 }
 
 /**
- * F236 — true when `current` holds every line of `edited` in the same order
+ * true when `current` holds every line of `edited` in the same order
  * and also passes `editIncluded`: `current` is `edited` with lines added, so
  * treating `edited` as already held keeps every line of it. Line counts alone
  * read a moved line, or a repeated line such as a blank one, as held.

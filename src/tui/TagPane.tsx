@@ -49,7 +49,7 @@ export function TagPane({
 
   const content = (
     <Box flexDirection="column" width={width} height={height}>
-      <PaneHeading label="Tags" focused={focused} />
+      <PaneHeading label="Tags" focused={focused} width={divider ? width - 1 : width} />
       {labels.map((label, idx) => {
         const actualIndex = visibleStart + idx;
         const isSelected = actualIndex === selectedIndex;
@@ -61,16 +61,17 @@ export function TagPane({
           actualIndex === 0 ||
           actualIndex === rows.length - 1 ||
           (trashRow && actualIndex === rows.length - 2);
-        // selected label in the accent colour; unselected system rows recede to dim
+        // selected label in the accent colour, inverse only while the pane has focus (#72);
+        // unselected system rows recede to dim
         const labelStyle = isSelected
-          ? theme.accent
+          ? focused ? { ...theme.selection, ...theme.accent } : theme.accent
           : isSystem && !isMore
             ? theme.muted
             : {};
         return (
           <Box key={actualIndex}>
-            {isMore ? <Text>{'\u00a0'}</Text> : isSelected ? <Text bold>{'>'}</Text> : actualIndex === 0 || actualIndex === rows.length - 1 || (trashRow && actualIndex === rows.length - 2) ? <Text>{'·'}</Text> : <Text>{' '}</Text>}
-            <Text {...labelStyle}>{label.slice(0, width - 2)}</Text>
+            {isMore ? <Text>{'\u00a0'}</Text> : isSelected ? <Text {...(focused ? { ...theme.selection, ...theme.accent } : { bold: true })}>{'>'}</Text> : actualIndex === 0 || actualIndex === rows.length - 1 || (trashRow && actualIndex === rows.length - 2) ? <Text>{'·'}</Text> : <Text>{' '}</Text>}
+            <Text {...labelStyle}>{label.length > width - 2 ? label.slice(0, width - 3) + '…' : label}</Text>
           </Box>
         );
       })}

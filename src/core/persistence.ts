@@ -79,11 +79,9 @@ export function saveState(state: State, dir: string): void {
 
   const file: StateFile = { version: 1, data: toSave };
   const filePath = path.join(dir, 'state.json');
-  const tmpPath = filePath + '.tmp';
 
   secureMkdir(dir);
-  secureWriteFileSync(tmpPath, JSON.stringify(file, replacer));
-  fs.renameSync(tmpPath, filePath);
+  secureWriteFileSync(filePath, JSON.stringify(file, replacer));
 }
 
 /**
@@ -106,23 +104,49 @@ export function loadState(dir: string): Partial<State> | undefined {
     return undefined;
   }
 
-  let file: StateFile;
+  let file: StateFile | null;
   try {
-    file = JSON.parse(raw) as StateFile;
+    file = JSON.parse(raw) as StateFile | null;
   } catch {
     return undefined;
   }
 
-  if (file.version !== 1) {
+  // #553: a file that parses but has the wrong shape is unloadable, not a crash (a missing or null data throws in the try below)
+  if (file?.version !== 1) {
     return undefined;
   }
 
   // Reconstruct the data slice with Maps and Sets revived
   const revivedData: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(file.data)) {
-    revivedData[key] = reviver(key, value);
+  // #553: notes must be a Map of notes the screens can draw: content a string, and a tags or systemTags that is an array holds only strings; any other tags or systemTags (absent, null, {}, a number, a string) is accepted, because fillTags in src/core/store.ts (#558) replaces it with [] before a screen reads it; a Set, a plain object, a null or number note makes the file unloadable
+  let drawable = false;
+  try {
+    for (const [key, value] of Object.entries(file.data)) {
+      revivedData[key] = reviver(key, value);
+    }
+    type Note = { content?: unknown; tags?: unknown; systemTags?: unknown };
+    drawable = [...(Map.prototype.values.call(revivedData.notes) as IterableIterator<Note>)].every(
+      (n) => typeof n.content === 'string' && [n.tags, n.systemTags].every((v) => !Array.isArray(v) || v.every((x) => typeof x === 'string'))
+    );
+  } catch {
+    // data missing or null, notes not revivable, a null note: drawable stays false
+  }
+  // #553: the other maps may be absent (the reducers default them) but if present must be a Map
+  if (!drawable || ['noteTags', 'preferences', 'tags'].some((k) => k in revivedData && !(revivedData[k] instanceof Map))) {
+    return undefined;
   }
 
+  // #553 v9: the readers need a tag with a string name (useAppState, the tag editor), a Set per noteTags entry (the noteTags reducer) and a noteRevisions that starts empty (saveState does not write it); a malformed entry is dropped here, the same entries the screens skip, so the rest of the file loads
+  type Tags = Map<string, { name?: unknown } | null>;
+  type NoteTags = Map<string, unknown>;
+  const { tags, noteTags } = revivedData as { tags?: Tags; noteTags?: NoteTags };
+  tags?.forEach((v, k) => {
+    if (typeof v?.name !== 'string') tags.delete(k);
+  });
+  noteTags?.forEach((v, k) => {
+    if (!(v instanceof Set)) noteTags.delete(k);
+  });
+  delete revivedData.noteRevisions;
   return { data: revivedData as unknown as State['data'] } as unknown as Partial<State>;
 }
 
@@ -136,6 +160,11 @@ const afterSave: Array<() => void> = [];
  */
 export function afterNextSave(fn: () => void): void {
   afterSave.push(fn);
+}
+
+/** Tests only (#97): how many callbacks wait for the next successful save. */
+export function afterSaveCount(): number {
+  return afterSave.length;
 }
 
 /**

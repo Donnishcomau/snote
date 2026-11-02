@@ -1,6 +1,6 @@
 /**
- * T499 — a full re-index never removes an unsynced note, even for a
- * moment, and still sends it afterwards (F141).
+ * a full re-index never removes an unsynced note, even for a
+ * moment, and still sends it afterwards.
  *
  * On a restart re-index the stale-delete diff
  * (src/core/simperium-stale-delete-fix.ts) deleted an offline-created
@@ -144,7 +144,7 @@ async function seedAndClose(srv: FakeSimperiumServer): Promise<string> {
 }
 
 /**
- * The F141 restart: the server drops `noteX` from its index with no log
+ * The restart: the server drops `noteX` from its index with no log
  * entry, `state.json` gains `noteZ` with content `Z` and no ghost entry
  * (an offline create that never synced), and `ghosts-note.json`'s `cv` is
  * bashed to `not-a-number` so the restart's first cv report is answered
@@ -184,8 +184,8 @@ afterEach(async () => {
   server = undefined;
 });
 
-describe('T499 a full re-index never removes an unsynced note', () => {
-  it('1: WHEN the F141 restart runs THEN within 2 s `noteX` is gone from data.notes, `noteY` has content `Y`, and the subscriber counted `0` states without `noteZ`', async () => {
+describe('a full re-index never removes an unsynced note', () => {
+  it('1: WHEN the restart runs THEN within 2 s `noteX` is gone from data.notes, `noteY` has content `Y`, and the subscriber counted `0` states without `noteZ`', async () => {
     const srv = await startServer();
     const dataDir = await seedAndClose(srv);
     await f141Edits(srv, dataDir);
@@ -215,7 +215,7 @@ describe('T499 a full re-index never removes an unsynced note', () => {
     }
   }, 8000);
 
-  it("2: WHEN the F141 restart runs THEN within 2.5 s the server's `noteZ` has content `Z`, the store's `noteZ` is `Z`, and the subscriber counted `0` states without `noteZ`", async () => {
+  it("2: WHEN the restart runs THEN within 2.5 s the server's `noteZ` has content `Z`, the store's `noteZ` is `Z`, and the subscriber counted `0` states without `noteZ`", async () => {
     const srv = await startServer();
     const dataDir = await seedAndClose(srv);
     await f141Edits(srv, dataDir);

@@ -1,5 +1,5 @@
 /**
- * T291: local data files private, and bug reports free of typed content.
+ * local data files private, and bug reports free of typed content.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs';
@@ -40,7 +40,7 @@ const seedTwoNotes = () => {
   return store;
 };
 
-describe('T291 private files', () => {
+describe('private files', () => {
   let tmpDir: string;
   const originalStateHome = process.env.XDG_STATE_HOME;
 

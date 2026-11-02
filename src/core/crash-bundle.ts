@@ -1,5 +1,5 @@
 /**
- * F230: the `--report` bundle built from the newest crash file. The file
+ * the `--report` bundle built from the newest crash file. The file
  * is plain JSON on disk and may have been edited, so the report is built
  * from an explicit allow-list of the fields snote's own crash writer
  * (crashReport and sessionSnapshot) produces. Unknown top-level and

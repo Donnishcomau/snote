@@ -1,5 +1,5 @@
 /**
- * T320 — snote stays stuck without syncing when Simplenote ignores its login.
+ * snote stays stuck without syncing when Simplenote ignores its login.
  *
  * Live finding 2026-09-26: about 1 start in 3, snote opens the socket and
  * sends its four `N:init:` messages and the server never answers them — no
@@ -96,7 +96,7 @@ function openA(
   return built;
 }
 
-describe('T320 — auth watchdog: a login the server ignores gets reconnected', () => {
+describe('auth watchdog: a login the server ignores gets reconnected', () => {
   it("1: WHEN the fake server holds note `n1`, `ignoreInitConnections` is `1`, and client A starts through `buildStore` with `authWatchdogMs` `300` THEN within 8000 ms A's `data.notes` has `n1` and the server's `connectionsOpened` is at least `2`", async () => {
     const server = await startServer();
     server.ignoreInitConnections = 1;

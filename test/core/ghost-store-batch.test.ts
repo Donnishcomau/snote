@@ -40,7 +40,7 @@ async function writtenOnceAfterFlush(dir: string): Promise<boolean> {
   return statSync(file).mtimeMs === mtimeAfterFlush && !readdirSync(dir).some((f) => f.endsWith('.tmp'));
 }
 
-describe('T159 Ghost store: a burst of writes becomes one file write', () => {
+describe('Ghost store: a burst of writes becomes one file write', () => {
   let dir: string;
 
   function fresh(): FileGhostStore<Data> {

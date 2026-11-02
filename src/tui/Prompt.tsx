@@ -108,7 +108,7 @@ interface ConfirmProps {
  * Keys: y/Y → onYes, n/N/Escape → onNo, everything else ignored.
  */
 export function Confirm({ question, onYes, onNo, destructive }: ConfirmProps): React.JSX.Element {
-  useReadGate({ confirm: true }); // T538R: only a one-key read answers (F224)
+  useReadGate({ confirm: true }); // only a one-key read answers
   useInput((input, key) => {
     // Escape calls onNo
     if (key.escape) {

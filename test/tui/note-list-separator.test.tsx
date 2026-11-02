@@ -28,7 +28,7 @@ function countBlanksBetween(
   return count;
 }
 
-describe('Note list separator (T238)', () => {
+describe('Note list separator', () => {
   it('1: WHEN two notes each with a single-line preview are rendered THEN exactly 1 blank row separates the row containing line a and the row containing Title B.', async () => {
     const notes = [
       makeNote('a', 'Title A\nline a'),

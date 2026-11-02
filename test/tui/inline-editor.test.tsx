@@ -1,7 +1,7 @@
 /**
- * T315.2: `i` opens the built-in inline editor in the Preview pane's slot,
+ *.2: `i` opens the built-in inline editor in the Preview pane's slot,
  * read-only (no typing/save yet — that's Task 3); Escape (no edits made)
-
+ * returns to Preview.
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from 'ink-testing-library';
@@ -31,7 +31,7 @@ function seedNote(store: ReturnType<typeof makeStore>, content: string): void {
   });
 }
 
-describe('inline editor mount (i key, T315.2)', () => {
+describe('inline editor mount (i key,.2)', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {
@@ -60,7 +60,7 @@ describe('inline editor mount (i key, T315.2)', () => {
     await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('i');
-    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
+    await waitForFrame(lastFrame, 'Autosaves · Esc close · Ctrl+S save now');
     stdin.write('\x1b');
     const frame = await waitForFrame(
       lastFrame,
@@ -79,7 +79,7 @@ describe('inline editor mount (i key, T315.2)', () => {
     await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('i');
-    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
+    await waitForFrame(lastFrame, 'Autosaves · Esc close · Ctrl+S save now');
 
     const entry = keymap.find((e) => e.action === 'edit_note_inline');
     expect(entry).toBeDefined();
@@ -110,7 +110,7 @@ describe('inline editor mount (i key, T315.2)', () => {
     expect(frameBefore).toContain('hello world');
 
     stdin.write('i');
-    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
+    await waitForFrame(lastFrame, 'Autosaves · Esc close · Ctrl+S save now');
     stdin.write('j');
     // the editor takes `j` as text (`hello worldj`) instead of moving down
     const frameAfter = await waitForFrame(
@@ -123,7 +123,7 @@ describe('inline editor mount (i key, T315.2)', () => {
     expect(frameAfter).not.toContain('Preview:');
   });
 });
-describe('inline editor typing + save (i key, T315.3)', () => {
+describe('inline editor typing + save (i key,.3)', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {
@@ -138,7 +138,7 @@ describe('inline editor typing + save (i key, T315.3)', () => {
     await waitForFrame(lastFrame, 'line1');
 
     stdin.write('i');
-    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
+    await waitForFrame(lastFrame, 'Autosaves · Esc close · Ctrl+S save now');
     stdin.write('X');
     await waitForFrame(lastFrame, 'line1X');
     stdin.write('\x13');
@@ -159,7 +159,7 @@ describe('inline editor typing + save (i key, T315.3)', () => {
     await waitForFrame(lastFrame, 'line1');
 
     stdin.write('i');
-    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
+    await waitForFrame(lastFrame, 'Autosaves · Esc close · Ctrl+S save now');
     stdin.write('\r');
     stdin.write('Y');
     // `Y` starts the editor's second row (the caret may be drawn after it)
@@ -181,11 +181,11 @@ describe('inline editor typing + save (i key, T315.3)', () => {
     await waitForFrame(lastFrame, 'Conflict target');
 
     stdin.write('i');
-    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
+    await waitForFrame(lastFrame, 'Autosaves · Esc close · Ctrl+S save now');
 
     // Replace the whole buffer with the LOCAL variant via bracketed paste:
     // select-all isn't available, so clear with enough backspaces then paste.
-    // F161: the editor keeps every key of a burst, so the backspaces need no
+    // the editor keeps every key of a burst, so the backspaces need no
     // wait between them.
     for (let i = 0; i < 'Conflict target\noriginal body'.length; i++) {
       stdin.write('\x7F');
@@ -221,82 +221,90 @@ describe('inline editor typing + save (i key, T315.3)', () => {
   });
 });
 
-describe('inline editor discard-changes confirm (Escape, T315.4)', () => {
+describe('inline editor Escape keeps the text (.4, #387)', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {
     store = makeStore({ stubClient: {} });
   });
 
-  it('8: WHEN a note is opened with `i`, `Z` is typed, then `Escape` is pressed THEN `lastFrame()` contains `discard changes?` and the store\'s note content is unchanged from before `i` was pressed', async () => {
+  it('8: WHEN a note is opened with `i`, `Z` is typed, then `Escape` is pressed THEN `lastFrame()` contains `Preview:` without `discard changes?` and the store\'s note content is `hello worldZ` (#387: Esc closes and keeps the text)', async () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
     await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello world'));
 
     stdin.write('i');
-    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('Ctrl+S save · Esc cancel · Enter new line'));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('Autosaves · Esc close · Ctrl+S save now'));
     stdin.write('Z');
     await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello worldZ'));
     stdin.write('\x1b');
 
     await vi.waitFor(() => {
-      expect(lastFrame() ?? '').toContain('discard changes?');
-      expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello world');
+      const frame = lastFrame() ?? '';
+      expect(frame).toContain('Preview:');
+      expect(frame).not.toContain('discard changes?');
+      expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello worldZ');
     });
   });
 
-  it("9: WHEN that `discard changes?` prompt is open and `y` is pressed THEN `lastFrame()` contains `Preview:` again and the store's note content is unchanged (the typed `Z` is discarded)", async () => {
+  it("9: WHEN a note is opened with `i`, `Z` is typed and `Escape` is pressed THEN `lastFrame()` contains `Preview:` again and the store's note content changed exactly `1` time, to `hello worldZ` (#387)", async () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
     await waitForInput(stdin);
     await waitForFrame(lastFrame, 'hello world');
 
+    const seen: string[] = [];
+    let prev = store.getState().data.notes.get(eid('t1'))?.content;
+    const unsubscribe = store.subscribe(() => {
+      const now = store.getState().data.notes.get(eid('t1'))?.content;
+      if (now !== prev) seen.push(now ?? '');
+      prev = now;
+    });
     stdin.write('i');
-    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
+    await waitForFrame(lastFrame, 'Autosaves · Esc close · Ctrl+S save now');
     stdin.write('Z');
     await waitForFrame(lastFrame, 'hello worldZ');
     stdin.write('\x1b');
-    await waitForFrame(lastFrame, 'discard changes?');
-    expect(lastFrame()).toContain('discard changes?');
-    stdin.write('y');
     await waitForFrame(
       lastFrame,
-      (f) => f.includes('Preview:') && store.getState().data.notes.get(eid('t1'))?.content === 'hello world',
+      (f) => f.includes('Preview:') && store.getState().data.notes.get(eid('t1'))?.content === 'hello worldZ' && seen.length === 1,
     );
+    unsubscribe();
 
     expect(lastFrame()).toContain('Preview:');
-    expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello world');
+    expect(seen).toEqual(['hello worldZ']);
+    expect(seen.length).toBe(1);
   });
 
-  it('10: WHEN that prompt is open and `n` is pressed THEN the editor reopens still showing the typed `Z`', async () => {
+  it('10: WHEN `Z` is typed, `Escape` closes the editor and `i` is pressed again THEN the editor reopens showing the kept `hello worldZ` (#387)', async () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
     await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello world'));
 
     stdin.write('i');
-    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('Ctrl+S save · Esc cancel · Enter new line'));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('Autosaves · Esc close · Ctrl+S save now'));
     stdin.write('Z');
     await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello worldZ'));
     stdin.write('\x1b');
-    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('discard changes?'));
-    stdin.write('n');
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('Preview:'));
+    stdin.write('i');
 
     await vi.waitFor(() => {
       const frame = lastFrame() ?? '';
       expect(frame).toContain('hello worldZ');
+      expect(frame).toContain('Autosaves · Esc close · Ctrl+S save now');
       expect(frame).not.toContain('Preview:');
     });
   });
 
   // Fast-keypress regression (no numbered Acceptance line). `\x1b` written
-  // back-to-back with `y` is ONE Alt+y event to Ink (meta, not escape) — the
-  // same bytes a real Alt+y sends — so the prompt cannot be opened and
-  // answered by that pair. As in blog-send-repeat.test.tsx, the answer key is
-  // written the instant the prompt is on screen, with no settle delay.
-  it('regression: WHEN `y` is written the instant `discard changes?` appears (no settle delay) THEN the keypress is not dropped: `Preview:` returns and the store content is unchanged', async () => {
+  // back-to-back with `i` is ONE Alt+i event to Ink (meta, not escape), so
+  // each key is written the instant the screen it needs is shown, with no
+  // settle delay (as in blog-send-repeat.test.tsx).
+  it('regression: WHEN `Escape` and `i` are written with no settle delay after `Z` THEN neither keypress is dropped: the editor reopens showing `hello worldZ`', async () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
@@ -304,25 +312,22 @@ describe('inline editor discard-changes confirm (Escape, T315.4)', () => {
     await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('i');
-    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
+    await waitForFrame(lastFrame, 'Autosaves · Esc close · Ctrl+S save now');
     stdin.write('Z');
     await waitForFrame(lastFrame, 'hello worldZ');
     stdin.write('\x1b');
-    for (let i = 0; i < 400 && !(lastFrame() ?? '').includes('discard changes?'); i++) {
+    for (let i = 0; i < 400 && !(lastFrame() ?? '').includes('Preview:'); i++) {
       await new Promise((r) => setTimeout(r, 2));
     }
-    expect(lastFrame()).toContain('discard changes?');
-    stdin.write('y');
-    await waitForFrame(
-      lastFrame,
-      (f) => f.includes('Preview:') && store.getState().data.notes.get(eid('t1'))?.content === 'hello world',
-    );
-
     expect(lastFrame()).toContain('Preview:');
-    expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello world');
+    stdin.write('i');
+    await waitForFrame(lastFrame, (f) => f.includes('hello worldZ') && f.includes('Autosaves · Esc close · Ctrl+S save now') && !f.includes('Preview:'));
+
+    expect(lastFrame()).toContain('hello worldZ');
+    expect(lastFrame()).not.toContain('Preview:');
   });
 
-  it('regression: WHEN `n` is written the instant `discard changes?` appears and `X` the instant it disappears (no settle delays) THEN neither keypress is dropped: the buffer shows `hello worldZX`', async () => {
+  it('regression: WHEN `Escape`, `i` and `X` are written with no settle delays THEN neither keypress is dropped: the buffer shows `hello worldZX`, and after `Escape` the note is `hello worldZX`', async () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
@@ -330,27 +335,33 @@ describe('inline editor discard-changes confirm (Escape, T315.4)', () => {
     await waitForFrame(lastFrame, 'hello world');
 
     stdin.write('i');
-    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
+    await waitForFrame(lastFrame, 'Autosaves · Esc close · Ctrl+S save now');
     stdin.write('Z');
     await waitForFrame(lastFrame, 'hello worldZ');
     stdin.write('\x1b');
-    for (let i = 0; i < 400 && !(lastFrame() ?? '').includes('discard changes?'); i++) {
+    for (let i = 0; i < 400 && !(lastFrame() ?? '').includes('Preview:'); i++) {
       await new Promise((r) => setTimeout(r, 2));
     }
-    expect(lastFrame()).toContain('discard changes?');
-    stdin.write('n');
-    for (let i = 0; i < 400 && (lastFrame() ?? '').includes('discard changes?'); i++) {
+    expect(lastFrame()).toContain('Preview:');
+    stdin.write('i');
+    for (let i = 0; i < 400 && (lastFrame() ?? '').includes('Preview:'); i++) {
       await new Promise((r) => setTimeout(r, 2));
     }
-    expect(lastFrame()).not.toContain('discard changes?');
+    expect(lastFrame()).not.toContain('Preview:');
     stdin.write('X');
     await waitForFrame(lastFrame, 'hello worldZX');
-
     expect(lastFrame()).toContain('hello worldZX');
+    stdin.write('\x1b');
+    await waitForFrame(
+      lastFrame,
+      (f) => f.includes('Preview:') && store.getState().data.notes.get(eid('t1'))?.content === 'hello worldZX',
+    );
+
+    expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello worldZX');
   });
 });
 
-describe('inline editor wrap, paste, 10,000-line note (T315.5)', () => {
+describe('inline editor wrap, paste, 10,000-line note (.5)', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {
@@ -365,7 +376,7 @@ describe('inline editor wrap, paste, 10,000-line note (T315.5)', () => {
     await waitForFrame(lastFrame, 'line1');
 
     stdin.write('i');
-    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
+    await waitForFrame(lastFrame, 'Autosaves · Esc close · Ctrl+S save now');
     stdin.write('y'.repeat(130));
     // all 130 typed characters are on screen, and every line fits in 118
     const frame = await waitForFrame(
@@ -386,7 +397,7 @@ describe('inline editor wrap, paste, 10,000-line note (T315.5)', () => {
     await waitForFrame(lastFrame, '1 note');
 
     stdin.write('i');
-    await waitForFrame(lastFrame, 'Ctrl+S save · Esc cancel · Enter new line');
+    await waitForFrame(lastFrame, 'Autosaves · Esc close · Ctrl+S save now');
     stdin.write('\x1b[200~hello\rworld\x1b[201~');
     await waitForFrame(lastFrame, 'world');
     stdin.write('\x13');
@@ -422,7 +433,7 @@ describe('inline editor wrap, paste, 10,000-line note (T315.5)', () => {
   });
 });
 
-describe('inline editor help entry, footer hint, narrow terminal (T315.6)', () => {
+describe('inline editor help entry, footer hint, narrow terminal (.6)', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {
@@ -467,30 +478,30 @@ describe('inline editor help entry, footer hint, narrow terminal (T315.6)', () =
     }
   });
 
-  it('16: WHEN the `discard changes?` prompt is open and a second `Escape` is pressed THEN the editor reopens still showing the unsaved buffer (the same as `n`), not the discard', async () => {
+  it('16: WHEN `Z` is typed and `Escape` is pressed twice THEN `lastFrame()` shows `Preview:` and no `discard changes?` prompt, and the note keeps `hello worldZ` (#387: the second Escape is a list key)', async () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
     await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello world'));
 
     stdin.write('i');
-    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('Ctrl+S save · Esc cancel · Enter new line'));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('Autosaves · Esc close · Ctrl+S save now'));
     stdin.write('Z');
     await vi.waitFor(() => expect(lastFrame() ?? '').toContain('hello worldZ'));
     stdin.write('\x1b');
-    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('discard changes?'));
+    await vi.waitFor(() => expect(lastFrame() ?? '').toContain('Preview:'));
 
     stdin.write('\x1b');
 
     await vi.waitFor(() => {
       const frame = lastFrame() ?? '';
-      expect(frame).toContain('hello worldZ');
-      expect(frame).not.toContain('Preview:');
+      expect(frame).toContain('Preview:');
       expect(frame).not.toContain('discard changes?');
+      expect(store.getState().data.notes.get(eid('t1'))?.content).toBe('hello worldZ');
     });
   });
 
-  it('17: WHEN a note is opened with `i` at width 80 THEN lastFrame() contains `Ctrl+S save · Esc cancel · Enter new line` and no line of lastFrame() is longer than 80 characters', async () => {
+  it('17: WHEN a note is opened with `i` at width 80 THEN lastFrame() contains `Autosaves · Esc close · Ctrl+S save now` and no line of lastFrame() is longer than 80 characters', async () => {
     seedNote(store, 'hello world');
 
     const { stdin, lastFrame } = render(<App store={store} width={80} height={24} />);
@@ -500,10 +511,10 @@ describe('inline editor help entry, footer hint, narrow terminal (T315.6)', () =
     stdin.write('i');
     const frame = await waitForFrame(
       lastFrame,
-      (f) => f.includes('Ctrl+S save · Esc cancel · Enter new line') && f.split('\n').every((l) => l.length <= 80),
+      (f) => f.includes('Autosaves · Esc close · Ctrl+S save now') && f.split('\n').every((l) => l.length <= 80),
     );
 
-    expect(frame).toContain('Ctrl+S save · Esc cancel · Enter new line');
+    expect(frame).toContain('Autosaves · Esc close · Ctrl+S save now');
     for (const line of frame.split('\n')) {
       expect(line.length).toBeLessThanOrEqual(80);
     }

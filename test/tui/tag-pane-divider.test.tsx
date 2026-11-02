@@ -19,7 +19,7 @@ function getLines(frame: string | undefined) {
     .filter((l) => l.length > 0);
 }
 
-describe('T192 TagPane divider', () => {
+describe('TagPane divider', () => {
   it('1: WHEN TagPane tags={[home]} selectedIndex={1} focused width={20} height={5} divider THEN the 5 frame lines are exact', async () => {
     const { lastFrame, unmount } = render(
       <TagPane tags={['home']} selectedIndex={1} focused={true} width={20} height={5} divider />

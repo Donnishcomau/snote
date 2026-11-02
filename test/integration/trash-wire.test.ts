@@ -1,8 +1,8 @@
 /**
- * T157 Trash round trip on the wire: restore online; create, restore and
+ * Trash round trip on the wire: restore online; create, restore and
  * delete forever while offline.
- * Proves with the real sync engine and the fake server (docs/EVALS.md
- * scenarios 3 and 4) that RESTORE_NOTE reaches the server online, and that
+ * Proves with the real sync engine and the fake server (trash and offline
+ * scenarios) that RESTORE_NOTE reaches the server online, and that
  * create/restore/delete-forever behave correctly while offline.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -45,7 +45,7 @@ const noteData = (content: string) => ({
   tags: [],
 });
 
-describe('T157 Trash round trip on the wire', () => {
+describe('Trash round trip on the wire', () => {
   let server: FakeSimperiumServer;
 
   beforeEach(async () => {

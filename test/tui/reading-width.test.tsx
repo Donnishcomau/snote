@@ -15,7 +15,7 @@ const read = (p: string) => readFileSync(resolve(process.cwd(), p), 'utf8');
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-describe('T266 reading-width: cap preview and list column widths', () => {
+describe('reading-width: cap preview and list column widths', () => {
   it('1: WHEN previewColWidth(312) is called THEN it returns 100, and src/tui/Preview.tsx contains the exact substring Math.min(Math.floor(width * 0.6) - 1, 100) exactly once', () => {
     expect(previewColWidth(312)).toBe(100);
     const content = read('src/tui/Preview.tsx');

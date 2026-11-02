@@ -23,7 +23,7 @@ function runBundle(outfile: string): Promise<{ status: number | null; out: strin
   });
 }
 
-describe('T201 quiet warnings', () => {
+describe('quiet warnings', () => {
   beforeAll(async () => {
     quietOutfile = join(mkdtempSync(join(tmpdir(), 't201-quiet-')), 'entry.js');
     loudOutfile = join(mkdtempSync(join(tmpdir(), 't201-loud-')), 'entry.js');

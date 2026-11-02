@@ -14,6 +14,7 @@ export interface BannerSignal {
 
 let current: BannerSignal | null = null;
 let dismissed: string | null = null;
+let runningIsNewest = false;
 const listeners = new Set<() => void>();
 
 function notify(): void {
@@ -46,6 +47,24 @@ export function currentBanner(): BannerSignal | null {
   return current !== null && current.available !== dismissed ? current : null;
 }
 
+/**
+ * The release check found no release newer than the running snote. The status
+ * file uses it so a running newest release never announces an update.
+ * Listeners are told when the answer changes.
+ */
+export function markRunningNewest(value: boolean): void {
+  if (runningIsNewest === value) {
+    return;
+  }
+  runningIsNewest = value;
+  notify();
+}
+
+/** True once the release check found that the running snote is the newest release. */
+export function runningIsNewestRelease(): boolean {
+  return runningIsNewest;
+}
+
 /** Hide the banner for the version it names; a newer version shows it again. */
 export function dismissBanner(): void {
   if (current === null) {
@@ -67,5 +86,6 @@ export function onBanner(listener: () => void): () => void {
 export function resetBanner(): void {
   current = null;
   dismissed = null;
+  runningIsNewest = false;
   listeners.clear();
 }

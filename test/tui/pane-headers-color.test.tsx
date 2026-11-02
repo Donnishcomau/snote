@@ -21,7 +21,7 @@ const inkChalk = (
   )
 ).default;
 
-describe('T256 Pane headers recede (bold + muted, not full brightness)', () => {
+describe('Pane headers recede (bold + muted, not full brightness)', () => {
   let savedLevel: number;
 
   beforeEach(() => {

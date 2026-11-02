@@ -1,9 +1,9 @@
 /**
- * T277 Regression: note create/edit/trash/restore/delete-forever writes
+ * Regression: note create/edit/trash/restore/delete-forever writes
  * land on the server.
  *
  * Uses the REAL client wiring (`buildStore`, disk `FileGhostStore`) that
- * T272 verified the confirmation bug against.  Every note write is
+ * verified the confirmation bug against.  Every note write is
  * proven to reach the fake server's stored state, not just local store
  * state.
  */
@@ -122,7 +122,7 @@ function editNote(id: string, content: string) {
   };
 }
 
-describe('T277 write-lands-note-lifecycle', () => {
+describe('write-lands-note-lifecycle', () => {
   it('1: WHEN CREATE_NOTE_WITH_ID for new1 with content First created note is dispatched THEN within 5 s the server\'s new1 has content First created note and pendingCount is 0', async () => {
     const f = await fixture();
     try {
@@ -169,7 +169,11 @@ describe('T277 write-lands-note-lifecycle', () => {
       const content = 'created then edited late';
       f.store.dispatch(createWithId('new3', 'created'));
 
-      await new Promise((r) => setTimeout(r, 2500));
+      await waitFor(
+        () => serverContent(f, 'new3') === 'created' && count(f) === 0,
+        2000,
+        'create confirmed'
+      );
 
       f.store.dispatch(editNote('new3', content));
 

@@ -1,5 +1,5 @@
 /**
- * Help overlay: square borders via single-line box chars (T245).
+ * Help overlay: square borders via single-line box chars.
  */
 
 import { describe, it, expect } from 'vitest';

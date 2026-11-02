@@ -1,5 +1,5 @@
-// Acceptance tests for T363: the glyph's colour stays a live declarative
-// binding. T356 added an imperative restyle() run from
+// Acceptance tests for the glyph's colour stays a live declarative
+// binding. added an imperative restyle() run from
 // onNeedsAttentionChanged, but a JS assignment to button.foreground
 // REPLACES the declarative binding on the BarIconButton, freezing the
 // colour on the first status flip so later theme switches never reach

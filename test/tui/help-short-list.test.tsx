@@ -1,6 +1,6 @@
 /**
  * Help at 50-79 wide and under 30 high shows the scrolling list again,
- * with j/k scrolling it (T524, correcting T522).
+ * with j/k scrolling it (, correcting).
  */
 import { describe, it, expect } from 'vitest';
 import { render } from 'ink-testing-library';

@@ -1,5 +1,5 @@
 /**
- * T504 (F153): a blog origin read from `blog.json` is refused unless it is
+ * a blog origin read from `blog.json` is refused unless it is
  * https, or http to localhost, 127.0.0.1 or [::1], with no credentials.
  * A refused origin sends no request.
  */
@@ -55,7 +55,7 @@ async function refusalOf(dir: string): Promise<unknown> {
   }
 }
 
-describe('blog origin check on load (T504)', () => {
+describe('blog origin check on load', () => {
   let tmpDir: string;
 
   beforeEach(() => {

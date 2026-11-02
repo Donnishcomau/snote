@@ -12,7 +12,8 @@ export function paneLayout(
 ): PaneLayout {
   // width >= 80: three panes (tags open = 20 cols, others share remaining)
   if (width >= 80) {
-    const tagsWidth = tagsOpen ? 14 : 0;
+    // #74: from 100 columns the tags pane is 24 wide, so names of 21 characters show in full
+    const tagsWidth = tagsOpen ? (width >= 100 ? 24 : 14) : 0;
     return {
       tagsWidth,
       listWidthProp: width - tagsWidth,

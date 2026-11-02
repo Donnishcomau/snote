@@ -182,7 +182,7 @@ describe('issue #66 update banner while snote is open', () => {
     stdin.write('i');
     const editorFrame = await waitForFrame(
       lastFrame,
-      (f) => f.includes('Ctrl+S save · Esc cancel · Enter new line') && f.includes(shown)
+      (f) => f.includes('Autosaves · Esc close · Ctrl+S save now') && f.includes(shown)
     );
     expect(editorFrame).toContain(shown);
     expect(editorFrame.split('\n').length).toBe(24);

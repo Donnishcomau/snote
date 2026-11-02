@@ -1,5 +1,5 @@
 /**
- * T281 — T272's fix must survive a real "invalid version" reply.
+ *'s fix must survive a real "invalid version" reply.
  *
  * The fake server now answers `e:<id>.undefined` (a non-numeric version
  * token) with the protocol's "invalid version" marker `\n?`, exactly as
@@ -128,7 +128,7 @@ function editNote(id: string, content: string) {
   };
 }
 
-describe('T281 a brand-new note resolves locally against a strict server', () => {
+describe('a brand-new note resolves locally against a strict server', () => {
   it('1: WHEN CREATE_NOTE_WITH_ID for new1 with content Title\\nbody one is dispatched THEN within 8 s the server\'s new1 has content Title\\nbody one and pendingCount is 0', async () => {
     const f = await fixture();
     try {
@@ -176,7 +176,11 @@ describe('T281 a brand-new note resolves locally against a strict server', () =>
       const content = 'created\nedited late';
       f.store.dispatch(createWithId('new3', 'created'));
 
-      await new Promise((r) => setTimeout(r, 2500));
+      await waitFor(
+        () => serverContent(f, 'new3') === 'created' && count(f) === 0,
+        2000,
+        'create confirmed'
+      );
 
       f.store.dispatch(editNote('new3', content));
 

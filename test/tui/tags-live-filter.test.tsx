@@ -31,7 +31,7 @@ const writeKey = async (stdin: { write: (s: string) => void }, ch: string) => {
   await delay(50);
 };
 
-describe('T347 Tags pane live filter', () => {
+describe('Tags pane live filter', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

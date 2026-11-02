@@ -1,5 +1,5 @@
 /**
- * T300: clearing a search with Escape keeps the note you just found.
+ * clearing a search with Escape keeps the note you just found.
  * Verifies both Escape paths (inside the search prompt, and with the
  * query applied after Enter) reselect the remembered note by id.
  */

@@ -16,7 +16,7 @@ interface ReselectCtx {
 }
 
 /**
- * T300: keep the note selected across a search clear.
+ * keep the note selected across a search clear.
  *
  * `remember(id)` declares the note to land on and clears the search. The
  * actual selection is applied by useAppState once the full (unfiltered)

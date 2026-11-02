@@ -1,5 +1,5 @@
 /**
- * T445: a note saved to the server but not yet to state.json comes back
+ * a note saved to the server but not yet to state.json comes back
  * on the next start. The ghost file holds the server's copy of every note
  * the last sync confirmed; when a kill lands inside the 500 ms state.json
  * debounce, start-up must add those notes from the ghost — sending nothing —
@@ -59,7 +59,7 @@ const waitFor = async (cond: () => boolean, timeoutMs = 1000) => {
   }
 };
 
-describe('T445 a note saved to the server but not yet to state.json comes back on the next start', () => {
+describe('a note saved to the server but not yet to state.json comes back on the next start', () => {
   let server: FakeSimperiumServer;
   let dir: string;
   let stopSaving: (() => void) | undefined;

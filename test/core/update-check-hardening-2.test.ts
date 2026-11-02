@@ -1,5 +1,5 @@
 /**
- * T471: hardening of the T415/T416 update check (F118, F119). The
+ * hardening of the update check. The
  * `ls-remote` call must run from `/` so no git config above the temp
  * dir is ever read, a git step killed by its timeout must read as
  * `unknown` instead of a fake exit code, and a remote head that is
@@ -73,7 +73,7 @@ const makeRunner = (answers: {
     if (args[0] === 'rev-parse') {
       return { code: 0, stdout: `${HEAD_A}\n` };
     }
-    if (args[0] === 'merge-base') {
+    if (args.includes('merge-base')) {
       return { code: answers.mergeBase, stdout: '' };
     }
     return { code: 0, stdout: '' };

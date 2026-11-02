@@ -1,5 +1,5 @@
 /**
- * T295: a note with `content: null` from the server must not crash search,
+ * a note with `content: null` from the server must not crash search,
  * the crash reporter, the checklist paths, or the editor launch.
  * Each guarded read treats missing content as the empty string.
  */
@@ -89,6 +89,6 @@ describe('null-content note', () => {
     await new Promise((r) => setTimeout(r, 50));
 
     expect(spyEditor).toHaveBeenCalledTimes(1);
-    expect(spyEditor).toHaveBeenCalledWith('');
+    expect(spyEditor).toHaveBeenCalledWith('', { onWrite: expect.any(Function) });
   });
 });

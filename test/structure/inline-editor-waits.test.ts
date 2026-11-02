@@ -1,5 +1,5 @@
 /**
- * T472: cases 8, 10 and 16 of test/tui/inline-editor.test.tsx must wait for
+ * cases 8, 10 and 16 of test/tui/inline-editor.test.tsx must wait for
  * each screen with `vi.waitFor` instead of sleeping 50 ms, with every value
  * asserted inside the final wait. The two `regression:` cases type instantly
  * on purpose and keep their `setTimeout(`. This test reads the file as text.
@@ -11,7 +11,7 @@ const filePath = 'test/tui/inline-editor.test.tsx';
 
 const read = (p: string) => fs.readFileSync(p, 'utf8');
 
-// Decisions (task T472): CASEn = the text from the line starting `  it('n:`
+// Decisions (task): CASEn = the text from the line starting `  it('n:`
 // up to the next line starting `  it(`.
 const caseBlock = (src: string, n: number): string => {
   const lines = src.split('\n');

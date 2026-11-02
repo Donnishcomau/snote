@@ -1,5 +1,5 @@
 /**
- * T530 (S8-01) proof: a change sent just before snote dies is kept after restart.
+ * proof: a change sent just before snote dies is kept after restart.
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { mkdtempSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
@@ -231,7 +231,7 @@ async function changeThenStop(kind: Kind, crash: boolean) {
   return { server, b, mark };
 }
 
-describe('T530 a change sent just before snote dies is kept after restart (S8-01)', () => {
+describe('a change sent just before snote dies is kept after restart', () => {
   it('1: WHEN n1 is edited to `line1\\nline2\\nMK`, the server applies it with its reply withheld, snote dies before state.json holds it and restarts THEN the store\'s n1 is exactly `line1\\nline2\\nMK`, and after an edit the server\'s and store\'s n1 are exactly `line1\\nline2\\nMK\\nLATER`', async () => {
     const { server, b } = await changeThenStop('edit', true);
     await waitFor(

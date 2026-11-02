@@ -1,5 +1,5 @@
 /**
- * T443: fire-and-forget start-up failures (requeue, resend, force-sync
+ * fire-and-forget start-up failures (requeue, resend, force-sync
  * steps) publish a notice instead of vanishing into `.catch(() => {})`.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -32,7 +32,7 @@ const TOMBSTONES = '["gone1"]';
 const GHOSTS =
   '{"version":1,"cv":"5","ghosts":[{"key":"gone1","version":3,"data":{"content":"x"}}]}';
 
-describe('T443 silent start-up failures show a notice', () => {
+describe('silent start-up failures show a notice', () => {
   let server: FakeSimperiumServer;
   let dir: string;
   let stopSaving: (() => void) | undefined;

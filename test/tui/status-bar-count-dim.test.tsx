@@ -1,4 +1,4 @@
-// T384: the status line dims the note count (theme.muted) while `connected`
+// the status line dims the note count (theme.muted) while `connected`
 // stays green, `offline` red, and `pending` yellow.
 import { createRequire } from 'module';
 import { pathToFileURL } from 'url';
@@ -11,7 +11,7 @@ import { StatusBar } from '../../src/tui/StatusBar';
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Portable way to force ink's bundled chalk to emit ANSI (the T244 recipe,
+ * Portable way to force ink's bundled chalk to emit ANSI (the recipe,
  * same as content-not-muted.test.tsx).
  */
 async function forceInkChalk(): Promise<{ restore: () => void }> {
@@ -28,7 +28,7 @@ async function forceInkChalk(): Promise<{ restore: () => void }> {
   };
 }
 
-describe('status bar count dim (T384)', () => {
+describe('status bar count dim', () => {
   it('1: WHEN <StatusBar connected={true} count={3} width={40} /> renders with chalk forced THEN lastFrame() is exactly \\u001b[2m[\\u001b[22m\\u001b[32mconnected\\u001b[39m\\u001b[2m]\\u001b[22m \\u001b[2m3 notes\\u001b[22m', async () => {
     const { restore } = await forceInkChalk();
     try {
@@ -45,7 +45,7 @@ describe('status bar count dim (T384)', () => {
     }
   });
 
-  it('2: WHEN StatusBar renders connected={false} count={0} width={40} pending={2} forced THEN the frame contains \\u001b[31moffline\\u001b[39m, \\u001b[2m0 notes\\u001b[22m and \\u001b[33m 2 pending\\u001b[39m', async () => {
+  it('2: WHEN StatusBar renders connected={false} count={0} width={40} pending={2} forced THEN the frame contains \\u001b[31moffline\\u001b[39m, \\u001b[2m0 notes\\u001b[22m and \\u001b[33m 2 pending (no sync)\\u001b[39m', async () => {
     const { restore } = await forceInkChalk();
     try {
       const { lastFrame, unmount } = render(
@@ -55,7 +55,7 @@ describe('status bar count dim (T384)', () => {
       const frame = lastFrame() ?? '';
       expect(frame).toContain('\u001b[31moffline\u001b[39m');
       expect(frame).toContain('\u001b[2m0 notes\u001b[22m');
-      expect(frame).toContain('\u001b[33m 2 pending\u001b[39m');
+      expect(frame).toContain('\u001b[33m 2 pending (no sync)\u001b[39m');
       unmount();
     } finally {
       restore();

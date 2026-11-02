@@ -13,13 +13,16 @@ type StdinCtxWithEmitter = ReturnType<typeof useStdin> & {
 };
 
 /**
- * T411 — the ring's paste listener. useAppEffects calls it, and its effect
+ * the ring's paste listener. useAppEffects calls it, and its effect
  * runs ahead of App's own useInput, so this 'input' listener is attached
  * before Ink's (Ink emits each parsed event to listeners in registration
  * order) and sees the raw chunk first. For a chunk App will replay one
- * character at a time it marks each replayed keystroke as text in the ring;
- * the run is cleared on a microtask — the end of that dispatch — so the
- * debt never leaks to keys typed after the paste.
+ * character at a time it marks each replayed keystroke as text in the ring.
+ * No timer or microtask clears the run: it drains one unit per recorded
+ * keystroke inside App's synchronous replay (key-ring.ts `claimTextRun`),
+ * and only `resetKeyLog` zeroes it. If a replay records fewer keys than the
+ * chunk had characters, the rest masks the next typed keys as `<text>`:
+ * over-masking in the crash ring, which hides keys and leaks none.
  */
 export function useKeyRingTextListener(): void {
   const emitter = (useStdin() as StdinCtxWithEmitter).internal_eventEmitter;
@@ -31,7 +34,7 @@ export function useKeyRingTextListener(): void {
       if (chars !== null) {
         // The debt drains one keystroke per replayed character inside
         // App's synchronous replay (useInput's discreteUpdates), so it is
-        // gone again before any later key can claim it.
+        // normally gone again before any later key can claim it.
         beginTextRun(chars.length);
       }
     };

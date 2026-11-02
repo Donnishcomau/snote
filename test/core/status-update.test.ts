@@ -1,5 +1,5 @@
 /**
- * T388: status.json carries the update state for the bar.
+ * status.json carries the update state for the bar.
  */
 import * as fs from 'node:fs';
 import * as os from 'node:os';
@@ -54,7 +54,7 @@ const seedStore = (count: number) => {
   return store;
 };
 
-describe('T388 status update key', () => {
+describe('status update key', () => {
   let tmpDir: string;
 
   beforeEach(() => {

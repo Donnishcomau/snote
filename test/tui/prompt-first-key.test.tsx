@@ -1,5 +1,5 @@
 /**
- * T464 (F110): the FIRST key typed into the checklist-item (`a`) or export
+ * the FIRST key typed into the checklist-item (`a`) or export
  * (`w`) prompt must go only into the prompt. App used to read BottomArea's
  * prompt cells once per render, so on the first key after `a`/`w` its
  * text-mode flag and prompt guard still said "no prompt" and the key ran as
@@ -95,7 +95,7 @@ async function typeIntoItemPrompt(
   await waitForFrame(lastFrame, (f) => /new check item.*sd/.test(f));
 }
 
-describe('prompt first key (T464)', () => {
+describe('prompt first key', () => {
   beforeEach(() => {
     resetKeyLog();
   });

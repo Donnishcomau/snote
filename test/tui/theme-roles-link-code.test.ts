@@ -1,11 +1,11 @@
 /**
- * T377: the theme gains `link` and `code` roles for the Preview markdown task.
+ * the theme gains `link` and `code` roles for the Preview markdown task.
  */
 import { describe, expect, it } from 'vitest';
 
 import { theme } from '../../src/tui/theme';
 
-describe('T377 theme link and code roles', () => {
+describe('theme link and code roles', () => {
   it("1: WHEN `theme` is imported THEN `theme.link` equals `{ color: 'blue', underline: true }`", () => {
     expect(theme.link).toEqual({ color: 'blue', underline: true });
   });

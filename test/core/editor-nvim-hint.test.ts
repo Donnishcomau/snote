@@ -48,7 +48,7 @@ afterEach(() => {
   delete process.env.HINT_ARGV_LOG;
 });
 
-describe('nvim winbar cheat-sheet (T316)', () => {
+describe('nvim winbar cheat-sheet', () => {
   it('1: WHEN editInEditor("hello", { editor: \'<tmp>/nvim\' }) runs with a fake nvim that records its argv THEN the recorded argv contains `-c`, contains the text `:wq save & return`, and its last element is the temp file path.', async () => {
     const { path: nvim, log } = makeFakeEditor('nvim');
     process.env.HINT_ARGV_LOG = log;
@@ -98,7 +98,7 @@ describe('nvim winbar cheat-sheet (T316)', () => {
     expect(src.split(HINT_TEXT)).toHaveLength(2);
   });
 
-  // T318 replaces the old autocmd text and the laststatus/VimLeavePre
+  // replaces the old autocmd text and the laststatus/VimLeavePre
   // behaviour pinned by earlier assertions; these cases pin the new shape.
 
   it("1: WHEN the nvim argv is built THEN no argument contains `laststatus` and none contains `VimLeavePre`.", () => {

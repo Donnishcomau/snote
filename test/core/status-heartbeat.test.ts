@@ -1,4 +1,4 @@
-// F134: status.json carries a heartbeat so the bar can say "not running".
+// status.json carries a heartbeat so the bar can say "not running".
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -23,7 +23,7 @@ function formatTooltip(): (s: unknown, n: number, b: string) => string {
 const SYNCED = '2023-11-14T22:13:20.000Z';
 const NOW = Date.parse(SYNCED) + 2 * 86400000;
 
-describe('F134 bar shows when snote is not running', () => {
+describe('bar shows when snote is not running', () => {
   let dir: string;
   beforeEach(() => {
     dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snote-hb-'));

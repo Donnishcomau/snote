@@ -55,9 +55,12 @@ export function NoteList({
   // A dim rule row separates the pinned notes from the rest; reserve a
   // line for it whenever such a boundary exists anywhere in the list.
   const boundaryExists = notes.some((_, i) => isBoundary(notes, i));
+  // The first note is the first pinned note (pinned sort first): a dim
+  // `Pinned` label row sits above it, and reserves a line too (#71).
+  const labelExists = notes.length > 0 && notes[0].systemTags.includes('pinned');
   const visibleCount = Math.max(
     1,
-    Math.floor((listHeight - (boundaryExists ? 1 : 0)) / perNote),
+    Math.floor((listHeight - (boundaryExists ? 1 : 0) - (labelExists ? 1 : 0)) / perNote),
   );
 
   // Scroll so selected note stays in view
@@ -71,7 +74,7 @@ export function NoteList({
   return (
     <Box flexDirection="column" height={listHeight} width={colWidth}>
       {/* Header */}
-      <PaneHeading label="Notes" focused={focused} />
+      <PaneHeading label="Notes" focused={focused} width={colWidth} />
 
       {/* Note items */}
       <Box flexDirection="column" height={bodyHeight}>
@@ -81,6 +84,15 @@ export function NoteList({
           const { title, marker, previewLines } = noteRow(note, colWidth, query);
 
           const lines: React.ReactNode[] = [];
+
+          // Non-selectable dim label above the first pinned note (#71).
+          if (labelExists && actualIndex === 0) {
+            lines.push(
+              <Text key="pinned-label" wrap="truncate" {...theme.muted}>
+                {'Pinned'}
+              </Text>,
+            );
+          }
 
           // Non-selectable dim rule at the pinned/unpinned boundary,
           // drawn as the first line of the first unpinned note's block.
@@ -95,14 +107,16 @@ export function NoteList({
           // Title line with marker
           lines.push(
             <Box key={`title-${idx}`}>
-              {isSelected ? (
+              {isSelected && focused ? (
                 <Text {...theme.selection} {...theme.accent}>
                   {'>'}
                 </Text>
+              ) : isSelected ? (
+                <Text bold {...theme.accent}>{'>'}</Text>
               ) : (
                 <Text>{' '}</Text>
               )}
-              <Text {...(isSelected ? theme.selection : theme.heading)} {...(isSelected ? theme.accent : {})}>
+              <Text {...(isSelected && focused ? theme.selection : theme.heading)} {...(isSelected ? theme.accent : {})}>
                 {title}
                 {marker}
               </Text>

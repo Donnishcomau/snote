@@ -10,7 +10,7 @@ import {
 import type * as A from '../action-types';
 import type * as T from '../../types';
 
-const emptyList: unknown[] = [];
+const emptyList = Object.freeze([]) as unknown[]; // OMARCHY: #222 frozen: a push on the shared empty default throws instead of growing it
 
 const editorSelection: A.Reducer<
   Map<T.EntityId, [number, number, 'RTL' | 'LTR']>

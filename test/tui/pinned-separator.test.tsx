@@ -55,7 +55,7 @@ const settle = async (
   }
 };
 
-describe('Pinned separator rule (T354)', () => {
+describe('Pinned separator rule', () => {
   it('1: WHEN <NoteList> renders [Pin one, Pin two] (pinned) and [Plain one, Plain two] at width 60 height 26 THEN exactly 1 row is a rule, it is below the Pin two row, and the row right after it contains Plain one', async () => {
     const notes = [
       makeNote('p1', 'Pin one\npinned body one', { pinned: true }),
@@ -226,7 +226,7 @@ describe('Pinned separator rule (T354)', () => {
   });
 });
 
-describe('Pinned separator rule colour (T354)', () => {
+describe('Pinned separator rule colour', () => {
   let savedLevel: number;
 
   beforeEach(() => {

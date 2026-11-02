@@ -1,5 +1,5 @@
 /**
- * F230: `snote --report` builds its bundle from an allow-list of the
+ * `snote --report` builds its bundle from an allow-list of the
  * fields the crash writer produces; whatever else a crash file holds
  * does not reach the report.
  */
@@ -11,7 +11,7 @@ import * as path from 'node:path';
 import { main } from '../../src/cli/main';
 import { HOSTILE } from '../fixtures/hostile';
 
-describe('F230 --report keeps only the known crash-file fields', () => {
+describe('--report keeps only the known crash-file fields', () => {
   let stateDir: string;
   let dataDir: string;
   const originalStateHome = process.env.XDG_STATE_HOME;

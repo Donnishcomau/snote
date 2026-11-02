@@ -6,7 +6,7 @@ import type { EntityId } from '@vendor/types';
 
 const id = 'n1' as EntityId;
 
-describe('#17 F244 malformed revisions', () => {
+describe('#17 malformed revisions', () => {
   it('1: WHEN a version has modificationDate NaN, "x", undefined, `1e20` or `-1e16` THEN revisionLabel returns a label with `unknown date` and the title, and WHEN versions hold content `42` or `{}` THEN revisionsOf leaves them out and keeps the text versions', () => {
     for (const date of [Number.NaN, 'x', undefined, 1e20, -1e16]) {
       const note = makeNote('n1', 'Title here');

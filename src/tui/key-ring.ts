@@ -8,7 +8,7 @@ const PASTE_END = '\u001B[201~';
 
 let keyLog: KeyEvent[] = [];
 
-// T411 — a bracketed paste reaches App's useInput as ONE input event whose
+// a bracketed paste reaches App's useInput as ONE input event whose
 // `input` is the whole pasted text (Ink emits it on the input channel when
 // no usePaste listener exists), and App replays it through handleKey one
 // character at a time. handleKey cannot tell that replay from typing, so
@@ -53,11 +53,11 @@ export function pastedCharsOf(chunk: string): string[] | null {
 }
 
 export function recordKeyEvent(input: string, key: Key, textPromptOpen: boolean): void {
-  // T291 — while a text prompt is open the user is typing content; the ring
+  // while a text prompt is open the user is typing content; the ring
   // must never store what was typed, only that a keystroke happened.
-  // T411 — the same mask covers a paste: every replayed character of a
+  // the same mask covers a paste: every replayed character of a
   // bracketed paste is stored as '<text>', in every mode.
-  // T478 — a chunk that survives App's replay split because it contains
+  // a chunk that survives App's replay split because it contains
   // ESC (bracketed paste around an escape sequence) reaches here as one
   // multi-character input; in any mode it is stored as '<text>', never
   // verbatim. Single characters keep the behaviour above.

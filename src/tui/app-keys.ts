@@ -12,7 +12,7 @@ import type { EntityId, Note, TagName } from '@vendor/types'; import type { Key 
 export { recordKeyEvent, getKeyLog, resetKeyLog } from './key-ring';
 import { useKeyRingTextListener } from './key-ring-listener';
 
-// T375: identity sentinel for an external "new note" request, never a keystroke.
+// identity sentinel for an external "new note" request, never a keystroke.
 export const EXTERNAL_KEY = {} as Key;
 
 interface SearchKeyCtx {
@@ -20,7 +20,7 @@ interface SearchKeyCtx {
   setSearchOpen: (v: boolean) => void;
   setQuery: (v: string) => void;
   setSelectedIndex: React.Dispatch<React.SetStateAction<number>>;
-  // T300: when present, Escape keeps the selected note instead of jumping to row 0
+  // when present, Escape keeps the selected note instead of jumping to row 0
   rememberSelection?: () => void;
 }
 
@@ -35,7 +35,7 @@ export function handleSearchKey(input: string, key: Key, ctx: SearchKeyCtx): voi
   }
   if (key.escape) {
     if (rememberSelection) {
-      // T300: rememberSelection clears the query and useReselect reselects the note
+      // rememberSelection clears the query and useReselect reselects the note
       rememberSelection();
       setSearchOpen(false);
       return;
@@ -66,7 +66,7 @@ export function handleSearchKey(input: string, key: Key, ctx: SearchKeyCtx): voi
 }
 
 /**
- * T300: Escape with a query applied — clear it but keep the selected note.
+ * Escape with a query applied — clear it but keep the selected note.
  * Returns true when the key was handled.
  */
 export function handleSearchClearKey(
@@ -89,7 +89,7 @@ interface TagsKeyCtx {
   setTagDialog: (v: null | { kind: 'rename' | 'delete'; tagName: string }) => void;
 }
 
-// T347: filter for the tags row at `index`: All notes (0), tag rows, Untagged,
+// filter for the tags row at `index`: All notes (0), tag rows, Untagged,
 // Trash. The Trash row dispatches nothing (its keys u/D/E differ, so the trash
 // stays Enter-only).
 function dispatchTagRow(store: Store<State>, tagNames: string[], index: number): void {
@@ -111,7 +111,7 @@ export function handleTagsKey(input: string, keyName: string | null, ctx: TagsKe
     return;
   }
   if (keyName === 'upArrow' || input === 'k') {
-    // T347: on j/k the filter follows the marker and the list selection resets
+    // on j/k the filter follows the marker and the list selection resets
     const next = Math.max(tagIndex - 1, 0);
     setTagIndex(next);
     dispatchTagRow(store, tagNames, next);
@@ -233,7 +233,7 @@ interface IdleKeyCtx {
   setCopyResult: (v: null | { noteId: EntityId; ok: boolean }) => void;
   setTagEditorOpen: (v: boolean) => void;
   setEmptyAsk: (v: number) => void;
-  // T304: export from the idle list (same shape as note-focus's setExportAsk)
+  // export from the idle list (same shape as note-focus's setExportAsk)
   setExportAsk?: (v: boolean) => void;
   setNotice?: (v: string) => void;
 }
@@ -246,7 +246,7 @@ export function handleIdleKey(input: string, ctx: IdleKeyCtx): void {
   if (input === 'g') {
     if (selectedEntry) ctx.setTagEditorOpen(true);
   } else if (input === 'w') {
-    // T304: export from the idle list (mirrors the `g` branch shape)
+    // export from the idle list (mirrors the `g` branch shape)
     if (selectedEntry) {
       if (selectedEntry.note.deleted) {
         ctx.setNotice?.('In trash: press u to restore first');
@@ -270,7 +270,7 @@ function useNewRequestEffect(onNew: () => void, startNew: boolean): void {
 }
 /** Effects the App runs: --new fires onStart, auto-open tags on wide terminals, clear the sync timer. */
 export function useAppEffects(width: number, tagCount: number, setTagsOpen: (v: boolean) => void, syncedTimerRef: { current: ReturnType<typeof setTimeout> | null }, onNew: () => void, startNew: boolean): void {
-  useKeyRingTextListener(); // T411: ring masks pastes; runs ahead of App's useInput
+  useKeyRingTextListener(); // ring masks pastes; runs ahead of App's useInput
   const autoOpened = React.useRef(false);
   React.useEffect(() => {
     if (!autoOpened.current && shouldAutoOpenTags(width, tagCount)) {
@@ -278,7 +278,7 @@ export function useAppEffects(width: number, tagCount: number, setTagsOpen: (v: 
       setTagsOpen(true);
     }
   }, [width, tagCount]);
-  useNewRequestEffect(onNew, startNew); // --new fires on mount (T361)
+  useNewRequestEffect(onNew, startNew); // --new fires on mount
   React.useEffect(() => () => {
     if (syncedTimerRef.current) {
       clearTimeout(syncedTimerRef.current);

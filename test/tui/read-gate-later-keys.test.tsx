@@ -1,5 +1,5 @@
 /**
- * T538R-3 (F217, F220): the per-read rule in the list, search and the editor.
+ * the per-read rule in the list, search and the editor.
  *
  * Only the first key of one stdin read acts outside text entry; every later
  * key and paste of the read goes to the text-entry mode the earlier keys
@@ -42,7 +42,7 @@ async function atList() {
 
 const settle = () => new Promise((res) => setTimeout(res, 100));
 
-describe('T538R-3 later keys of one read', () => {
+describe('later keys of one read', () => {
   it('1: WHEN the list shows note t1 `hello world` and `iPd` arrives as one read THEN the frame contains `Ctrl+S save` and `hello worldPd`, and t1 has system tags `[]` and deleted `false`', async () => {
     const a = await atList();
     a.stdin.write('iPd');

@@ -1,8 +1,8 @@
 /**
- * T503 (F149, F150): logout removes `unsynced.json` and its temp sibling, so
+ * logout removes `unsynced.json` and its temp sibling, so
  * an account folder holding only an offline edit goes away, and the
  * command-line `--logout` also removes the bar's `status.json` and its temp
- * sibling. Only snote's own files are ever touched (T457 stands).
+ * sibling. Only snote's own files are ever touched ( stands).
  */
 import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import { render } from 'ink-testing-library';
@@ -35,7 +35,7 @@ const waitFor = async (cond: () => boolean, timeoutMs = 2500): Promise<void> => 
   }
 };
 
-describe('T503 logout removes unsynced.json and --logout removes status.json', () => {
+describe('logout removes unsynced.json and --logout removes status.json', () => {
   let tmpDir: string;
   let savedStatusDir: string | undefined;
   let stopSaving: (() => void) | undefined;

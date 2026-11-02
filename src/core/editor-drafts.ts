@@ -9,13 +9,13 @@
  * the file is larger than MAX_DRAFT_BYTES: that one stays on disk, unread.
  */
 import { createHash } from 'node:crypto';
-import { closeSync, constants, fstatSync, lstatSync, openSync, readdirSync, readSync, rmSync } from 'node:fs';
+import { closeSync, fstatSync, lstatSync, lutimesSync, readdirSync, readSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Store } from 'redux';
 
 import type { State } from './store';
 import { afterNextSave } from './persistence';
-import { secureMkdir, secureWriteFileSync } from './secure-fs';
+import { secureMkdir, secureOpenForRead, secureRemoveTree, secureWriteFileSync } from './secure-fs';
 import type { EntityId } from '@vendor/types';
 
 /**
@@ -28,7 +28,9 @@ export const MAX_DRAFT_BYTES = 1_048_576;
 /**
  * #89: the sidecar of an edit of an EXISTING note, `source.json` in the same
  * per-session draft folder (0600). Format version 1, fixed once released:
- * `{"v":1,"noteId":"<id>","sha256":"<sha256 hex of the note text when the edit began>"}`.
+ * `{"v":1,"noteId":"<id>","sha256":"<sha256 hex of the text this draft last handed to the note>"}`
+ * (at open the note's text; #97: after the save that holds each write, that write's text).
+ * proof: test/core/editor-drafts-source.test.tsx test/core/editor-write-restart.test.tsx
  * Every later version must keep reading v1. Older versions read only the
  * `.md` file and ignore it. Missing, unreadable, oversized, a symlink, another
  * `v` or any invalid field: no sidecar, and the draft comes back as a new note.
@@ -40,16 +42,26 @@ const SHA256_SHAPE = /^[0-9a-f]{64}$/;
 
 const sha256 = (text: string): string => createHash('sha256').update(text, 'utf8').digest('hex');
 
-/** Write the sidecar for an edit of note *noteId* whose text is *text*; a failure only means no sidecar. */
-export function writeSource(folder: string, noteId: string, text: string): void {
+/**
+ * Write the sidecar for an edit of note *noteId* whose text is *text*; a failure only means no sidecar. With *draft*,
+ * source.json takes the draft's file time less 1.5 s (#97 recovery removes a draft only while that still holds;
+ * the 1.5 s means a copy that resets both times, or whole-second times, never match). proof: test/core/editor-write-restart.test.tsx
+ */
+export function writeSource(folder: string, noteId: string, text: string, draft?: string): void {
   try {
     secureWriteFileSync(join(folder, SOURCE_FILE), JSON.stringify({ v: 1, noteId, sha256: sha256(text) }));
+    if (draft) lutimesSync(join(folder, SOURCE_FILE), Date.now() / 1000, lstatSync(draft).mtimeMs / 1000 - 1.5);
   } catch {
     // no sidecar: the draft is restored as a new note
   }
 }
 
-function readSource(folder: string): { noteId: string; sha256: string } | null {
+/**
+ * The sidecar, with `at` its file time (#97 writeSource sets it to the draft's less 1.5 s; recoverDrafts removes
+ * a draft only while the draft is within 2 ms of that, as utimes takes float seconds).
+ * proof: test/core/editor-write-restart.test.tsx
+ */
+function readSource(folder: string): { noteId: string; sha256: string; at: number } | null {
   const read = readDraft(join(folder, SOURCE_FILE), SOURCE_MAX_BYTES);
   if (read === null || !('text' in read)) return null;
   try {
@@ -57,7 +69,7 @@ function readSource(folder: string): { noteId: string; sha256: string } | null {
     if (typeof j !== 'object' || j === null) return null;
     const { v, noteId, sha256: hash } = j as Record<string, unknown>;
     if (v !== 1 || typeof noteId !== 'string' || typeof hash !== 'string') return null;
-    return NOTE_ID_SHAPE.test(noteId) && SHA256_SHAPE.test(hash) ? { noteId, sha256: hash } : null;
+    return NOTE_ID_SHAPE.test(noteId) && SHA256_SHAPE.test(hash) ? { noteId, sha256: hash, at: lstatSync(join(folder, SOURCE_FILE)).mtimeMs } : null;
   } catch {
     return null;
   }
@@ -123,10 +135,10 @@ type DraftRead = { text: string } | { tooLarge: number } | { unreadable: true } 
  * be read (its folder is kept). There is no second lookup of the path
  * between the check and the read.
  */
-function readDraft(path: string, cap: number = MAX_DRAFT_BYTES): DraftRead {
+export function readDraft(path: string, cap: number = MAX_DRAFT_BYTES): DraftRead {
   let fd: number;
   try {
-    fd = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+    fd = secureOpenForRead(path, { nonBlock: true });
   } catch {
     // the open failed: a symlink (O_NOFOLLOW) is not a draft; anything else could not be read
     const st = lstatSync(path, { throwIfNoEntry: false });
@@ -137,7 +149,12 @@ function readDraft(path: string, cap: number = MAX_DRAFT_BYTES): DraftRead {
     if (!st.isFile()) return null;
     if (st.size > cap) return { tooLarge: st.size };
     const buf = Buffer.alloc(st.size + 1);
-    const n = readSync(fd, buf, 0, buf.length, 0);
+    let n = 0;
+    while (n < buf.length) {
+      const got = readSync(fd, buf, n, buf.length - n, n);
+      if (got === 0) break; // EOF: the file is shorter than it was
+      n += got;
+    }
     if (n > st.size) return { tooLarge: n }; // the file grew after the check
     return { text: buf.toString('utf-8', 0, n) };
   } catch {
@@ -154,7 +171,7 @@ function readDraft(path: string, cap: number = MAX_DRAFT_BYTES): DraftRead {
 export function removeDrafts(folders: string[]): void {
   for (const folder of folders) {
     try {
-      rmSync(folder, { recursive: true, force: true });
+      secureRemoveTree(folder);
     } catch {
       // left for the next start
     }
@@ -162,8 +179,9 @@ export function removeDrafts(folders: string[]): void {
 }
 
 /**
- * At start-up: every draft whose text no note holds becomes a new note (an
- * existing note is never changed); its folder is removed after the next
+ * At start-up: every draft whose text no note holds becomes a new note, except
+ * in the #97 case below, where the note it came from still holds the text the
+ * edit began with and gets the draft as its text; its folder is removed after the next
  * save to disk. A draft that is empty or equal to a note is removed at once.
  * Only regular `.md` files are read (the editor's own swap or backup files
  * are not drafts): a file over MAX_DRAFT_BYTES
@@ -193,11 +211,13 @@ export function recoverDrafts(
     const folder = join(dir, name);
     const texts: string[] = [];
     let kept = 0;
+    let at = 0;
     try {
       if (!isRealDir(folder)) continue;
       for (const f of readdirSync(folder).filter((n) => n.endsWith('.md'))) {
         const draft = readDraft(join(folder, f));
         if (draft === null) continue;
+        at = lstatSync(join(folder, f)).mtimeMs; // #97 the draft's file time
         if ('text' in draft) texts.push(draft.text);
         else {
           kept++; // removal is folder-wide: a draft left unread keeps its folder
@@ -211,6 +231,10 @@ export function recoverDrafts(
     const fresh = texts.filter((t) => t.trim() !== '' && !notes.includes(t));
     const source = fresh.length === 1 && texts.length === 1 && kept === 0 ? readSource(folder) : null;
     const target = source ? store.getState().data.notes.get(source.noteId as EntityId) : undefined;
+    if (source && target && !target.deleted && sha256(fresh[0]) === source.sha256 && Math.abs(at - source.at - 1500) < 2) {
+      removeDrafts([folder]); // #97: the draft is the text it handed on; the note holds it (merged): nothing to add
+      continue;
+    }
     if (source && target && !target.deleted && sha256(target.content ?? '') === source.sha256) {
       store.dispatch({ type: 'EDIT_NOTE', noteId: source.noteId, changes: { content: fresh[0] } } as never);
     } else {

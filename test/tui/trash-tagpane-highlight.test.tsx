@@ -16,7 +16,7 @@ const writeKey = async (stdin: { write: (s: string) => void }, ch: string) => {
   await delay(50);
 };
 
-describe('T283 trash view highlights the Trash row in the Tags pane', () => {
+describe('trash view highlights the Trash row in the Tags pane', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

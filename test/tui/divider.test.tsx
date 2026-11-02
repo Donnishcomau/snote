@@ -24,7 +24,7 @@ const lines = (frame: string | string[][] | undefined): string[] => {
   return frame.map(row => stripAnsi(Array.isArray(row) ? row.join('') : row));
 };
 
-describe('T191 Divider component', () => {
+describe('Divider component', () => {
   it('1: WHEN <Divider height={4} /> is rendered THEN the frame is exactly "│\\n│\\n│\\n│"; WHEN height={0} THEN the frame contains no "│"', async () => {
     const { lastFrame } = render(<Divider height={4} />);
     await delay(0);
@@ -56,7 +56,7 @@ describe('T191 Divider component', () => {
   });
 });
 
-describe('T191 Divider in App', () => {
+describe('Divider in App', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

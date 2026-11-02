@@ -76,7 +76,7 @@ async function waitForFrameBy(
     await new Promise((r) => setTimeout(r, 10));
 }
 
-describe("T462 notice fits one row", () => {
+describe("notice fits one row", () => {
   let dir: string;
   beforeEach(() => {
     dir = fs.mkdtempSync(path.join(os.tmpdir(), "snote-notice-fit-"));

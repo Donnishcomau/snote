@@ -1,4 +1,4 @@
-// T162 — a real repo file (so the repo's "type": "module" rule applies to
+// a real repo file (so the repo's "type": "module" rule applies to
 // its imports) proving the BUNDLED sync path works against the fake server.
 // Bundled with scripts/build.mjs, then run as: node <outfile> <serverUrl> <dataDir>
 

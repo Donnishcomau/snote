@@ -11,18 +11,18 @@ import { Confirm, Prompt } from './Prompt';
 import { publishLink, emptyTrashActions, sharedLine } from '../core/note-keys';
 import { pendingCount } from '../core/simperium-reducer';
 import { insertCheckItem, exportSelectedNote } from './app-actions';
-import { logoutHandlers, emptyTrashHandlers, renameHandlers, deleteTagHandlers } from './dialog-actions';
-import { documentsDir, exportFileName } from '../core/export-note';
-import { dataRoot } from '../core/data-root';
+import { logoutHandlers, logoutWarning, emptyTrashHandlers, renameHandlers, deleteTagHandlers } from './dialog-actions';
+import { documentsDir, exportFileName } from '../core/export-name';
+import { dataRoot, keptElsewhere } from '../core/data-root';
 import { useBlogSendAskState } from './blog-send-ask';
 import { BlogSendDialog } from './blog-send-dialog';
-import { loadBlogSend, blogStatusLine } from '../core/blog-sent';
+import { loadBlogSend, blogStatusLine } from '../core/blog-status';
 import isEmailTag from '@vendor/utils/is-email-tag';
 import { sanitizeForTerminal } from '../core/sanitize';
 import type { useAppState } from './useAppState';
 import { KeyHints } from './KeyHints';
 
-// T293: checklist-item prompt state. BottomArea owns the useState and
+// checklist-item prompt state. BottomArea owns the useState and
 // publishes it to a module cell; App reads it with useItemAsk() (it renders
 // ABOVE BottomArea, so a plain context cannot carry it upward). The cell is
 // reassigned on every render of the owning instance.
@@ -39,7 +39,7 @@ export function useItemAsk(): ItemAskState {
   return itemAskRef.current;
 }
 
-// T298: the export prompt state (`w`), owned by BottomArea and published to
+// the export prompt state (`w`), owned by BottomArea and published to
 // a module cell exactly like itemAskRef above, so App.tsx can pass
 // setExportAsk into handleNoteKey without growing its own state (245/250).
 interface ExportAskState {
@@ -101,17 +101,17 @@ export function BottomArea({
 }: BottomAreaProps): React.JSX.Element {
   const { allTagNames, connected, word, noteEntries, inTrash, sortLabelStr, pending } = view;
   const blogLine = selectedEntry ? blogStatusLine(loadBlogSend(dataRoot(), String(selectedEntry.id))) : null;
-  // T293: the checklist-item prompt state is owned here and published to the
+  // the checklist-item prompt state is owned here and published to the
   // module cell App.tsx reads via useItemAsk() (see itemAskRef above).
   const [itemAsk, setItemAsk] = useState(false);
   itemAskRef.current = { itemAsk, setItemAsk, itemIndex };
-  // T298: the export prompt's open flag and the path it shows. initialFor
+  // the export prompt's open flag and the path it shows. initialFor
   // reads it only at mount time, so the path follows the note selected when
   // `w` opened the prompt, even if the list moves under it.
   const [exportAsk, setExportAsk] = useState(false);
   exportAskRef.current = { exportAsk, setExportAsk };
   const exportPathRef = useRef<string | null>(null);
-  // T338: open when the actions object is present; `n`/Escape close it.
+  // open when the actions object is present; `n`/Escape close it.
   const { phase, request } = useBlogSendAskState(
     selectedEntry ? String(selectedEntry.id) : null,
     selectedEntry?.note.content ?? '',
@@ -119,18 +119,18 @@ export function BottomArea({
     (message) => setNoticeError?.(message),
   );
 
-  // Dialog prompt handlers extracted to dialog-actions.ts (T298) to keep
+  // Dialog prompt handlers extracted to dialog-actions.ts to keep
   // this file under the 300-line structural cap.
   const logout = logoutHandlers(setLogoutAsk, onLogout);
   const emptyTrash = emptyTrashHandlers(store, setEmptyAsk);
   const rename = tagDialog?.kind === 'rename' ? renameHandlers(store, tagDialog, setTagDialog) : null;
   const deleteTag = tagDialog?.kind === 'delete' ? deleteTagHandlers(store, tagDialog, setTagDialog) : null;
 
-  // T482: while the list has the keys (no prompt, no dialog, no inline
+  // while the list has the keys (no prompt, no dialog, no inline
   // editor) a bracketed paste is refused here, never replayed as keys.
   useListPaste(!(searchOpen || tagEditorOpen || tagDialog || emptyAsk || logoutAsk || itemAsk || exportAsk || phase || inlineEditOpen), (m) => setNotice?.(m));
 
-  // T293: `a` in the note pane — insert a checklist item via app-actions.
+  // `a` in the note pane — insert a checklist item via app-actions.
   const handleItemAskSubmit = (value: string) => {
     insertCheckItem({ store, selectedEntry, itemIndex, value });
     setItemAsk(false);
@@ -140,7 +140,7 @@ export function BottomArea({
     setItemAsk(false);
   };
 
-  // T298: `w` — the path the prompt opens with, upstream's naming in the
+  // `w` — the path the prompt opens with, upstream's naming in the
   // documents dir. Recomputed when the prompt closes, captured when it opens.
   const initialFor = (kind: 'rename' | 'export'): string => {
     if (kind === 'rename') return sanitizeForTerminal(tagDialog!.tagName);
@@ -158,7 +158,7 @@ export function BottomArea({
   };
 
   const handleExportCancel = () => {
-    // T298: Prompt's unchanged-text Enter arrives here (Prompt treats it as a
+    // Prompt's unchanged-text Enter arrives here (Prompt treats it as a
     // cancel), so export the suggested path; Escape clears the ref and drops.
     if (exportPathRef.current !== null) {
       handleExportSubmit(exportPathRef.current);
@@ -237,12 +237,12 @@ export function BottomArea({
           request={request}
         />
       ) : logoutAsk ? (
-        pendingCount(store.getState().simperium) > 0
+        pendingCount(store.getState().simperium) > 0 || keptElsewhere() > 0
           ? (() => {
               const unsynced = pendingCount(store.getState().simperium);
               return (
                 <Prompt
-                  label={'log out: ' + unsynced + ' unsynced notes will be lost - type \'logout\' to confirm'}
+                  label={'log out: ' + logoutWarning(unsynced, keptElsewhere()) + ' Please type \'logout\' to confirm'}
                   initial=""
                   onSubmit={logout.submit}
                   onCancel={logout.no}

@@ -1,6 +1,7 @@
 import { Box, Text, useInput } from 'ink';
 import React, { useState } from 'react';
-// F162: pasted email/code drawn through sanitizeForTerminal (display only)
+// pasted email/code drawn through sanitizeForTerminal (display only)
+// proof: test/tui/login-paste-sanitised.test.tsx
 import { theme } from './theme'; import { sanitizeForTerminal } from '../core/sanitize';
 
 interface LoginProps {
@@ -15,7 +16,7 @@ interface LoginProps {
 /**
  * Login screen: email step → emailed code step.
  */
-const hidden = (s: string): boolean => sanitizeForTerminal(s) !== s; // F162: control/direction chars
+const hidden = (s: string): boolean => sanitizeForTerminal(s) !== s; // control/direction chars
 const REFUSED = 'Email or code has control or hidden characters';
 
 export function Login({
@@ -38,7 +39,7 @@ export function Login({
     if (key.return) {
       if (step === 'email') {
         if (email.trim() === '') return;
-        if (hidden(email)) { setError(REFUSED); return; } // F162
+        if (hidden(email)) { setError(REFUSED); return; }
         setError('');
         setPending(true);
         requestCode(email.trim())
@@ -53,7 +54,7 @@ export function Login({
           });
       } else if (step === 'code') {
         if (code.trim() === '') return;
-        if (hidden(code)) { setError(REFUSED); return; } // F162
+        if (hidden(code)) { setError(REFUSED); return; }
         setError('');
         setPending(true);
         completeLogin(email.trim(), code.trim())

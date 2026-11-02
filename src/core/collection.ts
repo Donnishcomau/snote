@@ -15,6 +15,7 @@ export function tagRows(tags: Map<TagHash, Tag>): TagName[] {
   return tagRowsStored(tags).map(
     // OMARCHY: boundary cast — TagName is a branded string and the
     // sanitize result is a plain string with identical runtime shape.
+    // proof: test/core/sanitize.test.tsx
     (name) => sanitizeForTerminal(name) as TagName
   );
 }

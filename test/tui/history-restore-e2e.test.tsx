@@ -1,5 +1,5 @@
 /**
- * T447 History restore driven by keys against the fake server, and `y`
+ * History restore driven by keys against the fake server, and `y`
  * through the real clipboard writer.
  *
  * Tests 1-3: the App is rendered over a store syncing to the fake Simperium
@@ -133,7 +133,7 @@ async function makeHistory(): Promise<{ store: SyncStore }> {
   return { store };
 }
 
-describe('T447 history restore by keys against the fake server, y through the real clipboard writer', () => {
+describe('history restore by keys against the fake server, y through the real clipboard writer', () => {
   // key-ring and --new-request cells are module state shared inside the
   // vitest worker; a paste ringed in an earlier test (e.g. a bare ESC in
   // history-key.test.tsx) would mask this file's keystrokes otherwise.
@@ -257,7 +257,7 @@ describe('T447 history restore by keys against the fake server, y through the re
   });
 });
 
-describe('T447 y through the real clipboard writer (fake wl-copy first on PATH)', () => {
+describe('y through the real clipboard writer (fake wl-copy first on PATH)', () => {
   const savedPath = process.env.PATH;
 
   /** Write an executable fake `wl-copy` into a fresh temp dir, first on PATH. */

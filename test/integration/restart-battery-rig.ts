@@ -376,7 +376,7 @@ async function laterEdit(server: FakeSimperiumServer, b: Built): Promise<Note> {
   return phase1 as Note;
 }
 
-/** F198 rig: save MK, "kill" `killMs` later by copying the data dir; restart on the copy. */
+/** rig: save MK, "kill" `killMs` later by copying the data dir; restart on the copy. */
 async function saveThenKill(mode: 'inline' | 'external' | 'never-got-it' | 'hold', killMs: number) {
   const server = await startServer();
   const ctl = control(server);
@@ -423,9 +423,9 @@ async function saveThenKill(mode: 'inline' | 'external' | 'never-got-it' | 'hold
 type Scenario = [string, () => Promise<void>];
 
 const scenarios: Scenario[] = [
-  // S8-01 (SR8 sr8-crash-window): sent, server applied, no ack, killed before the state.json save.
+  // ( sr8-crash-window): sent, server applied, no ack, killed before the state.json save.
   ...(['edit', 'trash'] as const).map((kind): Scenario => [
-    `S8-01-${kind}`,
+    `crash-before-save-${kind}`,
     async () => {
       const server = await startServer();
       const ctl = control(server);
@@ -449,17 +449,17 @@ const scenarios: Scenario[] = [
         const phase1 = view(localNote(b));
         act(b, 'pin');
         await settle(server, b);
-        await record(`S8-01-trash`, server, b, { content: BASE, deleted: true, pinned: true }, { phase1 });
+        await record(`crash-before-save-trash`, server, b, { content: BASE, deleted: true, pinned: true }, { phase1 });
       } else {
         const phase1 = await laterEdit(server, b);
-        await record(`S8-01-edit`, server, b, { content: MK + '\nLATER' }, { phase1 });
+        await record(`crash-before-save-edit`, server, b, { content: MK + '\nLATER' }, { phase1 });
       }
     },
   ]),
 
-  // S10-01 P8: server copy dated 30 s ahead, MK unacked, pin, crash before state.json holds the pin.
+  // P8: server copy dated 30 s ahead, MK unacked, pin, crash before state.json holds the pin.
   [
-    'S10-01-P8',
+    'P8-ahead-copy-pin-crash',
     async () => {
       const server = await startServer(Date.now() / 1000 + 30);
       const ctl = control(server);
@@ -482,12 +482,94 @@ const scenarios: Scenario[] = [
       const b = openA(dir, server.url);
       await catchUp(b);
       const phase1 = await laterEdit(server, b);
-      await record('S10-01-P8', server, b, { content: MK + '\nLATER' }, { phase1, pinNote: 'pin made before the crash is not gated' });
+      await record('P8-ahead-copy-pin-crash', server, b, { content: MK + '\nLATER' }, { phase1, pinNote: 'pin made before the crash is not gated' });
     },
   ],
-  // S10-01 P6: server copy dated 30 s ahead, MK unacked, clean stop, unsynced.json removed.
+  // sync-8: an offline edit, then a session edit made at once with the catch-up
+  // 1.5 s late (the note is held): the library rebases a note changed in this
+  // session, so the session edit is kept.
   [
-    'S10-01-P6',
+    'HOLD-session-edit',
+    async () => {
+      const server = await startServer();
+      const dir = await offlineSession(server);
+      const ctl = control(server);
+      ctl.lateMs = 1500;
+      const b = openA(dir, server.url);
+      edit(b, OFF + '\nSESS');
+      await settle(server, b);
+      await record('HOLD-session-edit', server, b, { content: OFF + '\nSESS' });
+    },
+  ],
+  // P6 with the catch-up 7 s late (after the rig's 5 s catch-up wait),
+  // so the LATER edit is made before the catch-up lands (the order heavy load
+  // produces; Mac mini run, 21 Oct).
+  [
+    'P6-ahead-copy-late',
+    async () => {
+      const server = await startServer(Date.now() / 1000 + 30);
+      const ctl = control(server);
+      const dir = newDir();
+      const a = await sendMkUnacked(server, ctl, dir);
+      await stop(a);
+      rmSync(join(dir, 'unsynced.json'), { force: true });
+      ctl.hold = false;
+      ctl.lateMs = 7000;
+      const b = openA(dir, server.url);
+      await catchUp(b);
+      const phase1 = await laterEdit(server, b);
+      await record('P6-ahead-copy-late', server, b, { content: MK + '\nLATER' }, { phase1 });
+    },
+  ],
+  // #130: P6 and P8 with a start that must re-index (both starts).
+  [
+    'P6-ahead-copy-clean-stop-reindex',
+    async () => {
+      const server = await startServer(Date.now() / 1000 + 30);
+      const ctl = control(server);
+      const dir = newDir();
+      const a = await sendMkUnacked(server, ctl, dir);
+      await stop(a);
+      rmSync(join(dir, 'unsynced.json'), { force: true });
+      expireCv(dir);
+      ctl.hold = false;
+      const b = openA(dir, server.url);
+      await catchUp(b);
+      const phase1 = await laterEdit(server, b);
+      await record('P6-ahead-copy-clean-stop-reindex', server, b, { content: MK + '\nLATER' }, { phase1 });
+    },
+  ],
+  [
+    'P8-ahead-copy-pin-crash-reindex',
+    async () => {
+      const server = await startServer(Date.now() / 1000 + 30);
+      const ctl = control(server);
+      const dir = newDir();
+      const a = await sendMkUnacked(server, ctl, dir);
+      const saved = readFileSync(join(dir, 'state.json'), 'utf8');
+      const mkDate = localNote(a)?.modificationDate;
+      act(a, 'pin');
+      await waitFor(
+        () => {
+          const d = localNote(a)?.modificationDate;
+          return d !== mkDate && Number(readJson(dir, 'unsynced.json').n1) === Number(d);
+        },
+        8000,
+        'pin recorded in unsynced.json'
+      );
+      await stop(a);
+      writeFileSync(join(dir, 'state.json'), saved);
+      expireCv(dir);
+      ctl.hold = false;
+      const b = openA(dir, server.url);
+      await catchUp(b);
+      const phase1 = await laterEdit(server, b);
+      await record('P8-ahead-copy-pin-crash-reindex', server, b, { content: MK + '\nLATER' }, { phase1 });
+    },
+  ],
+  // P6: server copy dated 30 s ahead, MK unacked, clean stop, unsynced.json removed.
+  [
+    'P6-ahead-copy-clean-stop',
     async () => {
       const server = await startServer(Date.now() / 1000 + 30);
       const ctl = control(server);
@@ -499,11 +581,11 @@ const scenarios: Scenario[] = [
       const b = openA(dir, server.url);
       await catchUp(b);
       const phase1 = await laterEdit(server, b);
-      await record('S10-01-P6', server, b, { content: MK + '\nLATER' }, { phase1 });
+      await record('P6-ahead-copy-clean-stop', server, b, { content: MK + '\nLATER' }, { phase1 });
     },
   ],
 
-  // S11-01 Q9 / Q8 (start-up-action-kept 1-10): offline edit OFF, then a pin/trash/tag before the catch-up.
+  // Q9 / Q8 (start-up-action-kept 1-10): offline edit OFF, then a pin/trash/tag before the catch-up.
   ...(
     [
       ['Q9-pin-400', 'pin', 0, 400],
@@ -518,7 +600,7 @@ const scenarios: Scenario[] = [
       ['Q8-tag-400', 'tag', 1200, 400],
     ] as const
   ).map(([name, a, late, at]): Scenario => [
-    `S11-01-${name}`,
+    name,
     async () => {
       const server = await startServer();
       const dir = await offlineSession(server);
@@ -533,12 +615,12 @@ const scenarios: Scenario[] = [
       if (a === 'pin') e.pinned = true;
       if (a === 'trash') e.deleted = true;
       if (a === 'tag') e.tags = ['work'];
-      await record(`S11-01-${name}`, server, b, e);
+      await record(name, server, b, e);
     },
   ]),
-  // S11-01 Q1 (start-up-action-kept 11): MK unacked at quit, catch-up 6 s late, pin at once.
+  // Q1 (start-up-action-kept 11): MK unacked at quit, catch-up 6 s late, pin at once.
   [
-    'S11-01-Q1-pin',
+    'Q1-pin',
     async () => {
       const server = await startServer();
       const ctl = control(server);
@@ -549,11 +631,11 @@ const scenarios: Scenario[] = [
       act(b, 'pin');
       await sleep(6000);
       await settle(server, b, 10000);
-      await record('S11-01-Q1-pin', server, b, { content: MK, pinned: true });
+      await record('Q1-pin', server, b, { content: MK, pinned: true });
     },
   ],
 
-  // S12-01 O1-O4: the user undoes an offline-session action before the catch-up.
+  // O1-O4: the user undoes an offline-session action before the catch-up.
   ...(
     [
       ['O1-unpin', 'pin', 'unpin', 1200, 0, { pinned: false }],
@@ -562,7 +644,7 @@ const scenarios: Scenario[] = [
       ['O4-untag', 'tag', 'untag', 1200, 0, { tags: [] }],
     ] as const
   ).map(([name, offAct, undo, late, at, e]): Scenario => [
-    `S12-01-${name}`,
+    name,
     async () => {
       const server = await startServer();
       const dir = await offlineSession(server, [offAct]);
@@ -573,11 +655,11 @@ const scenarios: Scenario[] = [
       if (at > 0) await sleep(at);
       act(b, undo);
       await settle(server, b, 12000);
-      await record(`S12-01-${name}`, server, b, { content: OFF, ...e } as Expect);
+      await record(name, server, b, { content: OFF, ...e } as Expect);
     },
   ]),
 
-  // S12-02 A1, A4, O5: another device changes the same array field while snote is closed.
+  // A1, A4, O5: another device changes the same array field while snote is closed.
   ...(
     [
       ['A1-tags', [] as Act[], { tags: ['home'] }, 'tag', { tags: ['home', 'work'] }],
@@ -585,7 +667,7 @@ const scenarios: Scenario[] = [
       ['O5-offline-pin-tags', ['pin'] as Act[], { tags: ['home'] }, 'tag', { pinned: true, tags: ['home', 'work'] }],
     ] as const
   ).map(([name, offActs, other, a, e]): Scenario => [
-    `S12-02-${name}`,
+    name,
     async () => {
       const server = await startServer();
       const dir = await offlineSession(server, [...offActs]);
@@ -596,13 +678,13 @@ const scenarios: Scenario[] = [
       const b = openA(dir, server.url);
       act(b, a);
       await settle(server, b, 12000);
-      await record(`S12-02-${name}`, server, b, { content: OFF, ...e } as Expect);
+      await record(name, server, b, { content: OFF, ...e } as Expect);
     },
   ]),
 
-  // REVIEW-T531 sweep (prompt catch-up after quit-before-ack).
+  // REVIEW- sweep (prompt catch-up after quit-before-ack).
   [
-    'T531-P1-revert',
+    'P1-revert',
     async () => {
       const server = await startServer();
       const ctl = control(server);
@@ -611,11 +693,11 @@ const scenarios: Scenario[] = [
       const b = openA(dir, server.url);
       edit(b, BASE);
       await settle(server, b);
-      await record('T531-P1-revert', server, b, { content: BASE });
+      await record('P1-revert', server, b, { content: BASE });
     },
   ],
   [
-    'T531-P2-delete-forever',
+    'P2-delete-forever',
     async () => {
       const server = await startServer();
       const ctl = control(server);
@@ -626,13 +708,53 @@ const scenarios: Scenario[] = [
       act(b, 'forever');
       await sleep(3000);
       await settle(server, b);
-      await record('T531-P2-delete-forever', server, b, { gone: true });
+      await record('P2-delete-forever', server, b, { gone: true });
     },
   ],
-  // F226 (#93): T531-P2 with the catch-up 1.5 s late, so the remove goes out
+  // (#125): the same delete forever just after a restart that must
+  // re-index (change version unreadable), at once and with the index 1.5 s late;
+  // and a tombstone left by an earlier session re-sent at a re-index start.
+  ...(
+    [
+      ['forever-reindex', 0],
+      ['forever-late-reindex', 1500],
+    ] as const
+  ).map(([name, late]): Scenario => [
+    name,
+    async () => {
+      const server = await startServer();
+      const ctl = control(server);
+      const dir = await quitBeforeAck(server, ctl);
+      expireCv(dir);
+      ctl.hold = false;
+      ctl.lateMs = late;
+      const b = openA(dir, server.url);
+      act(b, 'trash');
+      act(b, 'forever');
+      await sleep(3000);
+      await settle(server, b);
+      await record(name, server, b, { gone: true });
+    },
+  ]),
+  [
+    'tombstone-resend-reindex',
+    async () => {
+      const server = await startServer();
+      const dir = newDir();
+      const a = await synced(server, dir);
+      await stop(a);
+      writeFileSync(join(dir, 'tombstones.json'), JSON.stringify(['n1']));
+      expireCv(dir);
+      const b = openA(dir, server.url);
+      await sleep(3000);
+      await settle(server, b);
+      await record('tombstone-resend-reindex', server, b, { gone: true });
+    },
+  ],
+  // (#93): P2-delete-forever with the catch-up 1.5 s late, so the remove goes out
   // before the echo of the pre-quit edit arrives (the order load produces).
   [
-    'S226-forever-late-echo',
+    'forever-late-echo',
     async () => {
       const server = await startServer();
       const ctl = control(server);
@@ -644,11 +766,11 @@ const scenarios: Scenario[] = [
       act(b, 'forever');
       await sleep(3000);
       await settle(server, b);
-      await record('S226-forever-late-echo', server, b, { gone: true });
+      await record('forever-late-echo', server, b, { gone: true });
     },
   ],
   [
-    'T531-P3-other-device-pin',
+    'P3-other-device-pin',
     async () => {
       const server = await startServer();
       const ctl = control(server);
@@ -659,11 +781,11 @@ const scenarios: Scenario[] = [
       const b = openA(dir, server.url);
       act(b, 'pin');
       await settle(server, b);
-      await record('T531-P3-other-device-pin', server, b, { content: MK + '\nOTHER', pinned: true });
+      await record('P3-other-device-pin', server, b, { content: MK + '\nOTHER', pinned: true });
     },
   ],
   [
-    'T531-P4-offline-pin',
+    'P4-offline-pin',
     async () => {
       const server = await startServer();
       const ctl = control(server);
@@ -675,11 +797,11 @@ const scenarios: Scenario[] = [
       await stop(o);
       const b = openA(dir, server.url);
       await settle(server, b);
-      await record('T531-P4-offline-pin', server, b, { content: MK, pinned: true });
+      await record('P4-offline-pin', server, b, { content: MK, pinned: true });
     },
   ],
   [
-    'T531-P5-two-offline-then-pin',
+    'P5-two-offline-then-pin',
     async () => {
       const server = await startServer();
       const ctl = control(server);
@@ -693,10 +815,10 @@ const scenarios: Scenario[] = [
       const b = openA(dir, server.url);
       act(b, 'pin');
       await settle(server, b);
-      await record('T531-P5-two-offline-then-pin', server, b, { content: MK, pinned: true });
+      await record('P5-two-offline-then-pin', server, b, { content: MK, pinned: true });
     },
   ],
-  // Doubling probe: quit-before-ack, no action (T531 P7, quit-before-ack 1).
+  // Doubling probe: quit-before-ack, no action ( P7, quit-before-ack 1).
   [
     'DBL-quit-before-ack',
     async () => {
@@ -709,7 +831,7 @@ const scenarios: Scenario[] = [
       await record('DBL-quit-before-ack', server, b, { content: MK });
     },
   ],
-  // Doubling probe S9-01 (touch-before-echo 1-3): an action right after restart, prompt catch-up.
+  // Doubling probe (touch-before-echo 1-3): an action right after restart, prompt catch-up.
   ...(
     [
       ['pin', { content: MK, pinned: true }],
@@ -717,7 +839,7 @@ const scenarios: Scenario[] = [
       ['trash', { content: MK, deleted: true }],
     ] as const
   ).map(([a, e]): Scenario => [
-    `DBL-S9-01-${a}`,
+    `DBL-restart-${a}`,
     async () => {
       const server = await startServer();
       const ctl = control(server);
@@ -727,16 +849,16 @@ const scenarios: Scenario[] = [
       if (a === 'edit') edit(b, MK + '\nX');
       else act(b, a);
       await settle(server, b);
-      await record(`DBL-S9-01-${a}`, server, b, e as Expect);
+      await record(`DBL-restart-${a}`, server, b, e as Expect);
     },
   ]),
   // D1 (restart-echo-safety 3-6): catch-up 500 ms late; line 5 is the undone edit.
   ...(
     [
-      ['D1-5-undo-edit', 'undo', { content: BASE }],
-      ['D1-3-edit', 'edit', { content: MK + '\nX' }],
-      ['D1-4-pin', 'pin', { content: MK, pinned: true }],
-      ['D1-6-other-device-pin', 'other', { content: MK + '\nOTHER', pinned: true }],
+      ['late-catch-up-undo-edit', 'undo', { content: BASE }],
+      ['late-catch-up-edit', 'edit', { content: MK + '\nX' }],
+      ['late-catch-up-pin', 'pin', { content: MK, pinned: true }],
+      ['late-catch-up-other-device-pin', 'other', { content: MK + '\nOTHER', pinned: true }],
     ] as const
   ).map(([name, a, e]): Scenario => [
     name,
@@ -758,7 +880,7 @@ const scenarios: Scenario[] = [
       await record(name, server, b, e as Expect);
     },
   ]),
-  // F198 (QA-F198, kill-after-save): killed N ms after a save.
+  // (QA-, kill-after-save): killed N ms after a save.
   ...(
     [
       ['inline', 50],
@@ -769,11 +891,11 @@ const scenarios: Scenario[] = [
       ['inline', 900],
     ] as const
   ).map(([mode, ms]): Scenario => [
-    `F198-${mode}-${ms}`,
+    `kill-${mode}-${ms}`,
     async () => {
       const { server, b, serverHadIt } = await saveThenKill(mode, ms);
       await settle(server, b);
-      await record(`F198-${mode}-${ms}`, server, b, { content: MK }, { serverHadIt });
+      await record(`kill-${mode}-${ms}`, server, b, { content: MK }, { serverHadIt });
     },
   ]),
   // R1 sync-1 tag rows: n1 synced with `baseTags`; while snote is closed it is
@@ -781,8 +903,8 @@ const scenarios: Scenario[] = [
   // restart with every reply 1200 ms late, no action.
   ...(
     [
-      ['TAG-1-removed-offline', ['old', 'gone'], ['gone'], ['old', 'home'], ['home']],
-      ['TAG-2-same-tag-hash', ['Work'], ['Home'], ['work', 'home'], ['home']],
+      ['tags-removed-offline', ['old', 'gone'], ['gone'], ['old', 'home'], ['home']],
+      ['tags-same-tag-hash', ['Work'], ['Home'], ['work', 'home'], ['home']],
     ] as const
   ).map(([name, baseTags, offTags, otherTags, tags]): Scenario => [
     name,
@@ -818,12 +940,12 @@ const scenarios: Scenario[] = [
       await record(name, server, b, { content: OFF, tags: [...tags] });
     },
   ]),
-  // #27 (F187) and #20 (F181): two saves before a quit, the second queued
+  // #27 and #20: two saves before a quit, the second queued
   // behind the unacked first; restart with prompt replies, or a re-index.
   ...(
     [
-      ['S27-two-saves', false],
-      ['S20-reindex-two-saves', true],
+      ['two-saves', false],
+      ['two-saves-reindex', true],
     ] as const
   ).map(([name, reindex]): Scenario => [
     name,
@@ -838,17 +960,17 @@ const scenarios: Scenario[] = [
       await record(name, server, b, { content: MK + '\nY' });
     },
   ]),
-  // F236 (sync-5b): while snote was closed with an offline edit, another
+  // (sync-5b): while snote was closed with an offline edit, another
   // device changed n1 without changing its line counts (a move; a blank line
   // the offline copy already has elsewhere). `serverHeld` may not read such a
   // change as already held on line counts alone — the other device's change
   // must survive the hand-off, with a prompt catch-up or after a re-index.
   ...(
     [
-      ['F236-move', OFF, 'line2\nline1', 'line2\nline1\nOFF', false],
-      ['F236-move-reindex', OFF, 'line2\nline1', 'line2\nline1\nOFF', true],
-      ['F236-blank', 'line1\nline2\n\nOFF', 'line1\n\nline2', 'line1\n\nline2\n\nOFF', false],
-      ['F236-blank-reindex', 'line1\nline2\n\nOFF', 'line1\n\nline2', 'line1\n\nline2\n\nOFF', true],
+      ['count-neutral-move', OFF, 'line2\nline1', 'line2\nline1\nOFF', false],
+      ['count-neutral-move-reindex', OFF, 'line2\nline1', 'line2\nline1\nOFF', true],
+      ['count-neutral-blank', 'line1\nline2\n\nOFF', 'line1\n\nline2', 'line1\n\nline2\n\nOFF', false],
+      ['count-neutral-blank-reindex', 'line1\nline2\n\nOFF', 'line1\n\nline2', 'line1\n\nline2\n\nOFF', true],
     ] as const
   ).map(([name, offline, other, kept, reindex]): Scenario => [
     name,
@@ -873,9 +995,153 @@ const scenarios: Scenario[] = [
       await record(name, server, b, { content: kept });
     },
   ]),
+  // (#105),, standing rows: n1 synced as `baseContent`; while snote is
+  // closed it is edited offline to `offline` and another device sets it to
+  // `other` ('' = no change); restart, prompt or re-index. an offline
+  // edit that only moves a line is kept. another device moved a line to
+  // where the offline copy inserted the same line; it ends once. another
+  // device moved the line the offline edit deleted; the untouched lines stay.
+  // REPDEL: another device deleted one of two equal lines; it stays deleted.
+  // the offline edit added a copy of a line and another device changed
+  // the note elsewhere; the copy is sent (one server line counts once).
+  // MOVEAPP (#115): an offline move plus another device's appended line keeps
+  // both. CONFLICT-hostile-title: both sides changed the first line; both
+  // versions are kept in the note (and the notice names it, sanitised).
+  ...(
+    [
+      ['offline-move', BASE, 'line2\nline1', '', 'line2\nline1', false],
+      ['offline-move-reindex', BASE, 'line2\nline1', '', 'line2\nline1', true],
+      ['coincident-line', 'a\nb\nX\nc', 'a\nX\nb\nX\nc\nOFF', 'a\nX\nb\nc', 'a\nX\nb\nc\nOFF', false],
+      ['coincident-line-reindex', 'a\nb\nX\nc', 'a\nX\nb\nX\nc\nOFF', 'a\nX\nb\nc', 'a\nX\nb\nc\nOFF', true],
+      ['coincident-blank-reindex', 'a\nb\n\nc', 'a\n\nb\n\nc\nOFF', 'a\n\nb\nc', 'a\n\nb\nc\nOFF', true],
+      ['delete-moved', 'a\nb\nc', 'a\nc\nOFF', 'b\na\nc', 'b\na\nc\nOFF', false],
+      ['delete-moved-reindex', 'a\nb\nc', 'a\nc\nOFF', 'b\na\nc', 'b\na\nc\nOFF', true],
+      ['delete-moved-down', 'a\nb\nc', 'a\nc\nOFF', 'a\nc\nb', 'a\nc\nb\nOFF', false],
+      ['delete-moved-down-reindex', 'a\nb\nc', 'a\nc\nOFF', 'a\nc\nb', 'a\nc\nb\nOFF', true],
+      ['dup-line-reindex', 'a\nb', 'a\nb\nb', 'Z\na\nb', 'Z\na\nb\nb', true],
+      ['dup-blank-reindex', 'a\n\nb', 'a\n\n\nb', 'a\nZ\n\nb', 'a\nZ\n\n\nb', true],
+      ['MOVEAPP', BASE, 'line2\nline1', 'line1\nline2\nX', 'line2\nline1\nX', false],
+      ['MOVEAPP-reindex', BASE, 'line2\nline1', 'line1\nline2\nX', 'line2\nline1\nX', true],
+      ['CONFLICT-hostile-title', 'T\nline2', '\u001b]52;c;eA==\u0007T-OFF\nline2', 'T-OTHER\nline2', '\u001b]52;c;eA==\u0007T-OFF\nline2\n\n--- conflicting change from another device ---\nT-OTHER\nline2', false],
+      ['move-edit-append', 'a\nb\nc', 'c2\na\nb', 'a\nb\nc\nZ', 'c2\na\nb\n\n--- conflicting change from another device ---\na\nb\nc\nZ', false],
+      ['space-move', 'a\nb\nc', 'a \nb\nc', 'b\na\nc', 'a \nb\nc\n\n--- conflicting change from another device ---\nb\na\nc', false],
+      ['repdel-first', 'line1\nline2', 'line1\nline2\nline1\nOFF', 'line2', 'line2\nline1\nOFF', false],
+      ['repdel-last', 'line1\nline2', 'line1\nline2\nline2\nOFF', 'line1', 'line1\nline2\nOFF', false],
+      ['move-edit-append-reindex', 'a\nb\nc', 'c2\na\nb', 'a\nb\nc\nZ', 'c2\na\nb\n\n--- conflicting change from another device ---\na\nb\nc\nZ', true],
+      ['space-move-reindex', 'a\nb\nc', 'a \nb\nc', 'b\na\nc', 'a \nb\nc\n\n--- conflicting change from another device ---\nb\na\nc', true],
+      ['repdel-first-reindex', 'line1\nline2', 'line1\nline2\nline1\nOFF', 'line2', 'line2\nline1\nOFF', true],
+      ['repdel-last-reindex', 'line1\nline2', 'line1\nline2\nline2\nOFF', 'line1', 'line1\nline2\nOFF', true],
+      ['REPDEL-reindex', 'a\nX\nb\nX\nc', 'a\nX\nb\nX\nc\nOFF', 'a\nX\nb\nc', 'a\nX\nb\nc\nOFF', true],
+    ] as const
+  ).map(([name, baseContent, offline, other, kept, reindex]): Scenario => [
+    name,
+    async () => {
+      const server = await startServer();
+      const seeded = server.getObject(APP_ID, 'note', 'n1')!.data as Record<string, unknown>;
+      if (baseContent !== BASE) server.serverChange('note', 'n1', { ...seeded, content: baseContent });
+      const dir = newDir();
+      const a = openA(dir, server.url);
+      await waitFor(() => stateNote(dir)?.content === baseContent && pending(a) === 0, 8000, 'n1 synced and saved');
+      await stop(a);
+      const o = openA(dir, OFFLINE);
+      edit(o, offline);
+      await waitFor(
+        () => stateNote(dir)?.content === offline && 'n1' in readJson(dir, 'unsynced.json'),
+        8000,
+        'offline edit saved'
+      );
+      await stop(o);
+      const cur = server.getObject(APP_ID, 'note', 'n1')!.data as Record<string, unknown>;
+      if (other) server.serverChange('note', 'n1', { ...cur, content: other });
+      if (reindex) expireCv(dir);
+      const b = openA(dir, server.url);
+      await settle(server, b);
+      await record(name, server, b, { content: kept });
+    },
+  ]),
+  // An edit made after a quit, then a start with a readable change version
+  // (`prompt`) or an unreadable one, so it re-indexes (`reindex`). Snote is
+  // closed with offline saves; `other`, if any, is another device's change.
+  // never-sent: two saves made with no server, none of them ever sent.
+  // same-line-reindex: both devices changed line2; both versions are kept as a conflict block.
+  ...(
+    [
+      ['never-sent-prompt', ['line1\nline2\nMK', 'line1\nline2\nMK\nZZ'], undefined, 'line1\nline2\nMK\nZZ', false],
+      ['never-sent-reindex', ['line1\nline2\nMK', 'line1\nline2\nMK\nZZ'], undefined, 'line1\nline2\nMK\nZZ', true],
+      ['same-line-reindex', ['line1\nline2 MINE'], 'line1\nline2 THEIRS', 'line1\nline2 MINE\n\n--- conflicting change from another device ---\nline1\nline2 THEIRS', true],
+    ] as const
+  ).map(([name, saves, other, kept, reindex]): Scenario => [
+    name,
+    async () => {
+      const server = await startServer();
+      const dir = newDir();
+      const a = await synced(server, dir);
+      await stop(a);
+      const o = openA(dir, OFFLINE);
+      for (const text of saves) edit(o, text);
+      await waitFor(
+        () => stateNote(dir)?.content === saves[saves.length - 1] && 'n1' in readJson(dir, 'unsynced.json'),
+        8000,
+        'offline saves kept'
+      );
+      await stop(o);
+      if (other) {
+        const cur = server.getObject(APP_ID, 'note', 'n1')!.data as Record<string, unknown>;
+        server.serverChange('note', 'n1', { ...cur, content: other });
+      }
+      if (reindex) expireCv(dir);
+      const b = openA(dir, server.url);
+      await settle(server, b);
+      await record(name, server, b, { content: kept });
+    },
+  ]),
+  // / #336: a pin, then the data dir copied N ms later (a kill), MK unacked: KEPT.
+  ...([0, 200, 450] as const).map((ms): Scenario => [
+    `pin-kill-${ms}`,
+    async () => {
+      const server = await startServer();
+      const ctl = control(server);
+      const dir = newDir();
+      const killed = newDir();
+      const a = await sendMkUnacked(server, ctl, dir);
+      act(a, 'pin');
+      await sleep(ms);
+      cpSync(dir, killed, { recursive: true, filter: (src) => !src.endsWith('instance.lock') });
+      await stop(a);
+      ctl.hold = false;
+      const b = openA(killed, server.url);
+      await settle(server, b);
+      await record(`pin-kill-${ms}`, server, b, { content: MK, pinned: true });
+    },
+  ]),
+  // / #336: a catch-up reply late by lateMs after a quit before the ack: KEPT.
+  ...(
+    [
+      [3900, 'none'], [4500, 'none'], [4500, 'edit'], [4500, 'pin'], [6000, 'pin'],
+    ] as const
+  ).map(([ms, a]): Scenario => [
+    `late-${ms}-${a}`,
+    async () => {
+      const server = await startServer();
+      const ctl = control(server);
+      const dir = await quitBeforeAck(server, ctl);
+      ctl.hold = false;
+      ctl.eachMs = ms;
+      const b = openA(dir, server.url);
+      if (a === 'edit') edit(b, MK + '\nX');
+      if (a === 'pin') act(b, 'pin');
+      await sleep(ms);
+      await settle(server, b, 10000);
+      const e: Expect = a === 'edit' ? { content: MK + '\nX' } : a === 'pin' ? { content: MK, pinned: true } : { content: MK };
+      await record(`late-${ms}-${a}`, server, b, e);
+    },
+  ]),
 ];
 
 const byId = new Map(scenarios);
+
+/** Every scenario id in table order; a repeated id stays visible (the Map above would hide it). */
+export const scenarioIds = (): string[] => scenarios.map(([id]) => id);
 
 /** Run one scenario by id and return what both sides hold at the end. */
 export async function runScenario(id: string): Promise<Outcome> {

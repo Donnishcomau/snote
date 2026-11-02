@@ -1,5 +1,5 @@
 /**
- * T504 (F153): a refused blog origin in `blog.json` shows a notice and
+ * a refused blog origin in `blog.json` shows a notice and
  * sends no request. `http://localhost.:<port>` parses, but its hostname
  * `localhost.` is not a loopback name, so `isAllowed` refuses it.
  */
@@ -99,7 +99,7 @@ async function openQuestion(): Promise<ReturnType<typeof render>> {
   return r;
 }
 
-describe('blog origin notice (T504)', () => {
+describe('blog origin notice', () => {
   it('6: WHEN `b` then `y` are pressed with blog.json origin `http://localhost.:<port>` of a local server THEN the frame contains `blog origin is not allowed`, fetch was called 0 times and `blog-sent.json` does not exist', async () => {
     await withTempDataDir(async (dir) => {
       const { server, port } = await startBlogServer();

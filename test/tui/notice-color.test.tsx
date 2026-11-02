@@ -1,5 +1,5 @@
 /**
- * T349: the notice line was always red, so success messages like "draft
+ * the notice line was always red, so success messages like "draft
  * sent to your blog" and "New note saved" read as errors. Error notices
  * stay red; success/informational notices render green.
  */
@@ -42,7 +42,7 @@ function seedStore(): ReturnType<typeof makeStore> {
   return store;
 }
 
-describe('notice color (T349)', () => {
+describe('notice color', () => {
   it('1: WHEN n is written with an editor that resolves "fresh note" THEN the frame contains the green ANSI wrapped text \\u001b[32mNew note saved — press g to add tags\\u001b[39m and does not contain that text wrapped in \\u001b[31m', async () => {
     inkChalk.level = 3;
     const store = seedStore();

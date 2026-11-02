@@ -46,9 +46,10 @@ export function TagEditor({ tags, allTags, onAdd, onRemove, onClose }: TagEditor
     if (step.close) onClose();
   });
 
-  // Build the display line. T306 G1: tags are server-supplied, so they are
+  // Build the display line. G1: tags are server-supplied, so they are
   // sanitized where they are DRAWN only; all logic (suggestTag, tagInputStep,
   // onAdd, onRemove) keeps the raw values so removal still matches the name.
+  // proof: test/core/security-review-2.test.tsx
   const displayTags = tags.map((t) => `[${sanitizeForTerminal(t)}] `);
 
   let display = 'tags: ';
@@ -57,6 +58,8 @@ export function TagEditor({ tags, allTags, onAdd, onRemove, onClose }: TagEditor
 
   if (suggestion) {
     // Same rule: sanitize for display, keep raw for the text.length math.
+    // proof: test/tui/typed-text-sanitised.test.tsx
+    // proof: test/core/r7-claims-294.test.ts
     const restOfSuggestion = sanitizeForTerminal(suggestion.slice(text.length));
     return (
       <Box>

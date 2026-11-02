@@ -1,5 +1,5 @@
 /**
- * T273: Broadcast is scoped to the bucket, not every channel of every connection.
+ * Broadcast is scoped to the bucket, not every channel of every connection.
  * Each acceptance line becomes one `it()`.
  */
 import { describe, it, expect } from 'vitest';
@@ -117,7 +117,7 @@ async function buildFixture() {
   };
 }
 
-describe('T273 broadcast scope', () => {
+describe('broadcast scope', () => {
   it('1: WHEN a modify change with id note1 and ccid ccid-one is sent on channel 0 THEN exactly 1 c: frame on channel 0 with ccids ["ccid-one"]', async () => {
     const { server, ws, sentFrames, beforeCount, waitForFrames } = await buildFixture();
 

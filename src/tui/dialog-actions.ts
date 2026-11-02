@@ -1,10 +1,11 @@
-// T298 extraction from BottomArea.tsx to keep it under 300 lines.
+// extraction from BottomArea.tsx to keep it under 300 lines.
 // Dialog prompt handlers (tag rename/delete, logout, empty trash) moved
 // here, verbatim. Each takes the state setters BottomArea already owns.
 import type { Store } from 'redux';
 import type { State } from '../core/store';
 import type { TagName } from '@vendor/types';
 import { emptyTrashActions } from '../core/note-keys';
+import { unsyncedChanges } from '../core/token';
 
 interface TagDialogState {
   kind: 'rename' | 'delete';
@@ -12,6 +13,10 @@ interface TagDialogState {
 }
 
 type Setter<T> = (v: T) => void;
+
+/** F237b: what the user's own logout deletes: `n` unsynced changes here, `m` kept for other accounts. */
+export const logoutWarning = (n: number, m: number): string =>
+  `${unsyncedChanges(n)}${m > 0 ? ` (${m} more kept for other accounts)` : ''} will be deleted.`;
 
 export const logoutHandlers = (
   setLogoutAsk: Setter<boolean>,

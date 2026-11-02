@@ -1,5 +1,5 @@
 /**
- * T427: the update notice takes the warning role (yellow), not the green
+ * the update notice takes the warning role (yellow), not the green
  * used for success. Both update kinds render yellow; errors stay red and
  * all other notices stay green.
  */
@@ -66,7 +66,7 @@ afterEach(() => {
   inkChalk.level = chalkLevel;
 });
 
-describe('update notice colour (T427)', () => {
+describe('update notice colour', () => {
   it("1: WHEN fixture N renders and publishUpdate({ kind: 'available' }) runs THEN, polled, the frame contains \\u001b[33mupdate available: omarchy plugin update and not \\u001b[32mupdate available", async () => {
     const { lastFrame } = renderN();
     publishUpdate({ kind: 'available' });

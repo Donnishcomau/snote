@@ -1,6 +1,7 @@
-// Crash-bundle redaction (F152): an error message or stack can quote note
+// Crash-bundle redaction: an error message or stack can quote note
 // text, tags, ids or paths holding the account email, and the crash file is
 // the one the user is told to share. So only a fixed vocabulary survives.
+// proof: test/core/crash-redact.test.ts
 
 // Lowercase words that may stay in a message: the wording of snote's own
 // errors and of the common V8 / Node error messages.
@@ -124,6 +125,8 @@ function storedFrames(e: Record<string, unknown>, home: string): string[] {
 
 // An error object read back from a crash file (which may predate redaction):
 // only the fixed vocabulary survives, as for a live crash.
+// proof: test/core/crash-redact-frames.test.ts
+// proof: test/cli/report-old-crash.test.ts
 export function redactStoredError(error: unknown, home: string): unknown {
   if (typeof error !== "object" || error === null) return undefined;
   const e = error as Record<string, unknown>;

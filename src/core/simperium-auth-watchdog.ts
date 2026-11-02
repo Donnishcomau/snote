@@ -1,5 +1,5 @@
 /**
- * T320 — snote stays stuck without syncing when Simplenote ignores its login.
+ * snote stays stuck without syncing when Simplenote ignores its login.
  *
  * Live finding 2026-09-26, captured with a wire log: about 1 start in 3, the
  * client opens the socket and sends its four init messages, and the server

@@ -30,7 +30,7 @@ async function framesUntil(
   throw new Error('condition not met, last frame:\n' + last);
 }
 
-describe('T369 The preview-pane focus line reads focus: preview', () => {
+describe('The preview-pane focus line reads focus: preview', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

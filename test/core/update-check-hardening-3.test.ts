@@ -1,5 +1,5 @@
 /**
- * T480: hardening after T471 (F126). A `cat-file` step killed by its
+ * hardening after. A `cat-file` step killed by its
  * timeout (code `null`) is no answer at all: it must read `unknown`
  * instead of claiming the clone lacks the remote commit. The local
  * head from `rev-parse HEAD` gets the same 1 to 64 lowercase hex
@@ -57,7 +57,7 @@ const makeRunner = (answers: {
     if (args[0] === 'rev-parse') {
       return { code: 0, stdout: answers.revParse };
     }
-    if (args[0] === 'cat-file') {
+    if (args.includes('cat-file')) {
       return { code: answers.catFile, stdout: '' };
     }
     return { code: 0, stdout: '' };

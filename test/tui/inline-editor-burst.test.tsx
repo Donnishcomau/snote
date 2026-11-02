@@ -1,7 +1,7 @@
 /**
- * F161: keys that reach the inline editor in one burst (several stdin
+ * keys that reach the inline editor in one burst (several stdin
  * writes, or one chunk, with no redraw in between) are all kept, in order.
- * S6-01: caret moves in a burst each move the caret once, in order.
+ * caret moves in a burst each move the caret once, in order.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render } from 'ink-testing-library';
@@ -47,7 +47,7 @@ function letters(n: number): string {
   return s;
 }
 
-describe('inline editor key bursts (F161)', () => {
+describe('inline editor key bursts', () => {
   let store: ReturnType<typeof makeStore>;
   const saved = (): string | undefined => store.getState().data.notes.get(eid('t1'))?.content;
 

@@ -1,5 +1,5 @@
 /**
- * Search field: focus marker and truncation (T249).
+ * Search field: focus marker and truncation.
  * Verifies that the search line gets bold + inverse when open,
  * is truncated at width boundaries, and sits above the status line.
  */

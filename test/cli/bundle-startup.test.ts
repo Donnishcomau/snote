@@ -1,5 +1,5 @@
 /**
- * T172: the bundle must not build Unicode tables or load undici at start-up.
+ * the bundle must not build Unicode tables or load undici at start-up.
  * The lazyIcu esbuild plugin rewrites Intl.Segmenter / \p{RGI_Emoji} / the
  * yoga fetch-shim in the BUNDLE only; this test proves frames rendered
  * through the bundle match the unbundled libraries exactly.
@@ -20,7 +20,7 @@ let outDir: string;
 let status: number | null;
 let stdout: string;
 
-describe('T172 lazy ICU in bundle', () => {
+describe('lazy ICU in bundle', () => {
   beforeAll(async () => {
     outDir = mkdtempSync(join(tmpdir(), 'bundle-startup-'));
     outfile = join(outDir, 'entry.js');

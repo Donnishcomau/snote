@@ -2,8 +2,9 @@
 
 exports[`App > 8: snapshot test for width 80 height 24 > width-80-height-24 1`] = `
 "Notes                           │Preview: Pinned note
->Pinned note                    │g add tag
-    This is pinned content      │This is pinned content
+Pinned                          │g add tag
+>Pinned note                    │This is pinned content
+    This is pinned content      │
                                 │
 ──────────────────────────────  │
  Third normal note              │
@@ -21,16 +22,16 @@ exports[`App > 8: snapshot test for width 80 height 24 > width-80-height-24 1`] 
                                 │
                                 │
                                 │
-                                │
-? Help  n New  e Edit  g Add tag  / Search  q Quit  p Unpin  Tab Tags
+? Help  n New  e Edit  g Add tag  / Search  q Quit  p Unpin  Tab Tags  ←→ Panes
 [connecting] 4 notes
 "
 `;
 
 exports[`App > 9: snapshot test for width 120 height 40 > width-120-height-40 1`] = `
 "Notes                                   │Preview: Pinned note
->Pinned note                            │g add tag
-    This is pinned content              │This is pinned content
+Pinned                                  │g add tag
+>Pinned note                            │This is pinned content
+    This is pinned content              │
                                         │
 ───────────────────────────────────────…│
  Third normal note                      │
@@ -64,8 +65,7 @@ exports[`App > 9: snapshot test for width 120 height 40 > width-120-height-40 1`
                                         │
                                         │
                                         │
-                                        │
-? Help  n New  e Edit  g Add tag  / Search  q Quit  p Unpin  Tab Tags
+? Help  n New  e Edit  g Add tag  / Search  q Quit  p Unpin  Tab Tags  ←→ Panes
 [connecting] 4 notes
 "
 `;

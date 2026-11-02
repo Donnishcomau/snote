@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 /**
- * Update notice U1 (T385): decide whether a newer snote already sits
+ * Update notice U1: decide whether a newer snote already sits
  * in the user's omarchy plugin clone, so the app can say "restart
  * snote / the bar to use the update". Pure: no network, no child
  * process, no UI, and no import of the running version (the caller

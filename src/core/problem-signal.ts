@@ -1,5 +1,5 @@
 /**
- * The one problem signal (T441): a single module-level slot holding the
+ * The one problem signal: a single module-level slot holding the
  * last failure message published by core code, so a write failure that
  * cannot reach the screen by itself still shows up on the notice line.
  * Same shape as the update signal: one stored value, many subscribers,

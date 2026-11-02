@@ -1,4 +1,4 @@
-// T448 — end-to-end tests for `snote --check` and `snote --logout`:
+// end-to-end tests for `snote --check` and `snote --logout`:
 // the bundled CLI runs as a child process against a temp HOME, temp XDG
 // dirs and a temp --data-dir, so the real data dir is never touched.
 

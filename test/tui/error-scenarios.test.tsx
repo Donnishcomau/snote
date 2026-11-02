@@ -1,5 +1,5 @@
 /**
- * T446 — error scenarios at the UI edge: a note removed on the server while
+ * error scenarios at the UI edge: a note removed on the server while
  * selected or unselected, a completely empty account, tiny terminal sizes,
  * and pathologically large notes. Tests only; no product code changes.
  *
@@ -64,7 +64,7 @@ const noteData = (content: string, modificationDate: number) => ({
   tags: [],
 });
 
-describe('T446 remote removal, empty account, tiny sizes, huge notes', () => {
+describe('remote removal, empty account, tiny sizes, huge notes', () => {
   let server: FakeSimperiumServer;
 
   beforeEach(async () => {

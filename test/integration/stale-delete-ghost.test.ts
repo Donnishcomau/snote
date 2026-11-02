@@ -1,7 +1,7 @@
 /**
- * T521 (tests corrected by T525) — a note the stale-delete reconcile
+ * (tests corrected by) — a note the stale-delete reconcile
  * removes on a full re-index must lose its ghost too, or the NEXT start
- * resurrects it (F180, issue #19).
+ * resurrects it (, issue #19).
  *
  * The reconcile (src/core/simperium-stale-delete-fix.ts) diffs a completed
  * full re-index against `data.notes` and dispatches
@@ -18,7 +18,7 @@
  * `not-a-number` BEFORE the store opens to drive a full re-index
  * (FileGhostStore reads its cv at construction, so a bash written after
  * `open` never reaches the channel and no re-index ever runs). The fixture
- * trap is T499's: both notes must have real ghosts before any file is
+ * trap is's: both notes must have real ghosts before any file is
  * edited, so the first store really syncs both onto disk (ghost file AND
  * state.json), then closes.
  *
@@ -239,7 +239,7 @@ afterEach(async () => {
   server = undefined;
 });
 
-describe('T521 a note removed by the re-index reconcile loses its ghost too', () => {
+describe('a note removed by the re-index reconcile loses its ghost too', () => {
   it('1: WHEN `noteX` is dropped from the server index with no change-log entry, the cv in `ghosts-note.json` is `not-a-number`, and the device starts twice THEN after the second start `noteX` is not in data.notes, `noteY` has content `KEEP`, and the ghost file lists no `noteX`', async () => {
     const srv = await startServer();
     const dataDir = await seedAndClose(srv);

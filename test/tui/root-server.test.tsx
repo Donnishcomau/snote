@@ -24,7 +24,7 @@ const makeStoreForSpy = () =>
       (makeStore({ stubClient: {} }) as Store<State>)
   );
 
-describe('T289 saved sync token is only sent to the server it was issued for', () => {
+describe('saved sync token is only sent to the server it was issued for', () => {
   let dir: string;
   let requestCode: Mock;
   let completeLogin: Mock;

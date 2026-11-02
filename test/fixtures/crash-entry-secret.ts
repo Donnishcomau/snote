@@ -1,4 +1,4 @@
-// T214 — a real entry that renders a component throwing `new Error('boom CONTENTMARK hunter2')`
+// a real entry that renders a component throwing `new Error('boom CONTENTMARK hunter2')`
 // on its first render, proving main()'s crash handler catches a React render
 // error in the BUNDLE and exits 1 with calm lines instead of a stack trace.
 // Bundled with scripts/build.mjs, then run as: node <outfile> <state-dir> —

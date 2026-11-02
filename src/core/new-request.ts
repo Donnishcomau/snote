@@ -3,16 +3,14 @@ import {
   watch,
   lstatSync,
   readFileSync,
-  renameSync,
   statSync,
-  unlinkSync,
 } from 'node:fs';
 import { join } from 'node:path';
 
-import { secureWriteFileSync } from './secure-fs';
+import { secureUnlink, secureWriteFileSync } from './secure-fs';
 
 /**
- * Cross-process "open a new note" request (T373).
+ * Cross-process "open a new note" request.
  *
  * The bar's middle-click cannot start a second snote: one process per
  * account folder holds `instance.lock`. Instead of a signal (a reused pid
@@ -53,6 +51,8 @@ function isPidAlive(pid: number): boolean {
  * Writes `<dir>/new-note.request` (0600, atomic via rename) only when a
  * live process other than ourselves owns the lock; writes nothing
  * otherwise.
+ * proof: test/core/new-request.test.ts
+ * proof: test/core/secure-fs-symlink.test.ts
  */
 export function requestNewNote(dir: string): 'sent' | 'no-instance' {
   const lockPath = join(dir, LOCK_FILE);
@@ -72,9 +72,7 @@ export function requestNewNote(dir: string): 'sent' | 'no-instance' {
   }
 
   const requestPath = join(dir, REQUEST_FILE);
-  const tmpPath = join(dir, `${REQUEST_FILE}.tmp`);
-  secureWriteFileSync(tmpPath, JSON.stringify({ v: 1, t: Date.now() }));
-  renameSync(tmpPath, requestPath);
+  secureWriteFileSync(requestPath, JSON.stringify({ v: 1, t: Date.now() }));
   return 'sent';
 }
 
@@ -108,7 +106,7 @@ export function watchNewRequests(
 
   const claim = (): boolean => {
     try {
-      unlinkSync(requestPath);
+      secureUnlink(requestPath);
       return true;
     } catch {
       // ENOENT: another consume already claimed this request.

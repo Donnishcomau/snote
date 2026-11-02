@@ -1,4 +1,4 @@
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput, useIsScreenReaderEnabled } from 'ink';
 import React, { useState } from 'react';
 import { keymap, KeymapEntry } from '../core/keymap';
 import { SECTIONS } from '../core/help-sections';
@@ -6,7 +6,7 @@ import { editorFinishHint } from '../core/editor-select';
 import { layoutHelp } from '../core/help-layout';
 import { cutLine, helpListLines, helpListWindow } from '../core/help-list';
 import { maxFitColumns } from '../core/help-fit';
-import { theme } from './theme'; import { withVersion } from '../core/shown-version';
+import { theme } from './theme'; import { withVersion as shownTitle } from '../core/shown-version';
 
 interface HelpProps {
   width: number;
@@ -87,9 +87,11 @@ function Section({
  */
 export function Help({ width, height, entries, editor }: HelpProps): React.JSX.Element {
   const [scroll, setScroll] = useState(0);
+  const screenReader = useIsScreenReaderEnabled();
+  const withVersion = (t: string): string => shownTitle(t) + (screenReader ? '  screen-reader mode' : '');
   // Pick the first layout that fits: wide (100+ wide, 30+ high), sectioned
-  // (50-99 wide, 30+ high, columns wide enough only, T522), two-column narrow
-  // (80+ wide, 24+ high), else a one-column list that scrolls with j/k (T465).
+  // (50-99 wide, 30+ high, columns wide enough only,), two-column narrow
+  // (80+ wide, 24+ high), else a one-column list that scrolls with j/k.
   const contentRows = Math.max(1, height - 4);
   const displayEntries = entries ?? keymap;
   const columns = helpColumns(displayEntries, contentRows);
@@ -124,7 +126,7 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
   while (sectionCols < 4 && rowsAt(sectionCols) > availableContent) sectionCols++;
   const sectionRowWidth = twoCols ? width - 4 : innerWidth;
 
-  // The list decision (T522): at 50-99 wide, sectioned only while its
+  // The list decision: at 50-99 wide, sectioned only while its
   // column count fits the width rule; otherwise the scrolling list.
   const sectioned =
     (width >= 100 && height >= 30) ||
@@ -182,7 +184,7 @@ export function Help({ width, height, entries, editor }: HelpProps): React.JSX.E
     </Box>
   );
 
-  // Narrow path (T298): when the screen is too short for the sectioned
+  // Narrow path: when the screen is too short for the sectioned
   // layout (80x24), switch to a two-column flat list that fits every
   // entry without truncating descriptions below what fits in a column.
   const narrow = entries === undefined && !list && height < 30;

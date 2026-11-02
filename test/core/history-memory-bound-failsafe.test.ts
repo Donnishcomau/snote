@@ -1,5 +1,5 @@
 /**
- * T537 The T536 cache release fails safe: with simperium's `revisionCache`
+ * The cache release fails safe: with simperium's `revisionCache`
  * export missing or not a Map, history still opens and loads its versions.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
@@ -21,7 +21,7 @@ async function openAndClose(cacheValue: unknown): Promise<unknown[]> {
   return revs; // close releases nothing here; must not throw
 }
 
-describe('T537 revision cache fix fails safe', () => {
+describe('revision cache fix fails safe', () => {
   it('1: WHEN simperium\'s `revisionCache` export is missing (undefined) THEN installing the fix and fetching the revisions of a note does not throw and resolves with its `2` versions', async () => {
     const revs = await openAndClose(undefined);
     expect(revs.length).toBe(2);

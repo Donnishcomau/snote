@@ -3,7 +3,7 @@
  *
  * Generates N notes into a temp dir, starts the bundled bench FRESH `runs`
  * times, takes the best (minimum) of each measure, and fails when the best
- * run breaks a PRD §7 threshold (150 ms start / 50 ms search / 120 MB rss;
+ * run breaks a threshold (150 ms start / 50 ms search / 120 MB rss;
  * a value equal to the limit fails).
  */
 import { spawnSync } from 'node:child_process';
@@ -14,9 +14,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { bundle, writeLauncher } from './build.mjs';
 
-// PRD §7 limits (same as THRESHOLDS in src/cli/bench; a value equal to the limit fails)
+// Bench limits (same as THRESHOLDS in src/cli/bench; a value equal to the limit fails)
 const START_MS = 150;
-const START_CEILING_MS = 200; // owner-approved regression ceiling (2026-09-24); T288 tightens it toward START_MS
+const START_CEILING_MS = 200; // owner-approved regression ceiling (2026-09-24); tightens it toward START_MS
 const SEARCH_MS = 50;
 const RSS_MB = 120;
 
@@ -45,7 +45,7 @@ try {
       "import { writeBenchState } from './src/cli/bench'; writeBenchState(process.argv[2], Number(process.argv[3]));",
     outfile: gen,
   });
-  // T174: the run entry starts through the same launcher users get, so the
+  // the run entry starts through the same launcher users get, so the
   // bench measures what the user runs (compile cache on, warm after run 1).
   await bundle({
     contents:
@@ -114,7 +114,7 @@ try {
   if (best.startMs >= START_CEILING_MS)
     broken.push(`start ${best.startMs} ms >= ${START_CEILING_MS} ms`);
   else if (best.startMs >= START_MS)
-    console.log(`WARN: start ${best.startMs} ms above PRD target ${START_MS} ms`);
+    console.log(`WARN: start ${best.startMs} ms above the start target ${START_MS} ms`);
   if (best.searchMs >= SEARCH_MS)
     broken.push(`search ${best.searchMs} ms >= ${SEARCH_MS} ms`);
   if (best.rssMb >= RSS_MB)

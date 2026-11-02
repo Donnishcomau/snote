@@ -1,5 +1,5 @@
 /**
- * T156: One data folder per account — notes live under `<data dir>/<email>/`.
+ * One data folder per account — notes live under `<data dir>/<email>/`.
  * Only `auth.json` stays in the data dir root; an old single-folder install is
  * moved once at start-up by `prepareDataDir`.
  */
@@ -50,7 +50,7 @@ const writeOldState = (root: string): void => {
   saveState(stub.getState(), root);
 };
 
-describe('T156 one data folder per account', () => {
+describe('one data folder per account', () => {
   let server: FakeSimperiumServer;
   let root: string;
   let stopSaving: (() => void) | undefined;

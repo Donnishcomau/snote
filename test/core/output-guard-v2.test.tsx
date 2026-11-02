@@ -1,6 +1,6 @@
 /**
- * T470 — the output guard keeps Ink's own output byte-identical and drops
- * every other escape, across writes, Buffers and encodings (corrects T413).
+ * the output guard keeps Ink's own output byte-identical and drops
+ * every other escape, across writes, Buffers and encodings (corrects).
  *
  * Lines 1-2 pin what `stripUnsafeOutput` keeps and drops, lines 3-5 the
  * per-stream state of `guardOutputStream` (split sequences, Buffers, other
@@ -96,7 +96,7 @@ function seedTwoPlainNotes(): ReturnType<typeof makeStore> {
   return store;
 }
 
-describe('T470 — output guard v2', () => {
+describe('output guard v2', () => {
   it('1: WHEN `stripUnsafeOutput` gets each of `a\\x1bcb`, `a\\x1b7b`, `a\\x1b=b`, `a\\x1b(0b`, `a\\x1b[6nb`, `a\\x1b[cb`, `a\\x1b[21tb`, `a\\x1b[?ub`, `a\\x1b[>1ub`, `a\\x1b[>4;2mb` and `a\\x1b[\\x9d52;;00\\x07mb` THEN each of the first ten returns `ab`, and `a\\x1b[\\x9d52;;00\\x07mb` returns `amb` (the C1 introducer ends the CSI, the OSC is dropped through BEL, `m` is text).', () => {
     const firstTen = ['a\x1bcb', 'a\x1b7b', 'a\x1b=b', 'a\x1b(0b', 'a\x1b[6nb', 'a\x1b[cb', 'a\x1b[21tb', 'a\x1b[?ub', 'a\x1b[>1ub', 'a\x1b[>4;2mb'];
     expect(firstTen.map((s) => [s, stripUnsafeOutput(s)])).toEqual(firstTen.map((s) => [s, 'ab']));

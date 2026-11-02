@@ -1,5 +1,5 @@
 /**
- * T360: snote --new is accepted on the command line and listed in --help.
+ * snote --new is accepted on the command line and listed in --help.
  */
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import * as fs from 'node:fs';
@@ -9,7 +9,7 @@ import * as path from 'node:path';
 import { main } from '../../src/cli/main';
 import { splitNewFlag, USAGE } from '../../src/cli/args';
 
-describe('T360 --new flag', () => {
+describe('--new flag', () => {
   let dir: string;
   let logged: string[];
   let io: { log: (text: string) => void };

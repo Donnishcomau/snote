@@ -1,5 +1,5 @@
 /**
- * T373: a request file lets one snote process ask a running snote to open
+ * a request file lets one snote process ask a running snote to open
  * a new note. Core only: no CLI, no TUI, no signals.
  */
 import { spawn, type ChildProcess } from 'node:child_process';
@@ -27,7 +27,7 @@ const waitFor = async (cond: () => boolean, timeoutMs = 1000) => {
   }
 };
 
-describe('T373 new-note request file', () => {
+describe('new-note request file', () => {
   let tmpDir: string;
   let child: ChildProcess | undefined;
 

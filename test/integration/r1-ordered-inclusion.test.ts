@@ -1,5 +1,5 @@
 /**
- * R1 sync-5b (F236). "Already held" at the start-up hand-off reads line order,
+ * R1 sync-5b. "Already held" at the start-up hand-off reads line order,
  * not only line counts: another device's move or added blank line made while
  * snote was closed with an offline edit is kept, also after a re-index.
  */
@@ -12,14 +12,14 @@ afterEach(cleanupBattery);
 
 describe('R1 sync-5b: a change counts as held only with its lines in order', () => {
   it('1: WHEN n1 was edited offline to `line1\\nline2\\nOFF`, another device moved line2 above line1 and snote restarts with a re-index THEN the server and the store hold content `line2\\nline1\\nOFF`, verdict `KEPT`', async () => {
-    const o = await runScenario('F236-move-reindex');
+    const o = await runScenario('count-neutral-move-reindex');
     expect(o.server?.content).toBe('line2\nline1\nOFF');
     expect(o.store?.content).toBe('line2\nline1\nOFF');
     expect(o.verdict).toBe('KEPT');
   }, 45000);
 
   it('2: WHEN n1 was edited offline to `line1\\nline2\\n\\nOFF`, another device added a blank line between line1 and line2 and snote restarts with a re-index THEN the server and the store hold content `line1\\n\\nline2\\n\\nOFF`, verdict `KEPT`', async () => {
-    const o = await runScenario('F236-blank-reindex');
+    const o = await runScenario('count-neutral-blank-reindex');
     expect(o.server?.content).toBe('line1\n\nline2\n\nOFF');
     expect(o.store?.content).toBe('line1\n\nline2\n\nOFF');
     expect(o.verdict).toBe('KEPT');

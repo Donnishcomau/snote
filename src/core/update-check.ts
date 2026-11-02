@@ -2,18 +2,18 @@ import { execFile } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { secureWriteFileSync } from './secure-fs';
+import { ensureDir, secureWriteFileSync } from './secure-fs';
 import { compareVersions } from './update-state';
 
 /**
- * Update notice U2 core (T386): ask the plugin clone's origin once a
+ * Update notice U2 core: ask the plugin clone's origin once a
  * day whether a newer HEAD is out there. Anonymous and silent: the
  * only remote command is `git ls-remote <url> HEAD` against the
  * clone's own origin, never anything that moves local refs or opens
  * an HTTP client. Offline or broken, it says `unknown` and writes
  * nothing; the user opts out with SNOTE_UPDATE_CHECK=off (or 0).
  *
- * Hardening (T415): the clone's `.git/config` is untrusted input —
+ * Hardening: the clone's `.git/config` is untrusted input —
  * `core.sshCommand`, `remote.origin.uploadpack` or an `ext::` url in
  * there would run a program once a day. So snote reads the origin
  * url itself from the config file (never through git), accepts only
@@ -56,7 +56,7 @@ interface UpdateCheckCache {
  * `GIT_DIR`, `GIT_SSH_COMMAND`, ... reaches git), plus
  * `GIT_TERMINAL_PROMPT=0`.
  */
-function gitEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+export function gitEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const out: NodeJS.ProcessEnv = {};
   for (const [key, value] of Object.entries(env)) {
     if (!key.startsWith('GIT_')) {
@@ -69,12 +69,12 @@ function gitEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
 }
 
 /**
- * F235 (SECURITY MUST 6): the config flags every remote git call carries,
+ * (SECURITY MUST 6): the config flags every remote git call carries,
  * so a configured credential helper, hook path or fsmonitor never runs from
  * the background check and only https (or a local path) is spoken. They
  * come before the subcommand, as git requires.
  */
-const REMOTE_GIT_FLAGS = [
+export const REMOTE_GIT_FLAGS = [
   '-c', 'credential.helper=',
   '-c', 'core.hooksPath=/dev/null',
   '-c', 'core.fsmonitor=false',
@@ -83,10 +83,14 @@ const REMOTE_GIT_FLAGS = [
 ];
 
 /**
- * The flags for one remote call. A local absolute-path origin (reached only
- * in tests; production refuses it) is the `file` protocol, which
- * `protocol.allow=never` would block, so it alone gets
+ * The flags for one remote call. A local absolute-path origin uses the `file`
+ * protocol, which the base set blocks, so it alone gets
  * `protocol.file.allow=always`. An https origin gets exactly MUST 6's set.
+ * The shipped start-up check does not reach the local-path branch: it runs
+ * through `homepageGuard` (install-kind.ts), which answers a local path
+ * without running git. The bar update click (packaging/omarchy/bar-update)
+ * accepts a local path on purpose, and SECURITY.md says so; tests reach it
+ * here directly.
  */
 function remoteGitFlags(url: string): string[] {
   return url.startsWith('/') ? [...REMOTE_GIT_FLAGS, '-c', 'protocol.file.allow=always'] : REMOTE_GIT_FLAGS;
@@ -148,7 +152,7 @@ export const defaultGitRunner: GitRunner = (args, opts) =>
     const child = execFile(
       'git',
       args,
-      { cwd: opts.cwd, timeout: opts.timeoutMs, env: opts.env },
+      { cwd: opts.cwd, timeout: opts.timeoutMs, maxBuffer: 1048576, env: opts.env },
       (error, stdout) => {
         if (!error) {
           resolve({ code: 0, stdout: String(stdout ?? '') });
@@ -220,6 +224,7 @@ async function remoteIsAhead(
   remoteHead: string
 ): Promise<'available' | 'current' | 'unknown'> {
   const hasRemote = await runInClone(run, cloneDir, env, [
+    ...REMOTE_GIT_FLAGS, // MUST 6 on the in-clone calls too
     'cat-file',
     '-e',
     `${remoteHead}^{commit}`,
@@ -233,6 +238,7 @@ async function remoteIsAhead(
     return 'available';
   }
   const ancestor = await runInClone(run, cloneDir, env, [
+    ...REMOTE_GIT_FLAGS,
     'merge-base',
     '--is-ancestor',
     localHead,
@@ -358,7 +364,7 @@ export async function checkRemoteUpdate(o: {
     }
     remoteHead = sha;
     try {
-      fs.mkdirSync(o.stateDir, { recursive: true });
+      ensureDir(o.stateDir);
       secureWriteFileSync(
         cacheFile,
         JSON.stringify({ checkedAt: o.now, remoteHead: sha }) + '\n'
@@ -400,7 +406,7 @@ export async function checkRemoteUpdate(o: {
  * `.<digits>` (1 to 6 digits each) counts; the `^{}` line of an annotated tag is the same tag, and
  * every other line the remote sends is ignored. Opted out, no clone
  * (no `.git/config` to read), offline, timed out or failing git: null.
- * F234: with a `stateDir`, a fresh `update-tag-check.json` (under 24 h, stamped
+ * with a `stateDir`, a fresh `update-tag-check.json` (under 24 h, stamped
  * with the check's start time) answers with no git call, a success writes it 0600, a failure writes
  * nothing. Never throws.
  */
@@ -409,14 +415,14 @@ const RELEASE_TAG_LINE = /^([0-9a-f]{1,64})\s+refs\/tags\/v(\d{1,6}\.\d{1,6}\.\d
 const TAG_VERSION = /^\d{1,6}\.\d{1,6}\.\d{1,6}(?:\.\d{1,6})?$/;
 const TAG_CACHE_MAX_BYTES = 4096;
 
-/** F234: a newest release tag and the commit it names. */
+/** a newest release tag and the commit it names. */
 export interface RemoteVersion {
   version: string;
   commit: string;
 }
 
 /**
- * F234: the tag-check cache, a sibling of `update-check.json` (its reader
+ * the tag-check cache, a sibling of `update-check.json` (its reader
  * and its tests pin that file to `{checkedAt, remoteHead}`). Anything not
  * exactly a fresh, past `checkedAt`, a validated version and a hex commit
  * is no cache.
@@ -496,7 +502,7 @@ export async function checkRemoteVersion(o: {
     }
     if (newest !== null && cacheFile !== null) {
       try {
-        fs.mkdirSync(o.stateDir as string, { recursive: true });
+        ensureDir(o.stateDir as string);
         secureWriteFileSync(
           cacheFile,
           JSON.stringify({ checkedAt: startedAt, version: newest.version, commit: newest.commit }) + '\n'

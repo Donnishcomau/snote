@@ -19,7 +19,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { BANNER, lazyIcu, noDevtools, simperiumInterop, writeLauncher } from './build.mjs';
+import { BANNER, lazyIcu, noDevtools, refuseOddOutput, simperiumInterop, simperiumNoHttp, writeLauncher } from './build.mjs';
+import { checkAllowedSigners } from './check-allowed-signers.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..');
@@ -63,14 +64,60 @@ function websocketFallback() {
 }
 
 /**
+ * Refuse an outDir that is itself a symlink or not a folder, or that holds, at
+ * any depth, an entry that is not a regular file or a folder (lstat, never
+ * followed). A missing outDir is fine. Runs before any write and before esbuild,
+ * so nothing is written through a planted link. Refuse, never repair. (#426, #412)
+ * proof: test/packaging/build-output-links.test.ts
+ * @param {string} outDir the folder about to be built into
+ */
+function refuseOddOutDir(outDir) {
+  // path.resolve drops a trailing separator, a '/.' and '//', which make the OS follow a final link; the raw path is
+  // lstat'ed too because a '..' after a link is followed physically by the readdir below. proof: test/packaging/build-outdir-spellings.test.ts
+  const top = path.resolve(outDir);
+  let topMissing = false;
+  for (const p of [top, outDir]) {
+    let st;
+    try {
+      st = fs.lstatSync(p);
+    } catch (err) {
+      if (/** @type {NodeJS.ErrnoException} */ (err).code === 'ENOENT') {
+        if (p === top) topMissing = true;
+        continue;
+      }
+      throw err;
+    }
+    if (!st.isDirectory()) throw new Error(`refusing to build into ${outDir}: it is a symlink or not a folder`);
+  }
+  if (topMissing) return;
+  /** @param {string} abs @param {string} rel */
+  const walk = (abs, rel) => {
+    for (const name of fs.readdirSync(abs)) {
+      const child = path.join(abs, name);
+      const childRel = rel ? `${rel}/${name}` : name;
+      const cst = fs.lstatSync(child);
+      if (cst.isDirectory()) walk(child, childRel);
+      else if (!cst.isFile()) throw new Error(`refusing to build into ${outDir}: ${childRel} is a symlink or special file`);
+    }
+  };
+  walk(top, '');
+}
+
+/**
  * Build the pre-built plugin distribution into outDir: one esbuild run that
  * splits the CLI entry and the large dependencies into readable chunks, a
  * cli.js launcher, a VERSION file and SHA256SUMS. Any SHA256SUMS already in
  * outDir is removed first: the manifest hashes the built content, so an old
  * one (still listing stale files) must never leak into the new set.
  * @param {string} outDir directory to write the distribution into
+ * @param {{allowedSignersPath?: string}} [opts] allowedSignersPath: the release-keys file to ship (default packaging/release/allowed_signers;
+ * a test seam). It must pass checkAllowedSigners with the hardware-key types (zero keys are fine before the keys are enrolled) or the build throws.
  */
-async function buildPluginDist(outDir) {
+async function buildPluginDist(outDir, opts = {}) {
+  const signersPath = opts.allowedSignersPath ?? path.join(repoRoot, 'packaging', 'release', 'allowed_signers');
+  const signers = checkAllowedSigners(fs.readFileSync(signersPath, 'utf8'));
+  if (!signers.ok) throw new Error('allowed_signers is not valid: ' + signers.errors.join('; '));
+  refuseOddOutDir(outDir);
   fs.rmSync(path.join(outDir, 'SHA256SUMS'), { force: true });
   const wsLib = path.join(repoRoot, 'node_modules', 'websocket', 'lib', 'websocket.js');
   /** @type {Record<string, string>} */
@@ -97,7 +144,7 @@ async function buildPluginDist(outDir) {
     banner: { js: BANNER },
     define: { 'process.env.NODE_ENV': '"production"' },
     entryPoints,
-    plugins: [noDevtools(), simperiumInterop(), lazyIcu(), websocketFallback()],
+    plugins: [noDevtools(), simperiumInterop(), simperiumNoHttp(), lazyIcu(), websocketFallback()],
   };
 
   await build(buildOpts);
@@ -106,6 +153,7 @@ async function buildPluginDist(outDir) {
 
   const pkg = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
   fs.writeFileSync(path.join(outDir, 'VERSION'), pkg.version + '\n');
+  fs.copyFileSync(signersPath, path.join(outDir, 'allowed_signers'));
 
   writeSha256Sums(outDir);
 }
@@ -162,6 +210,7 @@ function writeSha256Sums(dir) {
  * differing path (a missing path when a file is only in one of the two)
  */
 async function compareFreshBuild(dir) {
+  refuseOddOutput(path.join(dir, 'SHA256SUMS'));
   const fresh = fs.mkdtempSync(path.join(os.tmpdir(), 'plugin-dist-check-'));
   try {
     await buildPluginDist(fresh);

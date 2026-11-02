@@ -1,5 +1,5 @@
 /**
- * Help sectioned layout fits its frame at widths 50-99, heights 30 and up (T460).
+ * Help sectioned layout fits its frame at widths 50-99, heights 30 and up.
  */
 import { describe, it, expect } from 'vitest';
 import { render } from 'ink-testing-library';

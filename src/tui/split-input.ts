@@ -1,5 +1,5 @@
 /**
- * Shared guard+split for bunched paste chunks (T292).
+ * Shared guard+split for bunched paste chunks.
  *
  * A paste arrives as ONE Ink input event with every `key.*` flag false and
  * the whole chunk in `input`. Multi-character chunks without an escape

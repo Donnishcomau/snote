@@ -38,7 +38,7 @@ without leaving the terminal, and without shipping a browser to render a text bo
 
 ## Install on Omarchy
 
-Requires Node.js 22 or newer. If it is missing, the first click installs it through Omarchy (`omarchy-install-dev-env node`).
+Requires Node.js 22 or newer. The first click uses the Node.js that a standard Omarchy already has, through mise. Setup installs nothing but snote itself.
 
 A one-click bar button is available through the Omarchy plugin marketplace:
 
@@ -102,10 +102,14 @@ Omarchy default editor, or set `SNOTE_EDITOR=omawrite`. Because Omawrite opens i
 waits and shows "Editing in Omawrite — save with Ctrl+S and close its window to return".
 
 Editor selection priority: `SNOTE_EDITOR`, then the Omarchy default-editor setting, then `nvim`, then
-`EDITOR`, then `omawrite`.
+`EDITOR`, then `omawrite`. GUI editors must wait for you to close the file: set `SNOTE_EDITOR` to `code --wait`, `codium --wait`, `subl -w` or `gvim -f`.
 
-Press `i` to edit inline in the preview pane instead: Enter for a new line, `Ctrl+S` to save, `Esc` to
-cancel (it asks first if you have unsaved changes). `e` still opens your editor as before.
+Press `i` to edit inline in the preview pane instead: it saves as you type, Enter adds a new line and
+`Esc` closes and keeps your text; `h` restores an older version. `e` still opens your editor as before.
+
+## Screen-reader mode
+
+Start snote with `snote --screen-reader`, or set `SNOTE_SCREEN_READER=1` (`--no-screen-reader` wins over it). The screen is then one linear column, no colour, and Help and the editor hand-off work in it, as do search, tags and history. Ink's own `INK_SCREEN_READER` is ignored.
 
 ## Keys
 
@@ -153,16 +157,12 @@ Press ? in the app for the current list.
 
 ## Reporting a bug
 
-If you find a bug, run `snote --report` to generate a diagnostic file
-(`report-*.json`) and attach it to your issue. See `CONTRIBUTING.md` for details
-on writing good issues and how to submit pull requests.
+If you find a bug, run `snote --report` to generate a diagnostic file (`report-*.json`) and attach it to your issue. See `CONTRIBUTING.md` for details on writing good issues and how to submit pull requests.
 
 ## Credit and licence
 
-snote vendors source code from Automattic's `simplenote-electron` client,
-copyright Automattic, Inc., and is licensed under the GNU General Public License,
-version 2 (GPLv2). See the `NOTICE` file for full attribution details and the
-`LICENSE` file for the full licence text.
+snote vendors source code from Automattic's `simplenote-electron` client, copyright Automattic, Inc., and is licensed under the GNU General Public License, version 2 (GPLv2).
+See the `NOTICE` file for full attribution details and the `LICENSE` file for the full licence text.
 
 ## Develop
 ```
@@ -179,7 +179,7 @@ and `CONTRIBUTING.md` for how to open an issue or a pull request.
 snote syncs through Simperium, the same sync service the official Simplenote apps use,
 so notes, tags, and pins stay in sync across your devices. Login is by email code or
 password (see First run and login). Notes live only in Simplenote's cloud and your local
-cache. Once a day at start-up snote runs `git ls-remote` against the plugin's https origin to look for a release; `SNOTE_UPDATE_CHECK=off` turns it off. `skryf.art` is contacted only when you press `b`, sending the note's title, markdown and your blog token. See `SECURITY.md` for the full list.
+cache. At start-up, and every 24 hours while it stays open, snote runs `git ls-remote` against the plugin's https origin to look for a release; `SNOTE_UPDATE_CHECK=off` turns it off. The bar update click fetches a release tag from github.com over https. From 0.2.9, each release's checksum list (`SHA256SUMS`) is signed by the maintainer, but snote does not check that signature yet; setup checks the files it installs against the list. If the plugin folder's origin is a local folder path instead, the bar update click fetches from that folder; the start-up check ignores such an origin. Your blog origin (`skryf.art` unless you set `SNOTE_BLOG_ORIGIN` before the first send) is contacted only when you press `b`, sending the note's title, markdown and your blog token. See `SECURITY.md` for the full list.
 Published notes are readable by anyone who holds the https link.
 
 ## Known limitations and ideas for improvement
@@ -187,7 +187,7 @@ Published notes are readable by anyone who holds the https link.
 - Startup is above the 150 ms target with 10,000 notes; a performance pass (bench: `scripts/bench.mjs`) may bring it down.
 - No bulk export; `w` exports one note at a time to a `.md` file.
 - ZWJ emoji sequences (multi-codepoint emoji) may misalign; the terminal sanitizer strips variation selectors but not ZWJ.
-- No image attachments, and no screen-reader layout (`INK_SCREEN_READER` is ignored).
+- No image attachments.
 
 ## Security
 

@@ -1,5 +1,5 @@
 /**
- * T313 + T314 — an edit made while snote was closed and offline must reach the
+ * an edit made while snote was closed and offline must reach the
  * server when snote is reopened, even if another device changed the same note
  * in the meantime (live finding 2026-09-25: the edit was dropped and `1 pending`
  * stuck forever).
@@ -111,7 +111,7 @@ function remoteEdit(server: FakeSimperiumServer, content: string): void {
   server.serverChange('note', 'n1', noteData(content, 4000));
 }
 
-describe('T313/T314 an offline edit survives reopening snote', () => {
+describe('an offline edit survives reopening snote', () => {
   it('1: WHEN client A edits note n1 offline to A-OFFLINE-EDIT\\nline2 and restarts with network with no other client having changed n1 THEN within 10 s the server\'s n1 content is exactly A-OFFLINE-EDIT\\nline2, and A\'s pendingCount is 0', async () => {
     const server = await startServer();
     const dir = await syncedDir(server);
@@ -236,7 +236,7 @@ describe('T313/T314 an offline edit survives reopening snote', () => {
   }, 20000);
 });
 
-describe('T313/T314 the offline edit lands exactly once', () => {
+describe('the offline edit lands exactly once', () => {
   async function restartWith(offline: string, remote: string): Promise<{ server: FakeSimperiumServer; a: Built }> {
     const server = await startServer();
     const dir = await syncedDir(server);

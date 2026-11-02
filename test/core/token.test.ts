@@ -39,7 +39,17 @@ describe('token', () => {
     const dir = path.join(tmpDir, 'data2');
     fs.mkdirSync(dir, { recursive: true });
     const wrongAuthPath = path.join(dir, 'auth.json');
-    fs.writeFileSync(wrongAuthPath, JSON.stringify({ email: 'a@b.co', token: 'tok-1' }), { mode: 0o644 });
+    // #173: fs.writeFileSync applies `mode` through the process umask, and
+    // here on macOS the 0o644 fixture landed as 0o600, failing the test on
+    // its own fixture instead of on snote. Pin the umask the fixture needs;
+    // saveToken chmods auth.json itself, so the mode snote sets is
+    // umask-independent either way.
+    const prevUmask = process.umask(0o022);
+    try {
+      fs.writeFileSync(wrongAuthPath, JSON.stringify({ email: 'a@b.co', token: 'tok-1' }), { mode: 0o644 });
+    } finally {
+      process.umask(prevUmask);
+    }
     expect(fs.statSync(wrongAuthPath).mode & 0o777).toBe(0o644);
     await saveToken(dir, { email: 'a@b.co', token: 'tok-2' });
     const mode2 = fs.statSync(wrongAuthPath).mode & 0o777;
@@ -96,5 +106,10 @@ describe('token', () => {
     expect(fs.existsSync(missingDir)).toBe(true);
     expect(fs.readdirSync(missingDir).length).toBe(0);
     expect(await loadToken(missingDir)).toBeNull();
+  });
+
+  it('7: WHEN src/core/token.ts is read THEN it has no import of `./account-id` (the own account folder is passed in by the caller, so no import cycle)', () => {
+    const src = fs.readFileSync(path.join(__dirname, '../../src/core/token.ts'), 'utf8');
+    expect(/from\s+['"]\.\/account-id['"]|import\(\s*['"]\.\/account-id['"]/.test(src)).toBe(false);
   });
 });

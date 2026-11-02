@@ -1,5 +1,5 @@
 /**
- * T510: text pasted into the inline editor is drawn as visible stand-ins and
+ * text pasted into the inline editor is drawn as visible stand-ins and
  * saved as pasted.
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -37,7 +37,7 @@ function seedNote(store: ReturnType<typeof makeStore>, content: string): void {
   });
 }
 
-describe('inline editor pasted text stand-ins (T510)', () => {
+describe('inline editor pasted text stand-ins', () => {
   let store: ReturnType<typeof makeStore>;
   const saved = (): string | undefined => store.getState().data.notes.get(eid('t1'))?.content;
 

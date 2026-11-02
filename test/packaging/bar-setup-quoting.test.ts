@@ -1,4 +1,4 @@
-// Acceptance tests for T418 (security fix, F091/S4-09): the bar's
+// Acceptance tests for (security fix,): the bar's
 // first-click setup command quotes the setup path for BOTH shells it
 // passes through — `bash -lc` (bar.run) and the launcher's own
 // `cmd="$*"` + `bash -c`. QML cannot run in vitest, so `setupCommand`
@@ -19,7 +19,7 @@
 //
 // Note on the launcher stub: the launcher's real pipeline is
 // `cmd="$*"` then `bash -c "$presentation_script"`, and the accepted
-// payload (F091's proven form) ends with a bare `exit`. The stand-in
+// payload ('s proven form) ends with a bare `exit`. The stand-in
 // here keeps the two key lines of that pipeline, and nothing else: no
 // terminal, no logo binary.
 //

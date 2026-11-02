@@ -1,5 +1,5 @@
-// Acceptance tests for T344: after the switch to a pre-built payload
-// (T342), the bar widget no longer promises a build. Its user-visible
+// Acceptance tests for after the switch to a pre-built payload
+//, the bar widget no longer promises a build. Its user-visible
 // texts describe an install that copies files, nothing in the widget
 // names npm, node@22 or a build, and the check-then-setup flow that
 // shows the missing-Node fix command in the visible terminal is intact.

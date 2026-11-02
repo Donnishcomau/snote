@@ -7,7 +7,7 @@ import {
   type UpdateSignal,
 } from '../../src/core/update-signal.js';
 
-describe('update-signal (T387)', () => {
+describe('update-signal', () => {
   afterEach(() => {
     resetUpdateSignal();
   });

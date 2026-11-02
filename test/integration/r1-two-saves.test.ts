@@ -1,5 +1,5 @@
 /**
- * R1 sync-5 (#27, F187; #20, F181; S11-01-Q1). A save queued behind an
+ * R1 sync-5 (#27,; #20,; Q1). A save queued behind an
  * unconfirmed one before a quit lands once after the restart: the echo of the
  * first save only confirms it when the note as loaded from state.json holds
  * that save plus the later one, and the start-up hand-off does not merge again
@@ -57,21 +57,21 @@ function setup(localCopy: Copy, loadedCopy: Copy) {
 
 describe('R1 sync-5: a save queued behind an unconfirmed one lands once after a restart', () => {
   it('1: WHEN the edit `MK` was sent and not acknowledged, a second save adding a line `Y` waits behind it, snote quits and restarts THEN the server and the store hold content `line1\\nline2\\nMK\\nY`, verdict `KEPT`', async () => {
-    const o = await runScenario('S27-two-saves');
+    const o = await runScenario('two-saves');
     expect(o.server?.content).toBe(MK + '\nY');
     expect(o.store?.content).toBe(MK + '\nY');
     expect(o.verdict).toBe('KEPT');
   }, 45000);
 
   it('2: WHEN the edit `MK` was sent and not acknowledged, a second save adding a line `Y` waits behind it, snote quits and the next start must re-index (change version unreadable) THEN the server and the store hold content `line1\\nline2\\nMK\\nY`, verdict `KEPT`', async () => {
-    const o = await runScenario('S20-reindex-two-saves');
+    const o = await runScenario('two-saves-reindex');
     expect(o.server?.content).toBe(MK + '\nY');
     expect(o.store?.content).toBe(MK + '\nY');
     expect(o.verdict).toBe('KEPT');
   }, 45000);
 
   it('3: WHEN the edit `MK` was sent and not acknowledged before a quit, snote restarts with the catch-up 6 s late and the user pins n1 at once THEN the server holds content `line1\\nline2\\nMK` with system tag `pinned`, verdict `KEPT`', async () => {
-    const o = await runScenario('S11-01-Q1-pin');
+    const o = await runScenario('Q1-pin');
     expect(o.server?.content).toBe(MK);
     expect(o.server?.systemTags).toContain('pinned');
     expect(o.verdict).toBe('KEPT');

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { checkEndpoints } from '../../src/core/endpoint-check';
 
-describe('endpoint error wording (T477)', () => {
+describe('endpoint error wording', () => {
   it('1: WHEN `checkEndpoints` gets `SNOTE_AUTH_BASE` set to `https://user:pass@x.example` THEN its only error is exactly `error: SNOTE_AUTH_BASE must be an https:// address without a username or password (http:// is allowed only for localhost, 127.0.0.1 and [::1])`', () => {
     const result = checkEndpoints({ SNOTE_AUTH_BASE: 'https://user:pass@x.example' });
     expect(result.errors).toEqual([

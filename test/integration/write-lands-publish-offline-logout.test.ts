@@ -1,5 +1,5 @@
 /**
- * T279 Regression: publish/unpublish, offline-then-online edits, and safe logout.
+ * Regression: publish/unpublish, offline-then-online edits, and safe logout.
  *
  * Tests with the REAL client wiring (`buildStore`, disk `FileGhostStore`)
  * that publish/unpublish reach the server, offline edits queue and replay on
@@ -135,7 +135,7 @@ function goOnline(): void {
   window.dispatchEvent(new Event('online'));
 }
 
-describe('T279 publish/unpublish, offline-then-online, safe logout', () => {
+describe('publish/unpublish, offline-then-online, safe logout', () => {
   it('1: WHEN PUBLISH_NOTE with shouldPublish true is dispatched for the pre-seeded existing1 (systemTags: []) THEN within 5 s the server\'s existing1 has systemTags containing published and pendingCount is 0', async () => {
     const f = await fixture(noteData('Original content', []));
     try {

@@ -1,6 +1,6 @@
 /**
- * T523 — a change the server applied just before snote quit is not
- * applied a second time after restart (F178, issue #9).
+ * a change the server applied just before snote quit is not
+ * applied a second time after restart (, issue #9).
  *
  * The scenario on the fake server:
  *   1. snote syncs n1 (and n2 where a line names it);
@@ -274,7 +274,7 @@ async function expectNoSentFrameAfter(
   expect(sentFrameNaming(server, from, id)).toBe(false);
 }
 
-describe('T523 a change applied just before quit is not applied twice', () => {
+describe('a change applied just before quit is not applied twice', () => {
   it('1: WHEN n1 is edited to line1\\nline2\\nMK, the server applies it with its reply withheld, snote stops and restarts THEN the server\'s and the store\'s n1 are exactly line1\\nline2\\nMK, pendingCount is 0, and no 0:c: frame naming n1 arrived after the restart', async () => {
     const server = await startServer();
     const { dir, filters } = await quitBeforeAck(server);
@@ -284,7 +284,7 @@ describe('T523 a change applied just before quit is not applied twice', () => {
     filters.holdReplies.on = false;
     const receivedAtRestart = server.received.length;
     const a = openA(dir, server.url);
-    // F186: wait for the restart's catch-up (`0:cv:`) request and the
+    // wait for the restart's catch-up (`0:cv:`) request and the
     // beat it needs, so the wait below evaluates after the catch-up
     // echo has arrived rather than before it.
     await waitFor(
@@ -375,7 +375,7 @@ describe('T523 a change applied just before quit is not applied twice', () => {
     filters.holdReplies.on = false;
     const receivedAtRestart = server.received.length;
     const r = openA(dir, server.url);
-    // F186: same catch-up wait as in line 1.
+    // same catch-up wait as in line 1.
     await waitFor(
       () => server.received.slice(receivedAtRestart).some((m) => m.startsWith('0:cv:')),
       8000,

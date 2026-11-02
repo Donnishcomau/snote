@@ -1,7 +1,7 @@
 /**
  * T87: Tag rename and delete reach the server and other clients.
  * Exercises RENAME_TAG / TRASH_TAG through the real sync middleware
- * against the fake Simperium server (docs/EVALS.md scenario 7).
+ * against the fake Simperium server (tag scenario).
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { FakeSimperiumServer } from '../fake-simperium/server';

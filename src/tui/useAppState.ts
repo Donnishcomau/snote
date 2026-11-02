@@ -8,7 +8,7 @@ import { parseQuery, matchParsed } from '../core/search';
 import { inCollection } from '../core/collection';
 import { tagRowsStored } from '../core/collection';
 import { pendingCount } from '../core/simperium-reducer';
-import { sortLabel } from '../core/note-keys';
+import { sortLabel, noteKeyAction } from '../core/note-keys';
 import { connectionWord, type ConnectionWord } from '../core/connection-word';
 import { hasOpenSocket } from '../core/websocket-provider';
 
@@ -26,19 +26,19 @@ export function useAppState(store: Store<State>) {
   const [collection, setCollection] = useState<{ type: string; tagName?: string }>({ type: 'all' });
   const [inTrash, setInTrash] = useState(false);
   const [sortLabelStr, setSortLabelStr] = useState('');
-  // T292: cache sorted entries keyed on (notes, sortType, sortReversed, inTrash)
+  // cache sorted entries keyed on (notes, sortType, sortReversed, inTrash)
   const sortCacheRef = useRef<{
     key: [unknown, State['settings']['sortType'], boolean, boolean];
     sorted: { id: EntityId; note: Note }[];
   } | null>(null);
-  // T300: while a reselect (by id) is in flight, syncFromStore must not
+  // while a reselect (by id) is in flight, syncFromStore must not
   // re-pin selectedIdRef to whatever selectedIndex happens to be.
-  // T300: id of a note whose reselect (after clearing a search) is in flight;
+  // id of a note whose reselect (after clearing a search) is in flight;
   // while set, syncFromStore must not re-pin selection to another note.
   const externalSelectRef = useRef<EntityId | null>(null);
 
   useEffect(() => {
-    if (externalSelectRef.current !== null) return; // T300: a reselect is in flight; do not fight it
+    if (externalSelectRef.current !== null) return; // a reselect is in flight; do not fight it
     selectedIdRef.current = noteEntries[selectedIndex]?.id ?? null;
   }, [noteEntries, selectedIndex]);
 
@@ -85,7 +85,7 @@ export function useAppState(store: Store<State>) {
       setNoteEntries(filtered);
       setInTrash(inTrashNow);
       setSortLabelStr(sortLabel(state));
-      // T204: a locally created note opens itself (meta.nextNoteToOpen);
+      // a locally created note opens itself (meta.nextNoteToOpen);
       // follow ui.openedNote onto the marker exactly once per change.
       const opened = state.ui.openedNote;
       if (opened !== openedRef.current) {
@@ -94,7 +94,7 @@ export function useAppState(store: Store<State>) {
           selectedIdRef.current = opened;
         }
       }
-      // T300: a reselect is in flight — keep the id we reselect toward,
+      // a reselect is in flight — keep the id we reselect toward,
       // and let the reselect own selectedIndex (no clamping to 0).
       const ext = externalSelectRef.current;
       if (ext) {
@@ -129,10 +129,16 @@ export function useAppState(store: Store<State>) {
     return unsubscribe;
   }, [store]);
 
-  // T300: start (or clear) a reselect by id; setExternalSelect(null) aborts it
+  // start (or clear) a reselect by id; setExternalSelect(null) aborts it
   const setExternalSelect = (id: EntityId | null) => {
     externalSelectRef.current = id;
   };
 
   return { noteEntries, selectedIndex, setSelectedIndex, setExternalSelect, connected, word, pending, allTagNames, query, setQuery, tagNames, collection, inTrash, sortLabelStr };
+}
+
+/** #11: `d` with nothing selected tells the user instead of failing silently. */
+export function noteKeyOrNotice(input: string, id: EntityId | null, state: State, setNotice: (message: string) => void) {
+  if (input === 'd' && !id) setNotice('Nothing selected');
+  return noteKeyAction(input, id, state);
 }

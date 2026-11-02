@@ -16,7 +16,7 @@ const FILES = [
   'test/packaging/barwidget-update.test.ts',
 ];
 
-describe('unused eslint disables (T451)', () => {
+describe('unused eslint disables', () => {
   it('1: WHEN the 9 files listed in the brief are read THEN none contains `eslint-disable`', () => {
     expect(FILES).toHaveLength(9);
     for (const f of FILES) {

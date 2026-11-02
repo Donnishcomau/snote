@@ -2,7 +2,6 @@
  * T17: performance bench — generate notes, load, time first frame, search,
  * read memory, compare with thresholds.
  */
-import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { performance } from 'node:perf_hooks';
@@ -13,6 +12,7 @@ import React from 'react';
 import { render } from 'ink';
 
 import { saveState, loadState } from '../core/persistence';
+import { secureMkdtemp } from '../core/secure-fs';
 import { makeStore } from '../core/store';
 import { filterNotes } from '../core/search';
 import { App } from '../tui/App';
@@ -159,7 +159,7 @@ export async function runBench(
 // ---------------------------------------------------------------------------
 
 export async function benchMain(argv: string[]): Promise<void> {
-  const dir = argv[0] ?? fs.mkdtempSync(path.join(os.tmpdir(), 'snote-bench-'));
+  const dir = argv[0] ?? secureMkdtemp(path.join(os.tmpdir(), 'snote-bench-'));
   const r = await runBench(dir);
   console.log(JSON.stringify(r));
   process.exit(0);

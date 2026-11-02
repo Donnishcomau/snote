@@ -15,7 +15,7 @@ import type { Auth } from '../../src/tui/Root';
 
 const EXPIRED = 'Your session has expired or was revoked. Log in again.';
 
-describe('T425 server-forced sign-out explains itself on the login screen', () => {
+describe('server-forced sign-out explains itself on the login screen', () => {
   let dir: string;
   let makeStoreFor: Mock;
   let requestCode: Mock;

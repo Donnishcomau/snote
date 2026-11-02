@@ -1,6 +1,6 @@
 /**
- * T474: endpoint overrides are judged by their parsed host, and an address
- * with a username or password is refused. Corrects the text match of T419.
+ * endpoint overrides are judged by their parsed host, and an address
+ * with a username or password is refused. Corrects the text match of.
  */
 import { describe, it, expect } from 'vitest';
 import * as fs from 'node:fs';
@@ -8,7 +8,7 @@ import * as path from 'node:path';
 
 import { checkEndpoints } from '../../src/core/endpoint-check';
 
-describe('T474 endpoint-url', () => {
+describe('endpoint-url', () => {
   it("1: WHEN checkEndpoints gets SNOTE_AUTH_BASE set to each of `http://localhost:@evil.example`, `http://127.0.0.1:x@evil.example/` and `http://localhost:80@evil.example` THEN each result has exactly one error", () => {
     for (const value of [
       'http://localhost:@evil.example',

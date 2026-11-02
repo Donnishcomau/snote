@@ -15,7 +15,7 @@ src/core/        headless app: store.ts (makeStore), persistence.ts, auth.ts, sy
 src/tui/         Ink components: App, TagPane, NoteList, Preview, SearchBar, HelpOverlay, HistoryView, StatusBar
 vendor/simplenote/   upstream files, pinned by scripts/vendor.sh; edit only with `// OMARCHY:` marked lines
 test/            vitest unit + integration; test/fake-simperium/ websocket fake server
-
+scripts/         vendor.sh, bench.mjs
 ```
 
 ## Data flow

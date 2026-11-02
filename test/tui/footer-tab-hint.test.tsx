@@ -1,4 +1,4 @@
-// T349: the list footer mentions Tab and the tags pane. The default footer
+// the list footer mentions Tab and the tags pane. The default footer
 // gets one more entry, `Tab Tags`, as the last of LIST_HINTS.
 import { describe, it, expect } from 'vitest';
 import { render } from 'ink-testing-library';
@@ -47,7 +47,7 @@ function seedNotesAndTags(store: ReturnType<typeof makeStore>) {
   });
 }
 
-describe('Footer Tab hint (T349)', () => {
+describe('Footer Tab hint', () => {
   it('1: WHEN <KeyHints context="list" width={80} /> is rendered THEN the stripped frame contains ? Help  n New  e Edit  g Add tag  / Search  q Quit  Tab Tags', async () => {
     const { lastFrame, unmount } = render(<KeyHints context="list" width={80} />);
     await delay(50);

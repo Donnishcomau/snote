@@ -26,7 +26,7 @@ function noDevtools() {
         path: 'devtools',
         namespace: 'stub',
       }));
-      // T324: devtools is a dev-only path in Ink that esbuild would otherwise
+      // devtools is a dev-only path in Ink that esbuild would otherwise
       // inline along with the whole ws package; stub it to drop them.
       pluginBuild.onResolve({ filter: /devtools\.js$/ }, (args) =>
         args.importer.endsWith(path.join('ink', 'build', 'reconciler.js'))
@@ -41,7 +41,7 @@ function noDevtools() {
 }
 
 /**
- * T162 — simperium is CommonJS with exports.__esModule = true. Under this
+ * simperium is CommonJS with exports.__esModule = true. Under this
  * repo's "type": "module" esbuild treats its default export as the whole
  * module.exports object, so the bundle calls an object as a function.
  * Answer the import with a virtual module that unwraps .default itself.
@@ -67,7 +67,34 @@ function simperiumInterop() {
 }
 
 /**
- * T172 — Ink's Unicode dependencies (Intl.Segmenter in 4 files, the
+ * #198: simperium's auth.js requires its
+ * ./http-request helper, an https.request POST with no timeout that appends
+ * every response chunk to a string with no size limit. snote never calls it
+ * (login is src/core/auth.ts), but the package index re-exports Auth, so the
+ * bundle shipped it. Answer that one require with a stub that rejects.
+ * proof: test/packaging/plugin-dist-no-unbounded-request.test.ts
+ * @returns {import('esbuild').Plugin}
+ */
+function simperiumNoHttp() {
+  return {
+    name: 'simperium-no-http',
+    setup(pluginBuild) {
+      pluginBuild.onResolve({ filter: /^\.\/http-request$/ }, (args) =>
+        args.importer.includes(path.join('node_modules', 'simperium', 'lib'))
+          ? { path: 'http-request', namespace: 'simperium-no-http' }
+          : undefined
+      );
+      pluginBuild.onLoad({ filter: /.*/, namespace: 'simperium-no-http' }, () => ({
+        loader: 'js',
+        contents:
+          "exports.__esModule = true; exports.default = function () { return Promise.reject(new Error('snote does not ship the simperium http helper')); };",
+      }));
+    },
+  };
+}
+
+/**
+ * Ink's Unicode dependencies (Intl.Segmenter in 4 files, the
  * \p{RGI_Emoji} regex in string-width, and yoga-layout's fetch-loaded wasm)
  * pay their cost at import time even for pure-ASCII screens. Replace their
  * module text in the BUNDLE only: Segmenter calls go through an ASCII fast
@@ -119,10 +146,35 @@ function lazyIcu() {
 }
 
 /**
+ * Refuse to write to a path that exists and is not a regular file (a symlink,
+ * a FIFO, a device, a folder). lstat, never followed: a link planted at an
+ * output path would otherwise send the write to wherever it points. Refuse,
+ * never repair: the entry is left as it is. A missing path is fine. (#426, #412)
+ * proof: test/packaging/build-output-links.test.ts
+ * @param {string} file the output path about to be written
+ */
+function refuseOddOutput(file) {
+  // path.resolve drops a trailing separator, a '/.' and '//', which make the OS follow a final link; the raw path is
+  // lstat'ed too because writeFileSync follows a '..' after a link physically. proof: test/packaging/build-outdir-spellings.test.ts
+  const abs = path.resolve(file);
+  for (const p of [abs, file]) {
+    let st;
+    try {
+      st = fs.lstatSync(p);
+    } catch (err) {
+      if (/** @type {NodeJS.ErrnoException} */ (err).code === 'ENOENT') continue;
+      throw err;
+    }
+    if (!st.isFile()) throw new Error(`refusing to write ${file}: it is a symlink or special file`);
+  }
+}
+
+/**
  * @param {BundleOpts} opts
  */
 async function bundle(opts) {
   const { entry, contents, outfile } = opts;
+  refuseOddOutput(outfile);
 
   /** @type {import('esbuild').BuildOptions} */
   const buildOpts = {
@@ -134,7 +186,7 @@ async function bundle(opts) {
     logLevel: 'silent',
     banner: { js: BANNER },
     define: { 'process.env.NODE_ENV': '"production"' },
-    plugins: [noDevtools(), simperiumInterop(), lazyIcu()],
+    plugins: [noDevtools(), simperiumInterop(), lazyIcu(), simperiumNoHttp()],
   };
 
   if (contents) {
@@ -151,27 +203,30 @@ async function bundle(opts) {
 }
 
 /**
- * T174 — tiny launcher that turns on Node's compile cache and then imports
+ * tiny launcher that turns on Node's compile cache and then imports
  * the real bundle. enableCompileCache only affects modules loaded AFTER the
  * call, so the entry must be this file, not the bundle itself.
  * @param {string} file where to write the launcher
  * @param {string} mainName the bundle's file name, in the same folder
  */
 function writeLauncher(file, mainName) {
+  refuseOddOutput(file);
   const text = [
     '#!/usr/bin/env node',
     "import * as nodeModule from 'node:module';",
-    "import { chmodSync, mkdirSync } from 'node:fs';",
+    "import * as fs from 'node:fs';",
     "import { homedir } from 'node:os';",
     "import { join } from 'node:path';",
     'try {',
     "  const d = join(process.env.XDG_CACHE_HOME || join(homedir(), '.cache'), 'snote', 'compile-cache');",
-    "  mkdirSync(d, { recursive: true, mode: 0o700 });",
-    '  chmodSync(d, 0o700);',
-    '  nodeModule.enableCompileCache?.(d);',
-    '} catch {',
-    '  // start without the cache',
-    '}',
+    '  fs.mkdirSync(d, { recursive: true });',
+    '  if (!fs.lstatSync(d).isSymbolicLink()) {',
+    '    const fd = fs.openSync(d, fs.constants.O_DIRECTORY | fs.constants.O_NOFOLLOW);',
+    '    fs.fchmodSync(fd, 0o700);',
+    '    fs.closeSync(fd);',
+    '    nodeModule.enableCompileCache?.(d);',
+    '  }',
+    '} catch {}',
     "await import('./" + mainName + "');",
   ].join('\n');
   fs.writeFileSync(file, text);
@@ -187,4 +242,4 @@ if (
   writeLauncher('dist/cli.js', 'snote-main.js');
 }
 
-export { bundle, writeLauncher, noDevtools, simperiumInterop, lazyIcu, BANNER };
+export { bundle, writeLauncher, refuseOddOutput, noDevtools, simperiumInterop, simperiumNoHttp, lazyIcu, BANNER };

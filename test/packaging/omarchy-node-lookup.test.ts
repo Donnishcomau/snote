@@ -1,4 +1,4 @@
-// Acceptance tests for T345: the `snote` shim written by
+// Acceptance tests for the `snote` shim written by
 // packaging/omarchy/setup tries every Node candidate in find_node's order
 // ($SNOTE_NODE, /usr/bin/node, then /usr/bin/mise which node) instead of
 // taking the first existing one and rejecting it for being too old, and
@@ -169,14 +169,14 @@ describe('packaging/omarchy/setup: the shim tries every Node candidate', () => {
     expect(run.stdout).toBe('fake snote 9.9.9\n');
   });
 
-  it("3: WHEN the shim file is read THEN the line starting with `exec env -u NODE_OPTIONS` contains the app directory path wrapped in single quotes", () => {
+  it("3: WHEN the shim file is read THEN the line starting with `exec /usr/bin/env -u NODE_OPTIONS` contains the app directory path wrapped in single quotes", () => {
     const { home, xdg } = installed();
     const appDir = join(xdg, 'omarchy-snote-plugin', 'app');
 
     const shimText = readFileSync(join(home, '.local', 'bin', 'snote'), 'utf8');
     const execLine = shimText
       .split('\n')
-      .find((line) => line.startsWith('exec env -u NODE_OPTIONS'));
+      .find((line) => line.startsWith('exec /usr/bin/env -u NODE_OPTIONS'));
 
     expect(execLine).toBeDefined();
     expect(execLine!).toContain(`'${appDir}'`);

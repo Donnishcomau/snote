@@ -1,5 +1,5 @@
 /**
- * T473 — one shared helper that waits for an Ink frame or for Ink's key
+ * one shared helper that waits for an Ink frame or for Ink's key
  * handler to exist, so no test needs a fixed sleep.
  *
  * `waitForFrame` polls `lastFrame()` until the frame matches a condition.

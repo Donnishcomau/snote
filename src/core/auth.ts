@@ -7,6 +7,7 @@
  */
 
 import { AUTH_BASE, ACCOUNT_BASE, APP_ID, API_KEY } from './config';
+import { boundedRequest, type BoundedReply } from './bounded-request';
 
 /**
  * Options object for auth functions.
@@ -33,34 +34,15 @@ function summarizeErrorText(text: string): string {
 }
 
 /**
- * POST with a deadline and human-readable failures.
- *
- * - gives up after `timeoutMs` with `no answer from <host> within <N> s`
- *   (`<host>` = URL host with port, `<N>` = whole seconds, rounded up);
- * - a connection that never opens (nothing listening, DNS) rejects with
- *   `could not reach <host>` instead of the raw `fetch failed`;
- * - every other failure passes through unchanged, so HTTP error replies
- *   keep the caller's formatting.
+ * POST through the shared bounded request (src/core/bounded-request.ts): one
+ * deadline of `timeoutMs` covers connect, headers AND the whole body, the body
+ * is capped at 1 MiB while it streams, and failures read `no answer from
+ * <host> within <N> s`, `could not reach <host>` or `reply from <host> is
+ * larger than <N> bytes`. HTTP error replies keep the caller's formatting.
+ * proof: test/core/auth-bounded-response.test.ts
  */
-async function fetchBounded(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
-  const host = new URL(url).host;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { ...init, signal: controller.signal });
-    return res;
-  } catch (e) {
-    const err = e as Error & { cause?: unknown };
-    if (err.name === 'AbortError') {
-      throw new Error(`no answer from ${host} within ${Math.ceil(timeoutMs / 1000)} s`);
-    }
-    if (err.cause) {
-      throw new Error(`could not reach ${host}`);
-    }
-    throw err;
-  } finally {
-    clearTimeout(timer);
-  }
+function fetchBounded(url: string, init: RequestInit, timeoutMs: number): Promise<BoundedReply> {
+  return boundedRequest(url, init, { timeoutMs });
 }
 
 /**
@@ -96,7 +78,7 @@ export async function requestLoginCode(
   );
 
   if (!res.ok) {
-    throw new Error(`${res.status} ${summarizeErrorText(await res.text())}`);
+    throw new Error(`${res.status} ${summarizeErrorText(res.text)}`);
   }
 }
 
@@ -136,13 +118,13 @@ export async function completeLogin(
   if (!res.ok) {
     let message = `completeLogin failed: ${res.status}`;
     try {
-      const errBody = (await res.json()) as Record<string, unknown>;
+      const errBody = res.json() as Record<string, unknown>;
       if (errBody.message) message = String(errBody.message);
     } catch { /* ignore */ }
     throw new Error(`${res.status} ${summarizeErrorText(message)}`);
   }
 
-  const json = (await res.json()) as { sync_token?: string };
+  const json = res.json() as { sync_token?: string };
   return json.sync_token!;
 }
 
@@ -185,10 +167,10 @@ export async function loginWithPassword(
   );
 
   if (!res.ok) {
-    const text = await res.text();
+    const text = res.text;
     throw new Error(`${res.status} ${summarizeErrorText(text)}`);
   }
 
-  const json = (await res.json()) as { access_token?: string; userid?: string };
+  const json = res.json() as { access_token?: string; userid?: string };
   return json.access_token!;
 }

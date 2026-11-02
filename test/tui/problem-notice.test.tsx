@@ -1,5 +1,5 @@
 /**
- * T441: core code can publish a failure message through the problem
+ * core code can publish a failure message through the problem
  * signal and the notice line shows it in the error colour. The signal is
  * module-level (same shape as the update signal), so a write failure in
  * core code reaches the screen without crashing snote or being swallowed.
@@ -63,7 +63,7 @@ afterEach(() => {
   inkChalk.level = chalkLevel;
 });
 
-describe('problem notice (T441)', () => {
+describe('problem notice', () => {
   it("1: WHEN problemText gets label `could not save notes` with an Error whose code is `EISDIR`, then with `new Error('boom')` THEN it returns `could not save notes: EISDIR`, then `could not save notes: boom`", () => {
     const err = new Error('is a directory');
     (err as Error & { code?: string }).code = 'EISDIR';

@@ -1,5 +1,5 @@
 /**
- * T272 / T281 — a brand-new note's own change-confirmation never arrives.
+ * a brand-new note's own change-confirmation never arrives.
  *
  * In the pinned `simperium@1.1.4` client, when a locally created object's
  * own change echoes back from the server it carries no `sv` (a new object
@@ -8,10 +8,10 @@
  * server for a version that never existed: it registers a `once` listener
  * on `"version.<id>.undefined"` and sends `"e:<id>.undefined"`.
  *
- * T281: the real Simperium service answers that malformed request with the
+ * the real Simperium service answers that malformed request with the
  * protocol's "invalid version" marker (`\n?`), and
  * `Channel.prototype.onVersion` (channel.js:727-730) returns WITHOUT
- * emitting anything on that marker — so T272's `.NaN`→`.undefined`
+ * emitting anything on that marker — so's `.NaN`→`.undefined`
  * event-alias (which only ever fired on a real emit) never helped, and the
  * promise gating `localQueue.sent[id]` never resolved: `pendingCount`
  * stayed stuck at `1` forever.

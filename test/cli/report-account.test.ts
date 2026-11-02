@@ -1,6 +1,6 @@
 /**
- * T508: `snote --report` reads state.json from the account folder the
- * app actually uses (`<data dir>/<email>/`, since T156), not the data
+ * `snote --report` reads state.json from the account folder the
+ * app actually uses (`<data dir>/<email>/`, since), not the data
  * dir root, whenever `auth.json` names a saved account.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -19,7 +19,7 @@ const eid = (id: string): EntityId => id as unknown as EntityId;
 const EMAIL = 'alex.report@example.com';
 const TOKEN = 'TOKEN-SECRET-508';
 
-describe('T508 --report reads the account folder', () => {
+describe('--report reads the account folder', () => {
   let tmpRoot: string;
   let stateDir: string;
   let dataDir: string;

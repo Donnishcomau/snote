@@ -1,5 +1,5 @@
 /**
- * T162: the bundled app can sync — prove the BUNDLED sync code runs against
+ * the bundled app can sync — prove the BUNDLED sync code runs against
  * the fake server (the unit tests could not catch the CJS/ESM interop bug
  * because vitest resolves `simperium` differently from the bundle).
  */
@@ -33,7 +33,7 @@ function runBundle(url: string, dir: string): Promise<{ status: number | null; o
   });
 }
 
-describe('T162 bundled sync', () => {
+describe('bundled sync', () => {
   beforeAll(async () => {
     outfile = join(mkdtempSync(join(tmpdir(), 'bundle-sync-')), 'entry.js');
     server = new FakeSimperiumServer();

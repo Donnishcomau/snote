@@ -2,7 +2,8 @@ import { loadBlogConfig } from './blog-config.js';
 import { isAllowed } from './endpoint-check.js';
 import { postBlogDraft, BlogDraftResult } from './blog-client.js';
 import { noteToBlogDraft } from './blog-draft.js';
-import { recordBlogSend, loadBlogSend } from './blog-sent.js';
+import { recordBlogSend } from './blog-sent.js';
+import { loadBlogSend } from './blog-status.js';
 
 interface SendNoteToBlogOptions {
   dir: string;
@@ -23,6 +24,11 @@ interface AlreadySentResult {
   already: true;
 }
 
+// #244: at most one send in flight across the app (one slot, no collection).
+// A further call for the same note settles with that send's outcome; a call
+// for another note is refused. Cleared when the send settles, either way.
+let inFlight: { noteId: string; done: Promise<SendNoteToBlogResult | AlreadySentResult> } | null = null;
+
 /**
  * Send a note as a blog draft.
  *
@@ -32,7 +38,25 @@ interface AlreadySentResult {
  * - Builds the draft with `noteToBlogDraft` and POSTs it with `postBlogDraft`.
  * - On success records the send with `sentAt` equal to `now`.
  */
-export async function sendNoteToBlog({
+export function sendNoteToBlog(
+  options: SendNoteToBlogOptions,
+): Promise<SendNoteToBlogResult | AlreadySentResult> {
+  if (inFlight) {
+    return inFlight.noteId === options.noteId
+      ? inFlight.done
+      : Promise.reject(new Error('still sending to your blog'));
+  }
+  const slot = {
+    noteId: options.noteId,
+    done: sendOnce(options).finally(() => {
+      if (inFlight === slot) inFlight = null;
+    }),
+  };
+  inFlight = slot;
+  return slot.done;
+}
+
+async function sendOnce({
   dir,
   noteId,
   content,

@@ -1,6 +1,6 @@
 /**
- * T424 — login says when the server cannot be reached or does not answer,
- * gives up after 15 s, and shows that it is waiting (closes F037).
+ * login says when the server cannot be reached or does not answer,
+ * gives up after 15 s, and shows that it is waiting (closes).
  *
  * Lines 1-3 drive src/core/auth.ts against real local sockets: a closed
  * port (nothing listening), and a server that accepts but never answers.
@@ -19,7 +19,7 @@ import React from 'react';
 import { loginWithPassword, requestLoginCode, completeLogin } from '../../src/core/auth';
 import { Login } from '../../src/tui/Login';
 
-describe('T424 login network failures', () => {
+describe('login network failures', () => {
   /**
    * 1: WHEN loginWithPassword runs against http://127.0.0.1:<port> where a
    * server listened and was closed THEN it rejects with a message containing

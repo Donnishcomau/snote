@@ -32,7 +32,7 @@ function t1Tags(store: ReturnType<typeof makeStore>): TagName[] {
   return note?.tags ?? [];
 }
 
-describe('T282 tag editor commits pasted text bunched with Enter', () => {
+describe('tag editor commits pasted text bunched with Enter', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

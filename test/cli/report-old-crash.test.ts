@@ -1,5 +1,5 @@
 /**
- * F163: `snote --report` re-bundles the newest crash file; one written
+ * `snote --report` re-bundles the newest crash file; one written
  * before redaction existed must be redacted again.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -9,7 +9,7 @@ import * as path from 'node:path';
 
 import { main } from '../../src/cli/main';
 
-describe('F163 --report re-redacts an old crash file', () => {
+describe('--report re-redacts an old crash file', () => {
   let stateDir: string;
   let dataDir: string;
   let logged: string[];

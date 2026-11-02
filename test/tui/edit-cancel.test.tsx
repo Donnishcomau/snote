@@ -50,7 +50,7 @@ describe('cancelled edit leaves store unchanged', () => {
 
     // Editor should have been called
     expect(mockEditor).toHaveBeenCalledTimes(1);
-    expect(mockEditor).toHaveBeenCalledWith('original content');
+    expect(mockEditor).toHaveBeenCalledWith('original content', { onWrite: expect.any(Function) });
 
     // data.notes should be the exact same Map object (reference equality)
     const notesAfter = store.getState().data.notes;

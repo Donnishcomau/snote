@@ -1,5 +1,5 @@
 /**
- * T507 (F151): pasted text in the search line, the tag editor and Prompt is
+ * pasted text in the search line, the tag editor and Prompt is
  * drawn through sanitizeForTerminal; the typed text itself stays as typed.
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -44,7 +44,7 @@ async function openApp() {
   return { store, ...r };
 }
 
-describe('typed and pasted text is drawn sanitised (T507)', () => {
+describe('typed and pasted text is drawn sanitised', () => {
   it('1: WHEN the notes `Groceries` and `Second` are shown, `/` is written and then `\\x1b[200~abcd\\x1b[45mef‮g\\x1b[201~` THEN the frame contains `search: abcdefg` and contains neither `\\x1b[45m` nor `‮`', async () => {
     const { stdin, lastFrame } = await openApp();
     expect(lastFrame()).toContain('Second');

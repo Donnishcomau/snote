@@ -35,7 +35,7 @@ export function History({
 
   return (
     <Box flexDirection="column" height={listHeight} width={colWidth}>
-      <PaneHeading label="History" focused />
+      <PaneHeading label="History" focused width={colWidth} />
       <Box flexDirection="column">
         {rows.length === 0 ? (
           <Box>

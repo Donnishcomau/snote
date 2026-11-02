@@ -1,6 +1,6 @@
 /**
- * T509: the compile-cache folder is created 0700 and `instance.lock` 0600,
- * whatever the umask (F156, F157).
+ * the compile-cache folder is created 0700 and `instance.lock` 0600,
+ * whatever the umask.
  */
 import { spawnSync } from 'node:child_process';
 import * as fs from 'node:fs';

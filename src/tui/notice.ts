@@ -5,15 +5,15 @@ import type { UpdateSignal } from '../core/update-signal';
 import { currentProblem, currentProblemIsInfo, onProblem } from '../core/problem-signal';
 
 /**
- * The bottom-area notice line (T349): error notices stay red; success and
+ * The bottom-area notice line: error notices stay red; success and
  * informational notices render green, so "draft sent to your blog" and
- * "New note saved" no longer look like failures. T427: a notice made from
+ * "New note saved" no longer look like failures. a notice made from
  * an update signal asks the user to act, so it renders warning yellow.
  */
 interface NoticeState {
   message: string;
   isError: boolean;
-  // T427: set only by notices built from an update signal (both kinds).
+  // set only by notices built from an update signal (both kinds).
   isUpdate?: boolean;
 }
 
@@ -23,9 +23,9 @@ export function useNotice(): {
   setNoticeError: (message: string) => void;
   clearNotice: () => void;
 } {
-  // T391: start from the current update signal when there is one, so a
+  // start from the current update signal when there is one, so a
   // check that finished before the first render still shows up.
-  // T441: a problem published before the first render comes first.
+  // a problem published before the first render comes first.
   const [notice, setNoticeState] = useState<NoticeState | null>(() => {
     const info = currentProblemIsInfo();
     const problem = currentProblem();
@@ -38,8 +38,8 @@ export function useNotice(): {
   const setNotice = (message: string) => setNoticeState({ message, isError: false });
   const setNoticeError = (message: string) => setNoticeState({ message, isError: true });
   const clearNotice = () => setNoticeState(null);
-  // T391: a signal published later shows on screen too.
-  // T441: so does a problem, as an error notice.
+  // a signal published later shows on screen too.
+  // so does a problem, as an error notice.
   useEffect(() => {
     const offUpdate = onUpdate((u) =>
       setNoticeState({ message: updateMessage(u), isError: false, isUpdate: true })
@@ -53,7 +53,7 @@ export function useNotice(): {
   return { notice, setNotice, setNoticeError, clearNotice };
 }
 
-/** T391: the notice text for an update signal, one line per step. */
+/** the notice text for an update signal, one line per step. */
 function updateMessage(u: UpdateSignal): string {
   if (u.kind === 'restart') {
     return `snote ${u.available} is downloaded: restart snote / the bar to use the update`;
@@ -65,7 +65,7 @@ function updateMessage(u: UpdateSignal): string {
 }
 
 /**
- * The theme roles' colours (T427): error notices keep red, update notices
+ * The theme roles' colours: error notices keep red, update notices
  * take the warning role, everything else the success role.
  */
 export function noticeColor(notice: NoticeState): string {

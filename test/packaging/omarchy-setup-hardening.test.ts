@@ -36,7 +36,8 @@ function runSetupWithMvHook(s: Sandbox, hook: 'kill' | 'probe') {
     [
       '#!/bin/sh',
       '/usr/bin/mv "$@" || exit $?',
-      'case "$2" in',
+      'for last; do :; done',
+      'case "$last" in',
       '  */app.prev)',
       '    if [ "$MV_HOOK" = kill ]; then kill -9 $PPID; fi',
       '    if [ "$MV_HOOK" = probe ]; then /usr/bin/flock -s -n "$MV_LOCK" true; echo $? > "$MV_OUT"; fi',

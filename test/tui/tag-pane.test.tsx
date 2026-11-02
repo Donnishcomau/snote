@@ -94,7 +94,7 @@ it('4: WHEN tags=tag0..tag29, height=10, selectedIndex=25 THEN exactly 10 lines 
   unmount();
 });
 
-it('5: WHEN tags=[averyveryverylongtagname] width=20 THEN contains averyveryverylongt and not averyveryverylongta', async () => {
+it('5: WHEN tags=[averyveryverylongtagname] width=20 THEN contains averyveryverylong… and not averyveryverylongt (#74: a cut name ends in …)', async () => {
   const { lastFrame, unmount } = render(
     <TagPane
       tags={['averyveryverylongtagname']}
@@ -109,8 +109,8 @@ it('5: WHEN tags=[averyveryverylongtagname] width=20 THEN contains averyveryvery
 
   const frame = lastFrame() ?? '';
 
-  expect(frame).toContain('averyveryverylongt');
-  expect(frame).not.toContain('averyveryverylongta');
+  expect(frame).toContain('averyveryverylong…');
+  expect(frame).not.toContain('averyveryverylongt');
 
   unmount();
 });

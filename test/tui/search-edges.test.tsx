@@ -1,5 +1,5 @@
 /**
- * Search input edges (T112).
+ * Search input edges.
  * Verifies: Backspace removes last character, Escape clears a kept query
  * after the input was closed, and note keys act on the filtered list.
  */

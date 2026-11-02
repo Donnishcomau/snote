@@ -32,7 +32,7 @@ const writeKey = async (stdin: { write: (s: string) => void }, ch: string) => {
 
 
 
-describe('T184 Tags pane trash row', () => {
+describe('Tags pane trash row', () => {
   let store: ReturnType<typeof makeStore>;
 
   beforeEach(() => {

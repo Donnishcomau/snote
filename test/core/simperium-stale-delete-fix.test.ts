@@ -1,5 +1,5 @@
 /**
- * T301 — a note deleted forever on the server while this client was
+ * a note deleted forever on the server while this client was
  * offline must NOT survive that client's next full re-index.
  *
  * Repro without a second live client (avoids the pre-existing
@@ -235,7 +235,7 @@ afterEach(async () => {
   server = undefined;
 });
 
-describe('T301 stale delete survives a full re-index', () => {
+describe('stale delete survives a full re-index', () => {
   it('1: WHEN store A syncs `noteX` and `noteY`, fully closes, the server removes `noteX` via `removeFromIndex` with no log entry, `ghosts-note.json`\'s `cv` is overwritten to `not-a-number`, and store A restarts on the same `dataDir` THEN within `3` s `data.notes` has `noteY` with content `Y` and does not have `noteX`', async () => {
     const srv = await startServer();
     const dataDir = await seedAndClose(srv);

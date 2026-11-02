@@ -1,8 +1,8 @@
 // #67 (part 4): packaging/omarchy/setup writes a `checked` mark for the
 // installed build only after its start check passed, treats a build as
 // current only while that mark names its VERSION, and four controls of the
-
-// F243). Linux only (flock). The "kill during the start check" is a fake `rm`
+// rollback and start-check code are each guarded by a test.
+// Linux only (flock). The "kill during the start check" is a fake `rm`
 // first on PATH: setup's first `rm` of the check directory runs right after
 // the check ran, and the fake kills setup then. Every case runs in its own
 // mkdtemp sandbox; nothing touches the real HOME.

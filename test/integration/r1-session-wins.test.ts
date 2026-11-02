@@ -1,5 +1,5 @@
 /**
- * R1 sync-2 (F205; REQUIRED-LINES section A rows 1-3; F228): at the start-up
+ * R1 sync-2 (; REQUIRED-LINES section A rows 1-3;): at the start-up
  * hand-off a field the user changed in this session (the store copy differs
  * from both the held offline copy and the server copy) wins over both; tag
  * lists apply the same rule per tag. A store copy overwritten with the server
@@ -39,21 +39,21 @@ async function handOff(base: Note, held: Note, server: Note, atHandOff?: Note) {
 
 describe('R1 restart hand-off keeps this session\'s changes', () => {
   it('1: WHEN n1 has an offline edit `OFF`, every reply is 1200 ms late and the user pins n1 400 ms after the start THEN the server and the store hold content `OFF`, system tags [`pinned`], verdict `KEPT`', async () => {
-    const o = await runScenario('S11-01-Q8-pin-400');
+    const o = await runScenario('Q8-pin-400');
     expect(o.server).toEqual(note(false, ['pinned'], []));
     expect(o.store).toEqual(note(false, ['pinned'], []));
     expect(o.verdict).toBe('KEPT');
   }, 45000);
 
   it('2: WHEN n1 has an offline edit `OFF`, every reply is 1200 ms late and the user trashes n1 400 ms after the start THEN the server and the store hold content `OFF`, deleted `true`, verdict `KEPT`', async () => {
-    const o = await runScenario('S11-01-Q8-trash-400');
+    const o = await runScenario('Q8-trash-400');
     expect(o.server).toEqual(note(true, [], []));
     expect(o.store).toEqual(note(true, [], []));
     expect(o.verdict).toBe('KEPT');
   }, 45000);
 
   it('3: WHEN n1 has an offline edit `OFF`, every reply is 1200 ms late and the user tags n1 `work` 400 ms after the start THEN the server and the store hold content `OFF`, tags [`work`], verdict `KEPT`', async () => {
-    const o = await runScenario('S11-01-Q8-tag-400');
+    const o = await runScenario('Q8-tag-400');
     expect(o.server).toEqual(note(false, [], ['work']));
     expect(o.store).toEqual(note(false, [], ['work']));
     expect(o.verdict).toBe('KEPT');
@@ -72,7 +72,7 @@ describe('R1 restart hand-off keeps this session\'s changes', () => {
     expect(h.n1()?.systemTags).toEqual(['pinned']);
   });
 
-  it('5: WHEN n1 was synced with tags [`old`, `\\ud800`], edited to `OFF` with `old` removed while snote was closed, and the server copy after the catch-up has tags [`home`, `\\ud800`] and system tags [`pinned`, `\\ud800`] THEN requeueUnsynced resolves without throwing and n1 in the store holds content `OFF`, tags exactly [`home`] and system tags exactly [`pinned`]', async () => {
+  it('5: WHEN n1 was synced with tags [`old`, `\\ud800`], edited to `OFF` with `old` removed while snote was closed, and the server copy after the catch-up has tags [`home`, `\\ud800`] and system tags [`pinned`, `\\ud800`] THEN requeueUnsynced resolves without throwing and n1 in the store holds content `OFF`, tags exactly [`home`] and system tags exactly [`pinned`, `\\ud800`]', async () => {
     const base = { ...makeNote('n1', BASE, { modificationDate: 1000 }), tags: ['old', '\ud800'] } as unknown as Note;
     const held = makeNote('n1', OFF, { modificationDate: 2000, tags: [] });
     const server = {
@@ -84,7 +84,7 @@ describe('R1 restart hand-off keeps this session\'s changes', () => {
     await expect(h.run).resolves.toEqual([id]);
     expect(h.n1()?.content).toBe(OFF);
     expect(h.n1()?.tags).toEqual(['home']);
-    expect(h.n1()?.systemTags).toEqual(['pinned']);
+    expect(h.n1()?.systemTags).toEqual(['pinned', '\ud800']);
   });
 
   it('6: WHEN n1 has an offline edit `OFF`, the server copy after the catch-up is not trashed, and the store at the hand-off still holds an older server version that is trashed (another device trashed then restored n1; nothing was done in this session) THEN requeueUnsynced resolves and n1 in the store holds content `OFF` and deleted `false`', async () => {

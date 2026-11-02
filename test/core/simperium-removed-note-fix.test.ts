@@ -1,5 +1,5 @@
 /**
- * T319 — a note deleted forever on another device comes back after snote
+ * a note deleted forever on another device comes back after snote
  * catches up (live finding 2026-09-26).
  *
  * Scenario (same helpers and ghost-editing as simperium-restart-rebase):
@@ -113,7 +113,7 @@ const localContent = (built: Built) => built.store.getState().data.notes.get('n1
 const localN1 = (built: Built) => built.store.getState().data.notes.has('n1' as never);
 const pending = (built: Built) => pendingCount(built.store.getState().simperium);
 
-describe('T319 a note removed on the server stays removed after catch-up', () => {
+describe('a note removed on the server stays removed after catch-up', () => {
   it('1: WHEN client A synced n1 and closed, its ghost for n1 is set to version 0, the server then changes n1 twice and serverRemoves it, versionReplyDelayMs is 300, and A reopens THEN after versionRepliesSent contains an entry starting with n1. and 1000 ms more, A\'s data.notes has no n1 and A\'s pendingCount is 0', async () => {
     const server = await startServer();
     const dir = await syncedDir(server);

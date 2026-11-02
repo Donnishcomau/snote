@@ -49,7 +49,7 @@ export function StatusBar({ connected, word, count, width, label, pending }: Sta
     { text: ' ' },
     { text: `${count} ${count === 1 ? 'note' : 'notes'}`, role: theme.muted },
   ];
-  if (pending && pending > 0) parts.push({ text: ` ${pending} pending`, role: theme.warning });
+  if (pending && pending > 0) parts.push({ text: ` ${pending} pending${connected ? '' : ' (no sync)'}`, role: theme.warning });
   if (label) parts.push({ text: ` ${label}`, role: theme.warning });
   const tag = statusTag();
   const gap = width - parts.reduce((n, p) => n + p.text.length, 0) - tag.length;

@@ -36,7 +36,7 @@ function check(
   return names;
 }
 
-describe("T454 private tui types", () => {
+describe("private tui types", () => {
   it("1: WHEN tag-input.ts, pane-arrows.ts, notice.ts and use-reselect.ts are read THEN no line exports `TagStep`, `PaneArrowCtx`, `NoticeState`, `updateMessage` or `ReselectCtx`, and each name is still declared.", () => {
     expect(
       check(

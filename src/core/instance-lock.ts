@@ -1,16 +1,11 @@
-import {
-  closeSync,
-  existsSync,
-  openSync,
-  readFileSync,
-  statSync,
-  unlinkSync,
-  writeSync,
-} from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { closeSync, existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { secureExclusiveCreate, secureOpenForRead, secureUnlink } from './secure-fs';
+
 /**
- * Per-directory single-instance lock (T303).
+ * Per-directory single-instance lock.
  *
  * Two snote processes sharing one account dir last-write-wins the ghost and
  * state files (`FileGhostStore.persist` and `saveState` each overwrite the
@@ -29,6 +24,14 @@ import { join } from 'node:path';
  */
 
 const LOCK_FILE = 'instance.lock';
+
+/** #385: why a start runs without the kernel lock, and the notice line for each. */
+export type Unlocked = 'missing' | 'refused' | 'timeout';
+export const UNLOCKED_NOTICE: Record<Unlocked, string> = {
+  missing: 'No kernel lock (flock not installed): two copies started at once may both run.',
+  refused: 'No kernel lock (folder may refuse it): two copies started at once may both run.',
+  timeout: 'No kernel lock (flock timed out): two copies started at once may both run.',
+};
 
 /**
  * Locks this process acquired and never released, keyed by resolved lock
@@ -60,9 +63,9 @@ function isPidAlive(pid: number): boolean {
 /**
  * A live pid whose process started more than this many milliseconds after
  * the lock file's last write cannot have written that file: the OS recycled
- * the dead owner's pid (F034), so the lock is stale and gets reclaimed.
+ * the dead owner's pid, so the lock is stale and gets reclaimed.
  */
-const RECLAIM_AFTER_START_MARGIN_MS = 2000;
+const START_MARGIN_MS = 2000;
 
 /** Cached boot time in epoch milliseconds, or null when /proc says nothing. */
 let bootTimeMs: number | null | undefined;
@@ -126,7 +129,7 @@ function startedAfterLockWrite(pid: number, lockMtimeMs: number | null): boolean
     return false;
   }
   const started = processStartMs(pid);
-  return started !== null && started - lockMtimeMs > RECLAIM_AFTER_START_MARGIN_MS;
+  return started !== null && started - lockMtimeMs > START_MARGIN_MS;
 }
 
 function lockMtimeMs(lockPath: string): number | null {
@@ -152,78 +155,95 @@ function readLockPid(lockPath: string): string {
  * to call twice.
  * @throws Error naming the owning pid when a live process still holds it.
  */
-export function acquireInstanceLock(dir: string): { release: () => void } {
+export function acquireInstanceLock(dir: string): { release: () => void; unlocked?: Unlocked } {
   const lockPath = join(dir, LOCK_FILE);
   const writeLock = (): void => {
-    // 'wx' = O_WRONLY|O_CREAT|O_EXCL: throws EEXIST when the file exists,
+    // exclusive create (O_EXCL): throws EEXIST when the file exists,
     // creates it atomically otherwise.
-    const fd = openSync(lockPath, 'wx', 0o600);
-    try {
-      writeSync(fd, String(process.pid));
-    } finally {
-      closeSync(fd);
-    }
+    // proof: test/core/secure-fs-helpers.test.ts
+    secureExclusiveCreate(lockPath, String(process.pid));
   };
 
-  let acquired = false;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  const sweep = `${lockPath}.sweep`;
+  const live = (): string => {
+    const owner = readLockPid(lockPath);
+    const pid = Number.parseInt(owner, 10);
+    return heldByProcess.has(lockPath) ? String(process.pid) : isPidAlive(pid) && !startedAfterLockWrite(pid, lockMtimeMs(lockPath)) ? String(pid) : !owner && young(lockPath) ? '?' : '';
+  };
+  const young = (path: string): boolean => Math.abs(Date.now() - (lockMtimeMs(path) ?? Date.now())) < 2000;
+  const rm = (path: string): void => {
+    try {
+      secureUnlink(path);
+    } catch {
+      // already gone
+    }
+  };
+  const refuse = (pid: string): never => {
+    closeSync(fd);
+    throw new Error(`another snote is already using ${dir}${pid ? ` (pid ${pid})` : ''} — it holds the instance lock`);
+  };
+  // #316: flock(1) locks the open file description of this dir fd, which we keep, so the lock is the kernel's and dies with us
+  const fd = secureOpenForRead(`${dir}/.`);
+  // #385: 0 locked, 1 held; ENOENT or another status: no kernel lock, said by the caller; a timeout, signal or spawn
+  // error reruns only the flock on this same fd, once, with a longer bound
+  // proof: test/core/instance-lock-unlocked.test.ts
+  let unlocked: Unlocked | undefined;
+  for (let retry = 0; ; retry++) {
+    const r = spawnSync('/usr/bin/flock', ['-n', '0'], { stdio: [fd, 'ignore', 'ignore'], timeout: retry ? 5000 : 1000, killSignal: 'SIGKILL', maxBuffer: 1048576 });
+    const code = (r.error as { code?: string } | undefined)?.code;
+    if (r.status === 1) {
+      refuse(live());
+    }
+    unlocked = r.status === 0 ? undefined : code === 'ENOENT' ? 'missing' : !code && typeof r.status === 'number' ? 'refused' : 'timeout';
+    if (unlocked !== 'timeout' || retry) {
+      break;
+    }
+  }
+  for (let attempt = 0; ; attempt++) {
     try {
       writeLock();
-      acquired = true;
       break;
     } catch (err) {
       if ((err as { code?: string }).code !== 'EEXIST') {
+        closeSync(fd);
         throw err;
       }
-      // Someone's lock is in the way: a live owner (or our own still-held
-      // one, which always refuses even when the pid probe is right back at
-      // it) blocks the second instance; a stale one — dead pid, leftover
-      // file, one whose owner crashed before writing anything, or a live pid
-      // that only got the number after the file was last written — is swept
-      // and the wx-open retried once.
-      const fileOwner = Number.parseInt(readLockPid(lockPath), 10);
-      const heldByUs = heldByProcess.has(lockPath);
-      const ownerAlive =
-        heldByUs || (isPidAlive(fileOwner) && !startedAfterLockWrite(fileOwner, lockMtimeMs(lockPath)));
-      if (ownerAlive) {
-        const owner = heldByUs ? String(process.pid) : String(fileOwner);
-        throw new Error(
-          `another snote is already using ${dir} (pid ${owner}) — it holds the instance lock`
-        );
+      if (live() || attempt > 1) {
+        refuse(live());
+      }
+      // stale: one sweeper at a time; it re-checks under the marker
+      try {
+        secureExclusiveCreate(sweep, '');
+      } catch {
+        if (!young(sweep)) {
+          rm(sweep);
+        }
+        refuse('');
       }
       try {
-        unlinkSync(lockPath);
-      } catch {
-        // Already gone (raced with its owner); the retry below decides.
+        if (live()) {
+          refuse(live());
+        }
+        rm(lockPath);
+      } finally {
+        rm(sweep);
       }
     }
   }
-  if (!acquired) {
-    // The wx-open lost to another writer twice over: the live owner the
-    // probes caught (or just slipped between them) is named when known.
-    const owner = readLockPid(lockPath);
-    const mtime = lockMtimeMs(lockPath);
-    const alive =
-      /^\d+$/.test(owner) && isPidAlive(Number(owner)) && !startedAfterLockWrite(Number(owner), mtime);
-    throw new Error(
-      `another snote is already using ${dir}${alive ? ` (pid ${owner})` : ''} — it holds the instance lock`
-    );
-  }
+  rm(sweep); // a killed takeover's leftover marker
   heldByProcess.add(lockPath);
 
   let released = false;
   return {
+    unlocked,
     release: () => {
       if (released) {
         return;
       }
       released = true;
       heldByProcess.delete(lockPath);
-      try {
-        unlinkSync(lockPath);
-      } catch {
-        // Already gone (e.g. a logout wiped the dir); nothing to release.
-      }
+      rm(lockPath); // already gone (e.g. a logout wiped the dir) is fine
+      closeSync(fd);
     },
   };
 }

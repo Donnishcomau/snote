@@ -1,5 +1,5 @@
 /**
- * T214: the app never dumps a stack trace — a thrown error anywhere leaves
+ * the app never dumps a stack trace — a thrown error anywhere leaves
  * the terminal usable: the app unmounts, writes the crash record to a state
  * file, prints three calm lines and exits with status 1.
  *
@@ -17,7 +17,7 @@ import { isLockError } from '../../src/core/crash-redact';
 import { resetKeyLog } from '../../src/tui/app-keys';
 
 const ENTRY = 'test/fixtures/crash-entry.ts';
-// T232 — a second entry that seeds notes/tags/keys before it crashes.
+// a second entry that seeds notes/tags/keys before it crashes.
 const ENTRY_SESSION = 'test/fixtures/crash-entry-session.ts';
 
 // React's own render internals appear in every render-error stack
@@ -87,7 +87,7 @@ async function waitForCrashFile(
   }
 }
 
-// Poll until the crash file exists with a `session` field (T232); the Boom
+// Poll until the crash file exists with a `session` field; the Boom
 // render error reaches the handler before any secondary effect error (a
 // piped-stdin raw mode throw). Returns the first crash file once it parses
 // and carries `session`, else the first crash file at the deadline.
@@ -130,7 +130,7 @@ async function runSessionAndRead(
   return parsed;
 }
 
-describe('T214 crash handler', () => {
+describe('crash handler', () => {
   beforeAll(async () => {
     outDir = mkdtempSync(join(tmpdir(), 'crash-handler-'));
     outfile = join(outDir, 'entry.js');
@@ -138,7 +138,7 @@ describe('T214 crash handler', () => {
     await bundle({ entry: ENTRY, outfile });
   }, 20000);
 
-  // T232 — bundle the session entry exactly once, and keep the module-scope
+  // bundle the session entry exactly once, and keep the module-scope
   // key log of THIS process empty: the fixture seeds its own keys in the
   // CHILD, while main() snapshots the key log of whoever calls it.
   beforeAll(async () => {
@@ -208,7 +208,7 @@ describe('T214 crash handler', () => {
     expect(source).toContain('crashReport');
   });
 
-  // T232 — the crash bundle is a replayable recipe: a redacted `session`
+  // the crash bundle is a replayable recipe: a redacted `session`
   // snapshot of the notes/tags/keys that existed at the moment of the crash.
   let parsed: Record<string, unknown> = {};
 
@@ -243,7 +243,7 @@ describe('T214 crash handler', () => {
     expect(text).not.toContain('work');
   });
 
-  it("9: WHEN the ORIGINAL `crash-entry.ts` (T214's, no notes/keys seeded) is run and crashes THEN its file's `session.noteCount` is `0` and `session.keys` is `[]`", async () => {
+  it("9: WHEN the ORIGINAL `crash-entry.ts` ('s, no notes/keys seeded) is run and crashes THEN its file's `session.noteCount` is `0` and `session.keys` is `[]`", async () => {
     const stateDir = mkdtempSync(join(tmpdir(), 'crash-state-'));
     const result = await runCrash([stateDir], { XDG_STATE_HOME: stateDir });
     expect(result.status).toBe(1);
