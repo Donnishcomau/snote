@@ -9,7 +9,7 @@
  *   Response body themselves (use the reply's `bytes`, `text` or `json()`);
  * - failures are human-readable: `no answer from <host> within <N> s`,
  *   `could not reach <host>`, `reply from <host> is larger than <N> bytes`,
- *   `unexpected reply from <host>` (not JSON; the server's bytes are not quoted).
+ *   `unexpected reply from <host>` (not JSON; the server's bytes are not quoted); a redirect fails as `could not reach <host>`.
  *
  * eslint.config.mjs forbids `fetch` and the raw http clients everywhere else
  * under src/ and vendor/; test/structure/bounded-request-only.test.ts proves it.
@@ -73,7 +73,7 @@ async function exchange(
   signal: AbortSignal,
   host: string,
 ): Promise<BoundedReply> {
-  const res = await (opts.fetch ?? fetch)(url, { ...init, signal });
+  const res = await (opts.fetch ?? fetch)(url, { ...init, signal, redirect: 'error' });
   const bytes = await readCapped(res, opts.maxBytes ?? MAX_REPLY_BYTES, host);
   return {
     status: res.status,

@@ -19,7 +19,7 @@ import {
   checkEndpoints,
   loadBlogSend,
   sanitizeForTerminal
-} from "./chunks/chunk-NSKMBNUK.js";
+} from "./chunks/chunk-ZUJ5RH7X.js";
 import {
   DEFAULT_BLOG_ORIGIN,
   blogOriginFromEnv
@@ -40,7 +40,7 @@ import {
   secureRmdir,
   secureUnlink,
   secureWriteFileSync
-} from "./chunks/chunk-ASSCDLWP.js";
+} from "./chunks/chunk-KQUALZZJ.js";
 import {
   Box_default,
   Text,
@@ -3399,7 +3399,7 @@ function exportSelectedNote(ctx) {
   const base = exportFileName(selectedEntry.note.content ?? "");
   const target = value.trim() !== "" ? value : join7(documentsDir(), `${base}.md`);
   const dir = dirname(target);
-  import("./chunks/export-note-MQMBOQIT.js").then((m) => m.exportNote(selectedEntry.note, dir)).then((path10) => setNotice(`exported: ${path10}`)).catch(
+  import("./chunks/export-note-S4JYBLTP.js").then((m) => m.exportNote(selectedEntry.note, dir)).then((path10) => setNotice(`exported: ${path10}`)).catch(
     (err) => setNoticeError(`export failed: ${err instanceof Error ? err.message : String(err)}`)
   );
 }
@@ -6145,7 +6145,7 @@ import * as https from "node:https";
 // package.json
 var package_default = {
   name: "snote",
-  version: "0.2.9",
+  version: "0.2.10",
   description: "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
   license: "GPL-2.0",
   type: "module",
@@ -6196,6 +6196,9 @@ var package_default = {
     vite: "7.3.7",
     vitest: "4.1.12",
     ws: "^8.18.0"
+  },
+  overrides: {
+    minimatch: "^11.0.1"
   }
 };
 
@@ -7418,31 +7421,26 @@ function removeStatusFile(dir) {
 }
 var STOPPED_ALIVE = "1970-01-01T00:00:00.000Z";
 function clearUpdateStatusFile(dir) {
+  let fd;
   try {
-    const file = path5.join(dir, "status.json");
-    const parsed = JSON.parse(fs6.readFileSync(file, "utf8"));
-    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    fd = secureOpenForRead(path5.join(dir, "status.json"), { nonBlock: true });
+    const r = JSON.parse(fs6.readFileSync(fd, "utf8"));
+    if (r === null || typeof r !== "object" || Array.isArray(r)) {
       return;
     }
-    const record = parsed;
-    let changed = false;
-    if ("update" in record) {
-      delete record.update;
-      changed = true;
-    }
-    if ("updateVersion" in record) {
-      delete record.updateVersion;
-      changed = true;
-    }
-    if (record.alive !== STOPPED_ALIVE) {
-      record.alive = STOPPED_ALIVE;
-      changed = true;
-    }
-    if (!changed) {
-      return;
-    }
-    writeStatusFile(dir, record);
+    const o = r;
+    const l = o.last;
+    const clean = {
+      version: 1,
+      count: typeof o.count === "number" ? o.count : 0,
+      last: l && typeof l.title === "string" && typeof l.modified === "number" ? { title: l.title, modified: l.modified } : null,
+      synced: typeof o.synced === "string" ? o.synced : null,
+      alive: STOPPED_ALIVE
+    };
+    writeStatusFile(dir, clean);
   } catch {
+  } finally {
+    if (fd !== void 0) fs6.closeSync(fd);
   }
 }
 function watchStatus(store, dir, opts) {
@@ -7794,7 +7792,7 @@ import * as path7 from "node:path";
 
 // src/core/instance-lock.ts
 import { spawnSync as spawnSync2 } from "node:child_process";
-import { closeSync as closeSync2, existsSync as existsSync9, readFileSync as readFileSync11, statSync as statSync2 } from "node:fs";
+import { closeSync as closeSync3, existsSync as existsSync9, readFileSync as readFileSync11, statSync as statSync2 } from "node:fs";
 import { join as join14 } from "node:path";
 var LOCK_FILE2 = "instance.lock";
 var UNLOCKED_NOTICE = {
@@ -7893,7 +7891,7 @@ function acquireInstanceLock(dir) {
     }
   };
   const refuse = (pid) => {
-    closeSync2(fd);
+    closeSync3(fd);
     throw new Error(`another snote is already using ${dir}${pid ? ` (pid ${pid})` : ""} \u2014 it holds the instance lock`);
   };
   const fd = secureOpenForRead(`${dir}/.`);
@@ -7915,7 +7913,7 @@ function acquireInstanceLock(dir) {
       break;
     } catch (err) {
       if (err.code !== "EEXIST") {
-        closeSync2(fd);
+        closeSync3(fd);
         throw err;
       }
       if (live() || attempt > 1) {
@@ -7951,7 +7949,7 @@ function acquireInstanceLock(dir) {
       released = true;
       heldByProcess.delete(lockPath);
       rm(lockPath);
-      closeSync2(fd);
+      closeSync3(fd);
     }
   };
 }
@@ -8045,7 +8043,7 @@ async function recordSavedAccountId(root2) {
 }
 
 // src/cli/login-calls.ts
-var auth = () => import("./chunks/auth-XPLO4XPH.js");
+var auth = () => import("./chunks/auth-3VYBJC4X.js");
 function loginCalls(server, appId) {
   let opts;
   if (server) {
@@ -9107,7 +9105,7 @@ function useBlogSendAskState(noteId, content, setNotice, setNoticeError) {
       if (!id) return;
       const dir = dataRoot();
       const force = resend || Boolean(loadBlogSend(dir, id));
-      import("./chunks/blog-send-6BZ7V5Q4.js").then((m) => m.sendNoteToBlog({
+      import("./chunks/blog-send-6FCBCD4G.js").then((m) => m.sendNoteToBlog({
         dir,
         noteId: id,
         content: contentRef.current,
@@ -9176,7 +9174,7 @@ function BlogSendDialog({
         initial: "",
         onSubmit: (token) => {
           const dir = dataRoot();
-          import("./chunks/blog-config-XGBNPL7I.js").then((m) => m.saveBlogConfig(dir, { origin, token })).then(
+          import("./chunks/blog-config-HB22M3KE.js").then((m) => m.saveBlogConfig(dir, { origin, token })).then(
             () => request({ kind: "send" }),
             (error) => {
               const msg = error instanceof Error ? error.message : "blog setup failed";
@@ -13090,12 +13088,12 @@ async function main(argv, io) {
     tracked.bind(built.store);
     if (process.env.SNOTE_UPDATE_CHECK !== "disabled") {
       void (async () => {
-        const { updateCheckEnabled } = await import("./chunks/update-check-E2O2HFE5.js");
+        const { updateCheckEnabled } = await import("./chunks/update-check-I6ABFVOJ.js");
         if (!updateCheckEnabled(process.env)) return;
-        const { homepageGuard, runningInstallKind, updateChecksFor } = await import("./chunks/install-kind-7RNUYSJQ.js");
+        const { homepageGuard, runningInstallKind, updateChecksFor } = await import("./chunks/install-kind-ELLB4QQQ.js");
         if (!updateChecksFor(runningInstallKind())) return;
-        const { runUpdateChecks } = await import("./chunks/update-run-4OBOZV7M.js");
-        const { startUpdateWatch } = await import("./chunks/update-watch-3ENWHUED.js");
+        const { runUpdateChecks } = await import("./chunks/update-run-2CTDVJSW.js");
+        const { startUpdateWatch } = await import("./chunks/update-watch-U24LULSQ.js");
         void runUpdateChecks({ version: VERSION, home: os2.homedir(), env: process.env, stateDir: statusDir(process.env), run: homepageGuard() }).catch(() => {
         });
         startUpdateWatch({ version: VERSION, home: os2.homedir(), env: process.env, stateDir: statusDir(process.env), run: homepageGuard() });

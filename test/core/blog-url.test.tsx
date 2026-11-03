@@ -11,6 +11,7 @@ import { normalizeBlogUrl } from '../../src/core/blog-client';
 import { blogStatusLine } from '../../src/core/blog-sent';
 import { makeStore } from '../../src/core/store';
 import { App } from '../../src/tui/App';
+import { sentUrl } from '../helpers/sent-url';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const stripAnsi = (s: string | undefined): string => (s ?? '').replace(/\u001b\[[0-9;]*m/g, '');
@@ -77,13 +78,13 @@ describe('blog url normalisation', () => {
         frame = stripAnsi(r.lastFrame());
       }
       r.stdin.write('y');
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 40; i++) {
         await delay(50);
         frame = stripAnsi(r.lastFrame());
-        if (frame.includes('Sent as draft') && frame.includes('http://wonka.skryf.art')) break;
+        if (sentUrl(frame) === 'http://wonka.skryf.art/write/p9') break;
       }
       expect(frame).toContain('Sent as draft');
-      expect(frame).toContain('http://wonka.skryf.art');
+      expect(sentUrl(frame)).toBe('http://wonka.skryf.art/write/p9');
       r.unmount();
     } finally {
       if (prev === undefined) delete process.env.XDG_DATA_HOME;

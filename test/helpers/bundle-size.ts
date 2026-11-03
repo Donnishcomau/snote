@@ -23,7 +23,8 @@ import { buildPluginDist } from '../../scripts/build-plugin-dist.mjs';
 /** cap3 (2026-10-22): single-file total raised 1,600,000 -> 1,620,000 for the lazy 0.2.9 installer code. */
 // #558 (2026-10-30): 1,624,300 -> 1,624,600 (measured 1,624,490 with #558 and #553 added to #555: absent tags and systemTags are filled at the mend seam)
 // #553 v9 (2026-10-31): 1,624,600 -> 1,625,200 (measured 1,624,478; v9 adds an estimated +110 to +150; #562 follows)
-export const BUNDLE_CAP = 1625200;
+// #606 (2026-11-02): 1,625,200 -> 1,625,800 (measured 1,625,519; the secureExclusiveCreate fix is +436; headroom comes back with the #572 diet)
+export const BUNDLE_CAP = 1625800;
 // #478 carrier (2026-10-30, revised): 1,620,000 -> 1,624,000 (measured #478 1,620,463, #543 1,622,164, #545 +193; all three queued)
 // #555 (2026-10-30): 1,624,000 -> 1,624,300 (measured #555 1,623,693 alone, +429; 1,624,094 stacked on #553's +401)
 
@@ -41,7 +42,8 @@ export const BUNDLE_CAP = 1625200;
 // #555 (2026-10-30): 1,598,300 -> 1,599,000 (measured #555 1,598,473 alone, +429; 1,598,874 stacked on #553)
 // #558 (2026-10-30): 1,599,000 -> 1,599,400 (measured 1,599,268 with #558 and #553 added to #555)
 // #553 v9 (2026-10-31): 1,599,400 -> 1,600,000 (measured 1,599,256; v9 adds an estimated +110 to +150; #562 follows)
-export const STARTUP_CAP = 1600000;
+// #606 (2026-11-02): 1,600,000 -> 1,600,600 (measured main 8f510eba 1,599,859; fix 1,600,295, +436; headroom returns with the #572 diet)
+export const STARTUP_CAP = 1600600;
 
 /** (b) bytes of the updater's own dynamic-import chunks (and what only they pull in). */
 export const LAZY_CAP = 30000;

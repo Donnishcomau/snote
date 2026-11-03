@@ -3,6 +3,53 @@
 All notable changes to snote are documented here. Versions follow [Semantic
 Versioning](https://semver.org/).
 
+## 0.2.10
+
+A fix for note export: a write cut short, for example by a full disk,
+no longer reports `exported`. Your saved notes, in the app and on the
+server, are not changed by the upgrade.
+
+### Fixed
+
+- Exporting a note could be cut short by a short write (for example a
+  full disk) and still print `exported: <path>`. snote now writes the
+  whole file or fails with `export failed: <reason>`, and when the write
+  fails it removes the file it created. The same write is used for the
+  instance lock file. Your saved notes were not touched by this bug. It
+  was found by the Omarchy marketplace review.
+
+### Changed
+
+- The rest is internal checks plus an update to a development-only
+  dependency that is not shipped.
+
+### Known issues
+
+- If snote is killed (not quit) within about 150 ms of an identical or
+  new `:w` while the editor is open, the note can appear twice at the
+  next start. Nothing is lost: both copies keep the text. A normal quit
+  in that window is fixed in 0.2.9.
+- An editor that hands the file to an already open window is not
+  watched for `:w`; the note still saves when the editor closes.
+- Without the kernel lock (no `flock`, or a folder that refuses locks,
+  such as a network drive), two copies started at the same moment can
+  both run. Run one snote at a time on a data folder.
+- Rare restart cases from 0.2.8 that 0.2.9 and this release do not
+  close remain: see 0.2.8 Known issues. After a restart, check recent
+  edits in History (`h`).
+- snote does not check the signature of the checksum list yet, on
+  install or on update. Setup checks the files it installs against the
+  list, which catches a damaged or changed download but does not show
+  who made the release.
+- If the connection to the sync service opens but sign-in never
+  finishes, the status bar can show `[offline]` with no reason.
+- With `CI=true` set in the environment, snote draws nothing. Run
+  `unset CI` first.
+- When two devices make the same edit, the note can show a conflict
+  block that holds the same text twice. Nothing is lost.
+- The README screenshots show an earlier version. They are refreshed in
+  0.2.11.
+
 ## 0.2.9
 
 Saving with `:w` syncs while the editor is open, a quit sends your

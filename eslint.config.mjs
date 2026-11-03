@@ -4,6 +4,7 @@ import { r4Blocks } from './eslint.terminal-sink.mjs';
 import { scopeBlocks } from './eslint.scope.mjs';
 import { fsWriteBlocks } from './eslint.fs-write.mjs';
 import { r1Blocks } from './eslint.process-scope.mjs';
+import { textChildBlocks } from './eslint.text-child.mjs';
 
 // #191: every request goes through src/core/bounded-request.ts. Nothing else under src/ or vendor/ may
 // use fetch (called, aliased, passed on or reached through globalThis) or import a raw http client.
@@ -30,4 +31,5 @@ export default [
   ...scopeBlocks(NETWORK_GUARD),
   ...r1Blocks,
   ...fsWriteBlocks,
+  ...textChildBlocks,
 ];

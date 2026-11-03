@@ -19,6 +19,7 @@ import { recordBlogSend } from '../../src/core/blog-sent';
 import { defaultDataDir } from '../../src/core/token';
 import { dataRoot, setDataRoot } from '../../src/core/data-root';
 import { App } from '../../src/tui/App';
+import { sentUrl } from '../helpers/sent-url';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -44,7 +45,7 @@ async function pollUntil(
 
 // base owns XDG_DATA_HOME, so defaultDataDir() is dir. A is a second,
 // separate root reached only through setDataRoot.
-function withRoots(run: (dir: string, a: string) => Promise<void>): () => Promise<void> {
+async function withRoots(run: (dir: string, a: string) => Promise<void>): Promise<void> {
   const base = mkdtempSync(join(tmpdir(), 'blog-data-root-'));
   const dir = join(base, 'snote');
   const a = join(base, 'a');
@@ -52,15 +53,13 @@ function withRoots(run: (dir: string, a: string) => Promise<void>): () => Promis
   mkdirSync(a, { recursive: true });
   const prev = process.env.XDG_DATA_HOME;
   process.env.XDG_DATA_HOME = base;
-  return async () => {
-    try {
-      await run(dir, a);
-    } finally {
-      if (prev === undefined) delete process.env.XDG_DATA_HOME;
-      else process.env.XDG_DATA_HOME = prev;
-      rmSync(base, { recursive: true, force: true });
-    }
-  };
+  try {
+    await run(dir, a);
+  } finally {
+    if (prev === undefined) delete process.env.XDG_DATA_HOME;
+    else process.env.XDG_DATA_HOME = prev;
+    rmSync(base, { recursive: true, force: true });
+  }
 }
 
 function importNote(store: ReturnType<typeof makeStore>, noteId: string, content: string): void {
@@ -102,9 +101,9 @@ describe('blog data root', () => {
       const r = render(<App store={store} width={80} height={24} />);
       const frame = await pollUntil(
         r.lastFrame,
-        (f) => f.includes('Sent as draft') && f.includes('https://a.example/w/1'),
+        (f) => sentUrl(f) === 'https://a.example/w/1',
       );
-      expect(frame).toContain('https://a.example/w/1');
+      expect(sentUrl(frame)).toBe('https://a.example/w/1');
       expect(frame).not.toContain('https://default.example/w/1');
       r.unmount();
     });
@@ -122,9 +121,9 @@ describe('blog data root', () => {
       const r = render(<App store={store} width={80} height={24} />);
       const frame = await pollUntil(
         r.lastFrame,
-        (f) => f.includes('Sent as draft') && f.includes('https://default.example/w/1'),
+        (f) => sentUrl(f) === 'https://default.example/w/1',
       );
-      expect(frame).toContain('https://default.example/w/1');
+      expect(sentUrl(frame)).toBe('https://default.example/w/1');
       r.unmount();
     });
   });

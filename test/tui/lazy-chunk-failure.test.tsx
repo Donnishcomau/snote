@@ -1,5 +1,5 @@
 /**
-
+ * #237 (a security review finding): the blog send and the note export load their code with a
  * dynamic `import()` (#234). When that chunk cannot be loaded, the user sees an error notice and
  * nothing is lost: the note is unchanged and no file is written. Here both chunks fail to load:
  * each module's mock factory throws, so the `import()` rejects (vitest wraps the factory's error in

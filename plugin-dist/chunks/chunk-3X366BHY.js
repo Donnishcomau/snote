@@ -28,7 +28,7 @@ async function readCapped(res, maxBytes, host) {
   }
 }
 async function exchange(url, init, opts, signal, host) {
-  const res = await (opts.fetch ?? fetch)(url, { ...init, signal });
+  const res = await (opts.fetch ?? fetch)(url, { ...init, signal, redirect: "error" });
   const bytes = await readCapped(res, opts.maxBytes ?? MAX_REPLY_BYTES, host);
   return {
     status: res.status,

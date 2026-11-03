@@ -109,15 +109,38 @@ export function secureWriteFileSync(path: string, data: string): void {
  * it throws EEXIST when anything, a file or a symlink, dangling or not, is
  * already there, and never writes through a link. Mode 0o600 unless a mode
  * is given (a user-facing export asks for 0o666, which the umask narrows).
+ * The whole text is written (a short write is continued) or the call throws
+ * and removes the file it created, so no partly written file is left.
  * The instance lock and the note export use it.
  * proof: test/core/secure-fs-helpers.test.ts
+ * proof: test/core/secure-fs-short-write.test.ts
  */
 export function secureExclusiveCreate(path: string, data: string, mode: number = 0o600): void {
+  const buf = Buffer.from(data, 'utf8');
   const fd = openSync(path, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | (constants.O_NOFOLLOW ?? 0), mode);
+  let complete = false;
   try {
-    writeSync(fd, data);
+    let off = 0;
+    while (off < buf.length) {
+      const n = writeSync(fd, buf, off, buf.length - off);
+      if (!(n > 0)) {
+        throw new Error(`short write: ${off} of ${buf.length} bytes written`);
+      }
+      off += n;
+    }
+    complete = true;
   } finally {
-    closeSync(fd);
+    try {
+      closeSync(fd);
+    } finally {
+      if (!complete) {
+        try {
+          secureUnlink(path);
+        } catch {
+          // already gone
+        }
+      }
+    }
   }
 }
 

@@ -4,7 +4,7 @@ const require = __cr(import.meta.url);
 import {
   ensureDir,
   secureWriteFileSync
-} from "./chunk-ASSCDLWP.js";
+} from "./chunk-KQUALZZJ.js";
 
 // src/core/update-check.ts
 import { execFile } from "node:child_process";

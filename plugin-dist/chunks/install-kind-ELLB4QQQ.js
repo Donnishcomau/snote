@@ -3,8 +3,8 @@ import { createRequire as __cr } from 'node:module';
 const require = __cr(import.meta.url);
 import {
   defaultGitRunner
-} from "./chunk-GB4DFO2P.js";
-import "./chunk-ASSCDLWP.js";
+} from "./chunk-JAW5LEGJ.js";
+import "./chunk-KQUALZZJ.js";
 import "./chunk-SRSFEH3H.js";
 
 // src/core/install-kind.ts

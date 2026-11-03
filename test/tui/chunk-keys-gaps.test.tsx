@@ -1,7 +1,7 @@
 /**
  * Issue #80: two test gaps left after the chunk-keys rework (#35).
  * the key ring's paste debt has a floor of 0 (a keystroke with no debt
-
+ * open never takes it below zero, and is stored as typed). Ctrl+C
  * followed by an arrow in one read (`\x03\x1b[D`) quits nothing.
  * Test-only: no code under src/ changes.
  */

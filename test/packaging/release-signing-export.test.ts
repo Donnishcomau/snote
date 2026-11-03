@@ -1,5 +1,5 @@
 /**
-
+ * #68: the release trust lib is the publisher's check, sourced only by the private release gate, so neither the lib nor
  * its test is in the public export, and that test's git identity is an address the export allow-list already accepts.
  * Both tests are skipped when the private export script or the private test is absent (the public tree has neither).
  */

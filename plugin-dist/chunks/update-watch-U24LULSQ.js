@@ -6,12 +6,12 @@ import {
   compareVersions,
   pluginCloneDir,
   updateCheckEnabled
-} from "./chunk-GB4DFO2P.js";
+} from "./chunk-JAW5LEGJ.js";
 import {
   markRunningNewest,
   publishBanner
 } from "./chunk-KC7W25YK.js";
-import "./chunk-ASSCDLWP.js";
+import "./chunk-KQUALZZJ.js";
 import "./chunk-SRSFEH3H.js";
 
 // src/core/update-watch.ts

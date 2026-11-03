@@ -17,7 +17,7 @@
  *    selector makes both agree: `❤️` renders as `❤`, 1 column everywhere.
  *
  * 5. Bidi controls, zero-width characters and line/paragraph separators:
- *    ZWSP U+200B, ZWNJ U+200C, LRM U+200E, RLM U+200F, bidi embedding /
+ *    ALM U+061C, ZWSP U+200B, ZWNJ U+200C, LRM U+200E, RLM U+200F, bidi embedding /
  *    override U+202A-U+202E, bidi isolates U+2066-U+2069, and the
  *    separators U+2028/U+2029. A title `report<U+202E>dm.exe` (RLO)
  *    otherwise displays as `reportexe.md`. U+200D (ZWJ) is kept: emoji
@@ -39,8 +39,8 @@ const CSI_OR_OSC = new RegExp(
   'g'
 );
 
-// Any leftover ESC plus the character it introduces (a lone ESC eats the
-// next char; unterminated CSI/OSC runs are swallowed byte by byte).
+// Any leftover ESC and the one character after it; the body of an unterminated CSI or OSC
+// stays as plain text, its ESC gone. proof: test/core/sanitize-controls.test.ts
 const ANY_ESC_PAIR = new RegExp(ESC + '.', 'g');
 
 // C1 controls U+0080-U+009F, and C0 controls except TAB (\x09) and LF (\x0a).
@@ -53,7 +53,7 @@ const VARIATION_SELECTORS = /[\uFE0F\uFE0E]/g;
 
 // Bidi controls, zero-width characters and line/paragraph separators
 // (U+200D/ZWJ deliberately absent — see header item 5).
-const BIDI_INVISIBLES = /[\u200B\u200C\u200E\u200F\u202A-\u202E\u2066-\u2069\u2028\u2029]/g;
+const BIDI_INVISIBLES = /[\u061C\u200B\u200C\u200E\u200F\u202A-\u202E\u2066-\u2069\u2028\u2029]/g;
 
 export function sanitizeForTerminal(s: string): string {
   return s

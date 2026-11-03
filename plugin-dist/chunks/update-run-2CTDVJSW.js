@@ -5,11 +5,11 @@ import {
   checkLocalUpdate,
   checkRemoteUpdate,
   pluginCloneDir
-} from "./chunk-GB4DFO2P.js";
+} from "./chunk-JAW5LEGJ.js";
 import {
   publishUpdate
 } from "./chunk-YEBQPWOH.js";
-import "./chunk-ASSCDLWP.js";
+import "./chunk-KQUALZZJ.js";
 import "./chunk-SRSFEH3H.js";
 
 // src/core/update-run.ts

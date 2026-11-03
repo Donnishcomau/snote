@@ -71,11 +71,30 @@ function secureWriteFileSync(path, data) {
   }
 }
 function secureExclusiveCreate(path, data, mode = 384) {
+  const buf = Buffer.from(data, "utf8");
   const fd = openSync(path, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | (constants.O_NOFOLLOW ?? 0), mode);
+  let complete = false;
   try {
-    writeSync(fd, data);
+    let off = 0;
+    while (off < buf.length) {
+      const n = writeSync(fd, buf, off, buf.length - off);
+      if (!(n > 0)) {
+        throw new Error(`short write: ${off} of ${buf.length} bytes written`);
+      }
+      off += n;
+    }
+    complete = true;
   } finally {
-    closeSync(fd);
+    try {
+      closeSync(fd);
+    } finally {
+      if (!complete) {
+        try {
+          secureUnlink(path);
+        } catch {
+        }
+      }
+    }
   }
 }
 function secureOpenForRead(path, opts = {}) {

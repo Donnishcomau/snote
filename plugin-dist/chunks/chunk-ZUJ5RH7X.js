@@ -54,7 +54,7 @@ var CSI_OR_OSC = new RegExp(
 var ANY_ESC_PAIR = new RegExp(ESC + ".", "g");
 var CONTROL_BYTES = new RegExp("[\\u0080-\\u009f\\x00-\\x08\\x0b-\\x1f\\x7f]", "g");
 var VARIATION_SELECTORS = /[\uFE0F\uFE0E]/g;
-var BIDI_INVISIBLES = /[\u200B\u200C\u200E\u200F\u202A-\u202E\u2066-\u2069\u2028\u2029]/g;
+var BIDI_INVISIBLES = /[\u061C\u200B\u200C\u200E\u200F\u202A-\u202E\u2066-\u2069\u2028\u2029]/g;
 function sanitizeForTerminal(s) {
   return s.replace(CSI_OR_OSC, "").replace(ANY_ESC_PAIR, "").replace(CONTROL_BYTES, "").replace(BIDI_INVISIBLES, "").replace(VARIATION_SELECTORS, "");
 }

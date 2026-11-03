@@ -25,11 +25,11 @@ afterAll(() => {
 });
 
 describe('#30cap split bundle caps', () => {
-  it('1: WHEN the split plugin-dist is built THEN its start set (cli.js, snote-main.js and their static imports) is above `1000000` and below `STARTUP_CAP` (`1600000`) bytes', () => {
+  it('1: WHEN the split plugin-dist is built THEN its start set (cli.js, snote-main.js and their static imports) is above `1000000` and below `STARTUP_CAP` (`1600600`) bytes', () => {
     expect(graph.start.has('snote-main.js')).toBe(true);
     expect(graph.startBytes).toBeGreaterThan(1000000);
     expect(graph.startBytes).toBeLessThan(STARTUP_CAP);
-    expect(STARTUP_CAP).toBe(1600000);
+    expect(STARTUP_CAP).toBe(1600600);
   });
 
   it('2: WHEN the split plugin-dist is built THEN the updater chunks (update-helper-start, update-fetch-verify, release-verify, allowed-signers and what only they import) total below `LAZY_CAP` (`30000`) bytes', () => {

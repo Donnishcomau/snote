@@ -7,7 +7,7 @@ import { ensureDir, secureUnlink, secureWriteFileSync } from './secure-fs';
 import { pendingCount } from './simperium-reducer';
 import { currentBanner, onBanner, runningIsNewestRelease } from './update-banner';
 import { currentUpdate, onUpdate } from './update-signal';
-
+import { secureOpenForRead } from './secure-fs';
 import type { EntityId, Note } from '@vendor/types';
 import type { State } from './store';
 import type { UpdateSignal } from './update-signal';
@@ -164,38 +164,38 @@ export const STOPPED_ALIVE = '1970-01-01T00:00:00.000Z';
  * Rewrite `status.json` in `dir` at quit: the `update`
  * key is dropped so the bar tooltip stops saying "Update available", and
  * `alive` becomes the epoch so the tooltip says "snote is not running"
- * at once instead of "Synced …" for up to 120 s. Read-modify-write:
- * every other key stays byte-for-byte as written. Missing, unreadable
+ * at once instead of "Synced …" for up to 120 s. The file is read without
+ * following a link and rewritten from the Status keys only. Missing, unreadable
  * or malformed files are left untouched (a crash or kill never marks
  * the file: the 120 s heartbeat rule still decides those).
+ * proof: test/core/status-file-clear-safety.test.ts
  */
 export function clearUpdateStatusFile(dir: string): void {
+  let fd: number | undefined;
   try {
-    const file = path.join(dir, 'status.json');
-    const parsed: unknown = JSON.parse(fs.readFileSync(file, 'utf8'));
-    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    // A link fails to open here, so nothing is read or written.
+    fd = secureOpenForRead(path.join(dir, 'status.json'), { nonBlock: true });
+    const r: unknown = JSON.parse(fs.readFileSync(fd, 'utf8'));
+    if (r === null || typeof r !== 'object' || Array.isArray(r)) {
       return;
     }
-    const record = parsed as Record<string, unknown>;
-    let changed = false;
-    if ('update' in record) {
-      delete record.update;
-      changed = true;
-    }
-    if ('updateVersion' in record) {
-      delete record.updateVersion;
-      changed = true;
-    }
-    if (record.alive !== STOPPED_ALIVE) {
-      record.alive = STOPPED_ALIVE;
-      changed = true;
-    }
-    if (!changed) {
-      return;
-    }
-    writeStatusFile(dir, record as unknown as Status);
+    const o = r as Record<string, unknown>;
+    const l = o.last as { title?: unknown; modified?: unknown } | null;
+    const clean = {
+      version: 1,
+      count: typeof o.count === 'number' ? o.count : 0,
+      last:
+        l && typeof l.title === 'string' && typeof l.modified === 'number'
+          ? { title: l.title, modified: l.modified }
+          : null,
+      synced: typeof o.synced === 'string' ? o.synced : null,
+      alive: STOPPED_ALIVE,
+    };
+    writeStatusFile(dir, clean as unknown as Status);
   } catch {
-    /* best-effort: no file, or nothing to clear */
+    /* best-effort: no file, a link, or nothing to clear */
+  } finally {
+    if (fd !== undefined) fs.closeSync(fd);
   }
 }
 
