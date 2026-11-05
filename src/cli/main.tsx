@@ -23,8 +23,10 @@ import type { SessionSnapshot } from '../core/crash-ring';
 import { getKeyLog } from '../tui/app-keys';
 import { makeStore } from '../core/store';
 // loadState for the live `--report` bundle.
-import { loadState, persistOnChange } from '../core/persistence';
+import { loadState, persistOnChange, saveState } from '../core/persistence';
 import { FileGhostStore } from '../core/ghost-store';
+// #689: SIGHUP/SIGTERM write state.json before the signal ends snote.
+import { flushOnSignal } from '../core/signal-flush';
 // a note the server holds but state.json lost (killed inside the
 // save debounce) is added back from the ghost file at start-up.
 import { restoreNotesFromGhosts } from '../core/ghost-restore';
@@ -33,6 +35,7 @@ import { draftsDir, recoverDrafts, recoveryNotice, setDraftsDir } from '../core/
 import type { TooLargeDraft } from '../core/editor-drafts';
 // T85 — re-queue notes newer than their ghost on start-up.
 import { requeueUnsynced } from '../core/requeue';
+import { unsentCount } from '../core/held-unsynced';
 // the record of local changes the server never confirmed: kept and
 // re-sent on restart whatever the ghost's date says.
 import { loadUnsynced, loadUnsyncedNotes, overlayUnsyncedNotes, trackUnsynced } from '../core/unsynced';
@@ -192,7 +195,9 @@ export function buildStore(
   });
   // the returned stopSaving also releases the instance lock. The
   // marker line below is the OMARCHY: boundary cast one structure.test counts.
+  let saving = true; // #657b: the start-up hand-off writes state.json only until a quit or logout
   stopSaving = () => {
+    saving = false;
     startSaving();
     stopUnsynced();
     // quit and logout both stop the owed-ack tracker here: the
@@ -219,7 +224,9 @@ export function buildStore(
       // a change the record says the server never confirmed is
       // re-sent even when the ghost's date is newer.
       unsynced,
-      preloadedState?.data?.notes
+      preloadedState?.data?.notes,
+      // #657b — a held note's hand-off is on disk before the catch-up moves its ghost
+      (state) => saving && saveState(state, opts.dataDir)
     ).then(
       // the start-up re-send is over: a carried entry that never went
       // pending with it was found equal to its ghost, so it leaves the record.
@@ -559,6 +566,9 @@ export async function main(
     // a read of its own.
     { isScreenReaderEnabled: screenReader, exitOnCtrlC: false }
   );
+  // #689: a closed window (SIGHUP) or SIGTERM closes the screen and
+  // writes state.json at once, also during the quit send; stopped before the last save.
+  const stopSignalFlush = flushOnSignal(process, () => unmount(), () => stopSaving());
 
   // one shared crash handler: an error anywhere (React render, an
   // event handler, a rejected promise) unmounts Ink, clears the screen,
@@ -748,11 +758,13 @@ export async function main(
     try { (await import('../core/editor-write-watch')).settleDraftWrites(); } catch { /* quit as before */ } // #478
     try {
       const { sendBeforeQuit, unsentLine } = await import('../core/quit-send');
-      const unsent = await sendBeforeQuit(quitStore);
+      await sendBeforeQuit(quitStore);
+      const unsent = unsentCount(quitStore); // held notes too
       if (unsent > 0) log(unsentLine(unsent));
     } catch { /* quit as before */ }
     try { (await import('../core/editor-write-watch')).settleDraftWrites(); } catch { /* quit as before */ } // also a write made during the send wait
   }
+  stopSignalFlush();
   stopSaving();
   if (locked) return 1;
   return 0;

@@ -24,7 +24,10 @@ import { buildPluginDist } from '../../scripts/build-plugin-dist.mjs';
 // #558 (2026-10-30): 1,624,300 -> 1,624,600 (measured 1,624,490 with #558 and #553 added to #555: absent tags and systemTags are filled at the mend seam)
 // #553 v9 (2026-10-31): 1,624,600 -> 1,625,200 (measured 1,624,478; v9 adds an estimated +110 to +150; #562 follows)
 // #606 (2026-11-02): 1,625,200 -> 1,625,800 (measured 1,625,519; the secureExclusiveCreate fix is +436; headroom comes back with the #572 diet)
-export const BUNDLE_CAP = 1625800;
+// #572 diet (2026-11-03): 1,625,800 -> 1,603,900 (measured 1,591,814 with the websocket client-only plugin, -33,843; +12,000 = 2,000 Q-REG-08 floor + about 10,000 for 0.2.11 lanes 2 to 10)
+// 0.2.11 caps (2026-11-03, #674): 1,603,900 -> 1,609,000 (measured main 3751be4c 1,598,534; the 0.2.11 changes still to land sum about 7,233)
+// 0.2.11 stack (2026-11-06, QL measure, owner call): 1,609,000 -> 1,613,000 (measured main 47402122 + #706 rev4 + #711 + #710 1,610,491)
+export const BUNDLE_CAP = 1613000;
 // #478 carrier (2026-10-30, revised): 1,620,000 -> 1,624,000 (measured #478 1,620,463, #543 1,622,164, #545 +193; all three queued)
 // #555 (2026-10-30): 1,624,000 -> 1,624,300 (measured #555 1,623,693 alone, +429; 1,624,094 stacked on #553's +401)
 
@@ -43,7 +46,10 @@ export const BUNDLE_CAP = 1625800;
 // #558 (2026-10-30): 1,599,000 -> 1,599,400 (measured 1,599,268 with #558 and #553 added to #555)
 // #553 v9 (2026-10-31): 1,599,400 -> 1,600,000 (measured 1,599,256; v9 adds an estimated +110 to +150; #562 follows)
 // #606 (2026-11-02): 1,600,000 -> 1,600,600 (measured main 8f510eba 1,599,859; fix 1,600,295, +436; headroom returns with the #572 diet)
-export const STARTUP_CAP = 1600600;
+// #572 diet (2026-11-03): 1,600,600 -> 1,578,600 (measured 1,566,599 with the websocket client-only plugin, -33,797; +12,000 = 2,000 Q-REG-08 floor + about 10,000 for 0.2.11 lanes 2 to 10)
+// 0.2.11 caps (2026-11-03, #674): 1,578,600 -> 1,583,000 (measured main 3751be4c 1,571,864; the 0.2.11 changes still to land sum about 7,176)
+// 0.2.11 stack (2026-11-06, QL measure, owner call): 1,583,000 -> 1,586,000 (measured main 47402122 + #706 rev4 + #711 + #710 1,583,738)
+export const STARTUP_CAP = 1586000;
 
 /** (b) bytes of the updater's own dynamic-import chunks (and what only they pull in). */
 export const LAZY_CAP = 30000;
@@ -68,10 +74,12 @@ export function bundleSize(text: string): number {
  * only they pull in. Sizes go through bundleSize, so a symlinked node_modules counts
  * as a normal checkout.
  */
-export const UPDATER_MODULES = ['update-helper-start', 'update-fetch-verify', 'release-verify', 'allowed-signers'];
+// 0.2.11 lazy set (2026-11-03): update-helper-start and update-fetch-verify left src/core, so the lazy set measured 0 and
+// bundle-split test 2 checked nothing. The update check is now the four modules src/cli/main.tsx loads with `await import()`.
+export const UPDATER_MODULES = ['update-check', 'update-run', 'update-watch', 'install-kind', 'release-verify', 'allowed-signers'];
 
 /** The ones loaded by a dynamic `import()` from the app (the roots of the lazy set); the rest are pulled in by them. */
-export const UPDATER_ENTRIES = ['update-helper-start', 'update-fetch-verify'];
+export const UPDATER_ENTRIES = ['update-check', 'update-run', 'update-watch', 'install-kind'];
 
 export interface ChunkGraph {
   start: Map<string, number>;

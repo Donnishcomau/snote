@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import noteTitleAndPreview from '@vendor/utils/note-utils';
 import { sanitizeForTerminal } from './sanitize';
 import { ensureDir, secureUnlink, secureWriteFileSync } from './secure-fs';
-import { pendingCount } from './simperium-reducer';
+import { unsentCount } from './held-unsynced';
 import { currentBanner, onBanner, runningIsNewestRelease } from './update-banner';
 import { currentUpdate, onUpdate } from './update-signal';
 import { secureOpenForRead } from './secure-fs';
@@ -254,7 +254,7 @@ export function watchStatus(
     const state = store.getState();
     const notesChanged = state.data.notes !== lastNotes;
     lastNotes = state.data.notes;
-    const isSynced = state.simperium.connected && pendingCount(state.simperium) === 0;
+    const isSynced = state.simperium.connected && unsentCount(store) === 0;
     const justSynced = isSynced && !lastSynced;
     lastSynced = isSynced;
     if (justSynced) {

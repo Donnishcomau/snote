@@ -1,13 +1,8 @@
-import {
-  existsSync,
-  watch,
-  lstatSync,
-  readFileSync,
-  statSync,
-} from 'node:fs';
+import { watch, lstatSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { secureUnlink, secureWriteFileSync } from './secure-fs';
+import { readRegularText } from './secure-fs';
 
 /**
  * Cross-process "open a new note" request.
@@ -56,12 +51,7 @@ function isPidAlive(pid: number): boolean {
  */
 export function requestNewNote(dir: string): 'sent' | 'no-instance' {
   const lockPath = join(dir, LOCK_FILE);
-  let owner = '';
-  try {
-    owner = existsSync(lockPath) ? readFileSync(lockPath, 'utf8').trim() : '';
-  } catch {
-    owner = '';
-  }
+  const owner = (readRegularText(lockPath) ?? '').trim(); // #676: a FIFO or link there is no owner; the read returns at once
   if (!/^\d+$/.test(owner)) {
     // Missing lock, or content we cannot parse as a pid.
     return 'no-instance';

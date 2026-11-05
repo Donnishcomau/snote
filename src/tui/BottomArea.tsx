@@ -9,7 +9,7 @@ import { TagEditor } from './TagEditor'; import { useListPaste } from './list-pa
 import { StatusBar } from './StatusBar';
 import { Confirm, Prompt } from './Prompt';
 import { publishLink, emptyTrashActions, sharedLine } from '../core/note-keys';
-import { pendingCount } from '../core/simperium-reducer';
+import { unsentCount } from '../core/held-unsynced';
 import { insertCheckItem, exportSelectedNote } from './app-actions';
 import { logoutHandlers, logoutWarning, emptyTrashHandlers, renameHandlers, deleteTagHandlers } from './dialog-actions';
 import { documentsDir, exportFileName } from '../core/export-name';
@@ -99,7 +99,7 @@ export function BottomArea({
   setNotice,
   setNoticeError,
 }: BottomAreaProps): React.JSX.Element {
-  const { allTagNames, connected, word, noteEntries, inTrash, sortLabelStr, pending } = view;
+  const { allTagNames, connected, word, reason, synced, noteEntries, inTrash, sortLabelStr, pending } = view;
   const blogLine = selectedEntry ? blogStatusLine(loadBlogSend(dataRoot(), String(selectedEntry.id))) : null;
   // the checklist-item prompt state is owned here and published to the
   // module cell App.tsx reads via useItemAsk() (see itemAskRef above).
@@ -158,13 +158,9 @@ export function BottomArea({
   };
 
   const handleExportCancel = () => {
-    // Prompt's unchanged-text Enter arrives here (Prompt treats it as a
-    // cancel), so export the suggested path; Escape clears the ref and drops.
-    if (exportPathRef.current !== null) {
-      handleExportSubmit(exportPathRef.current);
-    } else {
-      setExportAsk(false);
-    }
+    // #637: Escape writes nothing; an unchanged Enter reaches onKeep, which exports the suggested path.
+    exportPathRef.current = null;
+    setExportAsk(false);
   };
 
   return (
@@ -227,6 +223,7 @@ export function BottomArea({
             initial={initialFor('export')}
             onSubmit={handleExportSubmit}
             onCancel={handleExportCancel}
+            onKeep={() => handleExportSubmit(initialFor('export'))}
           />
           <KeyHints context="editing" width={width} />
         </>
@@ -237,9 +234,9 @@ export function BottomArea({
           request={request}
         />
       ) : logoutAsk ? (
-        pendingCount(store.getState().simperium) > 0 || keptElsewhere() > 0
+        unsentCount(store) > 0 || keptElsewhere() > 0
           ? (() => {
-              const unsynced = pendingCount(store.getState().simperium);
+              const unsynced = unsentCount(store);
               return (
                 <Prompt
                   label={'log out: ' + logoutWarning(unsynced, keptElsewhere()) + ' Please type \'logout\' to confirm'}
@@ -278,7 +275,7 @@ export function BottomArea({
             </Text>
           ) : null}
           <KeyHints context={tagsFocused ? 'tags' : inTrash ? 'trash' : 'list'} width={width} pin={selectedEntry ? (selectedEntry.note.systemTags.includes('pinned') ? 'Unpin' : 'Pin') : undefined} />
-          <StatusBar connected={connected} word={word} count={noteEntries.length} width={width} label={inTrash ? (sortLabelStr && sortLabelStr !== 'sort: modified' ? 'trash  ' + sortLabelStr : 'trash') : (sortLabelStr && sortLabelStr !== 'sort: modified' ? sortLabelStr : undefined)} pending={pending} />
+          <StatusBar connected={connected} word={word} reason={reason} synced={synced} count={noteEntries.length} width={width} label={inTrash ? (sortLabelStr && sortLabelStr !== 'sort: modified' ? 'trash  ' + sortLabelStr : 'trash') : (sortLabelStr && sortLabelStr !== 'sort: modified' ? sortLabelStr : undefined)} pending={pending} />
         </>
       )}
     </>

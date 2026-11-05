@@ -19,7 +19,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { BANNER, lazyIcu, noDevtools, refuseOddOutput, simperiumInterop, simperiumNoHttp, writeLauncher } from './build.mjs';
+import { BANNER, lazyIcu, noDevtools, refuseOddOutput, simperiumInterop, simperiumNoHttp, websocketClientOnly, writeLauncher } from './build.mjs';
 import { checkAllowedSigners } from './check-allowed-signers.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -119,7 +119,7 @@ async function buildPluginDist(outDir, opts = {}) {
   if (!signers.ok) throw new Error('allowed_signers is not valid: ' + signers.errors.join('; '));
   refuseOddOutDir(outDir);
   fs.rmSync(path.join(outDir, 'SHA256SUMS'), { force: true });
-  const wsLib = path.join(repoRoot, 'node_modules', 'websocket', 'lib', 'websocket.js');
+  const wsLib = path.join(repoRoot, 'node_modules', 'websocket', 'lib', 'W3CWebSocket.js'); // #572: the client class only, no server side
   /** @type {Record<string, string>} */
   const entryPoints = {
     'snote-main': path.join(repoRoot, 'src', 'cli', 'index.ts'),
@@ -144,7 +144,8 @@ async function buildPluginDist(outDir, opts = {}) {
     banner: { js: BANNER },
     define: { 'process.env.NODE_ENV': '"production"' },
     entryPoints,
-    plugins: [noDevtools(), simperiumInterop(), simperiumNoHttp(), lazyIcu(), websocketFallback()],
+    absWorkingDir: repoRoot, // #572: the bare entries (ink, react-reconciler, yoga-layout, simperium) resolve from this repo, never from the cwd
+    plugins: [noDevtools(), simperiumInterop(), simperiumNoHttp(), lazyIcu(), websocketFallback(), websocketClientOnly()],
   };
 
   await build(buildOpts);
@@ -210,6 +211,7 @@ function writeSha256Sums(dir) {
  * differing path (a missing path when a file is only in one of the two)
  */
 async function compareFreshBuild(dir) {
+  refuseOddOutDir(dir); // #483: a linked folder is refused before any copy, as for a build
   refuseOddOutput(path.join(dir, 'SHA256SUMS'));
   const fresh = fs.mkdtempSync(path.join(os.tmpdir(), 'plugin-dist-check-'));
   try {

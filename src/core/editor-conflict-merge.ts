@@ -54,6 +54,11 @@ export function mergeEditorReturn(
     return { content: current, conflict: false };
   }
 
+  // #347: both sides made the same edit: it is kept once (a lone half in the base keeps both, #285)
+  if (local === current && !/\p{Cs}/u.test(base)) {
+    return { content: current, conflict: false };
+  }
+
   if (Math.max(base.length, local.length, current.length) > maxChars || /\p{Cs}/u.test(`${base} ${current}`)) {
     return { content: conflictBlock(local, current), conflict: true };
   }

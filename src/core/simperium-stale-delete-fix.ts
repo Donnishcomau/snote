@@ -58,7 +58,7 @@ import type { Store } from 'redux';
 
 import type * as A from '@vendor/state/action-types';
 import type { State } from './store';
-import { isHeld } from './held-unsynced';
+import { isHeld, isUnsent } from './held-unsynced';
 
 // OMARCHY: boundary cast — Channel is untyped where it reaches through
 // the simperium client's `buckets`; only these members are touched.
@@ -137,12 +137,12 @@ function installOnChannel(
     // registry while `requeueUnsynced` still has the hand-off pending
     // (with `whenCaughtUp` the catch-up may land after `'index'`
     // fires and dispatches nothing until it does, so `pendingNotes` is
-    // empty here and the hold is the only record). A fresh index says
-    // nothing about either.
+    // empty here and the hold is the only record); kept unsent ids
+    // too. A fresh index says nothing about any of them.
     const { notes } = store.getState().data;
     const { pendingNotes } = store.getState().simperium;
     for (const id of notes.keys()) {
-      if (seenDuringIndex.has(id) || id in pendingNotes || isHeld(store, id)) {
+      if (seenDuringIndex.has(id) || id in pendingNotes || isHeld(store, id) || isUnsent(store, id)) {
         continue;
       }
       store.dispatch({

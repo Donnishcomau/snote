@@ -38,7 +38,7 @@ const makeRunner = (): { run: GitRunner; calls: string[][] } => {
   const calls: string[][] = [];
   const run: GitRunner = async (args) => {
     calls.push(args);
-    if (args[0] === 'rev-parse') {
+    if (args.includes('rev-parse')) {
       return { code: 0, stdout: 'aaa\n' };
     }
     return { code: 0, stdout: 'bbb\tHEAD\n' };

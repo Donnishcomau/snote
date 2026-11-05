@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { FakeSimperiumServer } from '../fake-simperium/server';
 import { buildStore } from '../../src/cli/main';
 import { pendingCount } from '../../src/core/simperium-reducer';
+import { stopIfUnfinished, waitHeld } from '../helpers/wait-held';
 
 const APP_ID = 'test-app';
 const TOKEN = 'test-token';
@@ -29,19 +30,13 @@ function noteData(content: string): Record<string, unknown> {
   };
 }
 
-/** Poll every 50 ms up to `timeoutMs` (never sleeps past a poll step). */
-async function waitFor(
-  cond: () => boolean,
-  timeoutMs: number,
-  label: string
-): Promise<void> {
-  const start = Date.now();
-  while (!cond()) {
-    if (Date.now() - start > timeoutMs) {
-      throw new Error(`timed out (${timeoutMs} ms) waiting for: ${label}`);
-    }
-    await new Promise((r) => setTimeout(r, 50));
-  }
+/** #656: re-check every 50 ms until `cond` holds; no deadline of its own (the end of the test stops it: `never held: <label>`). */
+const waitFor = (cond: () => boolean, label: string): Promise<void> => waitHeld(cond, label, 50);
+
+/** #656: the client's note channel says `ready` once the server's index is in. */
+function noteReady(store: unknown): Promise<void> {
+  const c = (store as { client: { buckets: Array<{ name: string; channel: { once(e: string, f: () => void): void } }> } }).client;
+  return new Promise((r) => c.buckets.find((b) => b.name === 'note')!.channel.once('ready', () => r()));
 }
 
 interface Fixture {
@@ -73,14 +68,16 @@ async function fixture(): Promise<Fixture> {
     { email: USERNAME, token: TOKEN },
     () => {}
   );
+  const start = stopIfUnfinished(() => teardown({ server, dir, store, stopSaving, logLines, warn })); // #656: a start-up that never held
 
+  await noteReady(store);
   await waitFor(
     () => store.getState().data.notes.size === 1 &&
       store.getState().data.notes.has('existing1' as never),
-    2500,
     'initial index of existing1'
   );
 
+  start.done();
   return { server, dir, store, stopSaving, logLines, warn };
 }
 
@@ -107,14 +104,15 @@ async function fixtureWithTwoTaggedNotes(
     { email: USERNAME, token: TOKEN },
     () => {}
   );
+  const start = stopIfUnfinished(() => teardown({ server, dir, store, stopSaving, logLines, warn })); // #656: a start-up that never held
 
   // Seed the initial state with one existing1, plus we will dispatch tag actions
   // to add tags to noteA and noteB.
+  await noteReady(store);
   await waitFor(
     () => store.getState().data.notes.size === 2 &&
       store.getState().data.notes.has('noteA' as never) &&
       store.getState().data.notes.has('noteB' as never),
-    2500,
     'initial index of noteA and noteB'
   );
 
@@ -140,10 +138,10 @@ async function fixtureWithTwoTaggedNotes(
         Array.isArray(b.data.tags) && b.data.tags.includes(tagName)
       );
     },
-    10000,
     `both notes tagged with ${tagName}`
   );
 
+  start.done();
   return { server, dir, store, stopSaving, logLines, warn, twoNoteDir: dir };
 }
 
@@ -179,7 +177,6 @@ describe('tag and per-note-flag writes land on the server', () => {
             count(f) === 0
           );
         },
-        5000,
         'server existing1 has tags containing work and pendingCount 0'
       );
 
@@ -212,7 +209,6 @@ describe('tag and per-note-flag writes land on the server', () => {
             note.tags.includes('work')
           );
         },
-        5000,
         'work tag appeared on server'
       );
 
@@ -232,7 +228,6 @@ describe('tag and per-note-flag writes land on the server', () => {
             count(f) === 0
           );
         },
-        5000,
         'existing1 tags [] and pendingCount 0'
       );
 
@@ -266,7 +261,6 @@ describe('tag and per-note-flag writes land on the server', () => {
             Array.isArray(b.tags) && b.tags.includes('new') && !b.tags.includes('old')
           );
         },
-        5000,
         'both notes have new tag, not old'
       );
 
@@ -304,7 +298,6 @@ describe('tag and per-note-flag writes land on the server', () => {
             Array.isArray(b.tags) && b.tags.length === 0
           );
         },
-        5000,
         'both notes tags [] after TRASH_TAG'
       );
 
@@ -340,7 +333,6 @@ describe('tag and per-note-flag writes land on the server', () => {
             note.systemTags.includes('pinned')
           );
         },
-        5000,
         'existing1 has pinned systemTag'
       );
 
@@ -360,7 +352,6 @@ describe('tag and per-note-flag writes land on the server', () => {
             count(f) === 0
           );
         },
-        5000,
         'existing1 systemTags [] and pendingCount 0'
       );
 
@@ -393,7 +384,6 @@ describe('tag and per-note-flag writes land on the server', () => {
             note.systemTags.includes('markdown')
           );
         },
-        5000,
         'existing1 has markdown systemTag'
       );
 
@@ -413,7 +403,6 @@ describe('tag and per-note-flag writes land on the server', () => {
             count(f) === 0
           );
         },
-        5000,
         'existing1 systemTags [] and pendingCount 0'
       );
 

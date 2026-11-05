@@ -1,13 +1,13 @@
 import type { Store } from 'redux';
 import type * as A from '@vendor/state/action-types';
 import type { EntityId, Note } from '@vendor/types';
-import type { State } from './store';
+import { mendWrite, type State } from './store';
 import { notesAreEqual } from '@vendor/state/selectors';
 import { heldBase, mergeKeepingText } from './held-lines';
 import { mendOwn } from './editor-conflict-merge';
 import { publishProblem } from './problem-signal';
 import { sanitizeForTerminal } from './sanitize';
-import { holdId, releaseAll } from './held-unsynced';
+import { holdId, keepUnsent, markHandedOff, releaseAll } from './held-unsynced';
 import { isUnsyncedCopy, type UnsyncedRecord } from './unsynced';
 import { tagHashOf } from '@vendor/utils/tag-hash';
 import type { TagName } from '@vendor/types';
@@ -21,11 +21,12 @@ export interface GhostReader {
  * edit of a null field, a number, a string, null, absent). Both entry points read such a field as the
  * empty list, as the store does (fillTags), so one such note does not abandon the re-send of the others.
  */
+const mendTags = (d: Partial<Note>): Partial<Note> => ({ ...d, tags: Array.isArray(d.tags) ? d.tags : [], systemTags: Array.isArray(d.systemTags) ? d.systemTags : [] });
 const mendGhost = (ghosts: GhostReader): GhostReader => ({
   get: async (id) => {
     const r = await ghosts.get(id);
     const d = r.data;
-    return d ? { ...r, data: { ...d, tags: Array.isArray(d.tags) ? d.tags : [], systemTags: Array.isArray(d.systemTags) ? d.systemTags : [] } } : r;
+    return d ? { ...r, data: mendTags(d) } : r;
   },
 });
 
@@ -189,7 +190,7 @@ function noteFieldsEqual(a: Note, b: Partial<Note>): boolean {
  * list, plus what the offline copy added to `base`, minus what it removed, so a
  * tag another device set while snote was closed is kept.
  */
-function rebaseOfflineEdit(base: Partial<Note>, local: Note, current: Partial<Note>): Note {
+function rebaseOfflineEdit(base: Partial<Note>, local: Note, current: Partial<Note>, notify = true): Note {
   const merged: Record<string, unknown> = { ...current };
   for (const key of Object.keys(local)) {
     if (key === 'content') continue;
@@ -200,10 +201,70 @@ function rebaseOfflineEdit(base: Partial<Note>, local: Note, current: Partial<No
   // #115 — never a lost change (`mergeKeepingText`); a conflict block says so on the notice line, the title sanitised.
   // proof: test/core/merge-keeping-text-property.test.ts
   const kept = mergeKeepingText(String(base.content ?? ''), String(local.content ?? ''), String(current.content ?? ''));
-  if (kept.conflict) publishProblem(`kept both versions of ${sanitizeForTerminal(kept.content.split('\n').find((line) => line.trim()) ?? '').trim().slice(0, 60)}`);
+  if (kept.conflict && notify) publishProblem(`kept both versions of ${sanitizeForTerminal(kept.content.split('\n').find((line) => line.trim()) ?? '').trim().slice(0, 60)}`);
   merged.content = kept.content;
   merged.modificationDate = Math.max(Number(local.modificationDate) || 0, Date.now() / 1000);
   return merged as unknown as Note;
+}
+
+/** A note held for the start-up hand-off (see `requeueUnsynced`). */
+interface Held {
+  id: EntityId;
+  base: Partial<Note>;
+  local: Note;
+  hadGhost: boolean;
+  /** #657b: the not yet sent hand-off result the network-change hook put in the store */
+  mine?: Note;
+}
+
+/**
+ * The start-up hand-off of one held note against the server copy `current`, with
+ * the store copy `now`: the note to send, or null when nothing is to be sent.
+ */
+function handOff(h: Held, current: Partial<Note>, now: Note | undefined, offlineCopy: Note | undefined, pending: boolean, notify = true): Note | null {
+  const { base, local: heldLocal } = h;
+  if (!h.hadGhost) {
+    // decided only from the ghost as it is after the catch-up.
+    if ((current as Note).modificationDate) {
+      // The server holds this note (the re-index wrote its ghost): send the
+      // local copy only when its content, deleted flag, tags or system tags
+      // differ (dates ignored) and it is newer; otherwise nothing.
+      return !noteFieldsEqual(heldLocal, current as Note) && heldLocal.modificationDate > (current as Note).modificationDate ? heldLocal : null;
+    }
+    // Still no ghost data: a note created offline — send it as before.
+    return heldLocal;
+  }
+  // When the catch-up left this note holding content that is neither the held
+  // offline copy nor the server's, it has already moved on: the sync library
+  // rebased the offline edit onto the other device's change itself (and queued
+  // the result), or an edit made in this session while we waited was sent.
+  // Merging and sending it again would apply the offline edit twice. Only a
+  // note still at the offline copy, or overwritten with the server's version
+  // (a same-line conflict, a full re-index), needs the merge here.
+  if (!now) return null;
+  if (now.content !== heldLocal.content && now.content !== current.content) return null;
+  // #28 — the offline edit is the note as loaded from state.json: a held
+  // copy read after an edit made at once in this session also carries
+  // that edit, which the server does not have yet.
+  const offline = String((offlineCopy ?? heldLocal).content ?? '');
+  const baseText = String(base.content ?? '');
+  const currentText = String(current.content ?? '');
+  if (offline !== baseText && heldBase(baseText, offline, currentText) === offline) return null;
+  // #27, #20 — the parts of the offline edit the server copy
+  // already holds (our own send the server applied before the quit, the
+  // library's catch-up rebase; a re-index carries no change ids), read by
+  // line position, are not merged in a second time: the merge starts from
+  // the base with those parts applied.
+  const mergeBase = { ...base, content: heldBase(baseText, String(heldLocal.content ?? ''), currentText) };
+  const note = withSessionChanges(rebaseOfflineEdit(mergeBase, heldLocal, current, notify), heldLocal, current, now);
+  if (same({ ...note, modificationDate: 0 }, { ...current, modificationDate: 0 })) return null;
+  // #337b — the ghost read above can predate the acknowledgement of a change
+  // the sync library already sent for this note (a pin, trash or tag pressed
+  // after the restart is queued before the catch-up): when the merged note has
+  // the store copy's fields, the library carries all of it, and dispatching
+  // would only send a modificationDate-only change (a wasted server version).
+  if (pending && noteFieldsEqual(note, now)) return null;
+  return note;
 }
 
 /**
@@ -230,12 +291,13 @@ export async function requeueUnsynced(
   ghosts: GhostReader,
   whenCaughtUp?: () => Promise<void>,
   unsynced: UnsyncedRecord = {},
-  loadedNotes?: { get(id: EntityId): Note | undefined }
+  loadedNotes?: { get(id: EntityId): Note | undefined },
+  saveNow?: (state: State) => void
 ): Promise<EntityId[]> {
   ghosts = mendGhost(ghosts);
   const notes = store.getState().data.notes;
   const ids = await unsyncedNoteIds(notes, ghosts, unsynced);
-  const held: Array<{ id: EntityId; base: Partial<Note>; local: Note; hadGhost: boolean }> = [];
+  const held: Held[] = [];
 
   for (const id of ids) {
     let note = store.getState().data.notes.get(id);
@@ -283,78 +345,52 @@ export async function requeueUnsynced(
     // OMARCHY: boundary cast — the simperium client's buckets are untyped.
     const client = (store as { client?: { buckets?: Array<{ name?: string; beforeNetworkChange?(fn: unknown): void }> } }).client;
     const holdBucket = client?.buckets?.find((b) => b?.name === 'note');
-    holdBucket?.beforeNetworkChange?.((id: string, _data: unknown, base: unknown) => {
+    holdBucket?.beforeNetworkChange?.((id: string, data: unknown, base: unknown) => {
       const h = held.find((x) => x.id === id);
-      return h && same(store.getState().data.notes.get(id as EntityId), h.local) ? base : null;
+      const cur = store.getState().data.notes.get(id as EntityId);
+      if (!h || !(same(cur, h.local) || (h.mine && same(cur, h.mine)))) return null;
+      // #657b — before the library moves this note's ghost to the server copy,
+      // the note the hand-off would make of it goes to state.json and to the store
+      // (not yet sent), and the server copy the library then writes is dropped
+      // (store.ts): no save, quit or kill finds the server copy in place of the
+      // offline edit. The send waits for the catch-up, as before (each change of the
+      // catch-up re-merges from the held copies). The copy keeps the held copy's
+      // date, the one unsynced.json records, so a restart before the send holds it
+      // again whatever the server copy's date; its text is mended as the send's (#333).
+      // proof: test/integration/f356-hand-off-before-ghost.test.ts
+      h.mine = undefined;
+      if (saveNow && data && typeof data === 'object') {
+        try {
+          const state = store.getState();
+          const server = mendTags(data as Partial<Note>);
+          const merged = handOff(h, server, h.local, loadedNotes?.get(h.id), false, false); // the notice comes with the send below
+          const note = merged && { ...merged, content: mendWrite(String(server.content ?? ''), String(merged.content ?? '')), modificationDate: h.local.modificationDate };
+          saveNow({ ...state, data: { ...state.data, notes: new Map(state.data.notes).set(h.id, (note ?? server) as Note) } });
+          if (note) {
+            store.dispatch({ type: 'REMOTE_NOTE_UPDATE', noteId: h.id, note } as A.ActionType);
+            h.mine = store.getState().data.notes.get(h.id);
+            markHandedOff(store.getState, h.id, String(server.content ?? ''));
+          }
+        } catch {
+          // state.json could not be written: the server copy goes to the store, as before
+        }
+      }
+      return base;
     });
     await whenCaughtUp();
+    let done = 0;
     try {
-      for (const { id, base, local: heldLocal, hadGhost } of held) {
-        const current = (await ghosts.get(id)).data ?? base;
-        if (!hadGhost) {
-          // decided only from the ghost as it is after the catch-up.
-          if ((current as Note).modificationDate) {
-            // The server holds this note (the re-index wrote its ghost): send the
-            // local copy only when its content, deleted flag, tags or system tags
-            // differ (dates ignored) and it is newer; otherwise nothing.
-            if (
-              !noteFieldsEqual(heldLocal, current as Note) &&
-              heldLocal.modificationDate > (current as Note).modificationDate
-            ) {
-              store.dispatch({
-                type: 'IMPORT_NOTE_WITH_ID',
-                noteId: id,
-                note: heldLocal,
-              } as A.ActionType);
-            }
-          } else {
-            // Still no ghost data: a note created offline — send it as before.
-            store.dispatch({
-              type: 'IMPORT_NOTE_WITH_ID',
-              noteId: id,
-              note: heldLocal,
-            } as A.ActionType);
-          }
-          continue;
-        }
-        // When the catch-up left this note holding content that is neither the held
-        // offline copy nor the server's, it has already moved on: the sync library
-        // rebased the offline edit onto the other device's change itself (and queued
-        // the result), or an edit made in this session while we waited was sent.
-        // Merging and sending it again would apply the offline edit twice. Only a
-        // note still at the offline copy, or overwritten with the server's version
-        // (a same-line conflict, a full re-index), needs the merge here.
-        const now = store.getState().data.notes.get(id);
-        if (!now) continue;
-        if (now.content !== heldLocal.content && now.content !== current.content) continue;
-        // #28 — the offline edit is the note as loaded from state.json: a held
-        // copy read after an edit made at once in this session also carries
-        // that edit, which the server does not have yet.
-        const offline = String((loadedNotes?.get(id) ?? heldLocal).content ?? '');
-        const baseText = String(base.content ?? '');
-        const currentText = String(current.content ?? '');
-        if (offline !== baseText && heldBase(baseText, offline, currentText) === offline) continue;
-        // #27, #20, the parts of the offline edit the server copy
-        // already holds (our own send the server applied before the quit, the
-        // library's catch-up rebase; a re-index carries no change ids), read by
-        // line position, are not merged in a second time: the merge starts from
-        // the base with those parts applied.
-        const mergeBase = { ...base, content: heldBase(baseText, String(heldLocal.content ?? ''), currentText) };
-        const note = withSessionChanges(rebaseOfflineEdit(mergeBase, heldLocal, current), heldLocal, current, now);
-        if (same({ ...note, modificationDate: 0 }, { ...current, modificationDate: 0 })) continue;
-        // #337b — the ghost read above can predate the acknowledgement of a change
-        // the sync library already sent for this note (a pin, trash or tag pressed
-        // after the restart is queued before the catch-up): when the merged note has
-        // the store copy's fields, the library carries all of it, and dispatching
-        // would only send a modificationDate-only change (a wasted server version).
-        if (store.getState().simperium.pendingNotes[id] && noteFieldsEqual(note, now)) continue;
-        store.dispatch({
-          type: 'IMPORT_NOTE_WITH_ID',
-          noteId: id,
-          note,
-        } as A.ActionType);
+      for (const h of held) {
+        const current = (await ghosts.get(h.id)).data ?? h.base;
+        const inStore = store.getState().data.notes.get(h.id);
+        // #657b — a store copy the hook above wrote is the held offline copy for this merge
+        const now = h.mine && same(inStore, h.mine) ? h.local : inStore;
+        const note = handOff(h, current, now, loadedNotes?.get(h.id), Boolean(store.getState().simperium.pendingNotes[h.id]));
+        if (note) store.dispatch({ type: 'IMPORT_NOTE_WITH_ID', noteId: h.id, note } as A.ActionType);
+        done++;
       }
     } finally {
+      keepUnsent(store, held.slice(done).map((h) => h.id)); //; proof: test/integration/f383-hand-off-throw.test.tsx
       // every hold's hand-off has now run: release them for this store so
       // a LATER re-index diffs the ids like any other note (if the server really
       // dropped one, it goes then). The current re-index's `'index'` event has
@@ -364,6 +400,8 @@ export async function requeueUnsynced(
       // itself is not swallowed here and still reaches the caller.
       releaseAll(store);
       holdBucket?.beforeNetworkChange?.(null);
+      // (#707): the status bar and status.json count held notes; a hand-off that sends nothing dispatches nothing, so this no-op action makes them count again; proof: test/integration/f380-held-unsent.test.tsx
+      store.dispatch({ type: 'HELD_RELEASED' } as unknown as A.ActionType);
     }
   }
 

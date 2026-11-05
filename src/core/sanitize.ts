@@ -26,6 +26,7 @@
  * Everything else (Unicode incl. emoji and CJK, markdown punctuation)
  * passes through untouched.
  */
+import { INVISIBLE_FORMAT, KEPT_FLAG } from './invisible';
 
 const ESC = '\u001b';
 
@@ -51,15 +52,15 @@ const CONTROL_BYTES = new RegExp('[\\u0080-\\u009f\\x00-\\x08\\x0b-\\x1f\\x7f]',
 // in agreement (see header).
 const VARIATION_SELECTORS = /[\uFE0F\uFE0E]/g;
 
-// Bidi controls, zero-width characters and line/paragraph separators
-// (U+200D/ZWJ deliberately absent — see header item 5).
-const BIDI_INVISIBLES = /[\u061C\u200B\u200C\u200E\u200F\u202A-\u202E\u2066-\u2069\u2028\u2029]/g;
+// Every format character and the line/paragraph separators, from the one
+// shared list (#663; U+200D/ZWJ deliberately kept — see header item 5; a kept flag stays whole, rev2).
+const BIDI_INVISIBLES = new RegExp(`(${KEPT_FLAG.source})|(?!\\u200D)${INVISIBLE_FORMAT.source}`, 'gu');
 
 export function sanitizeForTerminal(s: string): string {
   return s
     .replace(CSI_OR_OSC, '')
     .replace(ANY_ESC_PAIR, '')
     .replace(CONTROL_BYTES, '')
-    .replace(BIDI_INVISIBLES, '')
+    .replace(BIDI_INVISIBLES, (_m, flag?: string) => flag ?? '')
     .replace(VARIATION_SELECTORS, '');
 }

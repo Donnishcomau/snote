@@ -4,6 +4,8 @@
 // Every stand-in is exactly one UTF-16 unit for one, so offsets, lengths and
 // the [line, col] cursor are identical in the real and the displayed text.
 
+import { isShownInvisible, keptFlagAt } from '../core/invisible';
+
 /** U+001B ESC — drawn as its Control Picture. */
 export const ESC_STANDIN = '␛';
 
@@ -12,27 +14,39 @@ export const ESC_STANDIN = '␛';
  * TAB and LF render as-is (the editor's own structure); every other C0
  * control shows as its Control Picture (U+2400 + code, so ESC is U+241B and
  * CR is U+240D); DEL (U+007F) shows as U+2421; every C1 control (U+0080-
- * U+009F), the zero-width and bidi controls U+200B, U+200C, U+200E, U+200F,
- * U+202A-U+202E, U+2066-U+2069, and the line separators U+2028/U+2029 show
- * as U+FFFD. U+200D (ZWJ, part of emoji sequences) and all other text pass
- * through unchanged.
+ * U+009F) and every invisible format character of src/core/invisible.ts
+ * (Cf and the line separators U+2028/U+2029; #663) show as U+FFFD; an
+ * astral one (a tag character) shows as two, one per unit, in standInText.
+ * U+200D (ZWJ, part of emoji sequences) and all other text pass through
+ * unchanged.
  */
 export function standInUnit(code: number): string {
   if (code === 0x09 || code === 0x0a) return String.fromCharCode(code);
   if (code < 0x20) return String.fromCharCode(0x2400 + code);
   if (code === 0x7f) return '␡';
   if (code >= 0x80 && code <= 0x9f) return '\uFFFD';
-  if (code === 0x200b || code === 0x200c || code === 0x200e || code === 0x200f) return '\uFFFD';
-  if (code >= 0x202a && code <= 0x202e) return '\uFFFD';
-  if (code >= 0x2066 && code <= 0x2069) return '\uFFFD';
-  if (code === 0x2028 || code === 0x2029) return '\uFFFD';
+  if (isShownInvisible(code)) return '\uFFFD'; // #663: the one shared list (U+200D passes)
   return String.fromCharCode(code);
 }
 
 /** The stand-in version of `text`, drawn in place of the TextArea's value. */
 export function standInText(text: string): string {
   let out = '';
-  for (let i = 0; i < text.length; i++) out += standInUnit(text.charCodeAt(i));
+  for (let i = 0; i < text.length; i++) {
+    const cp = text.codePointAt(i)!;
+    const flag = keptFlagAt(text, i);
+    if (flag > 0) {
+      out += text.slice(i, i + flag); // #663 rev2: a kept flag (England, Scotland, Wales) shows whole, same length
+      i += flag - 1;
+      continue;
+    }
+    if (cp > 0xffff && isShownInvisible(cp)) {
+      out += '\uFFFD\uFFFD'; // #663: an invisible pair (a tag character) shows as two stand-ins, one per unit
+      i += 1;
+      continue;
+    }
+    out += standInUnit(text.charCodeAt(i));
+  }
   return out;
 }
 

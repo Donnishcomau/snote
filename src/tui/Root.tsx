@@ -5,8 +5,9 @@ import { useReadGate } from './read-gate';
 
 import { Login } from './Login';
 import { App } from './App';
-import { loadToken, saveToken, logout, signOutByServer, keptChangesNotice } from '../core/token';
-import { publishProblem } from '../core/problem-signal';
+import { HeaderBar } from './HeaderBar';
+import { loadToken, saveToken, logoutShown, signOutByServer, keptChangesNotice } from '../core/token';
+import { clearProblem, publishProblem } from '../core/problem-signal';
 import { setActiveAccount } from '../core/data-root';
 import { resolveAccountDir } from '../core/account-id';
 import type { Store } from 'redux';
@@ -116,7 +117,7 @@ export function Root(props: RootProps): React.JSX.Element {
           let made: Store<State> | null = null;
           const onLogout = () => {
             if (!userLogoutRef.current) endSyncClient(made);
-            if (userLogoutRef.current) logout(props.dataDir); else setForced(signOutByServer(props.dataDir, resolveAccountDir(props.dataDir, auth.email, props.server)));
+            if (userLogoutRef.current) logoutShown(props.dataDir, setError); else setForced(signOutByServer(props.dataDir, resolveAccountDir(props.dataDir, auth.email, props.server)));
             setStore(null);
             // The middleware also calls this after the user's own logout;
             // only a server-forced sign-out (expired or revoked token)
@@ -148,7 +149,7 @@ export function Root(props: RootProps): React.JSX.Element {
   }, [props.dataDir, props.server, props.makeStoreFor]);
 
   const handleLogout = useCallback(() => {
-    logout(props.dataDir);
+    logoutShown(props.dataDir, setError);
     setStore(null);
     setPhase('login');
   }, [props.dataDir]);
@@ -160,10 +161,11 @@ export function Root(props: RootProps): React.JSX.Element {
         userLogoutRef.current = false;
         setError('');
         setForced(null);
+        clearProblem(); // #655: no notice of the account that signed out
         let made: Store<State> | null = null;
         const onLogout = () => {
           if (!userLogoutRef.current) endSyncClient(made);
-          if (userLogoutRef.current) logout(props.dataDir); else setForced(signOutByServer(props.dataDir, resolveAccountDir(props.dataDir, auth.email, props.server)));
+          if (userLogoutRef.current) logoutShown(props.dataDir, setError); else setForced(signOutByServer(props.dataDir, resolveAccountDir(props.dataDir, auth.email, props.server)));
           setStore(null);
           // Same rule as the saved-token path above: a forced sign-out
           // explains itself, the user's own logout stays silent.
@@ -215,19 +217,24 @@ export function Root(props: RootProps): React.JSX.Element {
       </Box>
     );
   } else {
+    // #134: the header row (HeaderBar) above the app from 8 rows; at 7 the row goes to the notes
+    const header = roomy.current.height >= 8;
     screen = (
-      <App
-        store={store!}
-        width={roomy.current.width}
-        height={roomy.current.height}
-        onQuit={props.onQuit}
-        startNew={props.startNew}
-        onLogout={() => {
-          userLogoutRef.current = true;
-          store!.dispatch({ type: 'REALLY_LOG_OUT' });
-          void handleLogout();
-        }}
-      />
+      <Box flexDirection="column">
+        {header ? <HeaderBar /> : null}
+        <App
+          store={store!}
+          width={roomy.current.width}
+          height={roomy.current.height - (header ? 1 : 0)}
+          onQuit={props.onQuit}
+          startNew={props.startNew}
+          onLogout={() => {
+            userLogoutRef.current = true;
+            store!.dispatch({ type: 'REALLY_LOG_OUT' });
+            void handleLogout();
+          }}
+        />
+      </Box>
     );
   }
 

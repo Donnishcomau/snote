@@ -54,7 +54,7 @@ const makeRunner = (answers: {
     if (args.includes('ls-remote')) {
       return { code: 0, stdout: answers.lsRemote };
     }
-    if (args[0] === 'rev-parse') {
+    if (args.includes('rev-parse')) {
       return { code: 0, stdout: answers.revParse };
     }
     if (args.includes('cat-file')) {

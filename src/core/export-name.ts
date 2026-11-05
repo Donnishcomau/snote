@@ -7,18 +7,29 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
+import { INVISIBLE_FORMAT } from './invisible';
+
 /** Upstream FILENAME_LENGTH (to-zip.ts line 6). */
 const FILENAME_LENGTH = 40;
 
 /**
+ * #637: every control (Unicode Cc) and format character (Cf: bidi marks,
+ * zero-width characters, U+FEFF, U+2060, the soft hyphen, tag characters)
+ * plus the line/paragraph separators, U+200D/ZWJ included (it can make a
+ * name look like another extension), so an emoji sequence is refused in a
+ * typed name and loses its joiners in a suggested one; the variation
+ * selectors are not Cf and stay. No exported path holds one: the typed path
+ * is refused (export-note.ts exportTarget), a suggested name loses them.
+ * proof: test/core/export-path.test.ts
+ */
+export const UNSAFE_PATH = new RegExp(`\\p{Cc}|${INVISIBLE_FORMAT.source}`, 'u'); // #663: the shared list
+
+/**
  * Characters upstream's sanitize-filename forbids (done by hand here),
- * plus the bidi controls, zero-width characters and line/paragraph
- * separators `sanitizeForTerminal` drops (U+200D/ZWJ stays allowed:
- * emoji such as the family emoji need it).
+ * plus UNSAFE_PATH.
  * proof: test/core/bidi-strip.test.ts
  */
-const INVALID_CHARS =
-  /[\/\\?<>:*|"\u0000-\u001f\u007f-\u009f\u200B\u200C\u200E\u200F\u202A-\u202E\u2066-\u2069\u2028\u2029]/g;
+const INVALID_CHARS = new RegExp(`[\\/\\\\?<>:*|"]|${UNSAFE_PATH.source}`, 'gu');
 
 /**
  * Export file name (no extension) for a note's content: the first non-blank

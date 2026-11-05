@@ -126,7 +126,7 @@ describe('update-check', () => {
     const calls: string[][] = [];
     const run: GitRunner = async (args) => {
       calls.push(args);
-      if (args[0] === 'rev-parse') {
+      if (args.includes('rev-parse')) {
         return { code: 0, stdout: 'aaa\n' };
       }
       return { code: 0, stdout: 'ccc\tHEAD\n' };
@@ -142,7 +142,7 @@ describe('update-check', () => {
 
     expect(result).toEqual({ state: 'available' });
     expect(calls.some((args) => args.includes('ls-remote'))).toBe(false);
-    expect(calls[0]).toEqual(['rev-parse', 'HEAD']);
+    expect(calls[0]).toEqual(['-c', 'credential.helper=', '-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false', '-c', 'protocol.allow=never', '-c', 'protocol.https.allow=always', 'rev-parse', 'HEAD']); // #527
   });
 
   it("4: WHEN the cache is 25 h old THEN `ls-remote` runs `1` time with args `['ls-remote', 'https://example.invalid/snote.git', 'HEAD']`, `timeoutMs` `5000`, env `GIT_TERMINAL_PROMPT` `'0'`, and the cache `checkedAt` equals now", async () => {
@@ -170,7 +170,7 @@ describe('update-check', () => {
         timeoutMs: opts.timeoutMs,
         terminalPrompt: opts.env.GIT_TERMINAL_PROMPT,
       });
-      if (args[0] === 'rev-parse') {
+      if (args.includes('rev-parse')) {
         return { code: 0, stdout: 'aaa\n' };
       }
       return { code: 0, stdout: 'bbb\tHEAD\n' };

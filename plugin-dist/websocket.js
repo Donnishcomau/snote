@@ -2,7 +2,7 @@
 import { createRequire as __cr } from 'node:module';
 const require = __cr(import.meta.url);
 import {
-  require_websocket
-} from "./chunks/chunk-J73DZ7ZA.js";
+  require_W3CWebSocket
+} from "./chunks/chunk-O2LU3R4M.js";
 import "./chunks/chunk-SRSFEH3H.js";
-export default require_websocket();
+export default require_W3CWebSocket();

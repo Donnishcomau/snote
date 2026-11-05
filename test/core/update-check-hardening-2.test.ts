@@ -70,7 +70,7 @@ const makeRunner = (answers: {
     if (args.includes('ls-remote')) {
       return { code: 0, stdout: answers.lsRemote };
     }
-    if (args[0] === 'rev-parse') {
+    if (args.includes('rev-parse')) {
       return { code: 0, stdout: `${HEAD_A}\n` };
     }
     if (args.includes('merge-base')) {

@@ -98,7 +98,7 @@ function fakeWorld(cloneVersion: string, tag: string): { home: string; run: GitR
       return { code: 0, stdout: `ccc\trefs/tags/v${tag}\n` };
     }
     if (args.includes('ls-remote')) return { code: 0, stdout: 'bbb\tHEAD\n' };
-    if (args[0] === 'rev-parse') return { code: 0, stdout: 'aaa\n' };
+    if (args.includes('rev-parse')) return { code: 0, stdout: 'aaa\n' };
     if (args.includes('cat-file')) return { code: 1, stdout: '' };
     return { code: 0, stdout: '' };
   };

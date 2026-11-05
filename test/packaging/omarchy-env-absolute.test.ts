@@ -21,7 +21,7 @@ function shimTemplate(text: string): string {
   return start < 0 || end < 0 ? '' : lines.slice(start + 1, end).join('\n');
 }
 
-const PREFIX = '(^|[;&|(`]|\\$\\(|\\b(?:exec|then|do|else|command|xargs|nice|time)\\s|!\\s)\\s*';
+const PREFIX = '(^|[;&|(`]|\\$\\(|\\b(?:exec|then|do|else|command|xargs|nice|time|bounded)\\s|!\\s)\\s*';
 /** Every `name` word at a command position (line start, after `$(`, `(`, a backtick, `;`, `&&`, `||`, `|`, `!`, `exec`, `then`, `do`, `else`, `command`, `xargs`, `nice`, `time`), as bare or /usr/bin/<name>; comment lines skipped. Returns those lines. */
 function calls(text: string, name: string): string[] {
   const re = new RegExp(`${PREFIX}(/usr/bin/)?${name}(\\s|\\)|$)`);

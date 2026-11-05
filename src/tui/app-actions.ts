@@ -1,6 +1,6 @@
 import React from 'react';
 import { Store } from 'redux';
-import { basename, dirname, join } from 'node:path';
+import { basename, join } from 'node:path';
 
 import type { State } from '../core/store';
 import { editInEditor, expectNote, releaseDraftsAfterSave } from '../core/editor';
@@ -98,7 +98,7 @@ interface SaveInlineEditCtx {
   base: string;
   // the inline textarea's live buffer at the moment Ctrl+S was pressed
   local: string;
-  onEditorError?: (message: string) => void;
+  onEditorError?: (message: string) => void; onNotice?: (message: string) => void; // #402: info notice
 }
 
 /**
@@ -107,17 +107,17 @@ interface SaveInlineEditCtx {
  * `local` is already in hand, so there's no suspend/runEditor/setRawMode.
  */
 export function saveInlineEdit(ctx: SaveInlineEditCtx): void {
-  const { store, selectedEntry, base, local, onEditorError } = ctx;
+  const { store, selectedEntry, base, local, onEditorError, onNotice } = ctx;
   if (!selectedEntry) return;
   //-style: a remote change may have landed while the editor was open;
   // merge against the store's current content instead of overwriting it.
-  const current = store.getState().data.notes.get(selectedEntry.id)?.content ?? '';
-  const merged = mergeEditorKeepingText(base, local, current);
+  const had = store.getState().data.notes.get(selectedEntry.id); // #402: undefined once deleted forever elsewhere
+  const merged = had ? mergeEditorKeepingText(base, local, had.content ?? '') : { content: local, conflict: false };
   // editor-suspend.test.tsx's structural guard counts this file's literal
   // action-type occurrences; the vendored action creator (already imported
   // for insertCheckItem below) keeps that count unchanged.
-  store.dispatch(editNote(selectedEntry.id, { content: merged.content }));
-  if (merged.conflict) {
+  const n = selectedEntry.note; store.dispatch(editNote(selectedEntry.id, { content: merged.content, ...(had ? {} : { tags: n.tags, systemTags: n.systemTags.filter((t) => t === 'pinned' || t === 'markdown'), creationDate: n.creationDate }) })); // #402: keep tags, pin, markdown (not published/shared)
+  if (!had) onNotice?.('This note was deleted on another device - your typed text was kept.'); else if (merged.conflict) {
     onEditorError?.('A change from another device could not be merged automatically - both versions were kept.');
   }
 }
@@ -144,6 +144,14 @@ export function createNote(ctx: CreateNoteCtx): void {
   setRawMode(false);
   const noteId: EntityId = crypto.randomUUID() as EntityId;
   const editor = runEditor ?? editInEditor;
+  // #618: the first :w creates the note, each later write and the close edit it (#97), so a :wq after a :w adds no second note
+  let w: ReturnType<typeof noteWriter> | undefined;
+  const write = (text: string): void => {
+    if (w) return w.write(text);
+    const fields = newNoteFields(store.getState().ui.collection, ctx.topNote);
+    try { store.dispatch({ type: 'CREATE_NOTE_WITH_ID', noteId, note: { content: text, systemTags: fields.systemTags, tags: fields.tags }, meta: { nextNoteToOpen: noteId } } as never); } // OMARCHY: boundary cast — the vendored action type carries meta
+    finally { if (store.getState().data.notes.get(noteId)?.content === text) w = noteWriter(store, noteId, text); } // #475 rule: a throw after the reducer still leaves the note holding the write
+  };
   // As in editSelectedNote: the result lives outside the suspend callback, and
   // raw mode is restored off the editor's own completion, never the handover's.
   let result: string | null = null;
@@ -156,7 +164,7 @@ export function createNote(ctx: CreateNoteCtx): void {
   const run = async () => {
     try {
       announceEditorIfGui();
-      expectNote(null); result = await editor('');
+      expectNote(null, { id: noteId, onWrite: write }); result = await editor('');
     } catch (err) {
       editorError = err;
       editorFailed = true;
@@ -173,17 +181,11 @@ export function createNote(ctx: CreateNoteCtx): void {
       onEditorError?.(editorError instanceof Error ? editorError.message : String(editorError));
       return;
     }
-    if (result !== null) {
-      // read the collection when the editor has returned, not before
-      const fields = newNoteFields(store.getState().ui.collection, ctx.topNote);
-      // OMARCHY: boundary cast — the vendored action type carries meta
-      store.dispatch({
-        type: 'CREATE_NOTE_WITH_ID',
-        noteId,
-        note: { content: result, systemTags: fields.systemTags, tags: fields.tags },
-        meta: { nextNoteToOpen: noteId },
-      } as never);
+    if (result !== null || w) {
+      if (result !== null && result !== w?.base()) write(result);
       releaseDraftsAfterSave(); // #65: the draft goes once state.json holds the text
+      if (w && (store.getState().data.notes.get(noteId)?.content ?? '').trim() === '') { store.dispatch({ type: 'TRASH_NOTE', noteId } as never); onEditorError?.('Empty note moved to trash'); return; } // #618 rev2 (PM b): a new note emptied before the close is a discard, kept in the trash
+      if (w?.conflicted()) onEditorError?.('A change from another device could not be merged automatically - both versions were kept.'); // as editSelectedNote
       // Select the new note: ui.openedNote (set via meta.nextNoteToOpen
       // above) moves the marker in useAppState's render.
       setSelectedIndex((i) => i);
@@ -221,15 +223,15 @@ interface ForceSyncNowCtx {
 }
 
 /**
- * Fire a manual sync and flash "synced hh:mm" (green) or "sync requested" (not connected) for 3 seconds (r key).
+ * Fire a manual sync and flash "sync checked" (green; #649: the bar shows the #619 time) or "sync requested" (not connected) for 3 seconds (r key).
  */
 export function forceSyncNow(ctx: ForceSyncNowCtx): void {
   const { store, onForceSync, timerRef, setSyncedAt } = ctx;
   const fn = onForceSync ?? (store as { forceSync?: () => void }).forceSync;
-  if (fn) fn.call(store);
+  if (!(store as { reconnectIfStale?: () => boolean }).reconnectIfStale?.()) fn?.call(store); // #625: a stale connection reconnects instead
   if (timerRef.current) clearTimeout(timerRef.current);
   const green = store.getState().simperium.connected; // #79: only a green connection may say "synced"
-  setSyncedAt(green ? 'synced ' + new Date().toTimeString().slice(0, 5) : 'sync requested');
+  setSyncedAt(green ? 'sync checked' : 'sync requested');
   timerRef.current = setTimeout(() => {
     setSyncedAt(null);
     timerRef.current = null;
@@ -270,27 +272,25 @@ function announceEditorIfGui(): void {
 
 interface ExportSelectedNoteCtx {
   selectedEntry: { id: EntityId; note: Note } | null;
-  // the path typed into the prompt; only its directory part is used, the
-  // file name is always regenerated so a collision picks a free one
+  // the path typed into the prompt (#637: its folder and file name are used;
+  // a collision picks a free name next to it)
   value: string;
   setNotice: (v: string) => void;
   setNoticeError: (v: string) => void;
 }
 
 /**
- * write the selected note to a .md file (the `w` prompt). The path
- * shown in the prompt is only a suggestion: the file name is rebuilt from
- * the note (upstream's naming) and a free path is picked next to it — an
+ * write the selected note to a .md file (the `w` prompt). #637: the
+ * edited path is used as typed (exportTo in export-note.ts) and a free name
+ * is picked next to it, so an
  * existing file is never overwritten. Success and failure both answer with a notice
- * line. snote-diet: export-note loads only here. proof: test/core/export-note.test.tsx
+ * line. snote-diet: export-note loads only here. proof: test/core/export-note.test.tsx, test/core/export-path.test.ts
  */
 export function exportSelectedNote(ctx: ExportSelectedNoteCtx): void {
   const { selectedEntry, value, setNotice, setNoticeError } = ctx;
   if (!selectedEntry) return;
-  const base = exportFileName(selectedEntry.note.content ?? '');
-  const target = value.trim() !== '' ? value : join(documentsDir(), `${base}.md`);
-  const dir = dirname(target);
-  import('../core/export-note').then((m) => m.exportNote(selectedEntry.note, dir))
+  const target = value.trim() !== '' ? value : join(documentsDir(), `${exportFileName(selectedEntry.note.content ?? '')}.md`);
+  import('../core/export-note').then((m) => m.exportTo(selectedEntry.note, target))
     .then((path) => setNotice(`exported: ${path}`))
     .catch((err: unknown) =>
       setNoticeError(`export failed: ${err instanceof Error ? err.message : String(err)}`),

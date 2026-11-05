@@ -9,16 +9,18 @@ import simperiumReducer, {
   initialState as simperiumInitialState,
   type SimperiumState,
 } from './simperium-reducer';
+import { takeHandedOff } from './held-unsynced';
 import { initSimperium } from '@vendor/state/simperium/middleware';
 import { installSimperiumVersionFix } from './simperium-version-fix';
 import { installSimperiumReconnectFix } from './simperium-reconnect-fix';
 import { installSimperiumStaleDeleteFix } from './simperium-stale-delete-fix';
 import { installSimperiumRemovedNoteFix } from './simperium-removed-note-fix';
 import { installSimperiumAuthWatchdog } from './simperium-auth-watchdog';
+import { installStaleReconnect } from './stale-reconnect';
 import { installSimperiumRevisionCacheFix } from './simperium-revision-cache-fix';
 import { installSimperiumLocalQueueFix } from './simperium-local-queue-fix';
 // #85 — the sync socket sends a User-Agent and closes refused connections.
-import { snoteSocketOptions } from './websocket-provider';
+import { snoteSocketOptions, startConnectSession } from './websocket-provider';
 // a force-sync step that fails shows on the notice line instead of vanishing.
 import { problemText, publishProblem } from './problem-signal';
 
@@ -58,6 +60,8 @@ export interface SyncConfig {
   noteEditDelayMs?: number;
   // Added for the auth watchdog
   authWatchdogMs?: number;
+  // #625: how long a stale status lasts before snote reconnects (tests shorten it)
+  staleReconnectMs?: number;
   // Added for logout callback testing
   onLogout?: () => void;
 }
@@ -152,6 +156,8 @@ export const mendWrite = (cur: string, t: string): string => {
 const mendMiddleware: Middleware<object, State> = (api) => (next) => (action0) => {
   const action = (action0 as { note?: object }).note ? { ...action0, note: fillTags((action0 as { note: object }).note) } : action0;
   const a = action as { type: string; noteId: string; changes?: { content?: string }; note?: { content?: string } };
+  // #657b: the server copy behind a held note's hand-off stays out of the store (requeue.ts)
+  if (takeHandedOff(api.getState, a.type, a.noteId, a.note?.content)) return action;
   const key = a.changes ? 'changes' : 'note';
   const text = a[key]?.content;
   if (/^(EDIT|CREATE|IMPORT|RESTORE)_NOTE/.test(a.type) && typeof text === 'string') {
@@ -177,6 +183,8 @@ export function makeStore(
   // src/cli/main.tsx (trackOwnEchoes(store.client, ...)), src/core/quit-send.ts,
   // src/core/requeue.ts and the quit in src/tui/Root.tsx)
   client?: unknown;
+  // #625: the `r` key's reconnect on a stale connection (see stale-reconnect.ts)
+  reconnectIfStale?: () => boolean;
 } {
   let middleware = applyMiddleware(mendMiddleware);
   let stopSync: (() => void) | undefined;
@@ -196,6 +204,7 @@ export function makeStore(
 
   // Wire up simperium middleware if sync config is provided
   if (opts.sync && !opts.stubClient) {
+    startConnectSession(); // #649: a new sync session starts with a clean connect state
     // Pass noteEditDelayMs from sync config (defaults to 2000ms in middleware)
     // Use onLogout callback if provided, otherwise use default
     const logoutCallback = opts.sync.onLogout
@@ -233,6 +242,7 @@ export function makeStore(
     stopSync?: () => void;
     forceSync?: () => void;
     client?: unknown;
+    reconnectIfStale?: () => boolean;
   };
   if (opts.sync && !opts.stubClient) {
     // Note: In a real implementation, we would capture the client reference
@@ -327,6 +337,8 @@ export function makeStore(
     installSimperiumRemovedNoteFix(client);
     installSimperiumRevisionCacheFix(client);
     installSimperiumLocalQueueFix(client);
+    // #625: a status stuck at stale, or a resume from sleep, closes the socket once so the client reconnects
+    store.reconnectIfStale = installStaleReconnect(client, store, opts.sync.staleReconnectMs);
 
     // expose the live client so tests can reach the channel plumbing
     // (same object onClient captured during middleware init)

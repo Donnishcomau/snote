@@ -1,8 +1,8 @@
 import { spawnSync } from 'node:child_process';
-import { closeSync, existsSync, readFileSync, statSync } from 'node:fs';
+import { closeSync, lstatSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { secureExclusiveCreate, secureOpenForRead, secureUnlink } from './secure-fs';
+import { fileId, readRegularText, secureExclusiveCreate, secureOpenForRead, secureUnlink } from './secure-fs';
 
 /**
  * Per-directory single-instance lock.
@@ -140,12 +140,10 @@ function lockMtimeMs(lockPath: string): number | null {
   }
 }
 
+// #676: a FIFO, link or device at the lock path is not a pid file (it reads as text no pid matches, so the lock is
+// stale and gets replaced, as a link already was); the read returns at once
 function readLockPid(lockPath: string): string {
-  try {
-    return existsSync(lockPath) ? readFileSync(lockPath, 'utf8').trim() : '';
-  } catch {
-    return '';
-  }
+  return (readRegularText(lockPath) ?? 'not a regular file').trim();
 }
 
 /**
@@ -157,11 +155,11 @@ function readLockPid(lockPath: string): string {
  */
 export function acquireInstanceLock(dir: string): { release: () => void; unlocked?: Unlocked } {
   const lockPath = join(dir, LOCK_FILE);
-  const writeLock = (): void => {
+  const writeLock = (): string => {
     // exclusive create (O_EXCL): throws EEXIST when the file exists,
     // creates it atomically otherwise.
     // proof: test/core/secure-fs-helpers.test.ts
-    secureExclusiveCreate(lockPath, String(process.pid));
+    return secureExclusiveCreate(lockPath, String(process.pid));
   };
 
   const sweep = `${lockPath}.sweep`;
@@ -177,6 +175,22 @@ export function acquireInstanceLock(dir: string): { release: () => void; unlocke
     } catch {
       // already gone
     }
+  };
+  // #634 rev2: the lock and the marker this start made, by the identity their create returned; the path is lstat-ed,
+  // not opened: a same-pid file of another start, a symlink or a FIFO there stays, and release does not wait on it
+  // proof: test/core/instance-lock-own-files.test.ts
+  let lockId = '';
+  let sweepId = '';
+  // rev3: any lstat error (EACCES, EIO, ENOTDIR) keeps the file and is not thrown on, so the folder descriptor is
+  // always closed; ENOENT stays the plain "already gone"
+  const rmMine = (path: string, id: string): void => {
+    let st;
+    try {
+      st = lstatSync(path, { bigint: true, throwIfNoEntry: false });
+    } catch {
+      st = undefined; // rev3: an lstat error removes nothing
+    }
+    if (st?.isFile() && id === fileId(st)) rm(path);
   };
   const refuse = (pid: string): never => {
     closeSync(fd);
@@ -201,7 +215,7 @@ export function acquireInstanceLock(dir: string): { release: () => void; unlocke
   }
   for (let attempt = 0; ; attempt++) {
     try {
-      writeLock();
+      lockId = writeLock();
       break;
     } catch (err) {
       if ((err as { code?: string }).code !== 'EEXIST') {
@@ -213,7 +227,7 @@ export function acquireInstanceLock(dir: string): { release: () => void; unlocke
       }
       // stale: one sweeper at a time; it re-checks under the marker
       try {
-        secureExclusiveCreate(sweep, '');
+        sweepId = secureExclusiveCreate(sweep, String(process.pid));
       } catch {
         if (!young(sweep)) {
           rm(sweep);
@@ -226,11 +240,11 @@ export function acquireInstanceLock(dir: string): { release: () => void; unlocke
         }
         rm(lockPath);
       } finally {
-        rm(sweep);
+        rmMine(sweep, sweepId);
       }
     }
   }
-  rm(sweep); // a killed takeover's leftover marker
+  if (!young(sweep)) rm(sweep); // a killed takeover's leftover marker; a young one may be another start's (#634)
   heldByProcess.add(lockPath);
 
   let released = false;
@@ -242,8 +256,11 @@ export function acquireInstanceLock(dir: string): { release: () => void; unlocke
       }
       released = true;
       heldByProcess.delete(lockPath);
-      rm(lockPath); // already gone (e.g. a logout wiped the dir) is fine
-      closeSync(fd);
+      try {
+        rmMine(lockPath, lockId); // already gone (e.g. a logout wiped the dir) is fine; another start's lock stays (#634)
+      } finally {
+        closeSync(fd); // rev3: closed on every path
+      }
     },
   };
 }

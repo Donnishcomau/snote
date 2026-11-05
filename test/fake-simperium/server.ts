@@ -177,6 +177,8 @@ export class FakeSimperiumServer {
   /** #85: TCP connections to this server that are still open. */
   openSockets: Set<Socket> = new Set();
   private refusedSockets: Set<Socket> = new Set();
+  /** #625: connections muteClient silenced. */
+  private mutedSockets: Set<WebSocket> = new Set();
 
   /** Start the server, returns port and URL */
   async start(): Promise<{ port: number; url: string }> {
@@ -323,6 +325,32 @@ export class FakeSimperiumServer {
       if (conn.email === email && conn.ws) {
         conn.ws.close();
       }
+    }
+  }
+
+  /**
+   * #625: a link that died without a close (a laptop sleep, a network change): every socket of the
+   * connections signed in as `email` stops being read, so nothing is answered, not even a close; the
+   * TCP connection stays open. stop() destroys them.
+   */
+  freezeClient(email: string): void {
+    for (const conn of this.connections) {
+      if (conn.email === email && conn.ws) {
+        const tcp = (conn.ws as unknown as { _socket: Socket })._socket;
+        tcp.pause();
+        this.refusedSockets.add(tcp);
+      }
+    }
+  }
+
+  /**
+   * #625: the server keeps reading and applying what the connections signed in as `email` send, but
+   * answers nothing on them (no heartbeat reply, no acknowledgement), as a link that dies after the
+   * server took a change and before its answer arrived.
+   */
+  muteClient(email: string): void {
+    for (const conn of this.connections) {
+      if (conn.email === email && conn.ws) this.mutedSockets.add(conn.ws);
     }
   }
 
@@ -1032,6 +1060,7 @@ export class FakeSimperiumServer {
   }
 
   private send(ws: WebSocket, message: string): void {
+    if (this.mutedSockets.has(ws)) return; // #625: see muteClient
     if (this.sendDelayMs > 0) {
       setTimeout(() => {
         if (ws.readyState === ws.OPEN) ws.send(message);

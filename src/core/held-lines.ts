@@ -139,6 +139,7 @@ export function heldBase(base: string, edited: string, current: string): string 
  * (an undone removal,).
  */
 export function mergeLoses(base: string, local: string, remote: string, merged: string): boolean {
+  if (local === remote) return merged !== local; // #347: the same edit on both sides is kept once
   const [b, l, r, m] = [base, local, remote, merged].map(lineCounts);
   for (const line of new Set([...b.keys(), ...l.keys(), ...r.keys()])) {
     const [nb, nl, nr, nm] = [b, l, r, m].map((c) => c.get(line) ?? 0);

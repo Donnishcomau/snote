@@ -107,4 +107,17 @@ describe('issue #68: release signing docs', () => {
     }
     expect(runbook.includes('201689496+qteamdon@users.noreply.github.com')).toBe(true);
   });
+
+  it('5: WHEN step 7 of the per-release section is read THEN it says a tag for this same release does not count as a previous tag, that the previous tag points at a different commit and has a lower version, and that a tag at the release commit or with no lower version is ignored and named, and it keeps the four pinned phrases', () => {
+    const each = section(runbook, '## Each release', '## Notes');
+    const step = each.slice(each.indexOf('7. Run the gate again'), each.indexOf('8. Tagging')).replace(/\s+/g, ' ');
+    expect(step.length).toBeGreaterThan(200);
+    expect(step).toContain('does not count as a previous tag');
+    expect(step).toContain('points at a different commit, has a lower version than this release, and holds a');
+    expect(step).toContain('is ignored, and the gate prints a line naming it and the reason');
+    expect(step).toContain('can only make the gate refuse, never pass');
+    expect(step).toContain('never copy them from that line');
+    expect(step).toContain('right before tagging');
+    expect(step).toContain('tag only if its output does NOT contain `signature check skipped`');
+  });
 });

@@ -18,6 +18,7 @@ import { tmpdir } from 'node:os';
 import { FakeSimperiumServer } from '../fake-simperium/server';
 import { buildStore } from '../../src/cli/main';
 import { pendingCount } from '../../src/core/simperium-reducer';
+import { waitHeld } from '../helpers/wait-held';
 
 const APP_ID = 'test-app';
 const TOKEN = 'store1-token';
@@ -37,13 +38,9 @@ afterEach(async () => {
   for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
 });
 
-async function waitFor(cond: () => boolean, label: string, ms = 2500): Promise<void> {
-  const t = Date.now();
-  while (!cond()) {
-    if (Date.now() - t > ms) throw new Error('timed out: ' + label);
-    await new Promise((r) => setTimeout(r, 20));
-  }
-}
+// #656: a wait has no deadline of its own: it re-checks its state every 20 ms until it holds; the end of the test
+// (the per-test timeout) stops a wait that never does and fails the test with `never held: <label>`.
+const waitFor = (cond: () => boolean, label: string): Promise<void> => waitHeld(cond, label, 20);
 const noteData = (content: string, md: number) => ({ content, creationDate: 1000, deleted: false, modificationDate: md, systemTags: [], tags: [] });
 async function startServer(): Promise<FakeSimperiumServer> {
   const s = new FakeSimperiumServer();
@@ -119,6 +116,7 @@ const marks = (s: FakeSimperiumServer, c: Built, ms: string[]) =>
 const once = (ms: string[]) => Object.fromEntries([...ms.map((m) => [m, 1]), ...ms.map((m) => ['local ' + m, 1]), ['same', true]]);
 async function synced(s: FakeSimperiumServer, content = BASE): Promise<Built> {
   const { c } = openC(s);
+  await new Promise<void>((r) => noteChannel(c).once('ready', () => r())); // #656: the client's own event: the index is in
   await waitFor(() => localContent(c) === content && pending(c) === 0, 'indexed');
   return c;
 }
@@ -177,6 +175,7 @@ async function p4(delay: number): Promise<void> {
 // Test-only access to the note channel (its 'update' events and in-flight change, channel.js localQueue.sent).
 type NoteChannel = {
   on(e: string, f: (...a: never[]) => void): void;
+  once(e: string, f: () => void): void;
   listenerCount(e: string): number;
   message: { prependListener(e: string, f: (d: string) => void): void };
   localQueue: { sent: Record<string, unknown> };

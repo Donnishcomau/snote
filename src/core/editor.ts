@@ -16,9 +16,14 @@ let handedBack: string[] = [];
 
 // #89: the note the NEXT editInEditor call edits (null = a new note). Set by
 // expectNote right before the call, taken (and cleared) by editInEditor.
+// #618: for a new note, newNote names the id its first write creates it
+// under and the handler each write goes to (createNote).
+// proof: test/core/new-note-write.test.tsx
 let editing: string | null = null;
-export function expectNote(noteId: string | null): void {
+let creating: { id: string; onWrite: (text: string) => void } | null = null;
+export function expectNote(noteId: string | null, newNote: { id: string; onWrite: (text: string) => void } | null = null): void {
   editing = noteId;
+  creating = newNote;
 }
 
 /**
@@ -33,15 +38,18 @@ export function releaseDraftsAfterSave(): void {
 
 // One-line key cheat-sheet nvim shows in the note window's winbar, so the
 // main keys stay visible while editing inside snote's window.
-export const NVIM_HINT =
-  'snote · i insert · Esc done typing · o new line · dd delete line · u undo · :wq save & return · :q! discard';
+export const NVIM_HINT = 'snote · i insert · Esc done · :w save & sync · :wq save & return · :q! discard';
+// #618: after a :w of the note the winbar is NVIM_SAVED with nvim's HH:MM in
+// place of TIME (snote stores each write, #97; the sync itself is not shown).
+// proof: test/core/nvim-saved.test.ts
+export const NVIM_SAVED = 'snote · saved TIME · :w save & sync · :wq save & return · :q! keep last save';
 
 // The hint as a Lua long-bracket string: a ' in the text could never break
 // the chunk, and % is doubled so a stray one can never break the statusline
 // format itself. The bracket level steps up if the text ever holds ']'.
-function nvimHintLuaString(): string {
-  const level = NVIM_HINT.includes(']') ? '=' : '';
-  const safe = NVIM_HINT.replaceAll('%', '%%');
+function nvimHintLuaString(text: string): string {
+  const level = text.includes(']') ? '=' : '';
+  const safe = text.replaceAll('%', '%%');
   return '[' + level + '[' + safe + ']' + level + ']';
 }
 
@@ -66,10 +74,22 @@ function nvimHintLuaString(): string {
 // the single-quoted form cannot be written inside the double-quoted Ex line
 // unescaped.
 // (The test suite calls nvimHintArgs() directly to pin this shape.)
+// #618: vim.g.snote_hint holds the winbar text; a BufWritePost of the note
+// buffer swaps it for NVIM_SAVED with the time (os.date, digits only) and
+// sets it, so the guard's re-apply keeps the saved time. Only a write of the
+// note's own file counts: <afile>:p must equal vim.g.snote_file, the buffer
+// name recorded at start, so `:w other` or a write after `:saveas` keeps it.
+// proof: test/core/nvim-saved.test.ts
 export function nvimHintArgs(): string[] {
-  const hint = "'%#Comment#' .. " + nvimHintLuaString();
+  const hint = "'%#Comment#' .. vim.g.snote_hint";
   const setWinbar = 'vim.api.nvim_set_option_value("winbar", ' + hint + ', { win = 0 })';
-  const recordBuf = 'vim.g.snote_buf = vim.api.nvim_get_current_buf()';
+  const saved = '(' + nvimHintLuaString(NVIM_SAVED) + '):gsub("TIME", os.date("%H:%M"))';
+  const recordBuf =
+    'vim.g.snote_buf = vim.api.nvim_get_current_buf() vim.g.snote_file = vim.api.nvim_buf_get_name(0) vim.g.snote_hint = ' +
+    nvimHintLuaString(NVIM_HINT);
+  const onWrite =
+    'if tonumber(vim.fn.expand("<abuf>")) == vim.g.snote_buf and vim.fn.expand("<afile>:p") == vim.g.snote_file then ' +
+    'vim.g.snote_hint = (' + saved + ') ' + setWinbar + ' end';
   const guard =
     'if vim.api.nvim_win_get_config(0).relative == "" ' +
     'and vim.api.nvim_get_current_buf() == vim.g.snote_buf then ' +
@@ -80,6 +100,8 @@ export function nvimHintArgs(): string[] {
     'lua ' + recordBuf + ' ' + setWinbar,
     '-c',
     'autocmd BufWinEnter,WinEnter * lua ' + guard,
+    '-c',
+    'autocmd BufWritePost * lua ' + onWrite,
   ];
 }
 
@@ -140,7 +162,10 @@ export async function editInEditor(
 ): Promise<string | null> {
   const editor = opts?.editor ?? selectEditor(process.env);
   const noteId = editing;
+  const fresh = creating; // #618: a new note's writes go to the id its first write creates
+  const target = noteId ?? fresh?.id ?? null;
   editing = null;
+  creating = null;
   const parts = editor.split(/\s+/);
   const cmd = parts[0];
   const args = parts.slice(1);
@@ -159,8 +184,8 @@ export async function editInEditor(
   let stopWatch: (() => string) | undefined;
   let closed = false;
   let renewSidecar: ((text: string) => void) | undefined;
-  const onWrite = opts?.onWrite;
-  if (onWrite && noteId !== null) {
+  const onWrite = opts?.onWrite ?? fresh?.onWrite;
+  if (onWrite && target !== null) {
     // The sidecar follows the note on disk: after the save that holds a write it names that write's text, so a
     // restart finds the draft already in the note (or applies newer draft text to the same note). At most one save
     // callback waits per session, also while saves fail; it names the latest text and takes the draft's file time.
@@ -174,11 +199,14 @@ export async function editInEditor(
       sidecar = text;
       if (!waiting) {
         afterNextSave(() => {
-          if (sidecar !== undefined) {
-            writeSource(tmpDir, noteId, sidecar, tmpFile);
-            stampedText = sidecar;
+          try {
+            if (sidecar !== undefined) {
+              writeSource(tmpDir, target, sidecar, tmpFile);
+              stampedText = sidecar;
+            }
+          } finally {
+            sidecar = undefined; // #670: also when the rewrite throws, or no later write registers a callback
           }
-          sidecar = undefined;
         });
       }
     };
@@ -188,7 +216,7 @@ export async function editInEditor(
     // hand-on threw was never stamped.
     // proof: test/core/editor-write-rewrite.test.tsx, test/core/editor-write-open-rewrite.test.tsx
     renewSidecar = (text) => {
-      if (sidecar === undefined && text === stampedText) writeSource(tmpDir, noteId, text, tmpFile);
+      if (sidecar === undefined && text === stampedText) writeSource(tmpDir, target, text, tmpFile);
     };
     void import('./editor-write-watch')
       .then((m) => {

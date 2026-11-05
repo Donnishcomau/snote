@@ -5,6 +5,7 @@ import { Console } from 'node:console';
 import { afterAll, beforeAll, vi } from 'vitest';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { syncBuiltinESMExports } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { isolateGitEnv } from './helpers/git-isolation';
@@ -42,6 +43,12 @@ process.env.SNOTE_UPDATE_CHECK = 'disabled';
 
 // #278: never let a test's git call resolve to the enclosing worktree (inherited GIT_DIR, scratch dir under the repo).
 isolateGitEnv();
+
+// #656: snote fsyncs every file it writes (src/core/secure-fs.ts). Under host disk load one fsync blocked a test process
+// for up to 11 s, so the fake-server tests timed out. No test cuts the power, so code in the test process gets a counted
+// no-op (a spawned CLI keeps the real call). proof: test/structure/fsync-stub.test.ts
+const fsyncStub = Object.assign((): void => { fsyncStub.calls++; }, { calls: 0, snoteFsyncStub: true as const });
+if (!('snoteFsyncStub' in fs.fsyncSync)) { fs.fsyncSync = fsyncStub; syncBuiltinESMExports(); }
 
 // Never let a test read or write the owner's real home: one temp home per test
 // process, so HOME and every XDG directory resolve inside os.tmpdir().

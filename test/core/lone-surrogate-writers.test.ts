@@ -144,10 +144,11 @@ const PINNED_SITES: Record<string, number> = {
   'src/core/editor-drafts.ts': 2,
   'src/core/held-lines.ts': 1, // #97 noteWriter (snote-97b)
   'src/core/history.ts': 1,
-  'src/core/requeue.ts': 4,
+  'src/core/requeue.ts': 2, // #657b: the hand-off's three IMPORT sites are one (handOff)
   'src/core/simperium-reducer.ts': 4,
   'src/tui/App.tsx': 1,
   'src/tui/app-actions.ts': 5,
+  'src/tui/inline-new-note.ts': 1, // #618 4c: the first store of an inline new note (mended at the store like every writer)
   'src/tui/note-focus.ts': 1,
 };
 /** The vendored notes reducer's cases whose body writes a note's content or assigns the action's note. */
@@ -297,7 +298,7 @@ describe('#333 every note-text writer mends a lone surrogate at the store', () =
     expect(contentOf(store)).toBe(`r${FFFD}`);
   });
 
-  it("10: (pass-on-old) WHEN every non-vendor file under src is searched for `'EDIT_NOTE'`, `'CREATE_NOTE_WITH_ID'`, `'IMPORT_NOTE_WITH_ID'`, `'RESTORE_NOTE_REVISION'`, `editNote(` and `createNote(` THEN the files and counts (all six patterns added together per file) equal a pinned table: as read on origin/main a07619f4: src/core/editor-drafts.ts 2, src/core/history.ts 1, src/core/requeue.ts 4, src/core/simperium-reducer.ts 4, src/tui/App.tsx 1 (a createNote( call; read-only), src/tui/app-actions.ts 5, src/tui/note-focus.ts 1; src/core/store.ts has 0 (its middleware tests a regular expression, not the quoted strings), and a table that lacks a found site, or lists one that is gone, fails naming the file (pass-on-old)", () => {
+  it("10: (pass-on-old) WHEN every non-vendor file under src is searched for `'EDIT_NOTE'`, `'CREATE_NOTE_WITH_ID'`, `'IMPORT_NOTE_WITH_ID'`, `'RESTORE_NOTE_REVISION'`, `editNote(` and `createNote(` THEN the files and counts (all six patterns added together per file) equal a pinned table: as read on origin/main a07619f4: src/core/editor-drafts.ts 2, src/core/history.ts 1, src/core/requeue.ts 2 (#657b), src/core/simperium-reducer.ts 4, src/tui/App.tsx 1 (a createNote( call; read-only), src/tui/app-actions.ts 5, src/tui/note-focus.ts 1; src/core/store.ts has 0 (its middleware tests a regular expression, not the quoted strings), and a table that lacks a found site, or lists one that is gone, fails naming the file (pass-on-old)", () => {
     const found: Record<string, number> = {};
     for (const f of srcFiles()) {
       const n = (readFileSync(f, 'utf8').match(WRITER_SITE) ?? []).length;
@@ -382,4 +383,37 @@ describe('#333 every note-text writer mends a lone surrogate at the store', () =
     await until(() => rejections.length === 0 && pending(b) === 0 && serverNote(server)?.content === 'x�y', 12000);
     expect({ rejections: [...rejections], pending: pending(b), server: serverNote(server)?.content }).toEqual({ rejections: [], pending: 0, server: 'x�y' });
   }, 30000);
+
+  it('17: WHEN n1 is held at `line1\\nline2\\nOFF` for the start-up hand-off and the catch-up brings the server copy `line0\\uDE00\\nline1\\nline2` (a lone low half) THEN (pass-on-old: the text the seam gives that IMPORT on main) the state.json copy the network-change hook writes, the store after requeueUnsynced, and the IMPORT_NOTE_WITH_ID it dispatches all hold exactly the conflict block `line1\\nline2\\nOFF\\n\\n--- conflicting change from another device ---\\nline0\\uDE00\\nline1\\nline2` (the text of the other device kept as it is, no lone half in our part)', async () => {
+    const store = makeStore({ stubClient: {} });
+    let hook: ((noteId: string, data: object, base: object) => unknown) | null = null;
+    (store as unknown as { client: unknown }).client = { buckets: [{ name: 'note', beforeNetworkChange: (fn: typeof hook) => (hook = fn) }] };
+    store.dispatch({ type: 'IMPORT_NOTE_WITH_ID', noteId: id, note: makeNote('n1', 'line1\nline2\nOFF', { modificationDate: 3000 }) } as never);
+    const base = makeNote('n1', 'line1\nline2', { modificationDate: 2000 });
+    const server = makeNote('n1', 'line0\uDE00\nline1\nline2', { modificationDate: 2500 });
+    let caughtUp = false;
+    const imported: string[] = [];
+    const dispatch = store.dispatch;
+    (store as unknown as { dispatch: typeof dispatch }).dispatch = ((a: { type: string; note?: { content?: string } }) => {
+      if (a.type === 'IMPORT_NOTE_WITH_ID') imported.push(String(a.note?.content));
+      return dispatch(a as never);
+    }) as typeof dispatch;
+    const saved: string[] = [];
+    const whenCaughtUp = async (): Promise<void> => {
+      hook?.('n1', server, base);
+      store.dispatch({ type: 'REMOTE_NOTE_UPDATE', noteId: id, note: server } as never);
+      caughtUp = true;
+    };
+    const ghosts: GhostReader = { get: () => Promise.resolve({ data: caughtUp ? server : base }) };
+    await requeueUnsynced(store as never, ghosts, whenCaughtUp, {}, undefined, (s) => saved.push(String(s.data.notes.get(id)?.content)));
+    const block = 'line1\nline2\nOFF\n\n--- conflicting change from another device ---\nline0\uDE00\nline1\nline2';
+    expect({ saved, store: contentOf(store), imported }).toEqual({ saved: [block], store: block, imported: [block] });
+  });
+
+  it("18: WHEN src/core/requeue.ts is searched for `type: 'REMOTE_NOTE_UPDATE'` THEN it is found `2` times (the #333 mend of a held copy and the #657b hand-off hook), and each site has `mendOwn(` or `mendWrite(` in the 3 lines before it", () => {
+    const lines = readFileSync(join(SRC, 'core', 'requeue.ts'), 'utf8').split('\n');
+    const sites = lines.map((line, i) => (line.includes("type: 'REMOTE_NOTE_UPDATE'") ? i : -1)).filter((i) => i >= 0);
+    const mended = sites.map((i) => lines.slice(Math.max(0, i - 3), i).some((l) => /mendOwn\(|mendWrite\(/.test(l)));
+    expect({ sites: sites.length, mended }).toEqual({ sites: 2, mended: [true, true] });
+  });
 });

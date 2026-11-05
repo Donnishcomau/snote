@@ -7,7 +7,10 @@
 import { build } from 'esbuild';
 import path from 'node:path';
 import fs from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+// #572: the virtual modules below resolve their requires from this repo, never from the directory a build starts in
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const BANNER = [
   '#!/usr/bin/env node',
@@ -57,7 +60,7 @@ function simperiumInterop() {
           : { path: 'simperium', namespace: 'simperium-interop' }
       );
       pluginBuild.onLoad({ filter: /.*/, namespace: 'simperium-interop' }, () => ({
-        resolveDir: process.cwd(),
+        resolveDir: repoRoot, // #572: simperium from this repo
         loader: 'js',
         contents:
           "let m; const load = () => (m ??= require('simperium')); export default function simperium_default(...a) { const x = load(); return (x && x.__esModule ? x.default : x)(...a); }",
@@ -146,6 +149,27 @@ function lazyIcu() {
 }
 
 /**
+ * #572 (bundle diet): snote opens only the client socket, `w3cwebsocket` (src/core/websocket-provider.ts; simperium's
+ * client.js asks for the same export). The package index also loads its server, router and request classes (about 34 KB
+ * that no snote path calls), so the bare `websocket` import is answered with the client class alone.
+ * proof: test/cli/bundle-websocket-client.test.ts
+ * @returns {import('esbuild').Plugin}
+ */
+function websocketClientOnly() {
+  return {
+    name: 'websocket-client-only',
+    setup(pluginBuild) {
+      pluginBuild.onResolve({ filter: /^websocket$/ }, () => ({ path: 'websocket', namespace: 'websocket-client-only' }));
+      pluginBuild.onLoad({ filter: /.*/, namespace: 'websocket-client-only' }, () => ({
+        resolveDir: repoRoot, // #572: websocket from this repo
+        loader: 'js',
+        contents: "module.exports = { w3cwebsocket: require('websocket/lib/W3CWebSocket') };",
+      }));
+    },
+  };
+}
+
+/**
  * Refuse to write to a path that exists and is not a regular file (a symlink,
  * a FIFO, a device, a folder). lstat, never followed: a link planted at an
  * output path would otherwise send the write to wherever it points. Refuse,
@@ -186,7 +210,7 @@ async function bundle(opts) {
     logLevel: 'silent',
     banner: { js: BANNER },
     define: { 'process.env.NODE_ENV': '"production"' },
-    plugins: [noDevtools(), simperiumInterop(), lazyIcu(), simperiumNoHttp()],
+    plugins: [noDevtools(), simperiumInterop(), lazyIcu(), simperiumNoHttp(), websocketClientOnly()],
   };
 
   if (contents) {
@@ -242,4 +266,4 @@ if (
   writeLauncher('dist/cli.js', 'snote-main.js');
 }
 
-export { bundle, writeLauncher, refuseOddOutput, noDevtools, simperiumInterop, simperiumNoHttp, lazyIcu, BANNER };
+export { bundle, writeLauncher, refuseOddOutput, noDevtools, simperiumInterop, simperiumNoHttp, lazyIcu, websocketClientOnly, BANNER };

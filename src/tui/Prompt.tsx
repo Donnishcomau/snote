@@ -1,5 +1,6 @@
-import { Box, Text, useInput } from 'ink';
+import { Box, Text, useInput, type Key } from 'ink';
 import React from 'react';
+import { caretMove } from './caretMoves';
 import { sanitizeForTerminal } from '../core/sanitize';
 import { splitPastedInput } from './split-input';
 import { useReadGate } from './read-gate';
@@ -10,24 +11,36 @@ interface PromptProps {
   initial: string;
   onSubmit: (value: string) => void;
   onCancel: () => void;
+  // #637: an unchanged Enter calls this when given (the export prompt keeps its suggested path), else onCancel
+  onKeep?: () => void;
 }
 
 /**
  * Prompt - one-line text editing component.
- * Renders: `<label>: <text>` where text starts as `initial`.
+ * Renders: `<label>: <text>` where text starts as `initial`, with the
+ * character under the cursor shown without the inverse (#637).
  * Keys: Escape → onCancel, Return → submit trimmed if non-empty and different,
- * Backspace/Delete → remove last char, printable → append.
+ * Left/Right, Home/End and Ctrl+A/Ctrl+E move the cursor, Backspace removes
+ * before it, Delete at it, Ctrl+U clears the line, printable → insert at it.
+ * proof: test/tui/prompt-edit.test.tsx
  */
-export function Prompt({ label, initial, onSubmit, onCancel }: PromptProps): React.JSX.Element {
+export function Prompt({ label, initial, onSubmit, onCancel, onKeep }: PromptProps): React.JSX.Element {
   const [text, setText] = React.useState(initial);
+  const [caret, setCaret] = React.useState(initial.length);
 
-  // Latest text for the batched-paste loop below, which replays several
-  // characters per event and must see each character's effect on the text.
+  // Latest text and cursor for the batched-paste loop below, which replays
+  // several characters per event and must see each character's effect.
   const textRef = React.useRef(text);
-  const write = (next: string) => {
+  const caretRef = React.useRef(initial.length);
+  const write = (next: string, at: number) => {
     textRef.current = next;
+    caretRef.current = at;
     setText(next);
+    setCaret(at);
   };
+  // #637: grapheme steps come from the inline editor's caret moves (one line: width 0)
+  const step = (at: number, dir: 'leftArrow' | 'rightArrow'): number =>
+    caretMove(textRef.current, at, '', { [dir]: true } as unknown as Key, 0)?.caret ?? at;
 
   const handle = (input: string, key: Parameters<Parameters<typeof useInput>[0]>[1]): boolean => {
     // Escape cancels
@@ -40,29 +53,45 @@ export function Prompt({ label, initial, onSubmit, onCancel }: PromptProps): Rea
     if (key.return) {
       const trimmed = textRef.current.trim();
       if (trimmed === '' || trimmed === initial) {
-        onCancel();
+        (trimmed !== '' && onKeep ? onKeep : onCancel)();
       } else {
         onSubmit(trimmed);
       }
       return true;
     }
 
-    // Backspace / delete removes last character
-    if (key.backspace || key.delete) {
-      if (textRef.current.length > 0) {
-        write(textRef.current.slice(0, -1));
-      }
+    const t = textRef.current;
+    const at = caretRef.current;
+    // #637: Backspace removes the character before the cursor
+    if (key.backspace) {
+      const p = step(at, 'leftArrow');
+      write(t.slice(0, p) + t.slice(at), p);
+      return true;
+    }
+    if (key.ctrl && input === 'u') {
+      write('', 0);
+      return true;
+    }
+    if (key.home || key.end) {
+      write(t, key.home ? 0 : t.length);
+      return true;
+    }
+    if (key.upArrow || key.downArrow) return true;
+    // Left/Right, Ctrl+A/Ctrl+E and Delete (at the cursor): the inline editor's moves
+    const move = caretMove(t, at, input, key, 0);
+    if (move) {
+      write(move.value, move.caret);
       return true;
     }
 
-    // Ignore ctrl/meta keys, and empty input
+    // Ignore other ctrl/meta keys
     if (key.ctrl || key.meta) {
       return true;
     }
 
-    // Append printable input (may be multi-character like 'job')
+    // Insert printable input at the cursor (may be multi-character like 'job')
     if (input !== '') {
-      write(textRef.current + input);
+      write(t.slice(0, at) + input + t.slice(at), at + input.length);
     }
     return false;
   };
@@ -87,10 +116,13 @@ export function Prompt({ label, initial, onSubmit, onCancel }: PromptProps): Rea
     handle(input, key);
   });
 
+  const next = caretMove(text, caret, '', { rightArrow: true } as unknown as Key, 0)?.caret ?? caret;
   return (
     <Box>
       <Text bold inverse>{label}: </Text>
-      <Text bold inverse>{sanitizeForTerminal(text)}</Text>
+      <Text bold inverse>{sanitizeForTerminal(text.slice(0, caret))}</Text>
+      <Text bold>{sanitizeForTerminal(text.slice(caret, next)) || ' '}</Text>
+      <Text bold inverse>{sanitizeForTerminal(text.slice(next))}</Text>
     </Box>
   );
 }

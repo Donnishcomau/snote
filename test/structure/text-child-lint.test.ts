@@ -2,6 +2,7 @@ import { existsSync, globSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ESLint } from 'eslint';
+import escapeRegExp from 'lodash/escapeRegExp';
 import { describe, expect, it } from 'vitest';
 
 type Entry = { file: string; expr: string; source: string; proof: string };
@@ -23,6 +24,9 @@ function operands(expr: string): string[] {
   const bare = expr.replace(/'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`/g, "''");
   return [...new Set([...bare.matchAll(/(?<![.\w$])[A-Za-z_$][\w$]*(?![\w$])(?!\s*:)/g)].map((m) => m[0]))].filter((w) => !OPERAND_IGNORE.has(w));
 }
+
+// #641 (CodeQL js/incomplete-sanitization): an operand goes into the RegExp with every metacharacter escaped, not only `$`
+const namesOperand = (source: string, w: string): boolean => new RegExp(`(^|[^\\w$])${escapeRegExp(w)}([^\\w$]|$)`).test(source);
 
 describe('#419 Text children: fails on any raw expression child of <Text> under src', () => {
   it('1: WHEN every .ts and .tsx file under `src` is linted with the repo config THEN no file has an error of `snote-text/child`, and the effective config of every one of them has noInlineConfig `true` and `snote-text/child` at `error`', async () => {
@@ -56,7 +60,7 @@ describe('#419 Text children: fails on any raw expression child of <Text> under 
       expect(existsSync(m![1]), e.proof).toBe(true);
       expect(new RegExp(`\\bit\\(\\s*['"\`]${m![2]}:`).test(readFileSync(m![1], 'utf8')), e.proof).toBe(true);
       // C4: an expression holding `+`, a call or a computed member names every operand it uses in `source`
-      if (/\+|\(|\[/.test(e.expr)) for (const w of operands(e.expr)) expect(new RegExp(`(^|[^\\w$])${w.replace(/\$/g, '\\$')}([^\\w$]|$)`).test(e.source), `${e.expr}: source must name ${w}`).toBe(true);
+      if (/\+|\(|\[/.test(e.expr)) for (const w of operands(e.expr)) expect(namesOperand(e.source, w), `${e.expr}: source must name ${w}`).toBe(true);
     }
   }, 120000);
 
@@ -112,4 +116,7 @@ describe('#419 Text children: fails on any raw expression child of <Text> under 
     expect(await count("import { Text } from 'ink';\nexport const A = (x: { title: string }) => <Text>{x.title}</Text>;\n", 'src/cli/zz-scratch.tsx')).toBe(1);
     expect(await count(HEAD + 'export const A = (x: string) => <Text>{standInText(x)}</Text>;\n', 'src/cli/zz-scratch.tsx')).toBe(1);
   }, 60000);
+  it('10: WHEN namesOperand is asked whether `x c y` names `[c]`, `x a1 y` names `a\\d`, `x a\\d y` names `a\\d` and `x $c y` names `$c` THEN it answers `false`, `false`, `true` and `true`', () => {
+    expect([namesOperand('x c y', '[c]'), namesOperand('x a1 y', 'a\\d'), namesOperand('x a\\d y', 'a\\d'), namesOperand('x $c y', '$c')]).toEqual([false, false, true, true]);
+  });
 });

@@ -12,7 +12,7 @@ snote is an unofficial, community-built Simplenote client. It is not affiliated 
 
 | | |
 | --- | --- |
-| ![Main note list](docs/screenshots/main.png) Main three-pane view | ![Rendered markdown](docs/screenshots/markdown.png) Rendered markdown preview |
+| ![Main note list with the snote header bar](docs/screenshots/main.png) Main three-pane view, with the `>_ snote` header | ![Rendered markdown](docs/screenshots/markdown.png) Rendered markdown preview |
 | ![Tag editor](docs/screenshots/tags.png) Tag editor | ![Search](docs/screenshots/search.png) Search |
 | ![Help overlay](docs/screenshots/help.png) Help overlay | ![Light theme](docs/screenshots/light.png) Light theme |
 
@@ -68,7 +68,7 @@ Colours come from your terminal theme — only the 16 ANSI colours are used.
 
 ## Updating
 
-To update snote, run `omarchy plugin update io.github.donnishcomau.snote-simplenote`; press `q` to leave the diff pager (or pass `--yes` to skip the diff); then click the bar button once, run `omarchy-restart-shell` (the bar keeps the old widget until it restarts), and restart any open snote windows. The update installs the latest public commit, and the public repo only receives reviewed, released commits.
+To update snote, run `omarchy plugin update io.github.donnishcomau.snote-simplenote`; press `q` to leave the diff pager (or pass `--yes` to skip the diff); then click the bar button once, run `omarchy-restart-shell` (the bar keeps the old widget until it restarts), and restart any open snote windows. The update installs the latest public commit, and the public repo only receives reviewed, released commits. If you installed 0.2.10 or older, reinstall once for 0.2.11, because the public history was rewritten and `omarchy plugin update` cannot apply it: run `omarchy plugin remove io.github.donnishcomau.snote-simplenote`, then `omarchy plugin add https://github.com/donnishcomau/snote --enable`, then click the bar button once and run `omarchy-restart-shell` (your notes, signed-in account and unsent changes are kept; the steps are in `docs/release-notes-0.2.11.md`).
 
 ## Pre-built plugin files
 
@@ -102,10 +102,10 @@ Omarchy default editor, or set `SNOTE_EDITOR=omawrite`. Because Omawrite opens i
 waits and shows "Editing in Omawrite — save with Ctrl+S and close its window to return".
 
 Editor selection priority: `SNOTE_EDITOR`, then the Omarchy default-editor setting, then `nvim`, then
-`EDITOR`, then `omawrite`. GUI editors must wait for you to close the file: set `SNOTE_EDITOR` to `code --wait`, `codium --wait`, `subl -w` or `gvim -f`.
+`EDITOR`, then `omawrite`. GUI editors must wait for you to close the file: set `SNOTE_EDITOR` to `code --wait`, `codium --wait`, `subl -w` or `gvim -f`. New-note editor: `SNOTE_NEW_NOTE_EDITOR` is `external` (default) or `inline`; any other value means `external`. Inline creates no note until you type, and autosaves about 1.5 s after your last key.
 
 Press `i` to edit inline in the preview pane instead: it saves as you type, Enter adds a new line and
-`Esc` closes and keeps your text; `h` restores an older version. `e` still opens your editor as before.
+`Esc` closes and keeps your text; `h` restores an older version. `e` still opens your editor as before. Only the inline editor autosaves as you type; an external editor such as nvim saves and syncs each time you write the file (:w) and again when you quit (:wq). In nvim, the line at the top shows `:w save & sync` and the time of the last save, and the first `:w` of a new note creates it while nvim stays open. Press `n` for a new note: it opens your editor like `e`, or the inline editor if you set `SNOTE_NEW_NOTE_EDITOR=inline`.
 
 ## Screen-reader mode
 
@@ -185,7 +185,7 @@ Published notes are readable by anyone who holds the https link.
 ## Known limitations and ideas for improvement
 
 - Startup is above the 150 ms target with 10,000 notes; a performance pass (bench: `scripts/bench.mjs`) may bring it down.
-- No bulk export; `w` exports one note at a time to a `.md` file.
+- No bulk export; `w` exports one note at a time to a `.md` file. You choose the folder and the file name; a name cannot be only an extension such as `.md`, and an existing file is never overwritten.
 - ZWJ emoji sequences (multi-codepoint emoji) may misalign; the terminal sanitizer strips variation selectors but not ZWJ.
 - No image attachments.
 

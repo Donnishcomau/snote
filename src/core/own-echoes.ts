@@ -237,8 +237,10 @@ export function trackOwnEchoes(
       // the frame (proof: test/integration/r1-echo-in-flight.test.ts).
       const inFlight = channel.localQueue.sent;
       for (const { id, ccid } of record.echoes(data, inFlight)) {
-        const changes = JSON.parse(data) as Array<{ id: string; v?: Note; sv?: number }>;
-        const at = changes.findIndex((c) => c?.id === id);
+        const changes = JSON.parse(data) as Array<{ id: string; v?: Note; sv?: number; ccids?: unknown }>;
+        // #557: the echo itself (its ccid), not the note's first change in the frame: an earlier one
+        // moves the ghost first, and the sv check below then leaves the echo to the library and the #115 hold.
+        const at = changes.findIndex((c) => c?.id === id && Array.isArray(c.ccids) && c.ccids.includes(ccid));
         const change = changes[at];
         // #28 — `echoes` also returns an echo whose note has a change in
         // flight from the same version: the server already holds the

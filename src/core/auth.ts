@@ -45,6 +45,13 @@ function fetchBounded(url: string, init: RequestInit, timeoutMs: number): Promis
   return boundedRequest(url, init, { timeoutMs });
 }
 
+/** #627: the token a 2xx reply carries, a non-empty string; any other reply throws, so nothing is saved. */
+function tokenIn(json: unknown, field: string, url: string): string {
+  const t = (json as Record<string, unknown> | null)?.[field];
+  if (typeof t !== 'string' || t === '') throw new Error(`unexpected reply from ${new URL(url).host}`);
+  return t;
+}
+
 /**
  * Requests a login code for *email* to be sent via email.
  *
@@ -125,7 +132,7 @@ export async function completeLogin(
   }
 
   const json = res.json() as { sync_token?: string };
-  return json.sync_token!;
+  return tokenIn(json, 'sync_token', url);
 }
 
 /**
@@ -172,5 +179,5 @@ export async function loginWithPassword(
   }
 
   const json = res.json() as { access_token?: string; userid?: string };
-  return json.access_token!;
+  return tokenIn(json, 'access_token', url);
 }

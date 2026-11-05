@@ -9,6 +9,8 @@ export const isInlineEditOpen = (): boolean => editOpenNow;
 export interface InlineSession {
   entry: { id: EntityId; note: Note } | null;
   stored: string;
+  /** #618 4c: a new note not created yet (its id, and the list's top note for its fields); null for `i` and once finished */
+  fresh?: { id: EntityId; top: Note | null } | null;
 }
 
 /**
@@ -24,6 +26,7 @@ export function useInlineEditorState(): {
   base: string;
   session: { current: InlineSession };
   openEdit: (entry: { id: EntityId; note: Note }) => void;
+  openNew: (id: EntityId, top: Note | null) => void;
   closeEdit: () => void;
 } {
   const [open, setOpen] = useState(false);
@@ -35,6 +38,11 @@ export function useInlineEditorState(): {
     setBase(content);
     setOpen(true);
   };
+  const openNew = (id: EntityId, top: Note | null) => {
+    session.current = { entry: null, stored: '', fresh: { id, top } };
+    setBase('');
+    setOpen(true);
+  };
   const closeEdit = () => setOpen(false);
   useLayoutEffect(() => {
     editOpenNow = open;
@@ -42,7 +50,7 @@ export function useInlineEditorState(): {
       editOpenNow = false;
     };
   }, [open]);
-  return { open, base, session, openEdit, closeEdit };
+  return { open, base, session, openEdit, openNew, closeEdit };
 }
 
 /** a line over this many UTF-16 units makes the inline editor too slow. */

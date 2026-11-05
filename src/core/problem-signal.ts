@@ -68,6 +68,12 @@ export function onProblem(listener: (message: string, info: boolean) => void): (
   };
 }
 
+/** #655: a new session starts without the last session's notice; the listeners stay. */
+export function clearProblem(): void {
+  current = null;
+  currentInfo = false;
+}
+
 /** Tests only: clear the stored value and every listener. */
 export function resetProblemSignal(): void {
   current = null;

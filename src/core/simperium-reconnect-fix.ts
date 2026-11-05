@@ -62,7 +62,7 @@ interface LocalQueueLike {
 interface ChannelLike {
   localQueue?: LocalQueueLike;
   // #337c: the channel's incoming-message emitter (channel.js:390); 'auth' fires per connection.
-  message?: { on(event: 'auth', listener: (data: string) => void): unknown };
+  message?: { on(event: 'auth' | 'c', listener: (data: string) => void): unknown }; // #710: 'c' = change replies (channel.js:392)
   networkQueue?: NetworkQueueLike;
 }
 
@@ -206,7 +206,11 @@ function installOnChannel(channel: ChannelLike | undefined): void {
       return;
     }
     for (const id of drainedSinceLastPurge) {
-      if (id in sent && sent[id] === sentAtInvocation?.get(id)) {
+      // #710 — keep an entry sent on this connection whose acknowledging reply has
+      // arrived but is not applied yet (applyChange fetches a version first, so the
+      // queue drains before the ack): purging it let the next edit resend it, doubled.
+      // proof: test/integration/catchup-fallback-held-edit.test.ts test 3
+      if (id in sent && sent[id] === sentAtInvocation?.get(id) && !ackOnTheWay(sent[id])) {
         delete sent[id];
         localQueue.processQueue(id);
       }
@@ -238,6 +242,22 @@ function installOnChannel(channel: ChannelLike | undefined): void {
   });
   const sentOnCurrentConnection = (change: unknown): boolean =>
     authGen > 0 && typeof change === 'object' && change !== null && sentOnGen.get(change) === authGen;
+  // #710 — the `sent` changes of this connection the server answered without an
+  // error (a 'c' reply whose ccids hold the change's ccid). Read in the same tick as
+  // onChanges, which only queues the work, so `sent[id]` is still the change; the
+  // entry leaves `sent` when the library applies the ack.
+  const ackSeen = new WeakSet<object>();
+  channel?.message?.on('c', (data: string) => {
+    try {
+      for (const change of JSON.parse(data) as Array<{ id?: string; error?: unknown; ccids?: unknown }>) {
+        const own = !change?.error && change?.id !== undefined ? (localQueue.sent?.[change.id] as { ccid?: string } | undefined) : undefined;
+        if (own && Array.isArray(change.ccids) && change.ccids.includes(own.ccid)) ackSeen.add(own);
+      }
+    } catch {
+      // not a change list: nothing to record
+    }
+  });
+  const ackOnTheWay = (change: unknown): boolean => sentOnCurrentConnection(change) && ackSeen.has(change as object);
 
   guardUntilIdle(localQueue, 'start', countOpen);
   guardUntilIdle<LocalQueueLike, Map<string, unknown>>(

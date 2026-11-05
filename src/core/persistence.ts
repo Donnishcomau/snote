@@ -150,6 +150,9 @@ export function loadState(dir: string): Partial<State> | undefined {
   return { data: revivedData as unknown as State['data'] } as unknown as Partial<State>;
 }
 
+/** #629 rev2: the notice when a step that waited for the save fails (the save itself held). */
+export const AFTER_SAVE_STEP_FAILED = 'notes saved; could not update the editor drafts';
+
 // #65: callbacks waiting for the next successful state.json save.
 const afterSave: Array<() => void> = [];
 
@@ -196,7 +199,16 @@ export function persistOnChange(
         lastState = null;
         // #65: whatever waited for the text to be on disk may go now.
         const waiting = afterSave.splice(0);
-        for (const fn of waiting) fn();
+        // #629: each on its own, so one that throws neither stops the others nor reports this save as failed
+        for (const fn of waiting) {
+          try {
+            fn();
+          } catch (err) {
+            // #629 rev2: the save held, so this notice is its own; it shows the error code, not the message (a message may quote a note)
+            const code = (err as { code?: unknown } | null)?.code;
+            publishProblem(typeof code === 'string' ? `${AFTER_SAVE_STEP_FAILED}: ${code}` : AFTER_SAVE_STEP_FAILED);
+          }
+        }
       } catch (err) {
         publishProblem(problemText('could not save notes', err));
       }

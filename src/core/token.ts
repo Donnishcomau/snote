@@ -4,6 +4,7 @@ import * as path from 'node:path';
 
 import { secureMkdir, secureRemoveTree, secureRename, secureRmdir, secureUnlink, secureWriteFileSync } from './secure-fs';
 import { sanitizeForTerminal } from './sanitize';
+import { problemText } from './problem-signal';
 
 /**
  * Resolve the application data directory.
@@ -115,8 +116,8 @@ export function sweepStaleTemps(dir: string): void {
 }
 
 function isSnoteFile(name: string): boolean {
-  // the lock and its `.sweep` marker are one prefix
-  return name.startsWith('instance.lock') || SNOTE_FILES.includes(name);
+  //, #628: the lock and its `.sweep` marker by exact name (a user's instance.lock-notes.txt stays)
+  return name === 'instance.lock' || name === 'instance.lock.sweep' || SNOTE_FILES.includes(name);
 }
 
 function removeIfFile(p: string): void {
@@ -142,6 +143,16 @@ function removeIfFile(p: string): void {
  * (created when missing, as before).
  */
 export async function logout(dir: string): Promise<void> {
+  logoutNow(dir);
+}
+
+/** #635: the user's logout from the app; an error shows as `could not log out: <code>`, not an unhandled rejection. */
+export function logoutShown(dir: string, show: (text: string) => void): void {
+  logout(dir).catch((e: unknown) => show(problemText('could not log out', e)));
+}
+
+/** The logout steps, synchronous, so signOutByServer returns their error as its notice. */
+function logoutNow(dir: string): void {
   if (fs.existsSync(dir)) {
     for (const name of ['auth.json', 'auth.json.tmp', 'blog.json', 'blog.json.tmp', 'blog-sent.json', 'blog-sent.json.tmp']) {
       removeIfFile(path.join(dir, name));
@@ -286,7 +297,11 @@ export function keptElsewhereCount(root: string, ownFolder: string): number {
  */
 export function signOutByServer(root: string, dir: string): string | null {
   if (!hasKept(dir) && keptChangesNotice(root, dir) === null) {
-    void logout(root);
+    try {
+      logoutNow(root);
+    } catch (e) {
+      return sanitizeForTerminal(problemText('could not log out', e)); // #635
+    }
     return null;
   }
   forcedSignOut(root);

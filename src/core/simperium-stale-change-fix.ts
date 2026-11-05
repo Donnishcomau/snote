@@ -6,31 +6,41 @@ import { apply, diff, transform } from 'simperium/lib/simperium/util/change';
 type Obj = Record<string, unknown>;
 type Change = { id: string; o?: string; sv?: number; ev?: number; ccids?: string[]; error?: unknown };
 type Fn = (...a: unknown[]) => void;
+type Sent = { id: string; o?: string; sv?: number; v?: Obj; d?: Obj };
 // OMARCHY: boundary cast
 type Channel = {
   send(d: string): unknown;
   emit(e: string, ...a: unknown[]): unknown;
   once(e: string, f: Fn): unknown;
   rawListeners(e: string): Fn[];
+  on(e: string, f: (id: string, s: Sent) => void): unknown;
+  isIndexing?: boolean;
   removeListener(e: string, f: Fn): unknown;
   message: { prependListener(e: string, f: (d: string) => void): unknown };
-  store: { get(id: string): Promise<{ version?: number; data?: Obj }> };
-  localQueue: { sent: Record<string, { ccid?: string } | undefined>; acknowledge(c: unknown): void };
+  store: { get(id: string): Promise<{ version?: number; data?: Obj }>; put(id: string, v: number, d: Obj): unknown };
+  localQueue: {
+    sent: Record<string, (Sent & { ccid?: string }) | undefined>;
+    queues: Record<string, { type?: string; object?: Obj }[] | undefined>;
+    acknowledge(c: unknown): void;
+    on(e: string, f: (c: Sent) => void): unknown;
+  };
   onBeforeNetworkChange(id: string, data: Obj, base: Obj, patch: Obj): Promise<unknown>;
   staleFix?: boolean;
 };
+// OMARCHY: boundary cast (the bucket's object store; the note bucket's get answers at once)
+type Live = { get?(id: string, cb: (e: unknown, o?: { data?: Obj }) => void): unknown };
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const empty = (d: unknown) => !d || Object.keys(d).length === 0;
 
 export function installStaleChangeFix(client: unknown): void {
   // OMARCHY: boundary cast
-  for (const b of (client as { buckets?: { channel?: Channel }[] })?.buckets ?? []) {
+  for (const b of (client as { buckets?: { channel?: Channel; store?: Live }[] })?.buckets ?? []) {
     const ch = b?.channel;
-    if (ch?.message && ch.store && !ch.staleFix) install(ch);
+    if (ch?.message && ch.store && !ch.staleFix) install(ch, b.store);
   }
 }
 
-function install(ch: Channel): void {
+function install(ch: Channel, live?: Live): void {
   ch.staleFix = true;
   // modify changes by `<id>.<sv>`, kept 60 s at most
   const records = new Map<string, { c: Change; at: number }[]>();
@@ -45,6 +55,40 @@ function install(ch: Channel): void {
       }
     } catch {
       // not a change list
+    }
+  });
+  // #706 (TL proof): a held edit sent against an old ghost comes back merged with another
+  // device's change; channel.js:107-110 saves that copy as the ghost and leaves the
+  // note as sent, so the next edit removed the other device's lines. Give the note and a queued edit
+  // the server's additions. Not when a network change moved the ghost first: channel.js:116-139
+  // already rebased the note then. proof: test/integration/catchup-fallback-held-edit.test.ts
+  const out = new WeakMap<Sent, { t?: Obj; g?: Obj; n: number }>();
+  ch.localQueue.on('send', (c) => {
+    if (c.o !== 'M' || out.has(c)) return;
+    const r = { t: c.d, n: 0 };
+    out.set(c, r);
+    if (!c.d) void ch.store.get(c.id).then((g) => (r.t = g?.data && (g.version ?? 0) === (c.sv ?? 0) ? (apply(c.v, g.data) as Obj) : undefined)).catch(() => undefined);
+  });
+  const put = ch.store.put.bind(ch.store);
+  ch.store.put = (id, v, d) => {
+    const r = out.get(ch.localQueue.sent[id]!);
+    if (r) (r.g = d), r.n++;
+    return put(id, v, d);
+  };
+  // a merged copy the diff throws on (content not a string) is ignored; the note keeps what was sent
+  ch.on('acknowledge', (id, s) => {
+    try {
+      const { t, g, n } = out.get(s) ?? {};
+      if (!t || !g || n !== 1 || same(t, g)) return;
+      const p = diff(t, g) as Obj;
+      const rb = (o: Obj) => (empty(diff(t, o)) ? g : (apply(transform(diff(t, o), p, t), g) as Obj));
+      let note = g;
+      for (const q of ch.localQueue.queues[id] ?? []) if (q.object && q.type === 'modify') note = q.object = rb(q.object);
+      // text typed since the send that the editor delay (noteEditDelayMs) has not queued yet is only in the live note
+      live?.get?.(id, (_e, o) => o?.data && (note = rb(o.data)));
+      ch.emit('update', id, note, t, p, !!ch.isIndexing);
+    } catch (f381) {
+      return void f381;
     }
   });
   // channel.js:178-182: once('version.<id>.<sv>') is registered just before this send

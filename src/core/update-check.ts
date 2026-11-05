@@ -275,6 +275,10 @@ type RemoteUpdateResult = {
 
 function readCache(file: string): UpdateCheckCache | null {
   try {
+    // #488: a file over the cap is no cache (as in readTagCache) and is not read
+    if (fs.statSync(file).size > TAG_CACHE_MAX_BYTES) { // #488
+      return null;
+    }
     const parsed = JSON.parse(fs.readFileSync(file, 'utf8')) as Partial<UpdateCheckCache> | null;
     if (
       parsed &&
@@ -375,11 +379,8 @@ export async function checkRemoteUpdate(o: {
   }
 
   try {
-    const local = await run(['rev-parse', 'HEAD'], {
-      cwd: o.cloneDir,
-      timeoutMs: GIT_TIMEOUT_MS,
-      env: gitEnv(o.env),
-    });
+    // #527: the local head read carries MUST 6 too, like every other git call in the clone
+    const local = await runInClone(run, o.cloneDir, o.env, [...REMOTE_GIT_FLAGS, 'rev-parse', 'HEAD']);
     if (local.code !== 0) {
       return { state: 'unknown' };
     }

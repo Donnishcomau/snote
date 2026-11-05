@@ -7,10 +7,11 @@ import { sortEntries } from './app-model';
 import { parseQuery, matchParsed } from '../core/search';
 import { inCollection } from '../core/collection';
 import { tagRowsStored } from '../core/collection';
-import { pendingCount } from '../core/simperium-reducer';
+import { unsentCount } from '../core/held-unsynced';
 import { sortLabel, noteKeyAction } from '../core/note-keys';
-import { connectionWord, type ConnectionWord } from '../core/connection-word';
-import { hasOpenSocket } from '../core/websocket-provider';
+import { connectionWord, offlineReason, type ConnectionWord } from '../core/connection-word';
+import { connectFailure, hasOpenSocket } from '../core/websocket-provider';
+import { syncClock } from '../core/last-sync';
 
 export function useAppState(store: Store<State>) {
   const [noteEntries, setNoteEntries] = useState<{ id: EntityId; note: Note }[]>([]);
@@ -20,6 +21,9 @@ export function useAppState(store: Store<State>) {
   const [connected, setConnected] = useState(false);
   const [word, setWord] = useState<ConnectionWord>('connecting');
   const [pending, setPending] = useState(0);
+  // #79 the offline reason, #619 the last-sync text (#649: syncClock keeps it current)
+  const [reason, setReason] = useState<string>();
+  const [synced, setSynced] = useState<string>();
   const [allTagNames, setAllTagNames] = useState<string[]>([]);
   const [query, setQuery] = useState('');
   const [tagNames, setTagNames] = useState<string[]>([]);
@@ -43,6 +47,10 @@ export function useAppState(store: Store<State>) {
   }, [noteEntries, selectedIndex]);
 
   useEffect(() => {
+    // #649: connected with nothing pending means the sync is current; the minute tick moves the time on
+    const clock = syncClock(() => {
+      return store.getState().simperium.connected && unsentCount(store) === 0;
+    }, setSynced);
     const render = () => {
       const state = store.getState();
       const inTrashNow = state.ui.collection.type === 'trash';
@@ -113,8 +121,13 @@ export function useAppState(store: Store<State>) {
         }
       }
       setConnected(state.simperium.connected);
-      setWord(connectionWord(state.simperium, hasOpenSocket()));
-      setPending(pendingCount(state.simperium));
+      const failure = connectFailure();
+      const w = connectionWord(state.simperium, hasOpenSocket(), failure !== null);
+      const p = unsentCount(store);
+      setWord(w);
+      setReason(offlineReason(w, failure));
+      clock.update();
+      setPending(p);
       const tags: string[] = [];
       for (const [, tag] of state.data.tags) {
         tags.push(tag.name);
@@ -126,7 +139,10 @@ export function useAppState(store: Store<State>) {
 
     render();
     const unsubscribe = store.subscribe(render);
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      clock.stop();
+    };
   }, [store]);
 
   // start (or clear) a reselect by id; setExternalSelect(null) aborts it
@@ -134,7 +150,7 @@ export function useAppState(store: Store<State>) {
     externalSelectRef.current = id;
   };
 
-  return { noteEntries, selectedIndex, setSelectedIndex, setExternalSelect, connected, word, pending, allTagNames, query, setQuery, tagNames, collection, inTrash, sortLabelStr };
+  return { noteEntries, selectedIndex, setSelectedIndex, setExternalSelect, connected, word, reason, synced, pending, allTagNames, query, setQuery, tagNames, collection, inTrash, sortLabelStr };
 }
 
 /** #11: `d` with nothing selected tells the user instead of failing silently. */

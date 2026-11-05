@@ -44,9 +44,9 @@ describe('lazy simperium and slim lodash', () => {
     expect(bundled).not.toContain('lodash/lodash.js');
   });
 
-  it('3: WHEN the size of the bundle is read THEN it is above `1000000` and below `1625800` bytes', () => {
+  it('3: WHEN the size of the bundle is read THEN it is above `1000000` and below `1613000` bytes', () => {
     expect(size).toBeGreaterThan(1000000);
-    expect(size).toBeLessThan(1625800);
+    expect(size).toBeLessThan(1613000);
   });
 
   it('4: WHEN the bundle is run with spawnSync(process.execPath, [outfile, \'--help\'], { encoding: \'utf8\' }) THEN the exit status is `0` and stdout contains `usage: snote`', () => {

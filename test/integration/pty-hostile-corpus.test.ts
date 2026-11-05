@@ -105,7 +105,9 @@ function forbiddenIn(wire: Buffer): string[] {
       found.push(`control 0x${c.toString(16)}`);
     }
   }
-  for (const m of s.matchAll(/\xc2[\x80-\x9f]|\xe2\x80[\x8b-\x8f\xa8-\xae]|\xe2\x81[\xa6-\xa9]/g)) found.push(`char ${JSON.stringify(m[0])}`);
+  // #663: also U+00AD, U+061C, U+2060-U+2064, U+FEFF, the tag characters U+E0000-U+E007F, U+FE00-U+FE0D, U+034F, U+3164
+  // and U+E0100-U+E01EF (the corpus `format` entry)
+  for (const m of s.matchAll(/\xc2[\x80-\x9f\xad]|\xd8\x9c|\xe2\x80[\x8b-\x8f\xa8-\xae]|\xe2\x81[\xa0-\xa4\xa6-\xa9]|\xef\xbb\xbf|\xf3\xa0[\x80\x81][\x80-\xbf]|\xef\xb8[\x80-\x8d]|\xcd\x8f|\xe3\x85\xa4|\xf3\xa0[\x84-\x87][\x80-\xbf]/g)) found.push(`char ${JSON.stringify(m[0])}`);
   return found;
 }
 

@@ -2,11 +2,13 @@ import {
   closeSync,
   constants,
   fchmodSync,
+  fstatSync,
   fsyncSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
   openSync,
+  readFileSync,
   renameSync,
   rmdirSync,
   rmSync,
@@ -56,8 +58,11 @@ export function ensureDir(dir: string, mode?: number): void {
 export function secureMkdir(dir: string): void {
   ensureDir(dir, 0o700);
   const fd = openSync(dir, constants.O_DIRECTORY | (constants.O_NOFOLLOW ?? 0));
-  fchmodSync(fd, 0o700);
-  closeSync(fd);
+  try {
+    fchmodSync(fd, 0o700);
+  } finally {
+    closeSync(fd); // #630: also when the chmod throws
+  }
 }
 
 /**
@@ -115,7 +120,10 @@ export function secureWriteFileSync(path: string, data: string): void {
  * proof: test/core/secure-fs-helpers.test.ts
  * proof: test/core/secure-fs-short-write.test.ts
  */
-export function secureExclusiveCreate(path: string, data: string, mode: number = 0o600): void {
+/** #634 rev2: who a file is: device, inode and change time (ns), so a reused inode number does not match. */
+export const fileId = (st: { dev: bigint; ino: bigint; ctimeNs: bigint }): string => `${st.dev}:${st.ino}:${st.ctimeNs}`;
+
+export function secureExclusiveCreate(path: string, data: string, mode: number = 0o600): string {
   const buf = Buffer.from(data, 'utf8');
   const fd = openSync(path, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | (constants.O_NOFOLLOW ?? 0), mode);
   let complete = false;
@@ -129,19 +137,22 @@ export function secureExclusiveCreate(path: string, data: string, mode: number =
       off += n;
     }
     complete = true;
+    return fileId(fstatSync(fd, { bigint: true })); // #634 rev2: taken from the descriptor, so it names the file this call made
   } finally {
     try {
-      closeSync(fd);
+      // #634: while fd is open its inode is not reused, so a path that names another inode is another start's file
+      if (!complete && sameInode(fd, lstatSync(path))) secureUnlink(path);
+    } catch {
+      // already gone
     } finally {
-      if (!complete) {
-        try {
-          secureUnlink(path);
-        } catch {
-          // already gone
-        }
-      }
+      closeSync(fd);
     }
   }
+}
+
+function sameInode(fd: number, st: { dev: number; ino: number }): boolean {
+  const own = fstatSync(fd);
+  return own.dev === st.dev && own.ino === st.ino;
 }
 
 /**
@@ -155,6 +166,26 @@ export function secureOpenForRead(path: string, opts: { nonBlock?: boolean } = {
     path,
     constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0) | (opts.nonBlock === true ? constants.O_NONBLOCK : 0)
   );
+}
+
+/**
+ * #676: the text of `path` when it is a regular file; '' when nothing is there or it is unreadable; null when
+ * something else is there (a link, a FIFO, a device, a socket, a folder). One descriptor does it all: the open
+ * refuses a symlink and does not wait on a named pipe (nonBlock), fstat of that descriptor must say regular
+ * file, and the read uses that same descriptor, so no second lookup of the path can be swapped. It returns at once.
+ * proof: test/core/instance-lock-nonregular.test.ts
+ */
+export function readRegularText(path: string): string | null {
+  let fd: number | undefined;
+  try {
+    fd = secureOpenForRead(path, { nonBlock: true });
+    return fstatSync(fd).isFile() ? readFileSync(fd, 'utf8') : null;
+  } catch (e) {
+    const code = (e as { code?: string }).code;
+    return code === 'ELOOP' || code === 'ENXIO' ? null : '';
+  } finally {
+    if (fd !== undefined) closeSync(fd);
+  }
 }
 
 /**

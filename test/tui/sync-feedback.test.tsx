@@ -29,8 +29,8 @@ function buildStoreWithTwoNotes(): ReturnType<typeof makeStore> {
 }
 
 describe('The r key says it synced', () => {
-  describe('1: WHEN r is written THEN spy was called 1 time and the frame contains synced followed by a time', () => {
-    it('WHEN r is written THEN spy was called 1 time and the frame contains `synced ` followed by a time matching /\\d\\d:\\d\\d/', async () => {
+  describe('1: WHEN r is written THEN spy was called 1 time and the frame contains sync checked (#649)', () => {
+    it('WHEN r is written THEN spy was called 1 time and the frame contains `sync checked` (#649)', async () => {
       const store = buildStoreWithTwoNotes();
       const spy = vi.fn();
 
@@ -47,12 +47,12 @@ describe('The r key says it synced', () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
       const frame = lastFrame() ?? '';
-      expect(frame).toMatch(/synced \d\d:\d\d/);
+      expect(frame).toContain('sync checked');
     });
   });
 
-  describe('2: WHEN r is written and 3100 ms pass THEN the frame no longer contains synced and still contains 2 notes', () => {
-    it('WHEN r is written and 3100 ms pass THEN the frame no longer contains `synced ` and still contains `2 notes`', { timeout: 6000 }, async () => {
+  describe('2: WHEN r is written and 3100 ms pass THEN the frame contains synced only once (the #619 last-sync time) and still contains 2 notes', () => {
+    it('WHEN r is written and 3100 ms pass THEN the frame contains `synced ` only once (the #619 last-sync time) and still contains `2 notes`', { timeout: 6000 }, async () => {
       const store = buildStoreWithTwoNotes();
       const spy = vi.fn();
 
@@ -66,13 +66,13 @@ describe('The r key says it synced', () => {
       await new Promise((r) => setTimeout(r, 3100));
 
       const frame = lastFrame() ?? '';
-      expect(frame).not.toContain('synced ');
+      expect(frame.match(/synced /g)?.length).toBe(1);
       expect(frame).toContain('2 notes');
     });
   });
 
-  describe('3: WHEN r is written twice with 100 ms between them THEN spy was called 2 times and the frame contains synced exactly once', () => {
-    it('WHEN r is written twice with 100 ms between them THEN spy was called 2 times and the frame contains `synced ` exactly once', async () => {
+  describe('3: WHEN r is written twice with 100 ms between them THEN spy was called 2 times and the frame contains sync checked exactly once (#649)', () => {
+    it('WHEN r is written twice with 100 ms between them THEN spy was called 2 times and the frame contains `sync checked` exactly once (#649)', async () => {
       const store = buildStoreWithTwoNotes();
       const spy = vi.fn();
 
@@ -89,13 +89,13 @@ describe('The r key says it synced', () => {
 
       expect(spy).toHaveBeenCalledTimes(2);
       const frame = lastFrame() ?? '';
-      const matches = frame.match(/synced /g);
+      const matches = frame.match(/sync checked/g);
       expect(matches?.length).toBe(1);
     });
   });
 
-  describe('4: WHEN no key is written THEN the frame does not contain synced and contains 2 notes', () => {
-    it('WHEN no key is written THEN the frame does not contain `synced ` and contains `2 notes`', async () => {
+  describe('4: WHEN no key is written THEN the frame contains synced only once (the #619 last-sync time) and contains 2 notes', () => {
+    it('WHEN no key is written THEN the frame contains `synced ` only once (the #619 last-sync time) and contains `2 notes`', async () => {
       const store = buildStoreWithTwoNotes();
       const spy = vi.fn();
 
@@ -106,7 +106,7 @@ describe('The r key says it synced', () => {
       await new Promise((r) => setTimeout(r, 50));
 
       const frame = lastFrame() ?? '';
-      expect(frame).not.toContain('synced ');
+      expect(frame.match(/synced /g)?.length).toBe(1);
       expect(frame).toContain('2 notes');
     });
   });

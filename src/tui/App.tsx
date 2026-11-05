@@ -16,7 +16,7 @@ import { handleSearchKey, handleSearchClearKey, handleTagsKey, handleHistoryKey,
 import { handleNoteKey } from './note-focus'; import { handlePaneArrow } from './pane-arrows';
 import { useReselect } from './use-reselect'; import { useReadGate, SEVERAL_KEYS } from './read-gate';
 import { splitPastedInput } from './split-input'; import { sanitizeForTerminal } from '../core/sanitize';
-import { editSelectedNote, createNote, copyLink, forceSyncNow, saveInlineEdit } from './app-actions'; import { useInlineEditorState, inlineEditRefusal } from './inline-editor-state';
+import { editSelectedNote, createNote, copyLink, forceSyncNow } from './app-actions'; import { newNoteInline, saveInlineSession, finishInlineNew } from './inline-new-note'; import { useInlineEditorState, inlineEditRefusal } from './inline-editor-state';
 import type { EntityId } from '@vendor/types';
 
 interface AppProps {
@@ -55,7 +55,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   const [historyIndex, setHistoryIndex] = useState(0);
   const [reading, setReading] = useState(false);
   // prompts whose state lives in BottomArea, read via cells
-  const { itemAsk, setItemAsk } = useItemAsk(); const { exportAsk, setExportAsk } = useExportAsk(); const { setBlogSendAsk } = useBlogSendAsk(); const { open: inlineEditOpen, base: inlineEditBase, session: inlineSession, openEdit: openInlineEdit, closeEdit: closeInlineEdit } = useInlineEditorState();
+  const { itemAsk, setItemAsk } = useItemAsk(); const { exportAsk, setExportAsk } = useExportAsk(); const { setBlogSendAsk } = useBlogSendAsk(); const { open: inlineEditOpen, base: inlineEditBase, session: inlineSession, openEdit: openInlineEdit, openNew: openInlineNew, closeEdit: closeInlineEdit } = useInlineEditorState();
   const { notice, setNotice, setNoticeError, clearNotice } = useNotice();
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
   const syncedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -162,7 +162,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
     } else if (input === 'e') {
       editSelectedNote({ store, selectedEntry, setRawMode, runEditor, onEditorError: setNoticeError, suspend: suspendTerminal });
     } else if (input === 'n') {
-      createNote({ store, topNote: noteEntries[0]?.note, setRawMode, runEditor, setSelectedIndex, onEditorError: setNoticeError, onNoteCreated: () => setNotice('New note saved — press g to add tags'), suspend: suspendTerminal });
+      if (newNoteInline(width, tagsOpen, tagsFocused, reading)) openInlineNew(crypto.randomUUID() as EntityId, noteEntries[0]?.note ?? null); else createNote({ store, topNote: noteEntries[0]?.note, setRawMode, runEditor, setSelectedIndex, onEditorError: setNoticeError, onNoteCreated: () => setNotice('New note saved — press g to add tags'), suspend: suspendTerminal });
     } else if (input === 'j' || keyName === 'downArrow') {
       setSelectedIndex((i) => Math.min(i + 1, noteEntries.length - 1));
     } else if (input === 'k' || keyName === 'upArrow') {
@@ -223,7 +223,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
           <BannerRow /><MainPanes store={store} view={view} width={width} height={height} tagsOpen={tagsOpen} tagsFocused={tagsFocused}
             tagIndex={tagIndex} rendered={rendered} searchOpen={searchOpen} selectedNote={selectedNote}
             historyOpen={historyOpen} historyIndex={historyIndex} reading={reading}
-            noteFocused={noteFocused} cursorLine={cursorLine} inlineEditOpen={inlineEditOpen} onCloseEdit={closeInlineEdit} inlineEditBase={inlineEditBase} onSaveEdit={(value: string) => { const s = inlineSession.current; saveInlineEdit({ store, selectedEntry: s.entry, base: s.stored, local: value, onEditorError: setNoticeError }); s.stored = value; }} />
+            noteFocused={noteFocused} cursorLine={cursorLine} inlineEditOpen={inlineEditOpen} onCloseEdit={() => { closeInlineEdit(); finishInlineNew({ store, session: inlineSession, setNotice, setNoticeError }); }} inlineEditBase={inlineEditBase} onSaveEdit={(value: string) => saveInlineSession({ store, session: inlineSession, local: value, onEditorError: setNoticeError, onNotice: setNotice })} />
           {notice ? <Text color={noticeColor(notice)} wrap="truncate-end">{sanitizeForTerminal(notice.message)}</Text> : null}
           <BottomArea
             store={store}

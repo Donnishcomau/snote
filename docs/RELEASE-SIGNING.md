@@ -40,9 +40,17 @@ hardware keys: install OpenSSH and `ykman` with Homebrew and run `/opt/homebrew/
 
 ## Each release
 
-1. Build the public tree: `scripts/publish-export.sh --out /tmp/snote-public`. The release gate runs inside it with the signature
-   check off, because the tree does not exist yet. If one of our open `[Verify]` requests on the Omarchy plugin marketplace names
-   another commit, the script stops and prints the `--supersede <number>` form; it never posts the comment itself.
+1. Build the public tree in its own folder: `scripts/publish-export.sh --out /tmp/snote-export`. The release gate runs inside it
+   with the signature check off, because the tree does not exist yet. If one of our open `[Verify]` requests on the Omarchy plugin
+   marketplace names another commit, the script stops and prints the `--supersede <number>` form; it never posts the comment itself.
+   `git -C /tmp/snote-export status --porcelain --ignored` must print nothing (clean it as step 2 says if it does). The public
+   repository has history, so the release is one new commit on top of its main, never the export commit itself (pushing that
+   would replace the history): `git clone https://github.com/donnishcomau/snote /tmp/snote-public`, then
+   `rsync -a --delete --exclude=/.git /tmp/snote-export/ /tmp/snote-public/`, then `git -C /tmp/snote-public add -A .`, then
+   `git -C /tmp/snote-public -c commit.gpgsign=false commit -q -m "snote <version>"` with `GIT_AUTHOR_NAME`, `GIT_AUTHOR_EMAIL`,
+   `GIT_COMMITTER_NAME` and `GIT_COMMITTER_EMAIL` set to the public identity of step 6. Then
+   `git -C /tmp/snote-public rev-parse 'HEAD^{tree}'` must print the same id as `git -C /tmp/snote-export rev-parse 'HEAD^{tree}'`;
+   if it does not, stop.
 2. Check that the tree is clean: `git -C /tmp/snote-public status --porcelain --ignored` must print nothing. The checks that
    `publish-export.sh` runs in the tree can leave files behind (build output, a `node_modules` folder). The manifest lists every file
    in the tree and the gate refuses a tree with uncommitted changes. If the command prints anything, run
@@ -56,31 +64,34 @@ hardware keys: install OpenSSH and `ykman` with Homebrew and run `/opt/homebrew/
    (use `env -u SSH_AUTH_SOCK` in front if it hangs). It must print `Good "snote-release" signature`. `ssh-keygen -Y sign` exits 0
    without writing anything when a `SHA256SUMS.sig` already exists, so a signature that is old, or missing, would otherwise pass
    unnoticed; the manifest script deletes the old signature, and the gate refuses a signature older than `SHA256SUMS`.
-6. Put both files into the export commit:
+6. Put both files into the release commit:
    `git -C /tmp/snote-public add SHA256SUMS SHA256SUMS.sig`, then
    `git -C /tmp/snote-public -c commit.gpgsign=false commit --amend --no-edit`
    with the committer set to the public identity for that one command: `GIT_COMMITTER_NAME=qteamdon` and
    `GIT_COMMITTER_EMAIL=201689496+qteamdon@users.noreply.github.com`.
-   The amend gives the export commit a new id. Read it with `git -C /tmp/snote-public rev-parse HEAD`: this amended commit, not the
-   one `publish-export.sh` printed, is the one you push, and the one the `[Verify]` request on the marketplace must name as its target commit.
+   The amend gives the release commit a new id. Read it with `git -C /tmp/snote-public rev-parse HEAD`: this amended commit, not the
+   one you made in step 1, is the one you push, and the one the `[Verify]` request on the marketplace must name as its target commit.
    Retarget that request to the amended commit before you push.
 7. Run the gate again, from the snote repository root, with the signature check on. For 0.2.9, the first signed release, type the two
    fingerprints you recorded at enrolment (main first, then backup, in the order of `packaging/release/allowed_signers`) in front:
    `SNOTE_RELEASE_BOOTSTRAP_FPS=SHA256:<main>,SHA256:<backup> env -u SNOTE_SIG_CHECK SNOTE_RELEASE_TREE=/tmp/snote-public scripts/release-gate.sh 0.2.9`.
    The first signed release has no previous signed tag, so the gate trusts the committed keys only when these fingerprints match;
-   without them it refuses. If they do not match, the gate prints the fingerprints it found: compare them with your notes, never
+   without them it refuses. A tag for this same release that you already pushed does not count as a previous tag, so the fingerprints
+   are still required. If they do not match, the gate prints the fingerprints it found: compare them with your notes, never
    copy them from that line. For every later release leave the fingerprints out:
    `env -u SNOTE_SIG_CHECK SNOTE_RELEASE_TREE=/tmp/snote-public scripts/release-gate.sh <version>`.
    The gate fetches the release tags of the public repository (https://github.com/donnishcomau/snote, a constant in the script; it
-   needs the network) and trusts the keys in `packaging/release/allowed_signers` as they were in the newest earlier tag whose tree
-   holds a `SHA256SUMS.sig`, not the file in the tree being released. It refuses a file with fewer than 2 keys, a key that is not a
+   needs the network) and trusts the keys in `packaging/release/allowed_signers` as they were in the newest tag that points at a
+   different commit, has a lower version than this release, and holds a `SHA256SUMS.sig` in its tree, not the file in the tree being
+   released. It refuses a file with fewer than 2 keys, a key that is not a
    hardware-key type, and a tree that is not the signed export commit. This is the run that enforces the signature: run it
    right before tagging, exactly as written, and tag only if its output does NOT contain `signature check skipped`. A setting
    inherited from your shell can turn the signature check off; the gate then prints that line and still prints `release-gate: OK`,
    and `env -u SNOTE_SIG_CHECK` removes such a setting for this run. `scripts/publish-export.sh` runs
    the gate once on its own without the signature check, so it never enforces the signature by itself. The gate takes the newest
-   earlier tag that holds a `SHA256SUMS.sig` as the previous signed tag by the file being there, without verifying it or checking
-   that it is older than this release: a wrong or hostile tag on the public repository can only make the gate refuse, never pass.
+   tag that meets those conditions as the previous signed tag by the file being there, without verifying it: a wrong or hostile tag on
+   the public repository can only make the gate refuse, never pass. A tag that points at the release commit or has no lower version,
+   such as this release's own tag, is ignored, and the gate prints a line naming it and the reason.
    If the gate refuses and names the previous tag, look at the release tags on GitHub before you do anything else, and do not tag.
 8. Tagging and pushing the tree are separate steps and are not part of this page.
 

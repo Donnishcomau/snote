@@ -16,6 +16,7 @@ export const HOSTILE = {
   bidi: '\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069',
   zeroWidth: '\u200b\u200c\u200e\u200f',
   separators: '\u2028\u2029',
+  format: '\ufeff\u2060\u00ad\u061c\u{e0041}\u{e007f}\ufe00\u034f\u3164\u{e0100}', // #663: Cf and default-ignorables outside the old hand lists (tags, U+FE00, U+034F, U+3164, U+E0100)
 } as const;
 
 export function hostileText(marker: string): string {

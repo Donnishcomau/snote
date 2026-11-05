@@ -42,6 +42,19 @@ jobs:
 
       - run: npm ci
 
+      # The Omarchy contract tier runs the real, pinned Omarchy plugin scripts. The repo and commit come from
+      # test/fixtures/omarchy-pin.json (the one place the pin lives); the clone goes outside the workspace, with no token.
+      - name: Fetch the pinned Omarchy
+        run: |
+          repo=$(jq -r .repo test/fixtures/omarchy-pin.json)
+          sha=$(jq -r .commit test/fixtures/omarchy-pin.json)
+          [[ $repo =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ && $sha =~ ^[0-9a-f]{40}$ ]] || { echo "the Omarchy pin: repo or commit is not well formed" >&2; exit 1; }
+          dir="$RUNNER_TEMP/omarchy-pin"
+          git init -q "$dir"
+          git -C "$dir" fetch -q --depth 1 "https://github.com/$repo.git" "$sha"
+          git -C "$dir" checkout -q FETCH_HEAD
+          echo "OMARCHY_PIN_DIR=$dir" >> "$GITHUB_ENV"
+
       # `make check` includes a startup-time bench (scripts/bench.mjs) with a
       # ~150-200ms ceiling. That budget is tuned against a quiet dev machine;
       # shared/throttled CI runners can miss it under noisy-neighbour load

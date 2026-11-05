@@ -101,4 +101,22 @@ describe('#416 #417 #421 claims from code: the listing text, SECURITY.md and set
     expect(head).not.toContain('nothing is written outside');
     expect(head).toContain('XDG_DATA_HOME');
   });
+
+  it('6: WHEN every R12 row of test/packaging/omarchy-setup-scope.test.ts (`rel === \'<p>\'` and `rel.startsWith(\'<p>/\')` inside `const ALLOWED`) and the run folders built by `defaultDataDir` in src/core/token.ts and `stateDir` in src/cli/main.tsx (their `os.homedir(), \'<a>\', ...` join) are read THEN there are at least 2 R12 paths and 2 run folders, and SECURITY.md\'s `## Install, update and uninstall` section names each as `~/<path>`', () => {
+    const scope = read('test/packaging/omarchy-setup-scope.test.ts');
+    const rows = anchor(scope, /const ALLOWED[^\n]*\[\n([\s\S]*?)\n\];/, 'omarchy-setup-scope.test.ts const ALLOWED rows');
+    const r12 = [...rows.matchAll(/rel === '([^']+)'|rel\.startsWith\('([^']+)\/'\)/g)].map((m) => m[1] ?? m[2]!);
+    const homeJoin = (file: string, fn: string): string => {
+      const text = read(file);
+      const at = text.indexOf(`function ${fn}()`);
+      if (at === -1) throw new Error(`anchor missing: function ${fn}() in ${file}`);
+      const parts = anchor(text.slice(at), /os\.homedir\(\), ((?:'[^']+'(?:, )?)+)\)/, `${fn} os.homedir() join in ${file}`);
+      return [...parts.matchAll(/'([^']+)'/g)].map((m) => m[1]!).join('/');
+    };
+    const runs = [homeJoin('src/core/token.ts', 'defaultDataDir'), homeJoin('src/cli/main.tsx', 'stateDir')];
+    expect(new Set(r12).size).toBeGreaterThanOrEqual(2);
+    expect(runs.filter((r) => /^\.local\/[a-z]+\/[a-z]+$/.test(r))).toHaveLength(2);
+    const text = flat(installSection);
+    for (const p of [...new Set(r12), ...runs]) expect(text, `SECURITY.md install section names ~/${p}`).toContain(`~/${p}`);
+  });
 });

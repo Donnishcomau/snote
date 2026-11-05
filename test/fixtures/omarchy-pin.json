@@ -1,0 +1,16 @@
+{
+  "repo": "basecamp/omarchy",
+  "tag": "v4.0.6",
+  "commit": "237f1b4071a0bff2296c6d740ba2b9fd695ebfa0",
+  "scripts": {
+    "omarchy": "acf2e54c9ee66b38637d646feed6978d4b29e8301b68d38dbffc9ba2cacb1847",
+    "omarchy-cmd-present": "cb9ba1b2bc9c72902be150dad21b16823c8ea9356968c8444681ef545c306684",
+    "omarchy-git-url-check": "a5f856bbdc621bfbc0a017c4f1597887673d8f3800b68e503f364af3d0923339",
+    "omarchy-plugin-add": "fc8eb1486275e308037ca8f284fbb0eb4e010dec593260519695c79414a4b9fb",
+    "omarchy-plugin-catalog": "f995166899b794b49ac15a256cce4b1513648870a9c951c680c8fac18f627ab8",
+    "omarchy-plugin-enable": "750c18dd96dd75e4811215e3fd13f71f5a11aff8e588b4e21688cdc5dd7c62b5",
+    "omarchy-plugin-remove": "ea4e4462ab75b28f249d5e03c03890a1821fd9f095346df34bcb431b2c1e3cc2",
+    "omarchy-plugin-update": "9509f925d230863ffd5246965cbaab87818c53c718bcc5deea68bea3a38a17c4",
+    "omarchy-plugin-validate": "f7507e5042eb970e3dc918bdf6bf251c7557443892a77e71a17d7019ddde72c8"
+  }
+}

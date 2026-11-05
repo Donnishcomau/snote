@@ -11,7 +11,7 @@ function commandOnPath(cmd: string): boolean {
 }
 
 const HINT_TEXT =
-  'snote · i insert · Esc done typing · o new line · dd delete line · u undo · :wq save & return · :q! discard';
+  'snote · i insert · Esc done · :w save & sync · :wq save & return · :q! discard';
 
 // A fake editor that records its argv (one JSON array per line) into the
 // file named by HINT_ARGV_LOG, then edits the file given as its last

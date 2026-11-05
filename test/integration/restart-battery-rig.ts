@@ -94,8 +94,11 @@ function openA(dataDir: string, url: string, delay: number | null = 10): Built {
   const noteEditDelayMs = delay === null ? undefined : delay;
   const built = buildStore({ dataDir, appId: APP_ID, server: url, noteEditDelayMs }, { email: EMAIL, token: TOKEN }, () => {});
   open.push(built);
+  dirOf.set(built, dataDir); // #677: settle() reads this client's unsynced.json
   return built;
 }
+// #677: each client's data dir, so every settle() waits for the start-up hand-off, whatever the family.
+const dirOf = new WeakMap<Built, string>();
 
 const OFFLINE = 'ws://127.0.0.1:9';
 const serverNote = (s: FakeSimperiumServer): Note => s.getObject(APP_ID, 'note', 'n1')?.data as Note;
@@ -137,7 +140,7 @@ function control(server: FakeSimperiumServer) {
   const priv = server as unknown as Record<string, (...args: unknown[]) => void>;
   const realSend = priv.send.bind(server);
   const realHandle = priv.handleChange.bind(server);
-  const ctl = { hold: false, eachMs: 0, lateMs: 0, ignore: false };
+  const ctl = { hold: false, eachMs: 0, lateMs: 0, ignore: false, applyLateMs: 0 };
   let queue: Array<() => void> | undefined;
   let started = false;
   priv.send = (ws: unknown, message: string) => {
@@ -164,7 +167,9 @@ function control(server: FakeSimperiumServer) {
   };
   priv.handleChange = (...args: unknown[]) => {
     if (ctl.ignore) return;
-    realHandle(...args);
+    // #677: the server applies (and answers) each client change this many ms late
+    if (ctl.applyLateMs > 0) setTimeout(() => realHandle(...args), ctl.applyLateMs);
+    else realHandle(...args);
   };
   return ctl;
 }
@@ -254,12 +259,20 @@ function classify(server: Note, local: Note, pend: number, e: Expect): Verdict {
   return 'KEPT';
 }
 
-/** Wait until both sides agree with nothing pending (or `maxMs`), then 1500 ms more. */
+/**
+ * Wait until both sides agree with nothing pending (or `maxMs`), then 1500 ms more. #650, #677: for every client (its
+ * data dir from openA), also wait until unsynced.json no longer lists n1 (the start-up hand-off was acknowledged),
+ * polled every 10 ms: a re-index can show both sides agreeing on the server copy before the hand-off sends the edit.
+ * The 1500 ms after agreement is kept (#650): it is where a late effect (a re-applied echo, a second merge, a conflict
+ * copy) shows before the outcome is read. Nothing has to happen inside it, so host load cannot turn a correct run red.
+ */
 async function settle(server: FakeSimperiumServer, b: Built, maxMs = 10000): Promise<void> {
+  const dir = dirOf.get(b);
+  const handedOff = () => dir === undefined || !('n1' in readJson(dir, 'unsynced.json'));
   const agree = () =>
-    pending(b) === 0 && JSON.stringify(view(serverNote(server))) === JSON.stringify(view(localNote(b)));
+    pending(b) === 0 && JSON.stringify(view(serverNote(server))) === JSON.stringify(view(localNote(b))) && handedOff();
   const start = Date.now();
-  while (!agree() && Date.now() - start < maxMs) await sleep(50);
+  while (!agree() && Date.now() - start < maxMs) await sleep(10);
   await sleep(1500);
 }
 
@@ -990,6 +1003,8 @@ const scenarios: Scenario[] = [
       const cur = server.getObject(APP_ID, 'note', 'n1')!.data as Record<string, unknown>;
       server.serverChange('note', 'n1', { ...cur, content: other });
       if (reindex) expireCv(dir);
+      // #677: this row's server applies the hand-off 2000 ms late (past the 1500 ms tail): the read must wait for it
+      if (name === 'count-neutral-move-reindex') control(server).applyLateMs = 2000;
       const b = openA(dir, server.url);
       await settle(server, b);
       await record(name, server, b, { content: kept });
@@ -1055,7 +1070,7 @@ const scenarios: Scenario[] = [
       if (other) server.serverChange('note', 'n1', { ...cur, content: other });
       if (reindex) expireCv(dir);
       const b = openA(dir, server.url);
-      await settle(server, b);
+      await settle(server, b, 10000);
       await record(name, server, b, { content: kept });
     },
   ]),

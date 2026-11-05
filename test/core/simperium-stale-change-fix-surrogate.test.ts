@@ -121,6 +121,25 @@ function guardServer(s: FakeSimperiumServer): void {
   const h = o.handleChange.bind(s);
   o.handleChange = (...a: unknown[]) => { try { h(...a); } catch { /* fixture only */ } };
 }
+// #570: every `e:` (version) reply is held until the server receives C's change, instead of a fixed 600 ms delay, so C
+// still edits while the version fetch for B is in flight; a release with nothing held is reported as a rejection.
+function holdVersionReplies(s: FakeSimperiumServer): void {
+  const o = s as unknown as { send(ws: unknown, m: string): void };
+  const send = o.send.bind(s);
+  const held: Array<[unknown, string]> = [];
+  let holding = true;
+  o.send = (ws, m) => (holding && /^\d+:e:/.test(m) ? void held.push([ws, m]) : send(ws, m));
+  const push = s.received.push.bind(s.received);
+  s.received.push = (...m: string[]) => {
+    const n = push(...m);
+    if (holding && m.some((x) => x.includes('C-MARK'))) {
+      holding = false;
+      if (held.length === 0) rejections.push('#570: no version reply was held when C reached the server');
+      for (const [w, x] of held.splice(0)) send(w, x);
+    }
+    return n;
+  };
+}
 // A, B and C each once in the local note
 const aOnce = (t: string) => (t.match(/A-[^\n]-MARK/g) ?? []).length;
 async function allOnce(s: FakeSimperiumServer, c: Built, errs: string[]): Promise<void> {
@@ -147,7 +166,7 @@ describe('#555 a lone surrogate in the gap never crashes the stale-change wrappe
     const c = await synced(s);
     const errs = hookBefore(c);
     missed(s, () => serverReplace(s, 'n1', noteData(BASE + '\n' + SUR + '\n', 3000)));
-    s.versionReplyDelayMs = 600;
+    holdVersionReplies(s);
     const n0 = s.received.length;
     s.serverChange('note', 'n1', noteData(serverContent(s).replace('\n' + SUR + '\n', '\nB-MARK\n\n' + SUR + '\n'), 3001));
     await waitFor(() => s.received.slice(n0).some((m) => /e:n1\.2$/.test(m)), 'version request out');
@@ -161,7 +180,7 @@ describe('#555 a lone surrogate in the gap never crashes the stale-change wrappe
     const c = await synced(s);
     const errs = hookBefore(c);
     missed(s, () => s.serverChange('note', 'n1', noteData(BASE + '\nA-MARK\n', 3000)));
-    s.versionReplyDelayMs = 600;
+    holdVersionReplies(s);
     const n0 = s.received.length;
     s.serverChange('note', 'n1', noteData(serverContent(s).replace('\nA-MARK\n', '\nB-MARK\n\nA-MARK\n'), 3001));
     await waitFor(() => s.received.slice(n0).some((m) => /e:n1\.2$/.test(m)), 'version request out');

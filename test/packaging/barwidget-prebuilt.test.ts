@@ -8,14 +8,13 @@ import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { sharedTier } from '../helpers/omarchy-pin';
 
 const QML = join(process.cwd(), 'BarWidget.qml');
 const MANIFEST = join(process.cwd(), 'manifest.json');
 
-// `omarchy plugin validate <dir>` validates the manifest when the
-// omarchy command exists; the fact sheet says skip that assertion
-// otherwise.
-const hasOmarchy = spawnSync('sh', ['-c', 'command -v omarchy'], { encoding: 'utf8' }).status === 0;
+// #461: test 4 runs the PINNED `omarchy plugin validate` (test/fixtures/omarchy-pin.json) on every Linux host.
+// A missing pin or jq throws from the helper; nothing here skips.
 
 describe('BarWidget.qml + manifest.json: pre-built install wording', () => {
   it('1: WHEN BarWidget.qml is read as text THEN it contains `Click to install snote (copies the pre-built app, no build)` and contains none of `npm`, `node@22` and `rsync`', () => {
@@ -38,7 +37,7 @@ describe('BarWidget.qml + manifest.json: pre-built install wording', () => {
     expect(text).toContain('--check');
   });
 
-  it.skipIf(!hasOmarchy)('4: WHEN `omarchy plugin validate` is available THEN it exits 0 on this plugin directory; otherwise this assertion is skipped', () => {
+  it.skipIf(process.platform !== 'linux')('4: WHEN the pinned `omarchy plugin validate` runs THEN it exits 0 on this plugin directory', () => {
     // Validate a clean copy of the plugin files only: the repo root holds
     // node_modules/.bin symlinks, which the validator rejects.
     const dir = mkdtempSync(join(tmpdir(), 'snote-plugin-'));
@@ -51,8 +50,10 @@ describe('BarWidget.qml + manifest.json: pre-built install wording', () => {
         const src = join(process.cwd(), f);
         if (existsSync(src)) cpSync(src, join(dir, f), { recursive: true });
       }
+      const tier = sharedTier();
       const result = spawnSync('omarchy', ['plugin', 'validate', dir], {
         encoding: 'utf8',
+        env: tier.env(process.env.HOME ?? dir),
         timeout: 2500,
         killSignal: 'SIGKILL',
       });

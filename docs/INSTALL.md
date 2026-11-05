@@ -27,3 +27,5 @@ sh packaging/omarchy/install.sh
 
 `npm ci` installs dependencies from the committed lockfile; `npm run build` produces
 `dist/cli.js`; `packaging/omarchy/install.sh` adds the desktop launcher entry.
+
+If you built from a source checkout or a PKGBUILD clone made before 0.2.11, `git pull` will refuse or diverge, because the public history was rewritten once for 0.2.11. Re-clone once, or run `git fetch origin` then `git reset --hard origin/main`. The reset discards any local changes in that checkout.

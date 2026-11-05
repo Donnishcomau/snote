@@ -15,7 +15,7 @@ import { FakeSimperiumServer } from '../fake-simperium/server';
 import { waitForFrame, waitForInput } from '../helpers/ink-waits';
 
 const strip = (s: string | undefined): string => (s ?? '').replace(/\u001b\[[0-9;]*m/g, '');
-const statusLine = (frame: string | undefined): string => strip(frame).split('\n').find((l) => /^\[\w+\] \d+ notes?\b/.test(l.trim()))?.trim() ?? '';
+const statusLine = (frame: string | undefined): string => strip(frame).split('\n').find((l) => /^\[\w+\] /.test(l.trim()))?.trim().replace(/ synced \d\d:\d\d ·/, '') ?? ''; // #619: the time is cut here; test/tui/status-reason.test.tsx pins it
 // A seeded store: the note count only shows after the first state read, which is also what sets the word.
 const seeded = (): ReturnType<typeof makeStore> => {
   const store = makeStore({ stubClient: {} });
@@ -73,7 +73,7 @@ describe('issue #79 the status bar says which kind of not-connected it is', () =
     r.unmount();
   });
 
-  it('3: WHEN the server closes the connection of a green session THEN the status line, trimmed, is `[offline] 0 notes`', async () => {
+  it('3: WHEN the server closes the connection of a green session THEN the status line, trimmed, is `[offline] connection lost, retrying · 0 notes` (#79)', async () => {
     server = new FakeSimperiumServer();
     await server.start();
     synced = makeStore({
@@ -83,8 +83,8 @@ describe('issue #79 the status bar says which kind of not-connected it is', () =
     await waitForInput(r.stdin);
     await waitForFrame(r.lastFrame, (f) => statusLine(f) === '[connected] 0 notes');
     server.dropClient('test@example.com');
-    const frame = await waitForFrame(r.lastFrame, (f) => statusLine(f) === '[offline] 0 notes');
-    expect(statusLine(frame)).toBe('[offline] 0 notes');
+    const frame = await waitForFrame(r.lastFrame, (f) => statusLine(f) === '[offline] connection lost, retrying · 0 notes');
+    expect(statusLine(frame)).toBe('[offline] connection lost, retrying · 0 notes');
     r.unmount();
   });
 

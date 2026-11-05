@@ -1,7 +1,8 @@
 /**
  * security fix — terminal text and export file names
  * drop bidi controls, zero-width characters and line/paragraph
- * separators, keeping the emoji joiner U+200D (ZWJ). Invisible
+ * separators; the screen keeps the emoji joiner U+200D (ZWJ), a file name
+ * drops it too (#637). Invisible
  * characters are written as \uXXXX escapes, and the element is built
  * with React.createElement, so this file stays plain TypeScript (.ts)
  * like test/integration/second-start-tags.test.ts.
@@ -29,7 +30,7 @@ const rloTitle = 'report‮dm.exe';
 // separators — every one of them removed; ZWJ (U+200D) is not among them.
 const invisibleLetters = 'a​b‌c‎d‏e‪f⁦g⁩h i j';
 
-// family emoji: three people joined by ZWJ (U+200D); must survive.
+// family emoji: three people joined by ZWJ (U+200D); kept on screen, dropped from a file name.
 const zwj = '‍';
 const family = '👨‍👩‍👧';
 
@@ -48,11 +49,11 @@ describe('bidi strip ()', () => {
     expect(exportFileName(invisibleLetters)).toBe('abcdefghij');
   });
 
-  it("3: WHEN sanitizeForTerminal gets `family 👨‍👩‍👧 ok` and exportFileName gets `family 👨‍👩‍👧` THEN both results still contain `\\u200D` (each is returned unchanged)", () => {
+  it("3: WHEN sanitizeForTerminal gets `family \u{1F468}\u200D\u{1F469}\u200D\u{1F467} ok` THEN it is returned unchanged and contains `\\u200D`; WHEN exportFileName gets `family \u{1F468}\u200D\u{1F469}\u200D\u{1F467}` THEN it returns the three people with no `\\u200D`", () => {
     expect(sanitizeForTerminal(`family ${family} ok`)).toBe(`family ${family} ok`);
-    expect(exportFileName(`family ${family}`)).toBe(`family ${family}`);
     expect(sanitizeForTerminal(`family ${family} ok`)).toContain(zwj);
-    expect(exportFileName(`family ${family}`)).toContain(zwj);
+    expect(exportFileName(`family ${family}`)).toBe(`family ${family.split(zwj).join('')}`);
+    expect(exportFileName(`family ${family}`)).not.toContain(zwj);
   });
 
   it("4: WHEN the App lists a note whose content is `inv‮oice.exe\\x1b]52;c;QQ\\x07\\n\\nbody` THEN the frame contains `invoice.exe`, contains no `‮` and no `\\x1b]`, and the note's content is the same string as before the render", async () => {

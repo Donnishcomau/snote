@@ -175,7 +175,9 @@ export function trackUnsynced(
     return next;
   };
 
+  let stopped = false; // #693: once stopped (logout or quit) the tracker writes no file, also from a late settle
   const onStoreChange = () => {
+    if (stopped) return;
     const prevNotes = lastNotes;
     lastNotes = store.getState().data.notes;
     const next = build(snapshot(store.getState()));
@@ -221,7 +223,7 @@ export function trackUnsynced(
     onStoreChange();
   };
 
-  return { stop: unsubscribe, settle };
+  return { stop: () => { stopped = true; unsubscribe(); }, settle };
 }
 
 /**
