@@ -1,3 +1,4 @@
+// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-11-07).
 import * as S from './';
 import * as T from '../types';
 import isEmailTag from '../utils/is-email-tag';
@@ -35,8 +36,9 @@ export const notesAreEqual = (
     a.systemTags.every((tag) => b.systemTags.includes(tag))
   );
 
+// OMARCHY: a function with a typed ghost read, for TypeScript's strict mode
 export function noteHasPendingChanges(state: S.State, noteId: T.EntityId): boolean {
-  const ghostData = state.simperium.ghosts[1].get('note')?.get(noteId)?.data as T.Note | undefined;
+  const ghostData = state.simperium.ghosts[1].get('note')?.get(noteId)?.data as T.Note | undefined; // OMARCHY: typed ghost read
   return !notesAreEqual(
     state.data.notes.get(noteId),
     ghostData

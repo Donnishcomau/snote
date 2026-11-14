@@ -34,7 +34,7 @@ export function BlogSendDialog({
     const origin = phase.origin;
     const label =
       origin === DEFAULT_BLOG_ORIGIN
-        ? 'Skryf token (create one at https://skryf.art/settings/keys)'
+        ? 'Skryf token (new? skryf.art/register, key: https://skryf.art/settings/keys)' // #603
         : 'Blog token';
     return (
       <Prompt

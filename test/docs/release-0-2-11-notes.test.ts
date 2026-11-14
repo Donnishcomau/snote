@@ -19,8 +19,8 @@ describe('0.2.11 release notes and CHANGELOG entry', () => {
     expect(notes).toContain('Not touched: `omarchy plugin remove` deletes only the plugin folder.');
   });
 
-  it('2: WHEN CHANGELOG.md is read THEN its first two `## ` headings are `## 0.2.11` then `## 0.2.10`, and the 0.2.11 entry holds the one-time reinstall bullet and the sections Added, Changed, Fixed and Known issues', () => {
-    expect(changelog.match(/^## .*$/gm)?.slice(0, 2)).toEqual(['## 0.2.11', '## 0.2.10']);
+  it('2: WHEN CHANGELOG.md is read THEN its first two `## ` headings other than `## 0.2.12` are `## 0.2.11` then `## 0.2.10`, and the 0.2.11 entry holds the one-time reinstall bullet and the sections Added, Changed, Fixed and Known issues', () => {
+    expect(changelog.match(/^## .*$/gm)?.filter((h) => h !== '## 0.2.12').slice(0, 2)).toEqual(['## 0.2.11', '## 0.2.10']);
     expect(flat(entry)).toContain('- Installs from 0.2.0 to 0.2.10 need a one-time reinstall (`omarchy plugin remove`, then `omarchy plugin add`, then one click on the bar button) because the public history was rewritten; notes, account and unsent changes are kept. See the release notes.');
     for (const h of ['### Added', '### Changed', '### Fixed', '### Known issues']) expect(entry).toContain(`\n${h}\n`);
   });

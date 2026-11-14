@@ -9,7 +9,7 @@ import { syncBuiltinESMExports } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { isolateGitEnv } from './helpers/git-isolation';
-import { RUN_ID_ENV, removeIfOwned } from './helpers/tmp-leak';
+import { RUN_ID_ENV, removeIfOwned, trackMkdtemp } from './helpers/tmp-leak';
 
 // #310: the run id (set by test/global-leak-guard.ts) sits in every dir name, so the guard can tell this run's dirs from another run's.
 const runTag = process.env[RUN_ID_ENV] ? process.env[RUN_ID_ENV] + '-' : '';
@@ -49,6 +49,10 @@ isolateGitEnv();
 // no-op (a spawned CLI keeps the real call). proof: test/structure/fsync-stub.test.ts
 const fsyncStub = Object.assign((): void => { fsyncStub.calls++; }, { calls: 0, snoteFsyncStub: true as const });
 if (!('snoteFsyncStub' in fs.fsyncSync)) { fs.fsyncSync = fsyncStub; syncBuiltinESMExports(); }
+
+// #319 part 3: list every temp dir a test makes with the mkdtemp family (sync, callback, promise), so the run's teardown (test/helpers/global-leak-guard.ts) fails on one left behind.
+trackMkdtemp(fs);
+syncBuiltinESMExports();
 
 // Never let a test read or write the owner's real home: one temp home per test
 // process, so HOME and every XDG directory resolve inside os.tmpdir().

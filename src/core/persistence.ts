@@ -84,6 +84,9 @@ export function saveState(state: State, dir: string): void {
   secureWriteFileSync(filePath, JSON.stringify(file, replacer));
 }
 
+/** #563: the start-up notice when an unloadable state.json was kept as state.json.corrupt (main.tsx). */
+export const SET_ASIDE_NOTICE = 'Could not read saved data: kept it as state.json.corrupt. Offline notes kept.';
+
 /**
  * Load the data slice from disk.
  *
@@ -155,6 +158,8 @@ export const AFTER_SAVE_STEP_FAILED = 'notes saved; could not update the editor 
 
 // #65: callbacks waiting for the next successful state.json save.
 const afterSave: Array<() => void> = [];
+// #895: true from a saver's stop until the next persistOnChange
+let saverStopped = false;
 
 /**
  * Run *fn* once, after the next successful save of state.json by
@@ -162,6 +167,7 @@ const afterSave: Array<() => void> = [];
  * disk: that save holds the dispatched change.
  */
 export function afterNextSave(fn: () => void): void {
+  if (saverStopped) return; // #895: a step handed in after the stop waits for no save (a later save may be another account's), so a draft folder it would remove stays
   afterSave.push(fn);
 }
 
@@ -185,9 +191,10 @@ export function persistOnChange(
   },
   dir: string,
   delayMs: number = 500
-): () => void {
+): () => boolean {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let lastState: State | null = null;
+  saverStopped = false;
 
   const flush = () => {
     if (lastState) {
@@ -232,9 +239,17 @@ export function persistOnChange(
   const unsubscribe = store.subscribe(schedule);
 
   // Also flush on unsubscribe
-  const unsubscribeAndFlush = () => {
+  // #30 L5a1: true when the flush left nothing unsaved (the update hand-off starts only then)
+  const unsubscribeAndFlush = (): boolean => {
     unsubscribe();
+    // #895: a stop is final: no timer, kept state or waiting step may write after it (a later save may be another account's)
+    if (timer !== null) clearTimeout(timer);
     flush();
+    const saved = lastState === null; // #30 L5a1: read before the drop below
+    lastState = null;
+    afterSave.length = 0;
+    saverStopped = true;
+    return saved;
   };
 
   return unsubscribeAndFlush;

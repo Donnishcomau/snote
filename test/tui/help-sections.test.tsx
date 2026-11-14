@@ -96,9 +96,9 @@ describe('help sections layout', () => {
 });
 
 describe('SECTIONS completeness', () => {
-  it('6: WHEN src/core/help-sections.ts\'s SECTIONS is flattened to its actions arrays and compared against keymap.map(e => e.action) from src/core/keymap.ts THEN every keymap action appears in exactly one section, the six sections\' lengths are [8, 10, 6, 5, 5, 2], and the flattened total length is 36', () => {
+  it('6: WHEN src/core/help-sections.ts\'s SECTIONS is flattened to its actions arrays and compared against keymap.map(e => e.action) from src/core/keymap.ts THEN every keymap action appears in exactly one section, the six sections\' lengths are [8, 10, 6, 5, 5, 3], and the flattened total length is 37', () => {
     //.2: edit_note_inline joined the Notes section, growing it from 9 to 10.
-    const expectedLengths = [8, 10, 6, 5, 5, 2];
+    const expectedLengths = [8, 10, 6, 5, 5, 3];
     expect(SECTIONS.length).toBe(6);
     expect(SECTIONS.map((s) => s.actions.length)).toEqual(expectedLengths);
 
@@ -108,7 +108,7 @@ describe('SECTIONS completeness', () => {
         flattened.push(action);
       }
     }
-    expect(flattened.length).toBe(36);
+    expect(flattened.length).toBe(37);
 
     const keymapActions = keymap.map((e) => e.action);
     keymapActions.forEach((action) => {

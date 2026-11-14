@@ -21,24 +21,24 @@ function fits(frame: string, w: number, h: number): void {
 }
 
 describe('help fallback', () => {
-  it('1: WHEN Help renders at 50x30 and at 60x30 THEN each frame contains `1-27/45 j/k scroll` and `v         Toggle rendered markdown preview`', () => {
+  it('1: WHEN Help renders at 50x30 and at 60x30 THEN each frame contains `1-27/46 j/k scroll` and `v         Toggle rendered markdown preview`', () => {
     for (const [w, h] of [[50, 30], [60, 30]] as const) {
       const frame = frameAt(w, h);
       fits(frame, w, h);
-      expect(frame).toContain('1-27/45 j/k scroll');
+      expect(frame).toContain('1-27/46 j/k scroll');
       expect(frame).toContain('v         Toggle rendered markdown preview');
     }
   });
 
-  it('2: WHEN Help renders at 50x34 THEN the frame contains `1-31/45 j/k scroll` and `Escape    Close overlay / back`', () => {
+  it('2: WHEN Help renders at 50x34 THEN the frame contains `1-31/46 j/k scroll` and `Escape    Close overlay / back`', () => {
     const frame = frameAt(50, 34);
     fits(frame, 50, 34);
-    expect(frame).toContain('1-31/45 j/k scroll');
+    expect(frame).toContain('1-31/46 j/k scroll');
     expect(frame).toContain('Escape    Close overlay / back');
   });
 
-  it('3: WHEN Help renders at 55x31, 65x32, 75x30, 79x30 and 60x40 THEN each frame contains `Sync & Sort` and `Found a bug?` and not `j/k scroll`', () => {
-    for (const [w, h] of [[55, 31], [65, 32], [75, 30], [79, 30], [60, 40]] as const) {
+  it('3: WHEN Help renders at 55x32, 65x33, 75x31, 79x31 and 60x41 THEN each frame contains `Sync & Sort` and `Found a bug?` and not `j/k scroll`', () => {
+    for (const [w, h] of [[55, 32], [65, 33], [75, 31], [79, 31], [60, 41]] as const) {
       const frame = frameAt(w, h);
       fits(frame, w, h);
       expect(frame).toContain('Sync & Sort');

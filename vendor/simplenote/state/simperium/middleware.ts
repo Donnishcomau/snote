@@ -68,7 +68,7 @@ export const initSimperium =
         }
       },
 
-      ghostStoreProvider: ghostStoreProvider
+      ghostStoreProvider: ghostStoreProvider // OMARCHY: the caller's provider when given, else upstream's
         ? ghostStoreProvider
         : (bucket: { name: string }) => {
             switch (bucket.name) {
@@ -90,7 +90,7 @@ export const initSimperium =
 
     startConnectionMonitor(client, store);
     if (!isElectron) {
-      confirmBeforeClosingTab();
+      confirmBeforeClosingTab(); // OMARCHY: snote's stub takes no store
     }
 
     const noteBucket = client.bucket('note');
@@ -125,6 +125,7 @@ export const initSimperium =
     );
 
     if ('Notification' in window) {
+      // OMARCHY: announceNoteUpdates() below takes no store (snote's stub)
       import(
         /* webpackChunkName: 'change-announcer' */ './functions/change-announcer'
       ).then(({ announceNoteUpdates }) =>
@@ -319,6 +320,7 @@ export const initSimperium =
         case 'FILTER_NOTES':
         case 'OPEN_NOTE':
         case 'SELECT_NOTE': {
+          // OMARCHY: type cast on action below for snote's TypeScript check
           const noteId =
             (action as { noteId?: T.EntityId }).noteId ??
             action.meta?.nextNoteToOpen ??

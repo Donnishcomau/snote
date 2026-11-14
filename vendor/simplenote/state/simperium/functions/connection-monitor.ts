@@ -1,4 +1,4 @@
-// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-09-23).
+// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-10-21).
 import type { Client } from 'simperium';
 
 import * as S from '../../';
@@ -6,7 +6,7 @@ import * as S from '../../';
 export const start = (client: Client, { dispatch, getState }: S.Store) => {
   let lastMessageAt = -Infinity;
 
-  client.on('message', (data: string) => {
+  client.on('message', (data: string) => { // OMARCHY: the frame text, for the heartbeat check below (#79)
     lastMessageAt = Date.now();
     if (!/^\d+:/.test(data)) return; // OMARCHY: a bare `h:` heartbeat reply is not proof of a session (#79)
     if (getState().simperium.connectionStatus !== 'green') {

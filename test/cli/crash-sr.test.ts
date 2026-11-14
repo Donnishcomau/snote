@@ -1,8 +1,8 @@
 import { spawn } from 'node:child_process';
-import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { dirname, join } from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { bundle } from '../../scripts/build.mjs';
 
@@ -10,15 +10,22 @@ import { bundle } from '../../scripts/build.mjs';
 const FORBIDDEN = /[\x00-\x08\x0b-\x1f\x7f-\x9f\u061c\u200b\u200c\u200e\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
 
 let outfile: string;
+// #319: every folder this file makes is removed when the file ends, passed or failed.
+const made: string[] = [];
+afterAll(() => {
+  for (const d of made.splice(0)) rmSync(d, { recursive: true, force: true });
+});
 
 describe('#17 crash path in screen-reader mode', () => {
   beforeAll(async () => {
     outfile = join(mkdtempSync(join(tmpdir(), 'crash-sr-')), 'entry.js');
+    made.push(dirname(outfile));
     await bundle({ entry: 'test/fixtures/crash-entry-sr.ts', outfile });
   }, 20000);
 
   it('27: WHEN a render error whose message carries the hostile corpus `CRASHMSG` stops snote started with `--screen-reader` THEN it exits `1`, the terminal output and the saved report hold the calm lines and no SGR, ESC, C1, BEL, CR, zero-width or bidi character, and the report is JSON that does not carry `CRASHMSG`', async () => {
     const state = mkdtempSync(join(tmpdir(), 'crash-sr-state-'));
+    made.push(state);
     const { status, combined } = await new Promise<{ status: number | null; combined: string }>((res) => {
       const p = spawn('node', [outfile, state], {
         env: { ...process.env, XDG_STATE_HOME: state },

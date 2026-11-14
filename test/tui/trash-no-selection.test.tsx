@@ -21,6 +21,7 @@ import { App } from '../../src/tui/App';
 import { Root } from '../../src/tui/Root';
 import type { Auth } from '../../src/tui/Root';
 import { waitForFrame, waitForInput } from '../helpers/ink-waits';
+import { stopSyncWriters } from '../helpers/sync-writers';
 import type { Store } from 'redux';
 import type { State } from '../../src/core/store';
 import type { EntityId } from '@vendor/types';
@@ -48,17 +49,19 @@ async function pollUntil(cond: () => boolean, what: string, ms = 5000, frame?: (
 
 let server: FakeSimperiumServer | null = null;
 let dir = '';
+const builtStores: Array<ReturnType<typeof accountStore>> = [];
 
 afterEach(async () => {
   const s = server;
   server = null;
-  if (dir) {
-    fs.rmSync(dir, { recursive: true, force: true });
-    dir = '';
-  }
-  if (s) {
-    await new Promise((r) => setTimeout(r, 50));
-    s.stop();
+  try {
+    // #319: the account store writes the folder until its client and the server are done, so remove it only after that
+    await stopSyncWriters(builtStores.splice(0), s ? [s] : []);
+  } finally {
+    if (dir) {
+      fs.rmSync(dir, { recursive: true, force: true });
+      dir = '';
+    }
   }
 });
 
@@ -84,6 +87,7 @@ async function startLive(contents: string[]) {
       auth,
       onLogout,
     );
+    builtStores.push(built);
     return built.store as never;
   });
   const r = render(

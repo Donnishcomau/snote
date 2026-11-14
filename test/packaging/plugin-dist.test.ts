@@ -5,7 +5,9 @@
  * and a VERSION file.
  */
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
+  existsSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
@@ -110,6 +112,16 @@ describe('buildPluginDist output', () => {
       const text = readFileSync(f.abs, 'utf8');
       expect(text).toMatch(/var previewCache = (?:\/\* @__PURE__ \*\/ )?new WeakMap\(/);
       expect(text).not.toContain('previewCache.set(note.content');
+    }
+  });
+
+  it('7: WHEN buildPluginDist has built into a temp directory THEN it holds `LICENSE` and `NOTICE` byte-equal to the repo root files, and its `SHA256SUMS` lists each with its sha256', () => {
+    const sums = readFileSync(join(dirA, 'SHA256SUMS'), 'utf8').split('\n');
+    for (const name of ['LICENSE', 'NOTICE']) {
+      const root = readFileSync(join(process.cwd(), name));
+      expect(existsSync(join(dirA, name))).toBe(true);
+      expect(readFileSync(join(dirA, name)).equals(root)).toBe(true);
+      expect(sums).toContain(`${createHash('sha256').update(root).digest('hex')}  ${name}`);
     }
   });
 });

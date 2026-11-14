@@ -90,12 +90,15 @@ const MODULES: [string, string][] = [
   ['child_process', 'snote-r1/child-process-import'],
   ['websocket', 'snote-r1/websocket-import'],
   ['websocket/lib/W3CWebSocket', 'snote-r1/websocket-import'],
+  ['ws', 'snote-r1/websocket-import'],
+  ['ws/lib/websocket.js', 'snote-r1/websocket-import'],
 ];
 const CLEAN = [
   "import { readFileSync } from 'node:fs';\nexport const f = (p) => readFileSync(p);\n",
   "export const note = { websocket: 1 };\nexport const s = 'child_process';\n",
   "// require('websocket') and import('node:child_process') in a comment\nexport const x = 1;\n",
   "import { w } from './websocket-helper';\nexport const f = w;\n",
+  "import { w } from './ws';\nimport { x } from 'wsx';\nexport const f = [w, x];\n",
   "export const f = (o) => o.spawn('x', { timeout: 1 });\n",
 ];
 
@@ -109,8 +112,8 @@ describe('#219 R1: websocket and child_process are scoped, every spawn is limite
     );
     expect(found).toEqual([]);
     expect(g.R1_EXTENSIONS).toEqual(EXTENSIONS);
-    expect(g.CHILD_PROCESS_ALLOWED.map((e) => e.path).sort()).toEqual(['src/core/clipboard.ts', 'src/core/editor.ts', 'src/core/instance-lock.ts', 'src/core/release-verify.ts', 'src/core/update-check.ts']);
-    expect(g.WEBSOCKET_ALLOWED.map((e) => e.path)).toEqual(['src/core/websocket-provider.ts']);
+    expect(g.CHILD_PROCESS_ALLOWED.map((e) => e.path).sort()).toEqual(['src/core/clipboard.ts', 'src/core/editor.ts', 'src/core/instance-lock.ts', 'src/core/release-verify.ts', 'src/core/star-prompt.ts', 'src/core/update-check.ts', 'src/core/update-handoff.ts']);
+    expect(g.WEBSOCKET_ALLOWED.map((e) => e.path)).toEqual([]);
     expect(g.SPAWN_LIMITS_EXEMPT.map((e) => e.path)).toEqual(['src/core/editor.ts']);
     const off: Record<string, string[]> = {
       'snote-r1/child-process-import': g.CHILD_PROCESS_ALLOWED.map((e) => e.path),
@@ -244,7 +247,7 @@ describe('#219 R1: websocket and child_process are scoped, every spawn is limite
     expect((await cfg('src/core/editor.ts'))['snote-r1/spawn-limits']?.[0]).toBe(0);
     expect((await cfg('src/core/clipboard.ts'))['snote-r1/spawn-limits']?.[0]).toBe(2);
     expect((await cfg('src/core/update-check.ts'))['snote-r1/spawn-limits']?.[0]).toBe(2);
-    expect((await cfg('src/core/websocket-provider.ts'))['snote-r1/websocket-import']?.[0]).toBe(0);
+    expect((await cfg('src/core/websocket-provider.ts'))['snote-r1/websocket-import']?.[0]).toBe(2);
     expect(g.SPAWN_LIMITS_EXEMPT[0]?.reason).toContain('interactive by design');
     const text = readFileSync(join(process.cwd(), 'eslint.process-scope.mjs'), 'utf8');
     expect(text).toContain('Interactive by design');

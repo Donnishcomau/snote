@@ -12,6 +12,8 @@ check:
 	@if [ -f scripts/gates.sh ]; then bash scripts/gates.sh; else echo "skip: repo test gates (scripts/gates.sh is not exported)"; fi
 	@echo "CHECK OK"
 
+# SPLIT_SUITE=1 (CI, #410): when scripts/ci-split-suite.sh exists, it replaces the vitest line: the exported tests run in a
+# draft export tree and the rest in the repo, so a test that only passes with private files goes red on the PR.
 # CI target: identical to `check` except it skips the startup-time bench
 # (scripts/bench.mjs). That bench has a ~150-200ms ceiling tuned against a
 # quiet dev machine; shared/throttled CI runners can miss it under
@@ -22,7 +24,7 @@ check:
 check-ci:
 	npm run -s typecheck
 	npm run -s lint
-	@timeout $(VITEST_TIMEOUT) npx vitest run --passWithNoTests $(if $(SHARD),--shard=$(SHARD)) $(if $(SHARD_REPORT),--reporter=default --reporter=json --reporter=./test/helpers/headroom-reporter.ts --outputFile.json=$(SHARD_REPORT)) || { code=$$?; if [ $$code -eq 124 ]; then echo "FAIL: vitest did not finish within $(VITEST_TIMEOUT)s: the suite was too slow (machine load) or a test left a handle open. Re-run with --reporter=hanging-process to see which one."; fi; exit $$code; }
+	@$(if $(and $(SPLIT_SUITE),$(wildcard scripts/ci-split-suite.sh)),VITEST_TIMEOUT=$(VITEST_TIMEOUT) bash scripts/ci-split-suite.sh || exit $$?; true ||) timeout $(VITEST_TIMEOUT) npx vitest run --passWithNoTests $(if $(SHARD),--shard=$(SHARD)) $(if $(SHARD_REPORT),--reporter=default --reporter=json --reporter=./test/helpers/headroom-reporter.ts --outputFile.json=$(SHARD_REPORT)) || { code=$$?; if [ $$code -eq 124 ]; then echo "FAIL: vitest did not finish within $(VITEST_TIMEOUT)s: the suite was too slow (machine load) or a test left a handle open. Re-run with --reporter=hanging-process to see which one."; fi; exit $$code; }
 	@grep -rnE "\.only\(|\.skip\(" test vendor --include=*.ts --include=*.tsx && { echo "FAIL: .only/.skip found"; exit 1; } || true
 	@if [ -f test/keymap.test.ts ]; then npm run -s test:keymap; else echo "skip: keymap gate (T16)"; fi
 	@if [ -f scripts/lint-ansi.mjs ]; then npm run -s lint:ansi; else echo "skip: ansi gate (T12)"; fi

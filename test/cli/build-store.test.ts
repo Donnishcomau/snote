@@ -75,15 +75,16 @@ describe('buildStore', () => {
   });
 
   afterEach(async () => {
-    stopSaving?.();
-    stopSaving = undefined;
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        server.stop();
-        resolve();
-      }, 100);
-    });
-    fs.rmSync(dir, { recursive: true, force: true });
+    try {
+      stopSaving?.();
+      stopSaving = undefined;
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          server.stop();
+          resolve();
+        }, 100);
+      });
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   });
 
   it('1: WHEN build runs on an empty dir THEN right after the call data.notes.size is 0; within 2.5 s it is 2, note1 has content First, the file ghosts-note.json exists in dir, and onLogout was not called', async () => {
@@ -138,7 +139,6 @@ describe('buildStore', () => {
     stopSaving = undefined;
 
     const second = build();
-    stopSaving = undefined;
 
     expect(second.store.getState().data.notes.size).toBe(2);
     expect(second.store.getState().data.notes.get('note1' as never)?.content).toBe('edited');

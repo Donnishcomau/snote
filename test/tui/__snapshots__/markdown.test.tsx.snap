@@ -22,7 +22,7 @@ exports[`Markdown preview > 5: snapshot test at 80x24 > markdown-rendered-80x24 
                                 │
                                 │
                                 │
-? Help  n New  e Edit  g Add tag  / Search  q Quit  p Pin  Tab Tags  ←→ Panes
+? Help  n New  e Edit  g Add tag  / Search  q Quit  p Pin  Tab Tags  j/k Move
 [connecting] 2 notes
 "
 `;

@@ -1,6 +1,7 @@
 import type * as A from '@vendor/state/action-types';
 import type * as T from '@vendor/types';
 import type { GhostEntity } from '@vendor/state';
+import { idRecord } from './id-record';
 
 /**
  * Simperium state for managing connection status and ghosts.
@@ -76,7 +77,7 @@ export default function simperiumReducer(
         return state;
       }
       const entityId = action.entityId as string;
-      if (!(entityId in state.pendingNotes)) {
+      if (!Object.hasOwn(state.pendingNotes, entityId)) {
         return state;
       }
       return { ...state, pendingNotes: { ...state.pendingNotes, [entityId]: 'sent' } };
@@ -91,7 +92,7 @@ export default function simperiumReducer(
       if (state.pendingNotes[entityId] !== 'sent') {
         return state;
       }
-      const rest: Record<string, 'dirty' | 'sent'> = {};
+      const rest: Record<string, 'dirty' | 'sent'> = idRecord();
       for (const key of Object.keys(state.pendingNotes)) {
         if (key !== entityId) {
           rest[key] = state.pendingNotes[key];
@@ -155,10 +156,10 @@ export default function simperiumReducer(
           return { ...state, pendingNotes: { ...state.pendingNotes, [noteId]: 'dirty' } };
         }
         if (REMOVE_NOTE_ACTIONS.has(action.type)) {
-          if (!(noteId in state.pendingNotes)) {
+          if (!Object.hasOwn(state.pendingNotes, noteId)) {
             return state;
           }
-          const rest: Record<string, 'dirty' | 'sent'> = {};
+          const rest: Record<string, 'dirty' | 'sent'> = idRecord();
           for (const key of Object.keys(state.pendingNotes)) {
             if (key !== noteId) {
               rest[key] = state.pendingNotes[key];

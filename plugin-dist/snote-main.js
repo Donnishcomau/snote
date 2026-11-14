@@ -2,6 +2,10 @@
 import { createRequire as __cr } from 'node:module';
 const require = __cr(import.meta.url);
 import {
+  currentUpdate,
+  onUpdate
+} from "./chunks/chunk-YEBQPWOH.js";
+import {
   currentBanner,
   dismissBanner,
   onBanner,
@@ -17,9 +21,10 @@ import {
 import {
   blogStatusLine,
   checkEndpoints,
+  idRecord,
   loadBlogSend,
   sanitizeForTerminal
-} from "./chunks/chunk-LIN6ZR6L.js";
+} from "./chunks/chunk-KT3PCM2W.js";
 import {
   isShownInvisible,
   keptFlagAt
@@ -29,9 +34,28 @@ import {
   blogOriginFromEnv
 } from "./chunks/chunk-35YNABTO.js";
 import {
-  currentUpdate,
-  onUpdate
-} from "./chunks/chunk-YEBQPWOH.js";
+  Box_default,
+  Text,
+  measure_element_default,
+  render_default,
+  stringWidth,
+  use_app_default,
+  use_box_metrics_default,
+  use_input_default,
+  use_is_screen_reader_enabled_default,
+  use_paste_default,
+  use_stdin_default,
+  use_stdout_default
+} from "./chunks/chunk-JBKD533A.js";
+import {
+  require_react
+} from "./chunks/chunk-CT7MGM3M.js";
+import "./chunks/chunk-GGREWLKO.js";
+import {
+  require_change,
+  require_channel,
+  simperium_default
+} from "./chunks/chunk-OGF6W6QE.js";
 import {
   ensureDir,
   fileId,
@@ -46,32 +70,7 @@ import {
   secureRmdir,
   secureUnlink,
   secureWriteFileSync
-} from "./chunks/chunk-SW33S73O.js";
-import {
-  Box_default,
-  Text,
-  measure_element_default,
-  render_default,
-  stringWidth,
-  use_app_default,
-  use_box_metrics_default,
-  use_input_default,
-  use_is_screen_reader_enabled_default,
-  use_paste_default,
-  use_stdin_default,
-  use_stdout_default
-} from "./chunks/chunk-MRAMNRR7.js";
-import {
-  require_react
-} from "./chunks/chunk-CT7MGM3M.js";
-import "./chunks/chunk-GGREWLKO.js";
-import {
-  require_change,
-  require_channel,
-  require_websocket,
-  simperium_default
-} from "./chunks/chunk-S7V6GKEQ.js";
-import "./chunks/chunk-O2LU3R4M.js";
+} from "./chunks/chunk-BQ6AXYOB.js";
 import {
   __commonJS,
   __export,
@@ -127,190 +126,6 @@ var require_remove_markdown = __commonJS({
       }
       return output;
     };
-  }
-});
-
-// node_modules/lodash/_freeGlobal.js
-var require_freeGlobal = __commonJS({
-  "node_modules/lodash/_freeGlobal.js"(exports, module) {
-    var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
-    module.exports = freeGlobal;
-  }
-});
-
-// node_modules/lodash/_root.js
-var require_root = __commonJS({
-  "node_modules/lodash/_root.js"(exports, module) {
-    var freeGlobal = require_freeGlobal();
-    var freeSelf = typeof self == "object" && self && self.Object === Object && self;
-    var root2 = freeGlobal || freeSelf || Function("return this")();
-    module.exports = root2;
-  }
-});
-
-// node_modules/lodash/_Symbol.js
-var require_Symbol = __commonJS({
-  "node_modules/lodash/_Symbol.js"(exports, module) {
-    var root2 = require_root();
-    var Symbol2 = root2.Symbol;
-    module.exports = Symbol2;
-  }
-});
-
-// node_modules/lodash/_arrayMap.js
-var require_arrayMap = __commonJS({
-  "node_modules/lodash/_arrayMap.js"(exports, module) {
-    function arrayMap(array, iteratee) {
-      var index = -1, length = array == null ? 0 : array.length, result = Array(length);
-      while (++index < length) {
-        result[index] = iteratee(array[index], index, array);
-      }
-      return result;
-    }
-    module.exports = arrayMap;
-  }
-});
-
-// node_modules/lodash/isArray.js
-var require_isArray = __commonJS({
-  "node_modules/lodash/isArray.js"(exports, module) {
-    var isArray = Array.isArray;
-    module.exports = isArray;
-  }
-});
-
-// node_modules/lodash/_getRawTag.js
-var require_getRawTag = __commonJS({
-  "node_modules/lodash/_getRawTag.js"(exports, module) {
-    var Symbol2 = require_Symbol();
-    var objectProto = Object.prototype;
-    var hasOwnProperty = objectProto.hasOwnProperty;
-    var nativeObjectToString = objectProto.toString;
-    var symToStringTag = Symbol2 ? Symbol2.toStringTag : void 0;
-    function getRawTag(value) {
-      var isOwn = hasOwnProperty.call(value, symToStringTag), tag = value[symToStringTag];
-      try {
-        value[symToStringTag] = void 0;
-        var unmasked = true;
-      } catch (e) {
-      }
-      var result = nativeObjectToString.call(value);
-      if (unmasked) {
-        if (isOwn) {
-          value[symToStringTag] = tag;
-        } else {
-          delete value[symToStringTag];
-        }
-      }
-      return result;
-    }
-    module.exports = getRawTag;
-  }
-});
-
-// node_modules/lodash/_objectToString.js
-var require_objectToString = __commonJS({
-  "node_modules/lodash/_objectToString.js"(exports, module) {
-    var objectProto = Object.prototype;
-    var nativeObjectToString = objectProto.toString;
-    function objectToString(value) {
-      return nativeObjectToString.call(value);
-    }
-    module.exports = objectToString;
-  }
-});
-
-// node_modules/lodash/_baseGetTag.js
-var require_baseGetTag = __commonJS({
-  "node_modules/lodash/_baseGetTag.js"(exports, module) {
-    var Symbol2 = require_Symbol();
-    var getRawTag = require_getRawTag();
-    var objectToString = require_objectToString();
-    var nullTag = "[object Null]";
-    var undefinedTag = "[object Undefined]";
-    var symToStringTag = Symbol2 ? Symbol2.toStringTag : void 0;
-    function baseGetTag(value) {
-      if (value == null) {
-        return value === void 0 ? undefinedTag : nullTag;
-      }
-      return symToStringTag && symToStringTag in Object(value) ? getRawTag(value) : objectToString(value);
-    }
-    module.exports = baseGetTag;
-  }
-});
-
-// node_modules/lodash/isObjectLike.js
-var require_isObjectLike = __commonJS({
-  "node_modules/lodash/isObjectLike.js"(exports, module) {
-    function isObjectLike(value) {
-      return value != null && typeof value == "object";
-    }
-    module.exports = isObjectLike;
-  }
-});
-
-// node_modules/lodash/isSymbol.js
-var require_isSymbol = __commonJS({
-  "node_modules/lodash/isSymbol.js"(exports, module) {
-    var baseGetTag = require_baseGetTag();
-    var isObjectLike = require_isObjectLike();
-    var symbolTag = "[object Symbol]";
-    function isSymbol(value) {
-      return typeof value == "symbol" || isObjectLike(value) && baseGetTag(value) == symbolTag;
-    }
-    module.exports = isSymbol;
-  }
-});
-
-// node_modules/lodash/_baseToString.js
-var require_baseToString = __commonJS({
-  "node_modules/lodash/_baseToString.js"(exports, module) {
-    var Symbol2 = require_Symbol();
-    var arrayMap = require_arrayMap();
-    var isArray = require_isArray();
-    var isSymbol = require_isSymbol();
-    var INFINITY = 1 / 0;
-    var symbolProto = Symbol2 ? Symbol2.prototype : void 0;
-    var symbolToString = symbolProto ? symbolProto.toString : void 0;
-    function baseToString(value) {
-      if (typeof value == "string") {
-        return value;
-      }
-      if (isArray(value)) {
-        return arrayMap(value, baseToString) + "";
-      }
-      if (isSymbol(value)) {
-        return symbolToString ? symbolToString.call(value) : "";
-      }
-      var result = value + "";
-      return result == "0" && 1 / value == -INFINITY ? "-0" : result;
-    }
-    module.exports = baseToString;
-  }
-});
-
-// node_modules/lodash/toString.js
-var require_toString = __commonJS({
-  "node_modules/lodash/toString.js"(exports, module) {
-    var baseToString = require_baseToString();
-    function toString(value) {
-      return value == null ? "" : baseToString(value);
-    }
-    module.exports = toString;
-  }
-});
-
-// node_modules/lodash/escapeRegExp.js
-var require_escapeRegExp = __commonJS({
-  "node_modules/lodash/escapeRegExp.js"(exports, module) {
-    var toString = require_toString();
-    var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
-    var reHasRegExpChar = RegExp(reRegExpChar.source);
-    function escapeRegExp2(string) {
-      string = toString(string);
-      return string && reHasRegExpChar.test(string) ? string.replace(reRegExpChar, "\\$&") : string;
-    }
-    module.exports = escapeRegExp2;
   }
 });
 
@@ -718,6 +533,121 @@ var require_redux = __commonJS({
   }
 });
 
+// node_modules/has-flag/index.js
+var require_has_flag = __commonJS({
+  "node_modules/has-flag/index.js"(exports, module) {
+    "use strict";
+    module.exports = (flag, argv = process.argv) => {
+      const prefix = flag.startsWith("-") ? "" : flag.length === 1 ? "-" : "--";
+      const position = argv.indexOf(prefix + flag);
+      const terminatorPosition = argv.indexOf("--");
+      return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
+    };
+  }
+});
+
+// node_modules/supports-color/index.js
+var require_supports_color = __commonJS({
+  "node_modules/supports-color/index.js"(exports, module) {
+    "use strict";
+    var os3 = __require("os");
+    var tty = __require("tty");
+    var hasFlag = require_has_flag();
+    var { env } = process;
+    var forceColor;
+    if (hasFlag("no-color") || hasFlag("no-colors") || hasFlag("color=false") || hasFlag("color=never")) {
+      forceColor = 0;
+    } else if (hasFlag("color") || hasFlag("colors") || hasFlag("color=true") || hasFlag("color=always")) {
+      forceColor = 1;
+    }
+    if ("FORCE_COLOR" in env) {
+      if (env.FORCE_COLOR === "true") {
+        forceColor = 1;
+      } else if (env.FORCE_COLOR === "false") {
+        forceColor = 0;
+      } else {
+        forceColor = env.FORCE_COLOR.length === 0 ? 1 : Math.min(parseInt(env.FORCE_COLOR, 10), 3);
+      }
+    }
+    function translateLevel(level) {
+      if (level === 0) {
+        return false;
+      }
+      return {
+        level,
+        hasBasic: true,
+        has256: level >= 2,
+        has16m: level >= 3
+      };
+    }
+    function supportsColor(haveStream, streamIsTTY) {
+      if (forceColor === 0) {
+        return 0;
+      }
+      if (hasFlag("color=16m") || hasFlag("color=full") || hasFlag("color=truecolor")) {
+        return 3;
+      }
+      if (hasFlag("color=256")) {
+        return 2;
+      }
+      if (haveStream && !streamIsTTY && forceColor === void 0) {
+        return 0;
+      }
+      const min = forceColor || 0;
+      if (env.TERM === "dumb") {
+        return min;
+      }
+      if (process.platform === "win32") {
+        const osRelease = os3.release().split(".");
+        if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
+          return Number(osRelease[2]) >= 14931 ? 3 : 2;
+        }
+        return 1;
+      }
+      if ("CI" in env) {
+        if (["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "GITHUB_ACTIONS", "BUILDKITE"].some((sign) => sign in env) || env.CI_NAME === "codeship") {
+          return 1;
+        }
+        return min;
+      }
+      if ("TEAMCITY_VERSION" in env) {
+        return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(env.TEAMCITY_VERSION) ? 1 : 0;
+      }
+      if (env.COLORTERM === "truecolor") {
+        return 3;
+      }
+      if ("TERM_PROGRAM" in env) {
+        const version = parseInt((env.TERM_PROGRAM_VERSION || "").split(".")[0], 10);
+        switch (env.TERM_PROGRAM) {
+          case "iTerm.app":
+            return version >= 3 ? 3 : 2;
+          case "Apple_Terminal":
+            return 2;
+        }
+      }
+      if (/-256(color)?$/i.test(env.TERM)) {
+        return 2;
+      }
+      if (/^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux/i.test(env.TERM)) {
+        return 1;
+      }
+      if ("COLORTERM" in env) {
+        return 1;
+      }
+      return min;
+    }
+    function getSupportLevel(stream) {
+      const level = supportsColor(stream, stream && stream.isTTY);
+      return translateLevel(level);
+    }
+    module.exports = {
+      supportsColor: getSupportLevel,
+      stdout: translateLevel(supportsColor(true, tty.isatty(1))),
+      stderr: translateLevel(supportsColor(true, tty.isatty(2)))
+    };
+  }
+});
+
 // node_modules/ms/index.js
 var require_ms = __commonJS({
   "node_modules/ms/index.js"(exports, module) {
@@ -870,12 +800,12 @@ var require_common = __commonJS({
           if (!debug2.enabled) {
             return;
           }
-          const self2 = debug2;
+          const self = debug2;
           const curr = Number(/* @__PURE__ */ new Date());
           const ms = curr - (prevTime || curr);
-          self2.diff = ms;
-          self2.prev = prevTime;
-          self2.curr = curr;
+          self.diff = ms;
+          self.prev = prevTime;
+          self.curr = curr;
           prevTime = curr;
           args[0] = createDebug.coerce(args[0]);
           if (typeof args[0] !== "string") {
@@ -890,15 +820,15 @@ var require_common = __commonJS({
             const formatter = createDebug.formatters[format];
             if (typeof formatter === "function") {
               const val = args[index];
-              match = formatter.call(self2, val);
+              match = formatter.call(self, val);
               args.splice(index, 1);
               index--;
             }
             return match;
           });
-          createDebug.formatArgs.call(self2, args);
-          const logFn = self2.log || createDebug.log;
-          logFn.apply(self2, args);
+          createDebug.formatArgs.call(self, args);
+          const logFn = self.log || createDebug.log;
+          logFn.apply(self, args);
         }
         debug2.namespace = namespace;
         debug2.useColors = createDebug.useColors();
@@ -1008,291 +938,6 @@ var require_common = __commonJS({
       return createDebug;
     }
     module.exports = setup;
-  }
-});
-
-// node_modules/debug/src/browser.js
-var require_browser = __commonJS({
-  "node_modules/debug/src/browser.js"(exports, module) {
-    exports.formatArgs = formatArgs;
-    exports.save = save;
-    exports.load = load;
-    exports.useColors = useColors;
-    exports.storage = localstorage();
-    exports.destroy = /* @__PURE__ */ (() => {
-      let warned = false;
-      return () => {
-        if (!warned) {
-          warned = true;
-          console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
-        }
-      };
-    })();
-    exports.colors = [
-      "#0000CC",
-      "#0000FF",
-      "#0033CC",
-      "#0033FF",
-      "#0066CC",
-      "#0066FF",
-      "#0099CC",
-      "#0099FF",
-      "#00CC00",
-      "#00CC33",
-      "#00CC66",
-      "#00CC99",
-      "#00CCCC",
-      "#00CCFF",
-      "#3300CC",
-      "#3300FF",
-      "#3333CC",
-      "#3333FF",
-      "#3366CC",
-      "#3366FF",
-      "#3399CC",
-      "#3399FF",
-      "#33CC00",
-      "#33CC33",
-      "#33CC66",
-      "#33CC99",
-      "#33CCCC",
-      "#33CCFF",
-      "#6600CC",
-      "#6600FF",
-      "#6633CC",
-      "#6633FF",
-      "#66CC00",
-      "#66CC33",
-      "#9900CC",
-      "#9900FF",
-      "#9933CC",
-      "#9933FF",
-      "#99CC00",
-      "#99CC33",
-      "#CC0000",
-      "#CC0033",
-      "#CC0066",
-      "#CC0099",
-      "#CC00CC",
-      "#CC00FF",
-      "#CC3300",
-      "#CC3333",
-      "#CC3366",
-      "#CC3399",
-      "#CC33CC",
-      "#CC33FF",
-      "#CC6600",
-      "#CC6633",
-      "#CC9900",
-      "#CC9933",
-      "#CCCC00",
-      "#CCCC33",
-      "#FF0000",
-      "#FF0033",
-      "#FF0066",
-      "#FF0099",
-      "#FF00CC",
-      "#FF00FF",
-      "#FF3300",
-      "#FF3333",
-      "#FF3366",
-      "#FF3399",
-      "#FF33CC",
-      "#FF33FF",
-      "#FF6600",
-      "#FF6633",
-      "#FF9900",
-      "#FF9933",
-      "#FFCC00",
-      "#FFCC33"
-    ];
-    function useColors() {
-      if (typeof window !== "undefined" && window.process && (window.process.type === "renderer" || window.process.__nwjs)) {
-        return true;
-      }
-      if (typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
-        return false;
-      }
-      let m;
-      return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
-      typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
-      // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-      typeof navigator !== "undefined" && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
-      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
-    }
-    function formatArgs(args) {
-      args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module.exports.humanize(this.diff);
-      if (!this.useColors) {
-        return;
-      }
-      const c = "color: " + this.color;
-      args.splice(1, 0, c, "color: inherit");
-      let index = 0;
-      let lastC = 0;
-      args[0].replace(/%[a-zA-Z%]/g, (match) => {
-        if (match === "%%") {
-          return;
-        }
-        index++;
-        if (match === "%c") {
-          lastC = index;
-        }
-      });
-      args.splice(lastC, 0, c);
-    }
-    exports.log = console.debug || console.log || (() => {
-    });
-    function save(namespaces) {
-      try {
-        if (namespaces) {
-          exports.storage.setItem("debug", namespaces);
-        } else {
-          exports.storage.removeItem("debug");
-        }
-      } catch (error) {
-      }
-    }
-    function load() {
-      let r;
-      try {
-        r = exports.storage.getItem("debug") || exports.storage.getItem("DEBUG");
-      } catch (error) {
-      }
-      if (!r && typeof process !== "undefined" && "env" in process) {
-        r = process.env.DEBUG;
-      }
-      return r;
-    }
-    function localstorage() {
-      try {
-        return localStorage;
-      } catch (error) {
-      }
-    }
-    module.exports = require_common()(exports);
-    var { formatters } = module.exports;
-    formatters.j = function(v) {
-      try {
-        return JSON.stringify(v);
-      } catch (error) {
-        return "[UnexpectedJSONParseError]: " + error.message;
-      }
-    };
-  }
-});
-
-// node_modules/has-flag/index.js
-var require_has_flag = __commonJS({
-  "node_modules/has-flag/index.js"(exports, module) {
-    "use strict";
-    module.exports = (flag, argv = process.argv) => {
-      const prefix = flag.startsWith("-") ? "" : flag.length === 1 ? "-" : "--";
-      const position = argv.indexOf(prefix + flag);
-      const terminatorPosition = argv.indexOf("--");
-      return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
-    };
-  }
-});
-
-// node_modules/supports-color/index.js
-var require_supports_color = __commonJS({
-  "node_modules/supports-color/index.js"(exports, module) {
-    "use strict";
-    var os3 = __require("os");
-    var tty = __require("tty");
-    var hasFlag = require_has_flag();
-    var { env } = process;
-    var forceColor;
-    if (hasFlag("no-color") || hasFlag("no-colors") || hasFlag("color=false") || hasFlag("color=never")) {
-      forceColor = 0;
-    } else if (hasFlag("color") || hasFlag("colors") || hasFlag("color=true") || hasFlag("color=always")) {
-      forceColor = 1;
-    }
-    if ("FORCE_COLOR" in env) {
-      if (env.FORCE_COLOR === "true") {
-        forceColor = 1;
-      } else if (env.FORCE_COLOR === "false") {
-        forceColor = 0;
-      } else {
-        forceColor = env.FORCE_COLOR.length === 0 ? 1 : Math.min(parseInt(env.FORCE_COLOR, 10), 3);
-      }
-    }
-    function translateLevel(level) {
-      if (level === 0) {
-        return false;
-      }
-      return {
-        level,
-        hasBasic: true,
-        has256: level >= 2,
-        has16m: level >= 3
-      };
-    }
-    function supportsColor(haveStream, streamIsTTY) {
-      if (forceColor === 0) {
-        return 0;
-      }
-      if (hasFlag("color=16m") || hasFlag("color=full") || hasFlag("color=truecolor")) {
-        return 3;
-      }
-      if (hasFlag("color=256")) {
-        return 2;
-      }
-      if (haveStream && !streamIsTTY && forceColor === void 0) {
-        return 0;
-      }
-      const min = forceColor || 0;
-      if (env.TERM === "dumb") {
-        return min;
-      }
-      if (process.platform === "win32") {
-        const osRelease = os3.release().split(".");
-        if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
-          return Number(osRelease[2]) >= 14931 ? 3 : 2;
-        }
-        return 1;
-      }
-      if ("CI" in env) {
-        if (["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "GITHUB_ACTIONS", "BUILDKITE"].some((sign) => sign in env) || env.CI_NAME === "codeship") {
-          return 1;
-        }
-        return min;
-      }
-      if ("TEAMCITY_VERSION" in env) {
-        return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(env.TEAMCITY_VERSION) ? 1 : 0;
-      }
-      if (env.COLORTERM === "truecolor") {
-        return 3;
-      }
-      if ("TERM_PROGRAM" in env) {
-        const version = parseInt((env.TERM_PROGRAM_VERSION || "").split(".")[0], 10);
-        switch (env.TERM_PROGRAM) {
-          case "iTerm.app":
-            return version >= 3 ? 3 : 2;
-          case "Apple_Terminal":
-            return 2;
-        }
-      }
-      if (/-256(color)?$/i.test(env.TERM)) {
-        return 2;
-      }
-      if (/^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux/i.test(env.TERM)) {
-        return 1;
-      }
-      if ("COLORTERM" in env) {
-        return 1;
-      }
-      return min;
-    }
-    function getSupportLevel(stream) {
-      const level = supportsColor(stream, stream && stream.isTTY);
-      return translateLevel(level);
-    }
-    module.exports = {
-      supportsColor: getSupportLevel,
-      stdout: translateLevel(supportsColor(true, tty.isatty(1))),
-      stderr: translateLevel(supportsColor(true, tty.isatty(2)))
-    };
   }
 });
 
@@ -1470,17 +1115,6 @@ var require_node = __commonJS({
   }
 });
 
-// node_modules/debug/src/index.js
-var require_src = __commonJS({
-  "node_modules/debug/src/index.js"(exports, module) {
-    if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
-      module.exports = require_browser();
-    } else {
-      module.exports = require_node();
-    }
-  }
-});
-
 // node_modules/react/cjs/react-jsx-runtime.production.js
 var require_react_jsx_runtime_production = __commonJS({
   "node_modules/react/cjs/react-jsx-runtime.production.js"(exports) {
@@ -1527,8 +1161,14 @@ var require_jsx_runtime = __commonJS({
 process.noDeprecation = true;
 process.removeAllListeners("warning");
 
+// src/cli/terminal-env.ts
+if (process.stdout.isTTY === true) {
+  delete process.env.CI;
+  delete process.env.CONTINUOUS_INTEGRATION;
+}
+
 // src/cli/main.tsx
-var import_react24 = __toESM(require_react(), 1);
+var import_react25 = __toESM(require_react(), 1);
 import fs10 from "node:fs";
 import os2 from "node:os";
 import path9 from "node:path";
@@ -1869,7 +1509,6 @@ var getRevision = (state, noteId, revisionVersion, includeDeletedTags) => {
 
 // vendor/simplenote/utils/note-utils.ts
 var import_remove_markdown = __toESM(require_remove_markdown(), 1);
-var import_escapeRegExp = __toESM(require_escapeRegExp(), 1);
 
 // vendor/simplenote/utils/filter-notes.ts
 var tagPattern = () => /(?:\btag:)([^\s,]+)/g;
@@ -1898,6 +1537,7 @@ var getTerms = (filterText) => {
 };
 
 // vendor/simplenote/utils/note-utils.ts
+var escapeRegExp = (s) => s.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
 var maxTitleChars = 64;
 var isLowSurrogate = (c) => 56320 <= c && c <= 57343;
 var removeMarkdownWithFix = (inputString) => {
@@ -1925,7 +1565,7 @@ var getPreview = (content, searchQuery2) => {
       const leadingChars = 30 - firstTerm.length;
       const regExp = new RegExp(
         "(?:\\s|^)[^\n]{0," + leadingChars + "}" + // up to leadingChars of text before the match
-        (0, import_escapeRegExp.default)(firstTerm) + ".{0,200}(?=\\s|$)",
+        escapeRegExp(firstTerm) + ".{0,200}(?=\\s|$)",
         // up to 200 characters of text after the match, splitting at a word boundary
         "ims"
       );
@@ -2172,6 +1812,7 @@ function sharedLine(note) {
 import { watch, lstatSync } from "node:fs";
 import { join } from "node:path";
 var REQUEST_FILE = "new-note.request";
+var UPDATE_ASK_FILE = "update-ask.request";
 var LOCK_FILE = "instance.lock";
 var DEFAULT_STALE_MS = 1e4;
 var DEFAULT_POLL_MS = 1e3;
@@ -2186,7 +1827,7 @@ function isPidAlive(pid) {
     return err.code === "EPERM";
   }
 }
-function requestNewNote(dir) {
+function requestNewNote(dir, file = REQUEST_FILE) {
   const lockPath = join(dir, LOCK_FILE);
   const owner = (readRegularText(lockPath) ?? "").trim();
   if (!/^\d+$/.test(owner)) {
@@ -2196,17 +1837,26 @@ function requestNewNote(dir) {
   if (pid === process.pid || !isPidAlive(pid)) {
     return "no-instance";
   }
-  const requestPath = join(dir, REQUEST_FILE);
-  secureWriteFileSync(requestPath, JSON.stringify({ v: 1, t: Date.now() }));
+  const requestPath = join(dir, file);
+  if (file === REQUEST_FILE) secureWriteFileSync(requestPath, JSON.stringify({ v: 1, t: Date.now() }), { durable: false });
+  else try {
+    secureExclusiveCreate(requestPath, "1");
+  } catch {
+    return "no-instance";
+  }
   return "sent";
 }
 function watchNewRequests(dir, onRequest, opts) {
   const pollMs = opts?.pollMs ?? DEFAULT_POLL_MS;
   const staleMs = opts?.staleMs ?? DEFAULT_STALE_MS;
-  const requestPath = join(dir, REQUEST_FILE);
+  const file = opts?.file ?? REQUEST_FILE;
+  const ask = file !== REQUEST_FILE;
+  const since = Date.now();
+  const requestPath = join(dir, file);
   const mtimeMs = () => {
     try {
-      return lstatSync(requestPath).mtimeMs;
+      const st = lstatSync(requestPath);
+      return ask && !st.isFile() ? 0 : st.mtimeMs;
     } catch {
       return null;
     }
@@ -2220,7 +1870,7 @@ function watchNewRequests(dir, onRequest, opts) {
     }
   };
   const born = mtimeMs();
-  if (born !== null && Date.now() - born > staleMs) {
+  if (born !== null && (ask || Date.now() - born > staleMs)) {
     claim();
   }
   const consume = () => {
@@ -2231,7 +1881,7 @@ function watchNewRequests(dir, onRequest, opts) {
     if (!claim()) {
       return;
     }
-    if (Date.now() - when > staleMs) {
+    if (Date.now() - when > staleMs || ask && when < since) {
       return;
     }
     onRequest();
@@ -2239,7 +1889,7 @@ function watchNewRequests(dir, onRequest, opts) {
   let watcher;
   try {
     watcher = watch(dir, (_event, filename) => {
-      if (filename === REQUEST_FILE || filename === `${REQUEST_FILE}.tmp`) {
+      if (filename === file || filename === `${file}.tmp`) {
         consume();
       }
     });
@@ -2296,6 +1946,28 @@ import { join as join6, basename as basename2 } from "node:path";
 // src/cli/env-check.ts
 import { delimiter, join as join2 } from "node:path";
 import fs from "node:fs";
+
+// src/core/clipboard.ts
+import { spawnSync } from "node:child_process";
+var COPY_TIMEOUT_MS = 1e3;
+var COPY_COMMAND = { darwin: ["/usr/bin/pbcopy"] };
+var copyCommand = (platform = process.platform) => [...COPY_COMMAND[platform] ?? ["wl-copy"]];
+function copyToClipboard(text, command = copyCommand()) {
+  if (!text || command.length === 0) {
+    return false;
+  }
+  const result = spawnSync(command[0], command.slice(1), {
+    input: text,
+    stdio: ["pipe", "ignore", "ignore"],
+    timeout: COPY_TIMEOUT_MS,
+    killSignal: "SIGKILL",
+    // #219, see the docstring
+    maxBuffer: 1048576
+  });
+  return result.error === void 0 && result.status === 0;
+}
+
+// src/cli/env-check.ts
 function findOnPath(command, pathVar, exists = fs.existsSync) {
   if (command.includes("/")) {
     return exists(command) ? command : null;
@@ -2309,20 +1981,33 @@ function findOnPath(command, pathVar, exists = fs.existsSync) {
   }
   return null;
 }
-function envReport(env, exists = fs.existsSync) {
+var PLATFORM_COMMANDS = [
+  { cmd: "wl-copy", purpose: "copies a note to the clipboard on Wayland" },
+  { cmd: "omarchy-launch-tui", purpose: "opens snote from the Omarchy launcher" }
+];
+var PLATFORM_ROWS = {
+  darwin: [{ cmd: "pbcopy", at: copyCommand("darwin")[0], purpose: "copies a note to the clipboard" }]
+};
+function envReport(env, exists = fs.existsSync, platform = process.platform) {
   const editorRaw = env.EDITOR?.trim() ?? "";
   const editorCommand = editorRaw ? editorRaw.split(/\s+/)[0] : "nvim";
-  const commands = [editorCommand, "wl-copy", "omarchy-launch-tui"];
+  const onOmarchy = (env.PATH ?? "").split(delimiter).some((dir) => dir.replace(/\/+$/, "").endsWith("/omarchy/bin"));
+  const commands = [{ cmd: editorCommand, purpose: "" }, ...PLATFORM_ROWS[platform] ?? PLATFORM_COMMANDS];
   const lines = [];
-  for (const cmd of commands) {
-    const found = findOnPath(cmd, env.PATH, exists);
+  for (const { cmd, at, purpose } of commands) {
+    const found = findOnPath(at ?? cmd, env.PATH, exists);
     if (found) {
       lines.push(`ok       ${cmd}: ${found}`);
-    } else {
+    } else if (purpose === "" || onOmarchy) {
       lines.push(`missing  ${cmd}`);
+    } else {
+      lines.push(`optional ${cmd}: not found (${purpose})`);
     }
   }
   return lines.join("\n");
+}
+async function installLines() {
+  return (await import("./chunks/install-kind-GXULZLGT.js")).runningInstallReport();
 }
 
 // src/core/editor-select.ts
@@ -2487,6 +2172,7 @@ function saveState(state, dir) {
   secureMkdir(dir);
   secureWriteFileSync(filePath, JSON.stringify(file, replacer));
 }
+var SET_ASIDE_NOTICE = "Could not read saved data: kept it as state.json.corrupt. Offline notes kept.";
 function loadState(dir) {
   const filePath = path.join(dir, "state.json");
   if (!fs2.existsSync(filePath)) {
@@ -2533,12 +2219,15 @@ function loadState(dir) {
 }
 var AFTER_SAVE_STEP_FAILED = "notes saved; could not update the editor drafts";
 var afterSave = [];
+var saverStopped = false;
 function afterNextSave(fn) {
+  if (saverStopped) return;
   afterSave.push(fn);
 }
 function persistOnChange(store, dir, delayMs = 500) {
   let timer = null;
   let lastState = null;
+  saverStopped = false;
   const flush = () => {
     if (lastState) {
       try {
@@ -2573,7 +2262,13 @@ function persistOnChange(store, dir, delayMs = 500) {
   const unsubscribe = store.subscribe(schedule);
   const unsubscribeAndFlush = () => {
     unsubscribe();
+    if (timer !== null) clearTimeout(timer);
     flush();
+    const saved = lastState === null;
+    lastState = null;
+    afterSave.length = 0;
+    saverStopped = true;
+    return saved;
   };
   return unsubscribeAndFlush;
 }
@@ -2668,6 +2363,30 @@ function removeDrafts(folders) {
     }
   }
 }
+function readFolder(folder) {
+  const r = { texts: [], kept: 0, at: 0, sig: "", big: [] };
+  for (const f of readdirSync(folder).filter((n) => n.endsWith(".md"))) {
+    const draft = readDraft(join5(folder, f));
+    if (draft === null) continue;
+    r.at = lstatSync2(join5(folder, f)).mtimeMs;
+    if ("text" in draft) {
+      r.texts.push(draft.text);
+      r.sig += JSON.stringify([f, r.at, draft.text]);
+    } else {
+      r.kept++;
+      if ("tooLarge" in draft) r.big.push(draft.tooLarge);
+    }
+  }
+  return r;
+}
+function unchanged(folder, sig) {
+  try {
+    const r = readFolder(folder);
+    return r.kept === 0 && r.sig === sig;
+  } catch {
+    return false;
+  }
+}
 function recoverDrafts(store, dir = draftsDir(), tooLarge, report) {
   if (!isRealDir(dir)) return 0;
   let folders;
@@ -2680,24 +2399,15 @@ function recoverDrafts(store, dir = draftsDir(), tooLarge, report) {
   let count = 0;
   for (const name of folders) {
     const folder = join5(dir, name);
-    const texts = [];
-    let kept = 0;
-    let at = 0;
+    let read;
     try {
       if (!isRealDir(folder)) continue;
-      for (const f of readdirSync(folder).filter((n) => n.endsWith(".md"))) {
-        const draft = readDraft(join5(folder, f));
-        if (draft === null) continue;
-        at = lstatSync2(join5(folder, f)).mtimeMs;
-        if ("text" in draft) texts.push(draft.text);
-        else {
-          kept++;
-          if ("tooLarge" in draft) tooLarge?.push({ folder, bytes: draft.tooLarge });
-        }
-      }
+      read = readFolder(folder);
     } catch {
       continue;
     }
+    const { texts, kept, at, sig } = read;
+    for (const bytes of read.big) tooLarge?.push({ folder, bytes });
     const notes2 = [...store.getState().data.notes.values()].map((n) => n.content);
     const fresh = texts.filter((t) => t.trim() !== "" && !notes2.includes(t));
     const source = fresh.length === 1 && texts.length === 1 && kept === 0 ? readSource(folder) : null;
@@ -2719,10 +2429,10 @@ function recoverDrafts(store, dir = draftsDir(), tooLarge, report) {
       }
     }
     count += fresh.length;
-    if (fresh.length > 0 && kept === 0) restored.push(folder);
+    if (fresh.length > 0 && kept === 0) restored.push([folder, sig]);
     else if (texts.length > 0 && kept === 0) removeDrafts([folder]);
   }
-  if (restored.length > 0) afterNextSave(() => removeDrafts(restored));
+  if (restored.length > 0) afterNextSave(() => removeDrafts(restored.filter(([f, s]) => unchanged(f, s)).map(([f]) => f)));
   return count;
 }
 function recoveryNotice(restored, tooLarge, changed = 0) {
@@ -2752,22 +2462,31 @@ function releaseDraftsAfterSave() {
   if (drafts.length > 0) afterNextSave(() => removeDrafts(drafts));
 }
 var NVIM_HINT = "snote \xB7 i insert \xB7 Esc done \xB7 :w save & sync \xB7 :wq save & return \xB7 :q! discard";
-var NVIM_SAVED = "snote \xB7 saved TIME \xB7 :w save & sync \xB7 :wq save & return \xB7 :q! keep last save";
+var NVIM_SAVED = "last saved TIME \xB7 :w save & sync \xB7 :wq save & return \xB7 :q! keep last save";
+var UNSAVED_WARN_MS = 3e4;
+var UNSAVED_WARN_TYPED = 200;
+var UNSAVED_ALERT_MS = 12e4;
 function nvimHintLuaString(text) {
   const level = text.includes("]") ? "=" : "";
   const safe = text.replaceAll("%", "%%");
   return "[" + level + "[" + safe + "]" + level + "]";
 }
+function leadAndRest(text) {
+  const at = text.indexOf(" \xB7 ");
+  return [nvimHintLuaString(text.slice(0, at)), nvimHintLuaString(text.slice(at))];
+}
 function nvimHintArgs() {
-  const hint = "'%#Comment#' .. vim.g.snote_hint";
-  const setWinbar = 'vim.api.nvim_set_option_value("winbar", ' + hint + ", { win = 0 })";
-  const saved = "(" + nvimHintLuaString(NVIM_SAVED) + '):gsub("TIME", os.date("%H:%M"))';
-  const recordBuf = "vim.g.snote_buf = vim.api.nvim_get_current_buf() vim.g.snote_file = vim.api.nvim_buf_get_name(0) vim.g.snote_hint = " + nvimHintLuaString(NVIM_HINT);
-  const onWrite = 'if tonumber(vim.fn.expand("<abuf>")) == vim.g.snote_buf and vim.fn.expand("<afile>:p") == vim.g.snote_file then vim.g.snote_hint = (' + saved + ") " + setWinbar + " end";
-  const guard = 'if vim.api.nvim_win_get_config(0).relative == "" and vim.api.nvim_get_current_buf() == vim.g.snote_buf then ' + setWinbar + " end";
+  const [hintLead, hintRest] = leadAndRest(NVIM_HINT);
+  const [savedLead, savedRest] = leadAndRest(NVIM_SAVED);
+  const isNote = "vim.api.nvim_get_current_buf() == vim.g.snote_buf";
+  const bar = '_G.snote_bar = function() local a = vim.g.snote_alert local s = a and ("%#" .. a .. "#" .. vim.g.snote_lead .. vim.g.snote_rest) or ("%#" .. vim.g.snote_hl .. "#" .. vim.g.snote_lead .. "%#Comment#" .. vim.g.snote_rest) for _, w in ipairs(vim.fn.win_findbuf(vim.g.snote_buf)) do if vim.api.nvim_win_get_config(w).relative == "" then vim.api.nvim_set_option_value("winbar", s, { win = w }) end end end';
+  const tick = "_G.snote_tick = function() local b = vim.g.snote_buf if not vim.api.nvim_buf_is_valid(b) then return end local a = nil if vim.bo[b].modified then local now = vim.fn.localtime() if vim.g.snote_dirty == nil then vim.g.snote_dirty = now end local age = (now - vim.g.snote_dirty) * 1000 if age >= " + UNSAVED_ALERT_MS + ' then a = "DiagnosticError" elseif age >= ' + UNSAVED_WARN_MS + " or vim.g.snote_typed >= " + UNSAVED_WARN_TYPED + ' then a = "DiagnosticWarn" end else vim.g.snote_dirty = nil vim.g.snote_typed = 0 end if a ~= vim.g.snote_alert then vim.g.snote_alert = a _G.snote_bar() end end';
+  const recordBuf = "vim.g.snote_buf = vim.api.nvim_get_current_buf() vim.g.snote_file = vim.api.nvim_buf_get_name(0) vim.g.snote_lead = " + hintLead + " vim.g.snote_rest = " + hintRest + ' vim.g.snote_hl = "Comment" vim.g.snote_typed = 0 ' + bar + " " + tick + ' _G.snote_bar() vim.fn.timer_start(1000, function() _G.snote_tick() end, { ["repeat"] = -1 }) vim.api.nvim_create_autocmd("InsertCharPre", { callback = function() if ' + isNote + " then vim.g.snote_typed = vim.g.snote_typed + 1 end end })";
+  const onWrite = 'if tonumber(vim.fn.expand("<abuf>")) == vim.g.snote_buf and vim.fn.expand("<afile>:p") == vim.g.snote_file then vim.g.snote_lead = ((' + savedLead + '):gsub("TIME", os.date("%H:%M"))) vim.g.snote_rest = ' + savedRest + ' vim.g.snote_hl = "DiagnosticOk" vim.g.snote_dirty = nil vim.g.snote_typed = 0 vim.g.snote_alert = nil _G.snote_bar() end';
+  const guard = 'if vim.api.nvim_win_get_config(0).relative == "" and ' + isNote + " then _G.snote_bar() end";
   return [
     "-c",
-    "lua " + recordBuf + " " + setWinbar,
+    "lua " + recordBuf,
     "-c",
     "autocmd BufWinEnter,WinEnter * lua " + guard,
     "-c",
@@ -2885,24 +2604,6 @@ function newNoteFields(collection2, topNote) {
   const systemTags = topNote?.systemTags.includes("markdown") ? ["markdown"] : [];
   const tags2 = collection2.type === "tag" ? [collection2.tagName] : [];
   return { systemTags, tags: tags2 };
-}
-
-// src/core/clipboard.ts
-import { spawnSync } from "node:child_process";
-var COPY_TIMEOUT_MS = 1e3;
-function copyToClipboard(text, command = ["wl-copy"]) {
-  if (!text || command.length === 0) {
-    return false;
-  }
-  const result = spawnSync(command[0], command.slice(1), {
-    input: text,
-    stdio: ["pipe", "ignore", "ignore"],
-    timeout: COPY_TIMEOUT_MS,
-    killSignal: "SIGKILL",
-    // #219, see the docstring
-    maxBuffer: 1048576
-  });
-  return result.error === void 0 && result.status === 0;
 }
 
 // vendor/simplenote/utils/task-transform.ts
@@ -3434,7 +3135,7 @@ function exportSelectedNote(ctx) {
   const { selectedEntry, value, setNotice, setNoticeError } = ctx;
   if (!selectedEntry) return;
   const target = value.trim() !== "" ? value : join7(documentsDir(), `${exportFileName(selectedEntry.note.content ?? "")}.md`);
-  import("./chunks/export-note-G6A4DA3F.js").then((m) => m.exportTo(selectedEntry.note, target)).then((path10) => setNotice(`exported: ${path10}`)).catch(
+  import("./chunks/export-note-IDBYDDUR.js").then((m) => m.exportTo(selectedEntry.note, target)).then((path10) => setNotice(`exported: ${path10}`)).catch(
     (err) => setNoticeError(`export failed: ${err instanceof Error ? err.message : String(err)}`)
   );
 }
@@ -4649,7 +4350,7 @@ function simperiumReducer(state = initialState, action) {
         return state;
       }
       const entityId = action.entityId;
-      if (!(entityId in state.pendingNotes)) {
+      if (!Object.hasOwn(state.pendingNotes, entityId)) {
         return state;
       }
       return { ...state, pendingNotes: { ...state.pendingNotes, [entityId]: "sent" } };
@@ -4662,7 +4363,7 @@ function simperiumReducer(state = initialState, action) {
       if (state.pendingNotes[entityId] !== "sent") {
         return state;
       }
-      const rest = {};
+      const rest = idRecord();
       for (const key of Object.keys(state.pendingNotes)) {
         if (key !== entityId) {
           rest[key] = state.pendingNotes[key];
@@ -4712,10 +4413,10 @@ function simperiumReducer(state = initialState, action) {
           return { ...state, pendingNotes: { ...state.pendingNotes, [noteId]: "dirty" } };
         }
         if (REMOVE_NOTE_ACTIONS.has(action.type)) {
-          if (!(noteId in state.pendingNotes)) {
+          if (!Object.hasOwn(state.pendingNotes, noteId)) {
             return state;
           }
-          const rest = {};
+          const rest = idRecord();
           for (const key of Object.keys(state.pendingNotes)) {
             if (key !== noteId) {
               rest[key] = state.pendingNotes[key];
@@ -4762,7 +4463,7 @@ function takeHandedOff(getState, type, id, content) {
 function unsentCount(store) {
   const pending = store.getState().simperium.pendingNotes;
   let n = Object.keys(pending).length;
-  for (const id of [...held.get(store) ?? [], ...unsent.get(store) ?? []]) if (!(id in pending)) n++;
+  for (const id of [...held.get(store) ?? [], ...unsent.get(store) ?? []]) if (!Object.hasOwn(pending, id)) n++;
   return n;
 }
 var unsent = /* @__PURE__ */ new WeakMap();
@@ -4773,14 +4474,14 @@ function keepUnsent(store, ids) {
   unsent.set(store, ids);
   const stop = store.subscribe(() => {
     const { simperium, data } = store.getState();
-    const left = (unsent.get(store) ?? []).filter((id) => !(id in simperium.pendingNotes) && data.notes.has(id));
+    const left = (unsent.get(store) ?? []).filter((id) => !Object.hasOwn(simperium.pendingNotes, id) && data.notes.has(id));
     unsent.set(store, left);
     if (left.length === 0) stop();
   });
 }
 
 // vendor/simplenote/state/simperium/middleware.ts
-var import_debug2 = __toESM(require_src(), 1);
+var import_debug2 = __toESM(require_node(), 1);
 
 // vendor/simplenote/state/analytics/actions.ts
 var actions_exports2 = {};
@@ -5033,7 +4734,7 @@ var actions_default = {
 };
 
 // vendor/simplenote/state/simperium/functions/bucket-queue.ts
-var import_debug = __toESM(require_src(), 1);
+var import_debug = __toESM(require_node(), 1);
 var BucketQueue = class {
   log;
   bucket;
@@ -5850,16 +5551,16 @@ function installOnChannel(channel) {
   if (typeof originalQueueFor !== "function" || originalQueueFor.__reconnectFix) {
     return;
   }
-  const open = openNetworkQueues.get(networkQueue) ?? /* @__PURE__ */ new Set();
-  openNetworkQueues.set(networkQueue, open);
-  const countOpen = () => open.size;
+  const open2 = openNetworkQueues.get(networkQueue) ?? /* @__PURE__ */ new Set();
+  openNetworkQueues.set(networkQueue, open2);
+  const countOpen = () => open2.size;
   const drainedSinceLastPurge = /* @__PURE__ */ new Set();
   const wrappedQueueFor = function(id) {
     const queue = originalQueueFor.call(this, id);
-    if (!open.has(id)) {
-      open.add(id);
+    if (!open2.has(id)) {
+      open2.add(id);
       queue.on("finish", () => {
-        open.delete(id);
+        open2.delete(id);
         drainedSinceLastPurge.add(id);
       });
     }
@@ -5993,8 +5694,8 @@ function whenCatchUpApplied(client, bucketName, fallback = true) {
     channel.once?.("ready", () => {
       const check = () => {
         if (settled) return;
-        const open = channel.networkQueue ? openNetworkQueues.get(channel.networkQueue) : void 0;
-        if (!open || open.size === 0) finish();
+        const open2 = channel.networkQueue ? openNetworkQueues.get(channel.networkQueue) : void 0;
+        if (!open2 || open2.size === 0) finish();
         else setTimeout(check, 10);
       };
       setTimeout(check, 10);
@@ -6020,7 +5721,7 @@ function installOnChannel2(channel, store) {
     const { notes: notes2 } = store.getState().data;
     const { pendingNotes } = store.getState().simperium;
     for (const id of notes2.keys()) {
-      if (seenDuringIndex.has(id) || id in pendingNotes || isHeld(store, id) || isUnsent(store, id)) {
+      if (seenDuringIndex.has(id) || Object.hasOwn(pendingNotes, id) || isHeld(store, id) || isUnsent(store, id)) {
         continue;
       }
       store.dispatch({
@@ -6167,16 +5868,17 @@ function offlineReason(word, failure2) {
 }
 
 // src/core/websocket-provider.ts
-var import_websocket = __toESM(require_websocket(), 1);
 import * as http from "node:http";
 import * as https from "node:https";
+import { isUtf8 } from "node:buffer";
+import { createHash as createHash2, randomBytes } from "node:crypto";
 
 // package.json
 var package_default = {
   name: "snote",
-  version: "0.2.11",
+  version: "0.2.12",
   description: "Simplenote client for Omarchy: keyboard-driven TUI on the official Simperium sync engine",
-  license: "GPL-2.0",
+  license: "GPL-2.0-only",
   type: "module",
   bin: {
     snote: "dist/cli.js"
@@ -6192,7 +5894,6 @@ var package_default = {
     "lint:ansi": "node scripts/lint-ansi.mjs",
     build: "node scripts/build.mjs",
     "build:plugin": "node scripts/build-plugin-dist.mjs",
-    pack: "node scripts/pack.mjs",
     size: "vitest run test/packaging/size.test.ts",
     "smoke:real": "node scripts/smoke-real.mjs",
     dev: "tsx src/cli/index.ts"
@@ -6205,8 +5906,7 @@ var package_default = {
     "react-ink-textarea": "0.4.0",
     redux: "^4.2.1",
     "remove-markdown": "^0.6.0",
-    simperium: "1.1.4",
-    websocket: "1.0.31"
+    simperium: "1.1.4"
   },
   devDependencies: {
     "@types/debug": "^4.1.12",
@@ -6253,18 +5953,18 @@ function hasOpenSocket() {
   return false;
 }
 function snoteWebsocketProvider(url, handshakeTimeoutMs = HANDSHAKE_TIMEOUT_MS) {
-  const agent = url.startsWith("wss:") ? new https.Agent() : new http.Agent();
+  const agent = socketScheme(url) === true ? new https.Agent() : new http.Agent();
   let tcp;
   const connect = agent.createConnection.bind(agent);
   agent.createConnection = (o, cb) => tcp = connect(o, cb);
-  const socket = new import_websocket.w3cwebsocket(url, void 0, void 0, { "User-Agent": SNOTE_USER_AGENT }, { agent });
+  const socket = new SnoteSocket(url, { "User-Agent": SNOTE_USER_AGENT }, agent, Math.min(CLOSE_GRACE_MS, handshakeTimeoutMs));
   sockets.add(socket);
   const close = socket.close.bind(socket);
   socket.close = (code, reason) => {
     close(code, reason);
     setTimeout(() => {
       if (socket.readyState !== socket.CLOSED) tcp?.destroy();
-    }, Math.min(CLOSE_GRACE_MS, handshakeTimeoutMs)).unref();
+    }, socket.closeGraceMs).unref();
   };
   let timedOut = false;
   const giveUp = setTimeout(() => {
@@ -6292,6 +5992,262 @@ function snoteWebsocketProvider(url, handshakeTimeoutMs = HANDSHAKE_TIMEOUT_MS) 
   return socket;
 }
 var snoteSocketOptions = { websocketClientProvider: snoteWebsocketProvider };
+var MAX_MESSAGE_BYTES = 8 * 1024 * 1024;
+var MAX_FRAGMENTS = 1024;
+var PIECE_BYTES = 4096;
+function socketScheme(url) {
+  let protocol;
+  try {
+    protocol = new URL(url).protocol;
+  } catch {
+    return null;
+  }
+  if (protocol === "wss:" || protocol === "https:") return true;
+  return protocol === "ws:" || protocol === "http:" ? false : null;
+}
+var GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+function closeCodeOnWire(c) {
+  return c >= 1e3 && c <= 1003 || c >= 1007 && c <= 1014 || c >= 3e3 && c <= 4999;
+}
+var SnoteSocket = class {
+  static CONNECTING = 0;
+  static OPEN = 1;
+  static CLOSING = 2;
+  static CLOSED = 3;
+  CONNECTING = 0;
+  OPEN = 1;
+  CLOSING = 2;
+  CLOSED = 3;
+  readyState = 0;
+  onopen = null;
+  onmessage = null;
+  onclose = null;
+  onerror = null;
+  listeners = [];
+  req = null;
+  sock = null;
+  chunks = [];
+  have = 0;
+  parts = null;
+  // the fragments of a text message being assembled
+  partBytes = 0;
+  closeCode = 1006;
+  closeReason = "";
+  opened = false;
+  closeSeen = false;
+  // the server's close frame has arrived: nothing after it is read (RFC 6455 5.5.2)
+  pongBytes = 0;
+  // pong bytes written and not yet handed to the kernel
+  closeGraceMs;
+  // #625: how long a closing socket waits for the server to end TCP
+  grace = null;
+  // armed by the server's close frame, cleared by finish()
+  constructor(url, headers, agent, closeGraceMs = CLOSE_GRACE_MS) {
+    this.closeGraceMs = closeGraceMs;
+    const tls = socketScheme(url);
+    if (tls === null) {
+      setImmediate(() => this.finish("not a websocket url"));
+      return;
+    }
+    const u = new URL(url);
+    const key = randomBytes(16).toString("base64");
+    const accept = createHash2("sha1").update(key + GUID).digest("base64");
+    const opts = {
+      hostname: u.hostname.replace(/^\[|\]$/g, ""),
+      port: u.port || (tls ? 443 : 80),
+      path: u.pathname + u.search,
+      method: "GET",
+      agent,
+      headers: { ...headers, Upgrade: "websocket", Connection: "Upgrade", "Sec-WebSocket-Version": "13", "Sec-WebSocket-Key": key }
+    };
+    this.req = tls ? https.request(opts) : http.request(opts);
+    this.req.on("error", (e) => this.finish(e.message));
+    this.req.on("close", () => {
+      if (!this.sock) this.finish("closed before the connection was established");
+    });
+    this.req.on("response", (res) => {
+      res.destroy();
+      this.finish(`unexpected server response: ${res.statusCode}`);
+    });
+    this.req.on("upgrade", (res, sock, head) => {
+      this.sock = sock;
+      sock.on("close", () => this.finish(this.closeCode === 1006 ? "connection closed" : null));
+      sock.on("error", () => sock.destroy());
+      const h = res.headers;
+      if (this.readyState !== this.CONNECTING || res.statusCode !== 101 || String(h.upgrade).toLowerCase() !== "websocket" || !String(h.connection).split(",").some((t) => t.trim().toLowerCase() === "upgrade") || h["sec-websocket-accept"] !== accept || h["sec-websocket-extensions"] !== void 0 || h["sec-websocket-protocol"] !== void 0) {
+        sock.destroy();
+        return;
+      }
+      sock.setNoDelay(true);
+      this.readyState = this.OPEN;
+      this.opened = true;
+      sock.on("data", (d) => this.receive(d));
+      this.emit({ type: "open" });
+      if (head.length > 0 && this.readyState === this.OPEN) this.receive(head);
+    });
+    this.req.end();
+  }
+  addEventListener(type, fn) {
+    this.listeners.push({ type, fn });
+  }
+  removeEventListener(type, fn) {
+    this.listeners = this.listeners.filter((l) => l.type !== type || l.fn !== fn);
+  }
+  send(data) {
+    if (this.readyState !== this.OPEN || !this.sock) throw new Error("cannot send: the socket is not open");
+    this.frame(1, Buffer.from(String(data), "utf8"));
+  }
+  close(code, reason) {
+    if (this.readyState === this.CLOSING || this.readyState === this.CLOSED) return;
+    if (this.readyState === this.CONNECTING || !this.sock) {
+      this.readyState = this.CLOSING;
+      this.req?.destroy();
+      if (this.sock) this.sock.destroy();
+      return;
+    }
+    this.readyState = this.CLOSING;
+    const said = Buffer.from(reason ?? "", "utf8");
+    const why = said.length <= 123 ? said : Buffer.alloc(0);
+    const body = Buffer.alloc(2 + why.length);
+    body.writeUInt16BE(code !== void 0 && closeCodeOnWire(code) ? code : 1e3, 0);
+    why.copy(body, 2);
+    this.frame(8, body);
+  }
+  emit(event) {
+    const own = this[`on${event.type}`];
+    if (typeof own === "function") own.call(this, event);
+    for (const l of this.listeners.slice()) if (l.type === event.type) l.fn.call(this, event);
+  }
+  /** Ends the socket once: `error` first when the attempt never opened (#632 reads it as a failed attempt), then `close`. */
+  finish(error) {
+    if (this.readyState === this.CLOSED) return;
+    this.readyState = this.CLOSED;
+    if (this.grace) clearTimeout(this.grace);
+    this.sock?.destroy();
+    this.chunks = [];
+    this.parts = null;
+    if (error !== null && !this.opened) this.emit({ type: "error", message: error });
+    this.emit({ type: "close", code: this.closeCode, reason: this.closeReason });
+    this.listeners = [];
+  }
+  /** A protocol error from the server: drop the connection at once (fail closed). */
+  fail(code) {
+    this.closeCode = 1006;
+    this.sock?.destroy();
+    this.finish(`protocol error ${code}`);
+  }
+  frame(opcode, payload, pong = false) {
+    const n = payload.length;
+    const head = Buffer.alloc(n < 126 ? 6 : n < 65536 ? 8 : 14);
+    head[0] = 128 | opcode;
+    if (n < 126) head[1] = 128 | n;
+    else if (n < 65536) {
+      head[1] = 128 | 126;
+      head.writeUInt16BE(n, 2);
+    } else {
+      head[1] = 128 | 127;
+      head.writeUInt32BE(0, 2);
+      head.writeUInt32BE(n, 6);
+    }
+    const mask = randomBytes(4);
+    mask.copy(head, head.length - 4);
+    const body = Buffer.allocUnsafe(n);
+    for (let i = 0; i < n; i++) body[i] = payload[i] ^ mask[i & 3];
+    if (!this.sock) return;
+    const bytes = Buffer.concat([head, body]);
+    if (!pong) return void this.sock.write(bytes);
+    this.pongBytes += bytes.length;
+    this.sock.write(bytes, () => {
+      this.pongBytes -= bytes.length;
+    });
+  }
+  peek(n) {
+    let out = this.chunks[0];
+    for (let i = 1; out.length < n && i < this.chunks.length; i++) out = Buffer.concat([out, this.chunks[i]]);
+    return out.subarray(0, n);
+  }
+  take(n) {
+    const out = Buffer.allocUnsafe(n);
+    let at = 0;
+    while (at < n) {
+      const c = this.chunks[0];
+      const k = Math.min(c.length, n - at);
+      c.copy(out, at, 0, k);
+      at += k;
+      if (k === c.length) this.chunks.shift();
+      else this.chunks[0] = c.subarray(k);
+    }
+    this.have -= n;
+    return out;
+  }
+  receive(data) {
+    if (this.closeSeen) return;
+    const last = this.chunks[this.chunks.length - 1];
+    if (last !== void 0 && last.length < PIECE_BYTES && data.length < PIECE_BYTES) this.chunks[this.chunks.length - 1] = Buffer.concat([last, data]);
+    else this.chunks.push(data);
+    this.have += data.length;
+    while (this.sock && this.have >= 2 && (this.readyState === this.OPEN || this.readyState === this.CLOSING)) {
+      const h = this.peek(Math.min(this.have, 10));
+      const fin = (h[0] & 128) !== 0;
+      const opcode = h[0] & 15;
+      let len = h[1] & 127;
+      let at = 2;
+      if ((h[0] & 112) !== 0 || (h[1] & 128) !== 0) return this.fail(1002);
+      if (len === 126) {
+        if (h.length < 4) return;
+        len = h.readUInt16BE(2);
+        at = 4;
+      } else if (len === 127) {
+        if (h.length < 10) return;
+        if (h.readUInt32BE(2) !== 0) return this.fail(1009);
+        len = h.readUInt32BE(6);
+        at = 10;
+      }
+      if (opcode >= 8 ? opcode > 10 || !fin || len > 125 : opcode > 2) return this.fail(1002);
+      if (opcode === 2) return this.fail(1003);
+      if (opcode < 8 && this.partBytes + len > MAX_MESSAGE_BYTES) return this.fail(1009);
+      if (this.have < at + len) return;
+      this.take(at);
+      const payload = this.take(len);
+      if (opcode === 9) {
+        if (this.pongBytes > MAX_MESSAGE_BYTES) return this.fail(1008);
+        this.frame(10, payload, true);
+      } else if (opcode === 8) {
+        if (payload.length === 1) return this.fail(1002);
+        const code = payload.length >= 2 ? payload.readUInt16BE(0) : 1005;
+        if (payload.length >= 2 && !closeCodeOnWire(code)) return this.fail(1002);
+        if (!isUtf8(payload.subarray(2))) return this.fail(1007);
+        this.closeCode = code;
+        this.closeReason = payload.subarray(2).toString("utf8");
+        this.closeSeen = true;
+        this.chunks = [];
+        this.have = 0;
+        if (this.readyState === this.OPEN) {
+          this.readyState = this.CLOSING;
+          this.frame(8, payload.subarray(0, 2));
+        }
+        this.sock.end();
+        this.grace = setTimeout(() => this.sock?.destroy(), this.closeGraceMs);
+        this.grace.unref();
+        return;
+      } else if (opcode !== 10) {
+        if (opcode === 0 === (this.parts === null)) return this.fail(1002);
+        const parts = this.parts ?? [];
+        if (parts.length >= MAX_FRAGMENTS) return this.fail(1009);
+        parts.push(payload);
+        this.partBytes += len;
+        this.parts = parts;
+        if (fin) {
+          const text = Buffer.concat(parts);
+          this.parts = null;
+          this.partBytes = 0;
+          if (!isUtf8(text)) return this.fail(1007);
+          this.emit({ type: "message", data: text.toString("utf8") });
+        }
+      }
+    }
+  }
+};
 
 // src/core/stale-reconnect.ts
 var STALE_RECONNECT_MS = 3e4;
@@ -6371,11 +6327,16 @@ function installSimperiumRevisionCacheFix(client) {
 }
 
 // src/core/simperium-local-queue-fix.ts
+var bare = (m) => m && Object.getPrototypeOf(m) !== null ? Object.assign(/* @__PURE__ */ Object.create(null), m) : m;
 function installSimperiumLocalQueueFix(client) {
   for (const b of client?.buckets ?? []) {
     const lq = b?.channel?.localQueue;
     const orig = lq?.queue;
     if (!lq || typeof orig !== "function" || orig.fixed) continue;
+    lq.queues = bare(lq.queues);
+    lq.sent = bare(lq.sent);
+    const nq = b?.channel?.networkQueue;
+    if (nq) nq.queues = bare(nq.queues);
     const fn = function(c) {
       orig.call(this, c);
       const q = this.queues?.[c.id];
@@ -6528,6 +6489,10 @@ function makeStore(opts = {}) {
 import { readFileSync as readFileSync4, existsSync as existsSync3 } from "node:fs";
 import { join as join8 } from "node:path";
 var COALESCE_WINDOW_MS = 100;
+var logoutSweeps = 0;
+function endGhostWrites() {
+  logoutSweeps += 1;
+}
 var FileGhostStore = class {
   dir;
   filePath;
@@ -6538,12 +6503,13 @@ var FileGhostStore = class {
   timer = null;
   _dirExists = false;
   // OMARCHY: boundary cast
+  sweepsAtStart = logoutSweeps;
   constructor(dir, bucketName) {
     this.dir = dir;
     this.filePath = join8(dir, `ghosts-${bucketName}.json`);
     this.cv = "";
     this.ghosts = /* @__PURE__ */ new Map();
-    this._dirExists = existsSync3(this.filePath);
+    this._dirExists = existsSync3(this.dir);
     if (existsSync3(this.filePath)) {
       try {
         const raw = readFileSync4(this.filePath, "utf8");
@@ -6564,6 +6530,7 @@ var FileGhostStore = class {
     }
   }
   persist() {
+    if (this.sweepsAtStart !== logoutSweeps) return;
     if (!existsSync3(this.dir)) {
       if (this._dirExists) {
         return;
@@ -6681,31 +6648,31 @@ var UNSYNCED_NOTES_FILE = "unsynced-notes.json";
 function loadUnsynced(dir) {
   const filePath = path2.join(dir, UNSYNCED_FILE);
   if (!fs3.existsSync(filePath)) {
-    return {};
+    return idRecord();
   }
   try {
     const parsed = JSON.parse(fs3.readFileSync(filePath, "utf8"));
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return {};
+      return idRecord();
     }
-    const record = {};
+    const record = idRecord();
     for (const [id, date] of Object.entries(parsed)) {
       if (typeof date !== "number" || !Number.isFinite(date)) {
-        return {};
+        return idRecord();
       }
       record[id] = date;
     }
     return record;
   } catch {
-    return {};
+    return idRecord();
   }
 }
 function loadUnsyncedNotes(dir) {
   try {
     const parsed = JSON.parse(fs3.readFileSync(path2.join(dir, UNSYNCED_NOTES_FILE), "utf8"));
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? Object.fromEntries(Object.entries(parsed).filter(([, v]) => typeof v?.content === "string" && Number.isFinite(Number(v.modificationDate)) && v.modificationDate !== "" && v.modificationDate !== null)) : {};
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? Object.assign(idRecord(), Object.fromEntries(Object.entries(parsed).filter(([, v]) => typeof v?.content === "string" && Number.isFinite(Number(v.modificationDate)) && v.modificationDate !== "" && v.modificationDate !== null))) : idRecord();
   } catch {
-    return {};
+    return idRecord();
   }
 }
 function overlayUnsyncedNotes(preloaded, record, saved) {
@@ -6759,7 +6726,7 @@ function trackUnsynced(store, dir, stateBroken = false) {
   let savedNotes = loadUnsyncedNotes(dir);
   const seenPending = /* @__PURE__ */ new Set();
   const build = (snap) => {
-    const next = {};
+    const next = idRecord();
     for (const [id, date] of Object.entries(carried)) {
       if (snap.has(id)) {
         seenPending.add(id);
@@ -6786,7 +6753,7 @@ function trackUnsynced(store, dir, stateBroken = false) {
     }
     written = next;
     const notesNow = store.getState().data.notes;
-    const keep = {};
+    const keep = idRecord();
     for (const [id, date] of Object.entries(written)) {
       const note = notesNow.get(id);
       if (note !== void 0 && Number(note.modificationDate) === date) {
@@ -6900,18 +6867,18 @@ var tagList = (value) => Array.isArray(value) ? value.filter((item) => typeof it
 function mergeSet(into, from, to) {
   const a = tagList(from).map(tagKey);
   const b = tagList(to).map(tagKey);
-  const seen = [];
+  const seen2 = [];
   const out = [];
   for (const item of tagList(into)) {
     const key = tagKey(item);
-    if (a.includes(key) && !b.includes(key) || seen.includes(key)) continue;
-    seen.push(key);
+    if (a.includes(key) && !b.includes(key) || seen2.includes(key)) continue;
+    seen2.push(key);
     out.push(item);
   }
   for (const item of tagList(to)) {
     const key = tagKey(item);
-    if (a.includes(key) || seen.includes(key)) continue;
-    seen.push(key);
+    if (a.includes(key) || seen2.includes(key)) continue;
+    seen2.push(key);
     out.push(item);
   }
   return out;
@@ -6924,11 +6891,11 @@ function sessionSet(into, held2, server, now) {
     const key = tagKey(item);
     return n.includes(key) || !h.includes(key) || !s.includes(key);
   });
-  const seen = out.map(tagKey);
+  const seen2 = out.map(tagKey);
   for (const item of tagList(now)) {
     const key = tagKey(item);
-    if (h.includes(key) || s.includes(key) || seen.includes(key)) continue;
-    seen.push(key);
+    if (h.includes(key) || s.includes(key) || seen2.includes(key)) continue;
+    seen2.push(key);
     out.push(item);
   }
   return out;
@@ -7044,7 +7011,7 @@ async function requeueUnsynced(store, ghosts, whenCaughtUp, unsynced = {}, loade
         const current2 = (await ghosts.get(h.id)).data ?? h.base;
         const inStore = store.getState().data.notes.get(h.id);
         const now = h.mine && same(inStore, h.mine) ? h.local : inStore;
-        const note = handOff(h, current2, now, loadedNotes?.get(h.id), Boolean(store.getState().simperium.pendingNotes[h.id]));
+        const note = handOff(h, current2, now, loadedNotes?.get(h.id), Object.hasOwn(store.getState().simperium.pendingNotes, h.id));
         if (note) store.dispatch({ type: "IMPORT_NOTE_WITH_ID", noteId: h.id, note });
         done++;
       }
@@ -7068,14 +7035,14 @@ var SENT_CHANGES_FILE = "sent-changes.json";
 function loadSentChanges(dir) {
   const filePath = path3.join(dir, SENT_CHANGES_FILE);
   if (!fs4.existsSync(filePath)) {
-    return {};
+    return idRecord();
   }
   try {
     const parsed = JSON.parse(fs4.readFileSync(filePath, "utf8"));
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return {};
+      return idRecord();
     }
-    const record = {};
+    const record = idRecord();
     for (const [id, ccid] of Object.entries(parsed)) {
       if (typeof ccid !== "string") {
         continue;
@@ -7084,7 +7051,7 @@ function loadSentChanges(dir) {
     }
     return record;
   } catch {
-    return {};
+    return idRecord();
   }
 }
 var writeRecord = (dir, record) => {
@@ -7097,8 +7064,8 @@ var writeRecord = (dir, record) => {
 };
 function createSentChanges(dir) {
   const loaded = loadSentChanges(dir);
-  const fresh = {};
-  const superseded = {};
+  const fresh = /* @__PURE__ */ Object.create(null);
+  const superseded = /* @__PURE__ */ Object.create(null);
   const current2 = () => ({ ...loaded, ...fresh });
   return {
     sent(id, ccid) {
@@ -7511,10 +7478,18 @@ function splitNewFlag(argv) {
     startNew: argv.includes("--new")
   };
 }
+function starPromptFlag(argv) {
+  return {
+    args: argv.filter((a) => a !== "--no-star-prompt"),
+    noStarPrompt: argv.includes("--no-star-prompt")
+  };
+}
 function splitNotifyFlag(argv) {
   return {
-    args: argv.filter((a) => a !== "--notify-new"),
-    notifyNew: argv.includes("--notify-new")
+    args: argv.filter((a) => a !== "--notify-new" && a !== "--ask-update"),
+    notifyNew: argv.includes("--notify-new"),
+    askUpdate: argv.includes("--ask-update")
+    // #30 L5b: the bar's update click; not in USAGE (the bar's own flag)
   };
 }
 function parseCli(argv) {
@@ -7561,7 +7536,8 @@ var USAGE = [
   "  --new            Open the editor for a new note at start",
   "  --notify-new     Ask a running snote to open a new note, then exit",
   "  --screen-reader      Screen-reader mode: one linear column, no colour; Help and the editor hand-off work (or SNOTE_SCREEN_READER=1)",
-  "  --no-screen-reader   Leave it off even when SNOTE_SCREEN_READER=1 is set"
+  "  --no-screen-reader   Leave it off even when SNOTE_SCREEN_READER=1 is set",
+  "  --no-star-prompt     Never show the one-time request to star snote on GitHub"
 ].join("\n");
 
 // src/cli/screen-reader.ts
@@ -7623,7 +7599,7 @@ function buildStatus(state, synced, update, updateVersion) {
 function writeStatusFile(dir, status) {
   ensureDir(dir);
   const filePath = path5.join(dir, "status.json");
-  secureWriteFileSync(filePath, JSON.stringify(status) + "\n");
+  secureWriteFileSync(filePath, JSON.stringify(status) + "\n", { durable: false });
 }
 function statusDir(env) {
   const override = env.SNOTE_STATUS_DIR;
@@ -7796,6 +7772,10 @@ var SNOTE_FILES = [
   "ghosts-preferences.json",
   "ghosts-tag.json",
   "new-note.request",
+  // #30 L5b - the bar's update ask: logout removes it with the others.
+  "update-ask.request",
+  // #30 L5c - a direct install's release check cache (a time and a version).
+  "direct-release-check.json",
   "unsynced.json",
   // #336a — the notes behind the record.
   "unsynced-notes.json",
@@ -7830,6 +7810,7 @@ function logoutShown(dir, show) {
   logout2(dir).catch((e) => show(problemText("could not log out", e)));
 }
 function logoutNow(dir) {
+  endGhostWrites();
   if (fs7.existsSync(dir)) {
     for (const name of ["auth.json", "auth.json.tmp", "blog.json", "blog.json.tmp", "blog-sent.json", "blog-sent.json.tmp"]) {
       removeIfFile(path6.join(dir, name));
@@ -7870,6 +7851,7 @@ function logoutNow(dir) {
   secureMkdir(dir);
 }
 function forcedSignOut(dir) {
+  endGhostWrites();
   for (const name of ["auth.json", "auth.json.tmp", "blog.json", "blog.json.tmp"]) {
     removeIfFile(path6.join(dir, name));
   }
@@ -8018,7 +8000,7 @@ function dataRoot() {
 }
 
 // src/core/account-id.ts
-import { createHash as createHash2 } from "node:crypto";
+import { createHash as createHash3 } from "node:crypto";
 import * as fs8 from "node:fs";
 import * as path7 from "node:path";
 
@@ -8027,6 +8009,8 @@ import { spawnSync as spawnSync2 } from "node:child_process";
 import { closeSync as closeSync3, lstatSync as lstatSync4, readFileSync as readFileSync10, statSync } from "node:fs";
 import { join as join14 } from "node:path";
 var LOCK_FILE2 = "instance.lock";
+var FLOCK_BIN = { linux: "/usr/bin/flock", darwin: "/opt/homebrew/opt/flock/bin/flock", "darwin-x64": "/usr/local/opt/flock/bin/flock" };
+var flockBin = (platform = process.platform, arch = process.arch) => FLOCK_BIN[`${platform}-${arch}`] ?? FLOCK_BIN[platform] ?? "/usr/bin/flock";
 var UNLOCKED_NOTICE = {
   missing: "No kernel lock (flock not installed): two copies started at once may both run.",
   refused: "No kernel lock (folder may refuse it): two copies started at once may both run.",
@@ -8066,6 +8050,9 @@ function readBootTimeMs() {
   }
 }
 function processStartMs(pid) {
+  if (process.platform === "darwin") {
+    return darwinStartMs(pid);
+  }
   try {
     const stat = readFileSync10(`/proc/${pid}/stat`, "utf8");
     const close = stat.lastIndexOf(")");
@@ -8083,11 +8070,51 @@ function processStartMs(pid) {
     return null;
   }
 }
-function startedAfterLockWrite(pid, lockMtimeMs2) {
+var LSTART_RE = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) +([0-9]{1,2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}) ([0-9]{4})$/;
+var LSTART_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function parseLstart(text) {
+  const m = LSTART_RE.exec(text.trim());
+  if (!m) {
+    return null;
+  }
+  const month = LSTART_MONTHS.indexOf(m[2] ?? "");
+  const day = Number(m[3]);
+  const hour = Number(m[4]);
+  const minute = Number(m[5]);
+  const second = Number(m[6]);
+  const year = Number(m[7]);
+  if (month < 0 || day < 1 || hour > 23 || minute > 59 || second > 59) {
+    return null;
+  }
+  const started = Date.UTC(year, month, day, hour, minute, second);
+  const back = new Date(started);
+  if (back.getUTCFullYear() !== year || back.getUTCMonth() !== month || back.getUTCDate() !== day) {
+    return null;
+  }
+  return started;
+}
+function darwinStartMs(n) {
+  if (!Number.isSafeInteger(n) || n <= 0) {
+    return null;
+  }
+  if (n === process.pid) {
+    return Date.now() - process.uptime() * 1e3;
+  }
+  try {
+    const r = spawnSync2("/bin/ps", ["-o", "lstart=", "-p", String(n)], { encoding: "utf8", env: { LC_ALL: "C", TZ: "UTC" }, timeout: 1e3, killSignal: "SIGKILL", maxBuffer: 1048576, shell: false });
+    if (r.status !== 0 || typeof r.stdout !== "string") {
+      return null;
+    }
+    return parseLstart(r.stdout);
+  } catch {
+    return null;
+  }
+}
+function startedAfterLockWrite(pid, lockMtimeMs2, readStart = processStartMs) {
   if (lockMtimeMs2 === null) {
     return false;
   }
-  const started = processStartMs(pid);
+  const started = readStart(pid);
   return started !== null && started - lockMtimeMs2 > START_MARGIN_MS;
 }
 function lockMtimeMs(lockPath) {
@@ -8106,10 +8133,21 @@ function acquireInstanceLock(dir) {
     return secureExclusiveCreate(lockPath, String(process.pid));
   };
   const sweep = `${lockPath}.sweep`;
+  let memoPid = 0;
+  let memoStart = null;
+  const startOf = (p) => {
+    if (memoPid === p) {
+      return memoStart;
+    }
+    const v = processStartMs(p);
+    memoPid = p;
+    memoStart = v;
+    return v;
+  };
   const live = () => {
     const owner = readLockPid(lockPath);
     const pid = Number.parseInt(owner, 10);
-    return heldByProcess.has(lockPath) ? String(process.pid) : isPidAlive2(pid) && !startedAfterLockWrite(pid, lockMtimeMs(lockPath)) ? String(pid) : !owner && young(lockPath) ? "?" : "";
+    return heldByProcess.has(lockPath) ? String(process.pid) : isPidAlive2(pid) && !startedAfterLockWrite(pid, lockMtimeMs(lockPath), startOf) ? String(pid) : !owner && young(lockPath) ? "?" : "";
   };
   const young = (path10) => Math.abs(Date.now() - (lockMtimeMs(path10) ?? Date.now())) < 2e3;
   const rm = (path10) => {
@@ -8129,16 +8167,20 @@ function acquireInstanceLock(dir) {
     }
     if (st?.isFile() && id === fileId(st)) rm(path10);
   };
+  let heldByKernel = false;
   const refuse = (pid) => {
     closeSync3(fd);
-    throw new Error(`another snote is already using ${dir}${pid ? ` (pid ${pid})` : ""} \u2014 it holds the instance lock`);
+    const n = Number(pid);
+    const clause = !heldByKernel && Number.isSafeInteger(n) && n > 0 && n !== process.pid && startOf(n) === null ? `. If that process is not snote, remove ${lockPath}` : "";
+    throw new Error(`another snote is already using ${dir}${pid ? ` (pid ${pid})` : ""} \u2014 it holds the instance lock${clause}`);
   };
   const fd = secureOpenForRead(`${dir}/.`);
   let unlocked;
   for (let retry = 0; ; retry++) {
-    const r = spawnSync2("/usr/bin/flock", ["-n", "0"], { stdio: [fd, "ignore", "ignore"], timeout: retry ? 5e3 : 1e3, killSignal: "SIGKILL", maxBuffer: 1048576 });
+    const r = spawnSync2(flockBin(), ["-n", "0"], { stdio: [fd, "ignore", "ignore"], timeout: retry ? 5e3 : 1e3, killSignal: "SIGKILL", maxBuffer: 1048576 });
     const code = r.error?.code;
     if (r.status === 1) {
+      heldByKernel = true;
       refuse(live());
     }
     unlocked = r.status === 0 ? void 0 : code === "ENOENT" ? "missing" : !code && typeof r.status === "number" ? "refused" : "timeout";
@@ -8243,7 +8285,7 @@ function readAccountId(folder) {
 var sameIdentity = (a, b) => a.email === b.email && a.server === b.server;
 function resolveAccountDir(root2, email, server) {
   const want = identityOf(email, server);
-  const suffix = createHash2("sha256").update(want.email + "\n" + want.server).digest("hex").slice(0, 12);
+  const suffix = createHash3("sha256").update(want.email + "\n" + want.server).digest("hex").slice(0, 12);
   let dir = accountDir(root2, email);
   for (let i = 0; i < MAX_TRIES; i++) {
     const id = readAccountId(dir);
@@ -8284,8 +8326,28 @@ async function recordSavedAccountId(root2) {
   }
 }
 
+// src/core/update-offer.ts
+var VERSION_TEXT = /^\d{1,6}\.\d{1,6}\.\d{1,6}$/;
+var offerKind = null;
+var requested = null;
+function allowUpdateOffer(kind) {
+  offerKind = kind;
+}
+function currentOffer() {
+  const b = offerKind === null ? null : currentBanner();
+  return b !== null && VERSION_TEXT.test(b.running) && VERSION_TEXT.test(b.available) ? b : null;
+}
+function requestHandOff() {
+  if (currentOffer() === null) return false;
+  requested = offerKind;
+  return true;
+}
+function handOffRequested() {
+  return requested;
+}
+
 // src/cli/login-calls.ts
-var auth = () => import("./chunks/auth-YN5LYRYY.js");
+var auth = () => import("./chunks/auth-WEGXHCZY.js");
 function loginCalls(server, appId) {
   let opts;
   if (server) {
@@ -8306,7 +8368,7 @@ var import_react3 = __toESM(require_react(), 1);
 var editOpenNow = false;
 var isInlineEditOpen = () => editOpenNow;
 function useInlineEditorState() {
-  const [open, setOpen] = (0, import_react3.useState)(false);
+  const [open2, setOpen] = (0, import_react3.useState)(false);
   const [base, setBase] = (0, import_react3.useState)("");
   const session = (0, import_react3.useRef)({ entry: null, stored: "" });
   const openEdit = (entry) => {
@@ -8322,12 +8384,12 @@ function useInlineEditorState() {
   };
   const closeEdit = () => setOpen(false);
   (0, import_react3.useLayoutEffect)(() => {
-    editOpenNow = open;
+    editOpenNow = open2;
     return () => {
       editOpenNow = false;
     };
-  }, [open]);
-  return { open, base, session, openEdit, openNew, closeEdit };
+  }, [open2]);
+  return { open: open2, base, session, openEdit, openNew, closeEdit };
 }
 var INLINE_EDIT_MAX_LINE = 1e4;
 var INLINE_EDIT_TOO_LONG = "A line is over 10,000 characters: press e to edit in your editor";
@@ -8344,7 +8406,7 @@ function inlineEditRefusal(content) {
 }
 
 // src/tui/Root.tsx
-var import_react23 = __toESM(require_react(), 1);
+var import_react24 = __toESM(require_react(), 1);
 
 // src/tui/read-gate.ts
 var import_react4 = __toESM(require_react(), 1);
@@ -8498,6 +8560,21 @@ var theme2 = {
   link: { color: "blue", underline: true },
   code: { color: "yellow" }
 };
+var headingTheme = {
+  heading1: { color: "blue", bold: true },
+  heading2: { color: "magenta", bold: true },
+  heading3: { color: "cyan", bold: true }
+};
+function headingStyle(level) {
+  return level <= 1 ? headingTheme.heading1 : level === 2 ? headingTheme.heading2 : headingTheme.heading3;
+}
+
+// src/core/hyperlink.ts
+var SIGNUP_URL = "https://app.simplenote.com/signup/";
+var SIGNUP_LINK = "\x1B]8;;" + SIGNUP_URL + "\x1B\\" + SIGNUP_URL + "\x1B]8;;\x1B\\";
+function signupLink(terminal) {
+  return terminal ? SIGNUP_LINK : SIGNUP_URL;
+}
 
 // src/tui/Login.tsx
 var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
@@ -8608,6 +8685,7 @@ function Login({
       }
     }
   });
+  const signup = signupLink(process.stdout.isTTY === true);
   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Box_default, { flexDirection: "column", height, width, paddingX: 2, children: [
     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Text, { bold: true, children: "Simplenote login" }),
     step === "email" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
@@ -8619,7 +8697,10 @@ function Login({
         // T70
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Text, { children: "Tab: log in with a password" })
       ) : null,
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Text, { ...theme2.muted, children: "No account? Sign up at https://app.simplenote.com/signup/" })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Text, { ...theme2.muted, children: [
+        "No account? Sign up at ",
+        signup
+      ] })
     ] }) : step === "password" ? (
       // T70
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
@@ -8651,7 +8732,7 @@ function Login({
 }
 
 // src/tui/App.tsx
-var import_react22 = __toESM(require_react(), 1);
+var import_react23 = __toESM(require_react(), 1);
 
 // src/core/keymap.ts
 var keymap = [
@@ -8690,6 +8771,7 @@ var keymap = [
   { key: "h", action: "history", description: "Note history (Enter restores)" },
   { key: "c", action: "toggle_check", description: "Tick / untick item (note)" },
   { key: "a", action: "add_check_item", description: "Add checklist item (note)" },
+  { key: "U", action: "update_snote", description: "Update snote (when offered)" },
   { key: "i", action: "edit_note_inline", description: "Edit inline (built-in editor)" }
 ];
 function keyNameFromEvent(key) {
@@ -8771,7 +8853,8 @@ var SECTIONS = [
     name: "App",
     actions: [
       "quit",
-      "logout"
+      "logout",
+      "update_snote"
     ]
   }
 ];
@@ -9545,7 +9628,7 @@ function useBlogSendAskState(noteId, content, setNotice, setNoticeError) {
     pending.current = null;
     setPhase(next === "close" ? null : next);
   }, [tick]);
-  const request = (next) => {
+  const request3 = (next) => {
     pending.current = next;
     setTick((t) => t + 1);
   };
@@ -9554,16 +9637,16 @@ function useBlogSendAskState(noteId, content, setNotice, setNoticeError) {
     if (phase?.kind !== "send" && phase?.kind !== "resend") return;
     const resend = phase.kind === "resend";
     if (key.escape || input === "n" || input === "N") {
-      request("close");
+      request3("close");
       return;
     }
     if (input === "y" || input === "Y") {
-      request("close");
+      request3("close");
       const id = noteIdRef.current;
       if (!id) return;
       const dir = dataRoot();
       const force = resend || Boolean(loadBlogSend(dir, id));
-      import("./chunks/blog-send-ZKPNGIQL.js").then((m) => m.sendNoteToBlog({
+      import("./chunks/blog-send-QR7XH2OM.js").then((m) => m.sendNoteToBlog({
         dir,
         noteId: id,
         content: contentRef.current,
@@ -9580,17 +9663,17 @@ function useBlogSendAskState(noteId, content, setNotice, setNoticeError) {
   });
   const setBlogSendAsk = (v) => {
     if (v === null) {
-      request("close");
+      request3("close");
       return;
     }
     const dir = dataRoot();
     const configured = fs9.existsSync(path8.join(dir, "blog.json"));
     const id = noteIdRef.current;
-    if (!configured) request({ kind: "token", origin: blogOriginFromEnv(process.env) });
-    else if (id && loadBlogSend(dir, id)) request({ kind: "resend" });
-    else request({ kind: "send" });
+    if (!configured) request3({ kind: "token", origin: blogOriginFromEnv(process.env) });
+    else if (id && loadBlogSend(dir, id)) request3({ kind: "resend" });
+    else request3({ kind: "send" });
   };
-  const closeBlogSend = () => request("close");
+  const closeBlogSend = () => request3("close");
   cell.current = {
     blogSendAsk: phase ? { onYes: () => {
     }, onNo: closeBlogSend } : null,
@@ -9598,7 +9681,7 @@ function useBlogSendAskState(noteId, content, setNotice, setNoticeError) {
     closeBlogSend,
     blogOpen: phase !== null
   };
-  return { phase, request };
+  return { phase, request: request3 };
 }
 
 // src/tui/blog-send-dialog.tsx
@@ -9608,7 +9691,7 @@ var RESEND_QUESTION = "Already sent as a draft. Send again as a new draft?";
 function BlogSendDialog({
   phase,
   setNoticeError,
-  request
+  request: request3
 }) {
   if (phase.kind === "origin") {
     return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
@@ -9616,15 +9699,15 @@ function BlogSendDialog({
       {
         label: "Blog origin",
         initial: "",
-        onSubmit: (origin) => request({ kind: "token", origin }),
-        onCancel: () => request("close")
+        onSubmit: (origin) => request3({ kind: "token", origin }),
+        onCancel: () => request3("close")
       },
       "origin"
     );
   }
   if (phase.kind === "token") {
     const origin = phase.origin;
-    const label = origin === DEFAULT_BLOG_ORIGIN ? "Skryf token (create one at https://skryf.art/settings/keys)" : "Blog token";
+    const label = origin === DEFAULT_BLOG_ORIGIN ? "Skryf token (new? skryf.art/register, key: https://skryf.art/settings/keys)" : "Blog token";
     return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
       Prompt,
       {
@@ -9632,16 +9715,16 @@ function BlogSendDialog({
         initial: "",
         onSubmit: (token) => {
           const dir = dataRoot();
-          import("./chunks/blog-config-KJ4WEWV7.js").then((m) => m.saveBlogConfig(dir, { origin, token })).then(
-            () => request({ kind: "send" }),
+          import("./chunks/blog-config-L3LQXKHW.js").then((m) => m.saveBlogConfig(dir, { origin, token })).then(
+            () => request3({ kind: "send" }),
             (error) => {
               const msg = error instanceof Error ? error.message : "blog setup failed";
               setNoticeError(msg);
-              request("close");
+              request3("close");
             }
           );
         },
-        onCancel: () => request("close")
+        onCancel: () => request3("close")
       },
       "token"
     );
@@ -9697,7 +9780,7 @@ function visibleHints(entries, width) {
 function KeyHints({ context, width, pin }) {
   const base = hintsForContext(context);
   const withPin = context === "list" && pin ? [...base.slice(0, -1), { key: "p", label: pin }, ...base.slice(-1)] : base;
-  const extra = context === "list" ? [{ key: "\u2190\u2192", label: "Panes" }] : context === "tags" ? [{ key: "Tab/\u2192", label: "Notes" }] : [];
+  const extra = context === "list" ? [{ key: "j/k", label: "Move" }, { key: "\u2190\u2192", label: "Panes" }] : context === "tags" ? [{ key: "Tab/\u2192", label: "Notes" }] : [];
   const hints = visibleHints([...withPin, ...extra], width);
   return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Box_default, { children: hints.map((h, i) => /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_react10.default.Fragment, { children: [
     i > 0 && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Text, { children: "  " }),
@@ -9754,7 +9837,7 @@ function BottomArea({
   const [exportAsk, setExportAsk] = (0, import_react11.useState)(false);
   exportAskRef.current = { exportAsk, setExportAsk };
   const exportPathRef = (0, import_react11.useRef)(null);
-  const { phase, request } = useBlogSendAskState(
+  const { phase, request: request3 } = useBlogSendAskState(
     selectedEntry ? String(selectedEntry.id) : null,
     selectedEntry?.note.content ?? "",
     (message) => setNotice?.(message),
@@ -9859,7 +9942,7 @@ function BottomArea({
     {
       phase,
       setNoticeError: (message) => setNoticeError?.(message),
-      request
+      request: request3
     }
   ) : logoutAsk ? unsentCount(store) > 0 || keptElsewhere() > 0 ? (() => {
     const unsynced = unsentCount(store);
@@ -10162,6 +10245,9 @@ function expandMasked(stripped, markerPrefix) {
   }
   return { text, spans };
 }
+function headingLevel(raw) {
+  return /^(#{1,6})\s/.exec(raw.replace(OWN_SENTINELS, ""))?.[1].length ?? 0;
+}
 function markdownBodyLine(raw) {
   const clean = raw.replace(OWN_SENTINELS, "");
   const masked = clean.replace(/^#{1,6}\s+/, "").replace(
@@ -10169,7 +10255,7 @@ function markdownBodyLine(raw) {
     (_match, _marker, state) => state === " " ? CHECK_EMPTY : CHECK_DONE
   ).replace(/^([-*])\s+/, BULLET).replace(/!\[([^\]]*)\]\([^)]*\)/g, (_match, alt) => IMG_OPEN + alt + IMG_CLOSE).replace(/\[([^\]]*)\]\([^)]*\)/g, (_match, label) => LINK_OPEN + label + LINK_CLOSE).replace(/`([^`]*)`/g, (_match, content) => CODE_OPEN + content + CODE_CLOSE);
   const stripped = (0, import_remove_markdown2.default)(masked);
-  const isHeading = /^#{1,6}\s/.test(clean);
+  const isHeading = headingLevel(clean) > 0;
   const markerPrefix = stripped.startsWith(CHECK_EMPTY) ? "\u2610 " : stripped.startsWith(CHECK_DONE) ? "\u2611 " : stripped.startsWith(BULLET) ? "\u2022 " : "";
   const { text, spans } = expandMasked(stripped, markerPrefix);
   return { text, isHeading, spans };
@@ -10290,10 +10376,13 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
   const content = sanitizeForTerminal(note.content || "");
   let displayContent;
   let processedLines = [];
+  let levels = [];
   if (typeof cursorLine === "number") {
     displayContent = content;
   } else if (rendered && isMarkdownNote(note)) {
-    processedLines = content.split("\n").map(markdownBodyLine);
+    const raw = content.split("\n");
+    processedLines = raw.map(markdownBodyLine);
+    levels = raw.map(headingLevel);
     displayContent = processedLines.map((p) => p.text).join("\n");
   } else {
     displayContent = content;
@@ -10307,6 +10396,7 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
     if (firstLine === title) {
       bodyContent = nl === -1 ? "" : displayContent.slice(nl + 1);
       bodyLines = processedLines.length > 1 ? processedLines.slice(1) : [];
+      levels = levels.slice(1);
     } else {
       bodyContent = displayContent;
       bodyLines = processedLines;
@@ -10364,12 +10454,13 @@ function Preview({ note, width, height, rendered = false, cursorLine, focused, i
             const gutter = gutterRows[start2 + idx] ?? "";
             const rowText = row.text || " ";
             const isHeading = bodyHeadingFlags[row.line] ?? false;
+            const level = levels[row.line] ?? 0;
             const spans = rowSpansByRow[start2 + idx] ?? [];
             return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(
               Text,
               {
                 bold: isHeading,
-                ...isHeading ? theme2.accent : {},
+                ...isHeading ? headingStyle(level) : {},
                 wrap: "truncate",
                 children: [
                   gutter,
@@ -10433,191 +10524,6 @@ var NAV_KEYBINDINGS = [
   "Ctrl+A",
   "Ctrl+E"
 ];
-
-// node_modules/react-ink-textarea/node_modules/ansi-styles/index.js
-var ANSI_BACKGROUND_OFFSET = 10;
-var wrapAnsi16 = (offset = 0) => (code) => `\x1B[${code + offset}m`;
-var wrapAnsi256 = (offset = 0) => (code) => `\x1B[${38 + offset};5;${code}m`;
-var wrapAnsi16m = (offset = 0) => (red, green, blue) => `\x1B[${38 + offset};2;${red};${green};${blue}m`;
-var styles = {
-  modifier: {
-    reset: [0, 0],
-    // 21 isn't widely supported and 22 does the same thing
-    bold: [1, 22],
-    dim: [2, 22],
-    italic: [3, 23],
-    underline: [4, 24],
-    overline: [53, 55],
-    inverse: [7, 27],
-    hidden: [8, 28],
-    strikethrough: [9, 29]
-  },
-  color: {
-    black: [30, 39],
-    red: [31, 39],
-    green: [32, 39],
-    yellow: [33, 39],
-    blue: [34, 39],
-    magenta: [35, 39],
-    cyan: [36, 39],
-    white: [37, 39],
-    // Bright color
-    blackBright: [90, 39],
-    gray: [90, 39],
-    // Alias of `blackBright`
-    grey: [90, 39],
-    // Alias of `blackBright`
-    redBright: [91, 39],
-    greenBright: [92, 39],
-    yellowBright: [93, 39],
-    blueBright: [94, 39],
-    magentaBright: [95, 39],
-    cyanBright: [96, 39],
-    whiteBright: [97, 39]
-  },
-  bgColor: {
-    bgBlack: [40, 49],
-    bgRed: [41, 49],
-    bgGreen: [42, 49],
-    bgYellow: [43, 49],
-    bgBlue: [44, 49],
-    bgMagenta: [45, 49],
-    bgCyan: [46, 49],
-    bgWhite: [47, 49],
-    // Bright color
-    bgBlackBright: [100, 49],
-    bgGray: [100, 49],
-    // Alias of `bgBlackBright`
-    bgGrey: [100, 49],
-    // Alias of `bgBlackBright`
-    bgRedBright: [101, 49],
-    bgGreenBright: [102, 49],
-    bgYellowBright: [103, 49],
-    bgBlueBright: [104, 49],
-    bgMagentaBright: [105, 49],
-    bgCyanBright: [106, 49],
-    bgWhiteBright: [107, 49]
-  }
-};
-var modifierNames = Object.keys(styles.modifier);
-var foregroundColorNames = Object.keys(styles.color);
-var backgroundColorNames = Object.keys(styles.bgColor);
-var colorNames = [...foregroundColorNames, ...backgroundColorNames];
-function assembleStyles() {
-  const codes = /* @__PURE__ */ new Map();
-  for (const [groupName, group] of Object.entries(styles)) {
-    for (const [styleName, style] of Object.entries(group)) {
-      styles[styleName] = {
-        open: `\x1B[${style[0]}m`,
-        close: `\x1B[${style[1]}m`
-      };
-      group[styleName] = styles[styleName];
-      codes.set(style[0], style[1]);
-    }
-    Object.defineProperty(styles, groupName, {
-      value: group,
-      enumerable: false
-    });
-  }
-  Object.defineProperty(styles, "codes", {
-    value: codes,
-    enumerable: false
-  });
-  styles.color.close = "\x1B[39m";
-  styles.bgColor.close = "\x1B[49m";
-  styles.color.ansi = wrapAnsi16();
-  styles.color.ansi256 = wrapAnsi256();
-  styles.color.ansi16m = wrapAnsi16m();
-  styles.bgColor.ansi = wrapAnsi16(ANSI_BACKGROUND_OFFSET);
-  styles.bgColor.ansi256 = wrapAnsi256(ANSI_BACKGROUND_OFFSET);
-  styles.bgColor.ansi16m = wrapAnsi16m(ANSI_BACKGROUND_OFFSET);
-  Object.defineProperties(styles, {
-    rgbToAnsi256: {
-      value(red, green, blue) {
-        if (red === green && green === blue) {
-          if (red < 8) {
-            return 16;
-          }
-          if (red > 248) {
-            return 231;
-          }
-          return Math.round((red - 8) / 247 * 24) + 232;
-        }
-        return 16 + 36 * Math.round(red / 255 * 5) + 6 * Math.round(green / 255 * 5) + Math.round(blue / 255 * 5);
-      },
-      enumerable: false
-    },
-    hexToRgb: {
-      value(hex) {
-        const matches = /[a-f\d]{6}|[a-f\d]{3}/i.exec(hex.toString(16));
-        if (!matches) {
-          return [0, 0, 0];
-        }
-        let [colorString] = matches;
-        if (colorString.length === 3) {
-          colorString = [...colorString].map((character) => character + character).join("");
-        }
-        const integer = Number.parseInt(colorString, 16);
-        return [
-          /* eslint-disable no-bitwise */
-          integer >> 16 & 255,
-          integer >> 8 & 255,
-          integer & 255
-          /* eslint-enable no-bitwise */
-        ];
-      },
-      enumerable: false
-    },
-    hexToAnsi256: {
-      value: (hex) => styles.rgbToAnsi256(...styles.hexToRgb(hex)),
-      enumerable: false
-    },
-    ansi256ToAnsi: {
-      value(code) {
-        if (code < 8) {
-          return 30 + code;
-        }
-        if (code < 16) {
-          return 90 + (code - 8);
-        }
-        let red;
-        let green;
-        let blue;
-        if (code >= 232) {
-          red = ((code - 232) * 10 + 8) / 255;
-          green = red;
-          blue = red;
-        } else {
-          code -= 16;
-          const remainder = code % 36;
-          red = Math.floor(code / 36) / 5;
-          green = Math.floor(remainder / 6) / 5;
-          blue = remainder % 6 / 5;
-        }
-        const value = Math.max(red, green, blue) * 2;
-        if (value === 0) {
-          return 30;
-        }
-        let result = 30 + (Math.round(blue) << 2 | Math.round(green) << 1 | Math.round(red));
-        if (value === 2) {
-          result += 60;
-        }
-        return result;
-      },
-      enumerable: false
-    },
-    rgbToAnsi: {
-      value: (red, green, blue) => styles.ansi256ToAnsi(styles.rgbToAnsi256(red, green, blue)),
-      enumerable: false
-    },
-    hexToAnsi: {
-      value: (hex) => styles.ansi256ToAnsi(styles.hexToAnsi256(hex)),
-      enumerable: false
-    }
-  });
-  return styles;
-}
-var ansiStyles = assembleStyles();
 
 // node_modules/react-ink-textarea/dist/textUtils.js
 var segmenter4 = new Intl.Segmenter("en", { granularity: "grapheme" });
@@ -11578,7 +11484,7 @@ var renderRowBody = ({ chunk, chunkAbsStart, cursorPos, cursorVisible, isCursorA
   flush();
   return nodes;
 };
-var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineSuffix, cursorInterval = DEFAULT_CURSOR_INTERVAL, typingPause = DEFAULT_TYPING_PAUSE, maxUndo = DEFAULT_MAX_UNDO, undoGroupDelay = DEFAULT_UNDO_GROUP_DELAY, autoNewLineLimit = DEFAULT_AUTO_NEW_LINE_LIMIT, highlightActiveLine = false, activeLineColor = void 0, disableArrowNavigation = false, disableCursorBlink = false, value: controlledValue, cursorPosition: controlledPosition, onChange, onCursorChange, onFirstLineUp, onLastLineDown, onFirstCharacterLeft, onLastCharacterRight, onTab, initialLineCount = DEFAULT_INITIAL_LINE_COUNT, viewportLines, tabWidth = DEFAULT_TAB_WIDTH, onDimensions, showInvisibles = false, styles: styles2, labels, keybindings }) => {
+var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineSuffix, cursorInterval = DEFAULT_CURSOR_INTERVAL, typingPause = DEFAULT_TYPING_PAUSE, maxUndo = DEFAULT_MAX_UNDO, undoGroupDelay = DEFAULT_UNDO_GROUP_DELAY, autoNewLineLimit = DEFAULT_AUTO_NEW_LINE_LIMIT, highlightActiveLine = false, activeLineColor = void 0, disableArrowNavigation = false, disableCursorBlink = false, value: controlledValue, cursorPosition: controlledPosition, onChange, onCursorChange, onFirstLineUp, onLastLineDown, onFirstCharacterLeft, onLastCharacterRight, onTab, initialLineCount = DEFAULT_INITIAL_LINE_COUNT, viewportLines, tabWidth = DEFAULT_TAB_WIDTH, onDimensions, showInvisibles = false, styles, labels, keybindings }) => {
   const resolvedKeybindings = (0, import_react16.useMemo)(() => {
     const merged = {
       ...DEFAULT_KEYBINDINGS,
@@ -11590,7 +11496,7 @@ var TextArea = ({ ref, focus: isActive, onSubmit, placeholder, linePrefix, lineS
     }
     return merged;
   }, [keybindings, disableArrowNavigation]);
-  const resolvedStyles = (0, import_react16.useMemo)(() => resolveStyles(styles2), [styles2]);
+  const resolvedStyles = (0, import_react16.useMemo)(() => resolveStyles(styles), [styles]);
   const textProps = (0, import_react16.useMemo)(() => styleToTextProps(resolvedStyles.text), [resolvedStyles.text]);
   const invisibleProps = (0, import_react16.useMemo)(() => styleToTextProps(resolvedStyles.invisibleCharacter), [resolvedStyles.invisibleCharacter]);
   const labelTextProps = (0, import_react16.useMemo)(() => {
@@ -12019,6 +11925,32 @@ function useInlineAutosave(text, store) {
   return { changed, close };
 }
 
+// src/core/last-sync.ts
+var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+var DAY_MS = 864e5;
+var two = (n) => String(n).padStart(2, "0");
+function clockTime(at) {
+  const d = new Date(at);
+  return two(d.getHours()) + ":" + two(d.getMinutes());
+}
+function syncedText(at, now) {
+  if (at === null) return void 0;
+  const d = new Date(at);
+  const time = clockTime(at);
+  return now - at > DAY_MS ? `synced ${d.getDate()} ${MONTHS[d.getMonth()]} ${time}` : `synced ${time}`;
+}
+var TICK_MS = 6e4;
+function syncClock(current2, show, now = Date.now) {
+  let at = null;
+  const update = () => {
+    if (current2()) at = now();
+    show(syncedText(at, now()));
+  };
+  const tick = setInterval(update, TICK_MS);
+  tick.unref();
+  return { update, stop: () => clearInterval(tick) };
+}
+
 // src/tui/InlineEditor.tsx
 var import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
 function endPosition(text) {
@@ -12055,14 +11987,22 @@ function KeyHook({ active, onKey }) {
   return null;
 }
 var FOOTER_HINT = "Autosaves \xB7 Esc close \xB7 Ctrl+S save now";
-function InlineEditor({ width, height, base, onClose, onSave }) {
+var savedHint = (at) => "Autosaved at " + clockTime(at) + " \xB7 Esc close \xB7 Ctrl+S save";
+var HEADING_LABELS = [{ pattern: /^#{1,6}[ \t].*$/gm, label: (m) => "heading" + Math.min(headingLevel(m[0]), 3) }];
+var HEADING_STYLES = headingTheme;
+function InlineEditor({ note, width, height, base, onClose, onSave }) {
   const colWidth = previewColWidth(width);
   const rows = Math.max(1, height - 2);
-  const footerRows = Math.max(1, Math.ceil(FOOTER_HINT.length / Math.max(1, colWidth)));
+  const [savedAt, setSavedAt] = (0, import_react18.useState)(null);
+  const footer = savedAt === null ? FOOTER_HINT : savedHint(savedAt);
+  const footerRows = Math.max(1, Math.ceil(footer.length / Math.max(1, colWidth)));
   const [cursorPosition, setCursorPosition] = (0, import_react18.useState)(() => endPosition(base));
   const ref = (0, import_react18.useRef)(null);
   const realRef = (0, import_react18.useRef)(base);
-  const autosave = useInlineAutosave(realRef, onSave);
+  const autosave = useInlineAutosave(realRef, (text) => {
+    onSave(text);
+    setSavedAt(Date.now());
+  });
   const shownRef = (0, import_react18.useRef)(standInText(base));
   const [value, setValueState] = (0, import_react18.useState)(shownRef.current);
   const caretRef = (0, import_react18.useRef)(shownRef.current.length);
@@ -12156,6 +12096,8 @@ function InlineEditor({ width, height, base, onClose, onSave }) {
           focus: true,
           viewportLines: Math.max(1, rows - footerRows),
           onSubmit: () => ref.current?.insert("\n"),
+          labels: note !== null && isMarkdownNote(note) ? HEADING_LABELS : void 0,
+          styles: HEADING_STYLES,
           value,
           cursorPosition,
           onChange: setValue,
@@ -12166,7 +12108,7 @@ function InlineEditor({ width, height, base, onClose, onSave }) {
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(KeyHook, { active: true, onKey: afterTextArea }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: FOOTER_HINT })
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Text, { children: footer })
     ] })
   ] });
 }
@@ -12311,28 +12253,6 @@ function matchParsed(note, parsed) {
     }
   }
   return true;
-}
-
-// src/core/last-sync.ts
-var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-var DAY_MS = 864e5;
-var two = (n) => String(n).padStart(2, "0");
-function syncedText(at, now) {
-  if (at === null) return void 0;
-  const d = new Date(at);
-  const time = two(d.getHours()) + ":" + two(d.getMinutes());
-  return now - at > DAY_MS ? `synced ${d.getDate()} ${MONTHS[d.getMonth()]} ${time}` : `synced ${time}`;
-}
-var TICK_MS = 6e4;
-function syncClock(current2, show, now = Date.now) {
-  let at = null;
-  const update = () => {
-    if (current2()) at = now();
-    show(syncedText(at, now()));
-  };
-  const tick = setInterval(update, TICK_MS);
-  tick.unref();
-  return { update, stop: () => clearInterval(tick) };
 }
 
 // src/tui/useAppState.ts
@@ -12485,6 +12405,9 @@ function updateMessage(u) {
   if (u.kind === "restart") {
     return `snote ${u.available} is downloaded: restart snote / the bar to use the update`;
   }
+  if (u.offPlugin) {
+    return "update available: a newer snote is out, see github.com/donnishcomau/snote/releases";
+  }
   return "update available: omarchy plugin update io.github.donnishcomau.snote-simplenote\nthen click the bar button, then run omarchy-restart-shell";
 }
 function noticeColor(notice) {
@@ -12514,6 +12437,121 @@ function dismissOnEscape(keyName) {
     return true;
   }
   return false;
+}
+
+// src/tui/update-ask.tsx
+var import_react22 = __toESM(require_react(), 1);
+var import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
+var open = false;
+var seen = false;
+var redraw = null;
+var set = (v) => {
+  if (v) seen = true;
+  open = v;
+  redraw?.();
+};
+function updateAskSeen() {
+  return seen;
+}
+var starNote = () => {
+};
+var starKey = () => false;
+var starBlock = () => false;
+var starTake = () => "";
+var starDraw = null;
+function bindStarRuntime(note, key, block, take, _consent) {
+  starNote = note;
+  starKey = key;
+  starBlock = block;
+  starTake = take;
+}
+function starKeyHeld(input, escape) {
+  return starKey(input, escape);
+}
+function pokeStar() {
+  starDraw?.();
+}
+function useStarHost(load, snap) {
+  const [Pane, setPane] = (0, import_react22.useState)(null);
+  const [, setTick] = (0, import_react22.useState)(0);
+  const ref = (0, import_react22.useRef)(snap);
+  ref.current = snap;
+  (0, import_react22.useEffect)(() => {
+    const mine = () => setTick((n) => n + 1);
+    starDraw = mine;
+    let live = true;
+    void import("./chunks/star-prompt-5ZLQ5RGC.js").then((m) => {
+      if (live) m.attachStarUi({ poke: pokeStar, askOpen: updateAskOpen, askSeen: updateAskSeen, bind: bindStarRuntime, read: () => ref.current(), handed: () => handOffRequested() !== null });
+    });
+    return () => {
+      live = false;
+      if (starDraw === mine) {
+        starDraw = null;
+        starNote = () => {
+        };
+      }
+    };
+  }, []);
+  (0, import_react22.useEffect)(() => {
+    starNote();
+    const line = starTake();
+    if (line) ref.current().setNotice(line);
+    if (starBlock() && !Pane) void load().then((m) => setPane(() => m.StarPrompt));
+  });
+  if (!Pane) return null;
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Pane, { useReadGate, useInput: use_input_default, renderLine: (line) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Text, { color: theme2.warning.color, wrap: "truncate-end", children: sanitizeForTerminal(line) }) });
+}
+var offerGone = () => open && currentOffer() === null;
+function updateAskOpen() {
+  if (!offerGone()) return open;
+  set(false);
+  return true;
+}
+var busy = () => true;
+var guardUntil = 0;
+function openUpdateAskFromBar() {
+  if (busy() !== null || open || currentOffer() === null || starBlock()) return;
+  guardUntil = Date.now() + 300;
+  set(true);
+}
+function openUpdateAskOnU(input) {
+  if (input !== "U" || currentOffer() === null || starBlock()) return false;
+  set(true);
+  return true;
+}
+function UpdateAsk({ quit, entry }) {
+  const [, tick] = (0, import_react22.useState)(0);
+  busy = entry;
+  (0, import_react22.useEffect)(() => {
+    const draw = () => tick((t) => t + 1);
+    const l = () => {
+      if (offerGone()) open = false;
+      draw();
+    };
+    redraw = draw;
+    const off = onBanner(l);
+    return () => {
+      off();
+      if (redraw === draw) redraw = null;
+      open = false;
+      busy = () => true;
+    };
+  }, []);
+  const offered = currentOffer();
+  const offer = open ? offered : null;
+  useReadGate({ confirm: offer !== null });
+  use_input_default((input, key) => {
+    if (offer === null || Date.now() < guardUntil) return;
+    if (key.escape || input === "n" || input === "N") queueMicrotask(() => set(false));
+    else if (input === "y" || input === "Y") {
+      queueMicrotask(() => set(false));
+      if (requestHandOff()) quit();
+    }
+  });
+  if (offer === null) {
+    return offered === null ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(BannerRow, {}) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Text, { color: theme2.warning.color, wrap: "truncate-end", children: sanitizeForTerminal(`Update available: ${offered.running} -> ${offered.available}, press U to update`) });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Box_default, { flexShrink: 0, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Text, { color: theme2.warning.color, children: sanitizeForTerminal(`Update snote ${offer.running} to ${offer.available}? (y/n)`) }) });
 }
 
 // src/tui/note-focus.ts
@@ -12640,40 +12678,42 @@ function finishInlineNew(ctx) {
 }
 
 // src/tui/App.tsx
-var import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime21 = __toESM(require_jsx_runtime(), 1);
 function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, copyText, startNew }) {
   const { exit, suspendTerminal } = use_app_default();
   const { setRawMode } = use_stdin_default();
   const view = useAppState(store);
-  const { noteEntries, selectedIndex, setSelectedIndex, connected, pending, allTagNames, query, setQuery, tagNames, collection: collection2, inTrash, sortLabelStr } = view;
-  const [rendered, setRendered] = (0, import_react22.useState)(false);
-  const [helpOpen, setHelpOpen] = (0, import_react22.useState)(false);
-  const [tagEditorOpen, setTagEditorOpen] = (0, import_react22.useState)(false);
-  const [logoutAsk, setLogoutAsk] = (0, import_react22.useState)(false);
-  const [searchOpen, setSearchOpen] = (0, import_react22.useState)(false);
-  const [tagsOpen, setTagsOpen] = (0, import_react22.useState)(false);
-  const [tagsFocused, setTagsFocused] = (0, import_react22.useState)(false);
-  const [noteFocused, setNoteFocused] = (0, import_react22.useState)(false);
-  const [itemIndex, setItemIndex] = (0, import_react22.useState)(0);
-  const [tagIndex, setTagIndex] = (0, import_react22.useState)(0);
-  const [tagDialog, setTagDialog] = (0, import_react22.useState)(null);
-  const [emptyAsk, setEmptyAsk] = (0, import_react22.useState)(0);
-  const [copyResult, setCopyResult] = (0, import_react22.useState)(null);
-  const [historyOpen, setHistoryOpen] = (0, import_react22.useState)(false);
-  const [historyIndex, setHistoryIndex] = (0, import_react22.useState)(0);
-  const [reading, setReading] = (0, import_react22.useState)(false);
+  const { noteEntries, selectedIndex, setSelectedIndex, pending, word, allTagNames, query, setQuery, tagNames, collection: collection2, inTrash, sortLabelStr } = view;
+  const [rendered, setRendered] = (0, import_react23.useState)(false);
+  const [helpOpen, setHelpOpen] = (0, import_react23.useState)(false);
+  const [tagEditorOpen, setTagEditorOpen] = (0, import_react23.useState)(false);
+  const [logoutAsk, setLogoutAsk] = (0, import_react23.useState)(false);
+  const [searchOpen, setSearchOpen] = (0, import_react23.useState)(false);
+  const [tagsOpen, setTagsOpen] = (0, import_react23.useState)(false);
+  const [tagsFocused, setTagsFocused] = (0, import_react23.useState)(false);
+  const [noteFocused, setNoteFocused] = (0, import_react23.useState)(false);
+  const [itemIndex, setItemIndex] = (0, import_react23.useState)(0);
+  const [tagIndex, setTagIndex] = (0, import_react23.useState)(0);
+  const [tagDialog, setTagDialog] = (0, import_react23.useState)(null);
+  const [emptyAsk, setEmptyAsk] = (0, import_react23.useState)(0);
+  const [copyResult, setCopyResult] = (0, import_react23.useState)(null);
+  const [historyOpen, setHistoryOpen] = (0, import_react23.useState)(false);
+  const [historyIndex, setHistoryIndex] = (0, import_react23.useState)(0);
+  const [reading, setReading] = (0, import_react23.useState)(false);
   const { itemAsk, setItemAsk } = useItemAsk();
   const { exportAsk, setExportAsk } = useExportAsk();
   const { setBlogSendAsk } = useBlogSendAsk();
   const { open: inlineEditOpen, base: inlineEditBase, session: inlineSession, openEdit: openInlineEdit, openNew: openInlineNew, closeEdit: closeInlineEdit } = useInlineEditorState();
   const { notice, setNotice, setNoticeError, clearNotice } = useNotice();
-  const [syncedAt, setSyncedAt] = (0, import_react22.useState)(null);
-  const syncedTimerRef = (0, import_react22.useRef)(null);
-  const tagsAutoOpenedRef = (0, import_react22.useRef)(false);
+  const [syncedAt, setSyncedAt] = (0, import_react23.useState)(null);
+  const syncedTimerRef = (0, import_react23.useRef)(null);
+  const tagsAutoOpenedRef = (0, import_react23.useRef)(false);
   useAppEffects(width, tagNames.length, setTagsOpen, syncedTimerRef, () => handleKey("n", EXTERNAL_KEY), startNew);
   const handleKey = (input, key) => {
     recordKeyEvent(input, key, Boolean(searchOpen || tagEditorOpen || tagDialog?.kind === "rename" || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen || inlineEditOpen));
+    if (starKeyHeld(input, key.escape === true)) return;
     if (notice) clearNotice();
+    if (updateAskOpen()) return;
     const keyName = keyNameFromEvent(key);
     if (helpOpen) {
       if (keyName === "Escape" || input === "?") {
@@ -12727,7 +12767,7 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
       const noteKeyCtx = { store, selectedEntry, itemIndex, setItemIndex, setItemAsk, setNotice, setExportAsk, setBlogSendAsk };
       if (handleNoteKey(input, keyName, noteKeyCtx)) return;
     }
-    const action = dismissOnEscape(keyName) ? null : noteKeyOrNotice(input, selectedEntry?.id ?? null, store.getState(), setNotice);
+    const action = dismissOnEscape(keyName) || openUpdateAskOnU(input) ? null : noteKeyOrNotice(input, selectedEntry?.id ?? null, store.getState(), setNotice);
     if (action) {
       store.dispatch(action);
       if (action.type === "SELECT_TRASH") setTagIndex(tagNames.length + 2);
@@ -12791,11 +12831,13 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
     }
   };
   const remember = useReselect({ store, setExternalSelect: view.setExternalSelect });
-  useReadGate({ entry: () => inlineEditOpen ? "" : searchOpen || tagDialog || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen ? "\r" : tagEditorOpen ? "whole" : null, onDropped: () => setNotice(SEVERAL_KEYS) });
+  const entry = () => inlineEditOpen ? "" : searchOpen || tagDialog || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen ? "\r" : tagEditorOpen ? "whole" : null;
+  useReadGate({ entry, onDropped: () => setNotice(SEVERAL_KEYS) });
+  const starPane = useStarHost(() => import("./chunks/StarPrompt-K56546NC.js"), () => ({ message: notice?.message, pending, word, busy: entry() !== null || helpOpen || historyOpen, setNotice }));
   use_input_default((input, key) => {
     for (const ch of splitPastedInput(input) ?? [input]) handleKey(ch, key);
   }, { isActive: emptyAsk === 0 });
-  const listCount = import_react22.default.useMemo(() => {
+  const listCount = import_react23.default.useMemo(() => {
     const st = store.getState();
     let count = 0;
     for (const note of st.data.notes.values()) {
@@ -12807,9 +12849,10 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
   const selectedNote = selectedEntry?.note ?? null;
   const noteItems = noteFocused && selectedEntry ? checklistItems(selectedEntry.note.content ?? "") : [];
   const cursorLine = noteItems.length > 0 ? noteItems[Math.min(itemIndex, noteItems.length - 1)].line : null;
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Box_default, { flexDirection: "column", height, children: helpOpen ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Help, { width, height, editor: selectEditor(process.env) }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(BannerRow, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Box_default, { flexDirection: "column", height, children: helpOpen ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Help, { width, height, editor: selectEditor(process.env) }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(UpdateAsk, { entry, quit: () => onQuit ? onQuit() : exit() }),
+    starPane,
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
       MainPanes,
       {
         store,
@@ -12836,8 +12879,8 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
         onSaveEdit: (value) => saveInlineSession({ store, session: inlineSession, local: value, onEditorError: setNoticeError, onNotice: setNotice })
       }
     ),
-    notice ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Text, { color: noticeColor(notice), wrap: "truncate-end", children: sanitizeForTerminal(notice.message) }) : null,
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    notice ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Text, { color: noticeColor(notice), wrap: "truncate-end", children: sanitizeForTerminal(notice.message) }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
       BottomArea,
       {
         store,
@@ -12870,17 +12913,17 @@ function App({ store, width, height, onQuit, onLogout, runEditor, onForceSync, c
 }
 
 // src/tui/HeaderBar.tsx
-var import_jsx_runtime21 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime22 = __toESM(require_jsx_runtime(), 1);
 function HeaderBar() {
-  if (use_is_screen_reader_enabled_default()) return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Text, { children: "snote" });
-  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Text, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Text, { ...theme2.accent, children: ">_" }),
-    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Text, { bold: true, children: " snote" })
+  if (use_is_screen_reader_enabled_default()) return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Text, { children: "snote" });
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Text, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Text, { ...theme2.accent, children: ">_" }),
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Text, { bold: true, children: " snote" })
   ] });
 }
 
 // src/tui/Root.tsx
-var import_jsx_runtime22 = __toESM(require_jsx_runtime(), 1);
+var import_jsx_runtime23 = __toESM(require_jsx_runtime(), 1);
 var MIN_W = 20;
 var MIN_H = 7;
 var TOO_SMALL = `snote needs at least ${MIN_W}x${MIN_H} \u2014 make the window bigger`;
@@ -12899,22 +12942,22 @@ function endSyncClient(s) {
   }
 }
 function Root(props) {
-  const [phase, setPhase] = (0, import_react23.useState)("loading");
-  const [store, setStore] = (0, import_react23.useState)(null);
-  const [error, setError] = (0, import_react23.useState)("");
-  const [forced, setForced] = (0, import_react23.useState)(null);
-  const userLogoutRef = (0, import_react23.useRef)(false);
-  const [lockMessage, setLockMessage] = (0, import_react23.useState)(null);
-  const [size, setSize] = (0, import_react23.useState)({
+  const [phase, setPhase] = (0, import_react24.useState)("loading");
+  const [store, setStore] = (0, import_react24.useState)(null);
+  const [error, setError] = (0, import_react24.useState)("");
+  const [forced, setForced] = (0, import_react24.useState)(null);
+  const userLogoutRef = (0, import_react24.useRef)(false);
+  const [lockMessage, setLockMessage] = (0, import_react24.useState)(null);
+  const [size, setSize] = (0, import_react24.useState)({
     width: props.width,
     height: props.height
   });
   const { stdout } = use_stdout_default();
   const { exit } = use_app_default();
   const tooSmall = size.width < MIN_W || size.height < MIN_H;
-  const roomy = (0, import_react23.useRef)(size);
+  const roomy = (0, import_react24.useRef)(size);
   if (!tooSmall) roomy.current = size;
-  const quitRef = (0, import_react23.useRef)(() => {
+  const quitRef = (0, import_react24.useRef)(() => {
   });
   quitRef.current = props.onQuit ?? exit;
   useReadGate({
@@ -12924,7 +12967,7 @@ function Root(props) {
       if (input === "q" && !isInlineEditOpen()) quitRef.current();
     } : void 0
   });
-  (0, import_react23.useEffect)(() => {
+  (0, import_react24.useEffect)(() => {
     const onResize = () => {
       setSize({
         width: stdout.columns ?? props.width,
@@ -12936,7 +12979,7 @@ function Root(props) {
       stdout.off("resize", onResize);
     };
   }, [stdout, props.width, size.height]);
-  (0, import_react23.useEffect)(() => {
+  (0, import_react24.useEffect)(() => {
     let cancelled = false;
     loadToken(props.dataDir).then((auth2) => {
       if (cancelled) return;
@@ -12973,12 +13016,12 @@ function Root(props) {
       cancelled = true;
     };
   }, [props.dataDir, props.server, props.makeStoreFor]);
-  const handleLogout = (0, import_react23.useCallback)(() => {
+  const handleLogout = (0, import_react24.useCallback)(() => {
     logoutShown(props.dataDir, setError);
     setStore(null);
     setPhase("login");
   }, [props.dataDir]);
-  const onLoggedIn = (0, import_react23.useCallback)(
+  const onLoggedIn = (0, import_react24.useCallback)(
     async (auth2) => {
       try {
         await saveToken(props.dataDir, { ...auth2, server: props.server });
@@ -13017,13 +13060,13 @@ function Root(props) {
   );
   let screen;
   if (phase === "loading") {
-    screen = /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Box_default, { flexDirection: "column", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Text, { children: "Loading..." }),
-      lockMessage ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Text, { ...theme2.error, children: sanitizeForTerminal(lockMessage) }) : null
+    screen = /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(Box_default, { flexDirection: "column", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Text, { children: "Loading..." }),
+      lockMessage ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Text, { ...theme2.error, children: sanitizeForTerminal(lockMessage) }) : null
     ] });
   } else if (phase === "login") {
-    screen = /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Box_default, { flexDirection: "column", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+    screen = /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(Box_default, { flexDirection: "column", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
         Login,
         {
           width: roomy.current.width,
@@ -13034,17 +13077,17 @@ function Root(props) {
           onLoggedIn
         }
       ),
-      error ? /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Text, { ...theme2.error, children: [
+      error ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(Text, { ...theme2.error, children: [
         "Error: ",
         sanitizeForTerminal(error)
       ] }) : null,
-      forced ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Text, { children: forced }) : null
+      forced ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Text, { children: forced }) : null
     ] });
   } else {
     const header = roomy.current.height >= 8;
-    screen = /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Box_default, { flexDirection: "column", children: [
-      header ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(HeaderBar, {}) : null,
-      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+    screen = /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(Box_default, { flexDirection: "column", children: [
+      header ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(HeaderBar, {}) : null,
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
         App,
         {
           store,
@@ -13061,9 +13104,9 @@ function Root(props) {
       )
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Box_default, { flexDirection: "column", children: [
-    tooSmall ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Box_default, { flexDirection: "column", children: smallLines(size.width, size.height).map((l, i) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Text, { children: l }, i)) }) : null,
-    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Box_default, { display: tooSmall ? "none" : "flex", flexDirection: "column", children: screen })
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(Box_default, { flexDirection: "column", children: [
+    tooSmall ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Box_default, { flexDirection: "column", children: smallLines(size.width, size.height).map((l, i) => /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Text, { children: l }, i)) }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Box_default, { display: tooSmall ? "none" : "flex", flexDirection: "column", children: screen })
   ] });
 }
 
@@ -13116,6 +13159,11 @@ function createFilter() {
           break;
         }
         const next = s[i + 1];
+        if (!plain && next === "]" && s.startsWith(SIGNUP_LINK, i)) {
+          out += SIGNUP_LINK;
+          i += SIGNUP_LINK.length;
+          continue;
+        }
         if (STRING_INTRODUCERS.has(next)) {
           inString = true;
           i += 2;
@@ -13200,10 +13248,18 @@ function quitTarget() {
 
 // src/cli/main.tsx
 function buildStore(opts, auth2, onLogout) {
+  const startNotices = { aside: "", drafts: "", lock: "" };
+  const startNotice = (kind, text) => {
+    startNotices[kind] = text;
+    publishInfo([startNotices.aside, startNotices.drafts, startNotices.lock].filter((t) => t !== "").join(". ").replaceAll(".. ", ". "));
+  };
   const instanceLock = acquireInstanceLock(opts.dataDir);
-  if (instanceLock.unlocked) publishInfo(UNLOCKED_NOTICE[instanceLock.unlocked]);
+  if (instanceLock.unlocked) startNotice("lock", UNLOCKED_NOTICE[instanceLock.unlocked]);
   sweepStaleTemps(opts.dataDir);
-  let stopSaving = instanceLock.release;
+  let stopSaving = () => {
+    instanceLock.release();
+    return true;
+  };
   let noteGhosts;
   const unsynced = loadUnsynced(opts.dataDir);
   const loadedState = loadState(opts.dataDir);
@@ -13242,12 +13298,13 @@ function buildStore(opts, auth2, onLogout) {
     const tooLarge = [];
     const report = { changed: 0 };
     const notice = recoveryNotice(recoverDrafts(store, draftsDir(), tooLarge, report), tooLarge, report.changed);
-    if (notice !== null) publishInfo(notice);
+    if (notice !== null) startNotice("drafts", notice);
   }, 0);
   const unsyncedTracker = trackUnsynced(store, opts.dataDir, loadedState === void 0 && fs10.existsSync(path9.join(opts.dataDir, "state.json")));
   if (loadedState === void 0) {
     try {
       secureRename(path9.join(opts.dataDir, "state.json"), path9.join(opts.dataDir, "state.json.corrupt"));
+      startNotice("aside", SET_ASIDE_NOTICE);
     } catch {
     }
   }
@@ -13257,16 +13314,19 @@ function buildStore(opts, auth2, onLogout) {
   const stopNewRequests = watchNewRequests(opts.dataDir, emitNewRequest, {
     pollMs: opts.newRequestPollMs
   });
+  const stopUpdateAsks = watchNewRequests(opts.dataDir, openUpdateAskFromBar, { pollMs: opts.newRequestPollMs, file: UPDATE_ASK_FILE });
   let saving = true;
   stopSaving = () => {
     saving = false;
-    startSaving();
+    const saved = startSaving();
     stopUnsynced();
     ownEchoes.stop();
     stopStatus();
     if (opts.statusDir) clearUpdateStatusFile(opts.statusDir);
     stopNewRequests();
+    stopUpdateAsks();
     instanceLock.release();
+    return saved;
   };
   if (noteGhosts)
     void requeueUnsynced(
@@ -13380,19 +13440,21 @@ async function writeReport(log, dataDir) {
 async function main(argv, io) {
   const rawLog = io?.log ?? console.log;
   const log = (text) => rawLog(sanitizeForTerminal(text));
+  if (argv[0] === "--verify-release") return (await import("./chunks/release-check-cli-3MZ52X65.js")).releaseCheck(argv.slice(1), VERSION, process.argv[1], log);
   const reportOnly = argv.includes("--report");
-  const { args: argsWithoutReport, notifyNew } = splitNotifyFlag(
+  const { args: argsWithoutReport, notifyNew, askUpdate } = splitNotifyFlag(
     argv.filter((a) => a !== "--report")
   );
   const { args: argsWithoutNew, startNew } = splitNewFlag(argsWithoutReport);
   const { args, on: screenReader } = screenReaderMode(argsWithoutNew, process.env);
+  const { args: cliArgs, noStarPrompt } = starPromptFlag(args);
   if (argv.includes("--version") || argv.includes("-v")) {
     log(`snote ${VERSION}`);
     return 0;
   }
   let o;
   try {
-    o = parseCli(args);
+    o = parseCli(cliArgs);
   } catch (e) {
     log(`error: ${e.message}`);
     log(USAGE);
@@ -13429,6 +13491,7 @@ async function main(argv, io) {
       })
     );
     log(envReport(process.env));
+    log(await installLines());
     return 0;
   }
   if (o.logout) {
@@ -13437,18 +13500,18 @@ async function main(argv, io) {
     log("logged out");
     return 0;
   }
-  if (notifyNew) {
-    const saved = await loadToken(dataDir);
-    if (!saved) {
+  if (notifyNew || askUpdate) {
+    const saved2 = await loadToken(dataDir);
+    if (!saved2) {
       return 3;
     }
-    return requestNewNote(resolveAccountDir(dataDir, saved.email, saved.server)) === "sent" ? 0 : 3;
+    return requestNewNote(resolveAccountDir(dataDir, saved2.email, saved2.server), askUpdate ? UPDATE_ASK_FILE : void 0) === "sent" ? 0 : 3;
   }
   await prepareDataDir(dataDir);
   await recordSavedAccountId(dataDir);
   const calls = loginCalls(o.server, appId);
-  let stopSaving = () => {
-  };
+  let stopSaving = () => true;
+  let saved = true;
   let lastStore;
   const quit = quitTarget();
   const makeStoreFor = (auth2, onLogout) => {
@@ -13459,23 +13522,29 @@ async function main(argv, io) {
       auth2,
       tracked.onLogout
     );
-    stopSaving = built.stopSaving;
+    stopSaving = () => saved = built.stopSaving();
     lastStore = built.store;
     tracked.bind(built.store);
     if (process.env.SNOTE_UPDATE_CHECK !== "disabled") {
       void (async () => {
-        const { updateCheckEnabled } = await import("./chunks/update-check-LWN33RIW.js");
+        const { updateCheckEnabled } = await import("./chunks/update-check-GMOBTE6O.js");
         if (!updateCheckEnabled(process.env)) return;
-        const { homepageGuard, runningInstallKind, updateChecksFor } = await import("./chunks/install-kind-2BGWPHYX.js");
+        const { canOfferUpdate, homepageGuard, runningInstallKind, updateChecksFor, updateStateDir } = await import("./chunks/install-kind-GXULZLGT.js");
         if (!updateChecksFor(runningInstallKind())) return;
-        const { runUpdateChecks } = await import("./chunks/update-run-S4OV2IJ7.js");
-        const { startUpdateWatch } = await import("./chunks/update-watch-XNKGAAOO.js");
-        void runUpdateChecks({ version: VERSION, home: os2.homedir(), env: process.env, stateDir: statusDir(process.env), run: homepageGuard() }).catch(() => {
+        if (canOfferUpdate(runningInstallKind())) allowUpdateOffer(runningInstallKind());
+        const { runUpdateChecks } = await import("./chunks/update-run-2BC3ETSZ.js");
+        const { startUpdateWatch } = await import("./chunks/update-watch-3SURBZ2E.js");
+        const kind = runningInstallKind();
+        const stateDir2 = updateStateDir(kind, statusDir(process.env), dataDir);
+        void runUpdateChecks({ version: VERSION, home: os2.homedir(), env: process.env, stateDir: stateDir2, offPlugin: kind !== "plugin", run: homepageGuard() }).catch(() => {
         });
-        startUpdateWatch({ version: VERSION, home: os2.homedir(), env: process.env, stateDir: statusDir(process.env), run: homepageGuard() });
+        if (kind === "direct") return (await import("./chunks/direct-download-FMEB6A5I.js")).startDirectWatch(dataDir, os2.homedir(), startUpdateWatch);
+        startUpdateWatch({ version: VERSION, home: os2.homedir(), env: process.env, stateDir: stateDir2, run: homepageGuard() });
       })().catch(() => {
       });
     }
+    if (!noStarPrompt && process.env.SNOTE_STAR_PROMPT !== "off" && process.env.SNOTE_STAR_PROMPT !== "0") void import("./chunks/star-prompt-5ZLQ5RGC.js").then((m) => m.armStar(dataDir)).catch(() => {
+    });
     return built.store;
   };
   let locked = false;
@@ -13483,7 +13552,7 @@ async function main(argv, io) {
   guardOutputStream(process.stdout);
   guardOutputStream(process.stderr);
   const { waitUntilExit, unmount, clear } = render_default(
-    import_react24.default.createElement(Root, {
+    import_react25.default.createElement(Root, {
       dataDir,
       server: o.server,
       width: process.stdout.columns ?? 80,
@@ -13601,12 +13670,12 @@ async function main(argv, io) {
     const g = globalThis;
     const listeners2 = /* @__PURE__ */ new Map();
     g.addEventListener ??= (type, l) => {
-      let set = listeners2.get(type);
-      if (!set) {
-        set = /* @__PURE__ */ new Set();
-        listeners2.set(type, set);
+      let set2 = listeners2.get(type);
+      if (!set2) {
+        set2 = /* @__PURE__ */ new Set();
+        listeners2.set(type, set2);
       }
-      set.add(l);
+      set2.add(l);
     };
     g.dispatchEvent ??= (e) => {
       const type = e.type ?? "error";
@@ -13664,7 +13733,11 @@ async function main(argv, io) {
   stopSignalFlush();
   stopSaving();
   if (locked) return 1;
-  return 0;
+  const handOff2 = handOffRequested();
+  if (handOff2 === null) return 0;
+  const started = await (await import("./chunks/update-handoff-IRBZGPRT.js")).startHandOff({ kind: handOff2, saved, log });
+  if (started.line !== "") log(started.line);
+  return started.code;
 }
 
 // src/cli/index.ts

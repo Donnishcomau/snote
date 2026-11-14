@@ -5,8 +5,22 @@ client (https://github.com/Automattic/simplenote-electron), copyright
 Automattic, Inc., used under the terms of the GNU General Public License,
 version 2 (GPLv2).
 
-The vendored files live under vendor/simplenote/.
+The vendored files live under vendor/simplenote/, taken from upstream commit
+9fddf71c196fa286da614e73075aae906db94b6b (vendor/simplenote/UPSTREAM_COMMIT;
+vendor/simplenote/UPSTREAM_SHA256.json lists the upstream file hashes).
+
+Copyright (C) 2026 Donnish Pty Ltd, for snote's own code. The vendored files
+keep the Automattic copyright named above.
+
+snote as a whole is licensed under the GNU General Public License, version 2
+only (SPDX: GPL-2.0-only); see LICENSE.
 
 Some of the vendored files have been modified for this project. Each modified
 file carries its own notice stating that it was changed, as required by GPLv2
-section 2(a); changed lines are marked with `// OMARCHY:` comments.
+section 2(a); changed lines are marked with `// OMARCHY:` comments, on the
+line or above the changed block. The date in a file's notice is the day snote
+added that notice to the file; a later change to the file is dated by the
+first snote release that ships it.
+
+snote is an unofficial, community-built Simplenote client. It is not affiliated
+with, endorsed by, or supported by Automattic.

@@ -295,6 +295,13 @@ BarWidget {
     root.launchOrHint()
   }
 
+  // #30 L5b: while the running snote announces an update (status.json `update: "available"`, only while its update
+  // check runs), a left click only ASKS: `--ask-update` hands the request to that snote, which shows its own y/n
+  // question, and the launcher focuses it. This widget runs no setup, no download and no install for it.
+  function askUpdate() {
+    if (root.bar) root.bar.run("'" + root.shellEscapeSingleQuoted(root.snoteShim) + "' --ask-update; omarchy-launch-or-focus-tui snote")
+  }
+
   // notes-action:begin
   // Right-click: open the release notes of the announced version in the
   // browser, and run nothing else. With no announced version it does nothing.
@@ -365,6 +372,7 @@ BarWidget {
     onPressed: function(b) {
       if (b === Qt.RightButton) { root.openNotes(); return }
       if (b === Qt.MiddleButton) { root.newNote(); return }
+      if (root.snoteAvailable && !root.snoteStale && root.announced !== "") { root.askUpdate(); return }
       root.launchOrHint()
     }
   }

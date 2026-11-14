@@ -26,7 +26,7 @@ import {
   use_stdin_default,
   use_stdout_default,
   use_window_size_default
-} from "./chunks/chunk-MRAMNRR7.js";
+} from "./chunks/chunk-JBKD533A.js";
 import "./chunks/chunk-CT7MGM3M.js";
 import "./chunks/chunk-GGREWLKO.js";
 import "./chunks/chunk-SRSFEH3H.js";

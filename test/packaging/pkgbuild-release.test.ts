@@ -8,9 +8,9 @@ const PKG_PATH = join(process.cwd(), 'package.json');
 const pkgbuild = () => readFileSync(PKGBUILD_PATH, 'utf8');
 
 describe('pkgbuild release', () => {
-  it('1: WHEN packaging/aur/PKGBUILD is read THEN it contains pkgver=0.2.11 and pkgrel=1', () => {
+  it('1: WHEN packaging/aur/PKGBUILD is read THEN it contains pkgver=0.2.12 and pkgrel=1', () => {
     const content = pkgbuild();
-    expect(content).toContain('pkgver=0.2.11');
+    expect(content).toContain('pkgver=0.2.12');
     expect(content).toContain('pkgrel=1');
   });
 
@@ -22,20 +22,19 @@ describe('pkgbuild release', () => {
     );
   });
 
-  it('3: WHEN packaging/aur/PKGBUILD is read THEN it contains https://github.com/donnishcomau/snote/archive/refs/tags/v$pkgver.tar.gz', () => {
+  it('3: WHEN packaging/aur/PKGBUILD is read THEN it contains no `archive/refs/tags` URL and its prepare() runs `git -C "$top" archive` of `HEAD` (#876)', () => {
     const content = pkgbuild();
-    expect(content).toContain(
-      'https://github.com/donnishcomau/snote/archive/refs/tags/v$pkgver.tar.gz'
-    );
+    expect(content).not.toContain('archive/refs/tags');
+    expect(content).toContain('git -C "$top" archive --format=tar --prefix="snote-$pkgver/" -o "$srcdir/snote-$pkgver.tar" HEAD');
   });
 
-  it("4: WHEN packaging/aur/PKGBUILD is read THEN it contains sha256sums=('SKIP') and a # comment line containing sha256", () => {
+  it('4: WHEN packaging/aur/PKGBUILD is read THEN it contains sha256sums=() and a # comment line naming #876 and the clone (#876)', () => {
     const content = pkgbuild();
-    expect(content).toContain("sha256sums=('SKIP')");
-    const commentWithSha = content
+    expect(content).toContain('sha256sums=()');
+    const comment = content
       .split('\n')
-      .some((line) => line.trimStart().startsWith('#') && line.includes('sha256'));
-    expect(commentWithSha).toBe(true);
+      .some((line) => line.trimStart().startsWith('#') && line.includes('#876') && line.includes('clone'));
+    expect(comment).toBe(true);
   });
 
   it('5: WHEN packaging/aur/PKGBUILD is read THEN it contains cd "$srcdir/snote-$pkgver"', () => {
@@ -43,8 +42,8 @@ describe('pkgbuild release', () => {
     expect(content).toContain('cd "$srcdir/snote-$pkgver"');
   });
 
-  it('6: WHEN package.json is read THEN its version field is 0.2.11', () => {
+  it('6: WHEN package.json is read THEN its version field is 0.2.12', () => {
     const pkg = JSON.parse(readFileSync(PKG_PATH, 'utf8'));
-    expect(pkg.version).toBe('0.2.11');
+    expect(pkg.version).toBe('0.2.12');
   });
 });

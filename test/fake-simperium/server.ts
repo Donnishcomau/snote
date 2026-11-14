@@ -189,9 +189,10 @@ export class FakeSimperiumServer {
 
       this.httpServer.on('error', reject);
 
-      this.httpServer.listen(0, () => {
+      // #839 loopback only, and the url names the bound address (localhost resolves ::1 first on the test host).
+      this.httpServer.listen(0, '127.0.0.1', () => {
         const port = (this.httpServer!.address() as any).port as number;
-        const url = `ws://localhost:${port}`;
+        const url = `ws://127.0.0.1:${port}`;
 
         // #85: handle the upgrade here so every handshake's headers are
         // recorded and a handshake can be refused like the live server does.
@@ -1081,7 +1082,7 @@ export class FakeSimperiumServer {
     if (!addr || typeof addr === 'string') {
       throw new Error('Server address not available');
     }
-    return `ws://localhost:${addr.port}`;
+    return `ws://127.0.0.1:${addr.port}`;
   }
 
   /** Get an object from the server storage (for test assertions) */

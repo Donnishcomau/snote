@@ -1,4 +1,4 @@
-// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-09-23).
+// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-10-28).
 import type * as T from '../types';
 
 export const MAX_TAG_HASH_LENGTH = 256;

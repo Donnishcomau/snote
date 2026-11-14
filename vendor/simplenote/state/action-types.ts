@@ -1,3 +1,4 @@
+// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-11-07).
 import type { ChangeVersion, Ghost, RemoteInfo } from 'simperium';
 import type * as T from '../types';
 
@@ -143,6 +144,7 @@ export type ToggleNoteActions = Action<'NOTE_ACTIONS_TOGGLE'>;
 export type CloseNoteActions = Action<'NOTE_ACTIONS_CLOSE'>;
 export type ToggleNoteInfo = Action<'NOTE_INFO_TOGGLE'>;
 export type ToggleRevisions = Action<'REVISIONS_TOGGLE'>;
+// OMARCHY: the revision-history action snote adds (storeRevisions in state/ui/actions.ts)
 export type StoreRevisions = Action<
   'STORE_REVISIONS',
   { noteId: T.EntityId; revisions: T.NoteEntity[] }
@@ -439,7 +441,7 @@ export type ActionType =
   | ToggleNoteActions
   | ToggleNoteInfo
   | ToggleRevisions
-  | StoreRevisions
+  | StoreRevisions // OMARCHY: added
   | ToggleSimperiumConnectionStatus
   | ToggleSortTagsAlpha
   | ToggleSortOrder

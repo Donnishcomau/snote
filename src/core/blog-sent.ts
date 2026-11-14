@@ -3,6 +3,7 @@ import * as path from 'node:path';
 
 import { secureMkdir, secureWriteFileSync } from './secure-fs';
 import { BLOG_SENT_FILE, loadBlogSend } from './blog-status';
+import { idRecord } from './id-record';
 
 export { blogStatusLine, loadBlogSend } from './blog-status';
 
@@ -25,13 +26,14 @@ export function recordBlogSend(
 ): void {
   const filePath = path.join(dir, BLOG_SENT_FILE);
 
-  let data: BlogSentData = {};
+  // no prototype, so a note id such as `__proto__` is an ordinary key that JSON.stringify writes
+  let data: BlogSentData = idRecord();
   if (fs.existsSync(filePath)) {
     try {
       const raw = fs.readFileSync(filePath, 'utf8');
-      data = JSON.parse(raw);
+      data = Object.assign(idRecord<BlogSendRecord>(), JSON.parse(raw));
     } catch {
-      data = {};
+      data = idRecord();
     }
   }
 

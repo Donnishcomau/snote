@@ -8,12 +8,13 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { FakeSimperiumServer } from '../fake-simperium/server';
 import { acquireInstanceLock } from '../../src/core/instance-lock';
 import { onProblem, resetProblemSignal } from '../../src/core/problem-signal';
 import { buildStore } from '../../src/cli/main';
+import { restorePlatform, setPlatform } from '../helpers/platform';
 
 type Call = { args: string[]; opts: Record<string, unknown> };
 const flock = vi.hoisted(() => ({ answers: [] as unknown[], calls: [] as { args: string[]; opts: Record<string, unknown> }[] }));
@@ -83,6 +84,9 @@ const thrown = (fn: () => unknown): Error => {
   throw new Error('test: expected a throw');
 };
 
+// #886: the replaced spawn answers only the Linux flock path, so the lock must see linux on every host (on macOS it
+// would run the Homebrew flock for real)
+beforeEach(() => setPlatform('linux'));
 afterEach(() => {
   for (const r of releases.splice(0)) r();
   for (const c of children.splice(0)) c.kill('SIGKILL');
@@ -90,6 +94,7 @@ afterEach(() => {
   flock.answers = [];
   flock.calls = [];
   resetProblemSignal();
+  restorePlatform();
 });
 
 describe('#385 instance lock without the kernel lock', () => {

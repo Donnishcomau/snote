@@ -25,10 +25,10 @@ function frameAt(w: number, h: number): string {
 }
 
 describe('help small', () => {
-  it('1: WHEN `<Help width={20} height={7} editor="nvim" />` renders THEN the frame has at most `7` lines, none over `20` characters, and contains `1-4/45 j/k scroll`', () => {
+  it('1: WHEN `<Help width={20} height={7} editor="nvim" />` renders THEN the frame has at most `7` lines, none over `20` characters, and contains `1-4/46 j/k scroll`', () => {
     const frame = frameAt(20, 7);
     fits(frame, 20, 7);
-    expect(frame).toContain('1-4/45 j/k scroll');
+    expect(frame).toContain('1-4/46 j/k scroll');
   }, 10000);
 
   it('2: WHEN Help renders at 100x24 THEN the frame has at most `24` lines, none over `100`, and does not contain `j/k scroll` (the narrow list fits)', () => {
@@ -50,8 +50,8 @@ describe('help small', () => {
     for (let i = 1; i <= 50; i++) {
       stdin.write('j');
       if (i % 4 !== 0 && i !== 50) continue;
-      const top = Math.min(i, 41);
-      await waitForFrame(lastFrame, `${top + 1}-${top + 4}/45`, 10000);
+      const top = Math.min(i, 42);
+      await waitForFrame(lastFrame, `${top + 1}-${top + 4}/46`, 10000);
     }
     const lines = frames.map(stripAnsi).flatMap((f) => f.split('\n')).map((l) => l.replace(/[│┌┐└┘─]/g, '').trim());
     expect(keymap.length).toBeGreaterThan(0);
@@ -61,7 +61,7 @@ describe('help small', () => {
     unmount();
   }, 30000);
 
-  it('5: WHEN App at 30x12 opens Help with `?` and `j` is written 60 times THEN within 1 s the frame contains `Editing:` and `/45 j/k`; after 60 `k` it contains `Help - Keyboard`; Escape closes it', async () => {
+  it('5: WHEN App at 30x12 opens Help with `?` and `j` is written 60 times THEN within 1 s the frame contains `Editing:` and `/46 j/k`; after 60 `k` it contains `Help - Keyboard`; Escape closes it', async () => {
     const store = makeStore({ stubClient: {} });
     const { stdin, lastFrame, unmount } = render(
       <App store={store} width={30} height={12} />,
@@ -70,7 +70,7 @@ describe('help small', () => {
     stdin.write('?');
     await waitForFrame(lastFrame, 'j/k scroll');
     for (let i = 0; i < 60; i++) stdin.write('j');
-    await waitForFrame(lastFrame, (f) => f.includes('Editing:') && f.includes('/45 j/k'), 1000);
+    await waitForFrame(lastFrame, (f) => f.includes('Editing:') && f.includes('/46 j/k'), 1000);
     for (let i = 0; i < 60; i++) stdin.write('k');
     await waitForFrame(lastFrame, (f) => f.includes('Help - Keyboard') && f.includes('1-'), 1000);
     stdin.write('\u001b');

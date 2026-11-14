@@ -1,4 +1,4 @@
-// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-09-23).
+// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-10-23).
 import { filterTags } from '../tag-suggestions';
 import { getTerms } from '../utils/filter-notes';
 import { tagHashOf as t } from '../utils/tag-hash';

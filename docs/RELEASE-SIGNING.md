@@ -100,4 +100,7 @@ hardware keys: install OpenSSH and `ykman` with Homebrew and run `/opt/homebrew/
 - If the main key is lost or broken, sign with the backup key: both are pinned.
 - To change the pinned keys, put the new `allowed_signers` in a release signed by a key that is pinned now: the gate trusts the keys
   of the previous signed tag, not the file in the release being made.
-- snote does not check the signature itself yet; see SECURITY.md.
+- From 0.2.12, the bar update checks this signature with the keys of the installed snote before it moves to a release; a snote older
+  than 0.2.12 has no such check, so its update to 0.2.12 is not verified. A first install does not check it. A manual
+  `omarchy plugin update` follows Omarchy's own trust model: it replaces the plugin files, including `allowed_signers`, without snote
+  verifying them. See SECURITY.md.

@@ -42,6 +42,8 @@ export function startUpdateWatch(o: {
   /** Where the tag-check cache lives; without it every check asks the origin. */
   stateDir?: string;
   now?: () => number;
+  /** #30 L5c: where the newest version comes from (a direct install's signed list); default the plugin clone's tags. */
+  newest?: () => Promise<{ version: string } | null>;
 }): () => void {
   stopActive?.();
   stopActive = null;
@@ -51,13 +53,7 @@ export function startUpdateWatch(o: {
   const cloneDir = pluginCloneDir(o.home);
   const check = async (): Promise<void> => {
     try {
-      const newest = await checkRemoteVersion({
-        cloneDir,
-        env: o.env,
-        run: o.run,
-        stateDir: o.stateDir,
-        now: o.now,
-      });
+      const newest = await (o.newest ?? (() => checkRemoteVersion({ cloneDir, env: o.env, run: o.run, stateDir: o.stateDir, now: o.now })))();
       if (newest !== null) {
         const newer = compareVersions(newest.version, o.version) > 0;
         markRunningNewest(!newer);

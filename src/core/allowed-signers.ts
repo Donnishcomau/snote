@@ -8,8 +8,9 @@ import * as fs from 'node:fs';
 export type SignersCheck = { ok: true; keys: string[]; text: string } | { ok: false; reason: string };
 
 export const MAX_SIGNERS_BYTES = 4096;
-// Joined from two strings: the public export's address scan reads `<name>@openssh.com` as an e-mail address.
-const SK_TYPES = ['sk-ssh-ed25519' + '@openssh.com', 'sk-ecdsa-sha2-nistp256' + '@openssh.com'];
+// Joined at run time: the public export's address scan reads `<name>@openssh.com` as an e-mail address, and the build
+// folds `'a' + 'b'` into one string (#68 L4: this module is bundled once it has a caller).
+const SK_TYPES = ['sk-ssh-ed25519', 'sk-ecdsa-sha2-nistp256'].map((t) => [t, 'openssh.com'].join('@'));
 const LINE_RE =
   /^snote-release namespaces="snote-release" (sk-ssh-ed25519@openssh\.com|sk-ecdsa-sha2-nistp256@openssh\.com|ssh-ed25519) ([A-Za-z0-9+/]+={0,2})(?: ([^\u0000-\u001f\u007f]*))?$/;
 

@@ -171,6 +171,8 @@ const ALLOWED_LONG_LIVED: LongLived[] = [
   { file: 'src/core/update-banner.ts', name: 'listeners', bound: 'cleared on unsubscribe', test: 'test/core/cleared-on-bounds.test.ts' },
   { file: 'src/core/update-signal.ts', name: 'listeners', bound: 'cleared on unsubscribe', test: 'test/core/update-signal.test.ts' },
   { file: 'src/core/websocket-provider.ts', name: 'sockets', bound: 'cleared on socket close', test: 'test/core/connection-word.test.ts' },
+  { file: 'src/core/websocket-provider.ts', name: 'listeners', bound: 'cleared on socket close (#615: one entry per addEventListener call)', test: 'test/core/snote-socket.test.ts' },
+  { file: 'src/core/websocket-provider.ts', name: 'chunks', bound: 'cleared on each whole frame read (#615: a frame over MAX_MESSAGE_BYTES fails before it is buffered; small reads join into PIECE_BYTES pieces, so at most 2 * MAX_MESSAGE_BYTES / PIECE_BYTES + 2 pieces)', test: 'test/core/snote-socket.test.ts' },
   { file: 'src/tui/key-ring.ts', name: 'keyLog', bound: 'cap 20', test: 'test/core/crash-ring.test.ts' },
   {
     file: 'vendor/simplenote/search/index.ts', name: 'emptyList', bound: 'fixed', test: R5_GUARD,

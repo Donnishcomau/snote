@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+import { idRecord } from './id-record';
 import { secureMkdir, secureWriteFileSync } from './secure-fs';
 
 const SENT_CHANGES_FILE = 'sent-changes.json';
@@ -20,14 +21,14 @@ export type SentRecord = Record<string, string>;
 export function loadSentChanges(dir: string): SentRecord {
   const filePath = path.join(dir, SENT_CHANGES_FILE);
   if (!fs.existsSync(filePath)) {
-    return {};
+    return idRecord();
   }
   try {
     const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8')) as unknown;
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return {};
+      return idRecord();
     }
-    const record: SentRecord = {};
+    const record: SentRecord = idRecord();
     for (const [id, ccid] of Object.entries(parsed as Record<string, unknown>)) {
       if (typeof ccid !== 'string') {
         continue;
@@ -36,7 +37,7 @@ export function loadSentChanges(dir: string): SentRecord {
     }
     return record;
   } catch {
-    return {};
+    return idRecord();
   }
 }
 
@@ -82,11 +83,11 @@ export function createSentChanges(dir: string): SentChanges {
   // Loaded entries that are still present; `settle` drains these.
   const loaded: SentRecord = loadSentChanges(dir);
   // Entries recorded by `sent` this session; they survive `settle`.
-  const fresh: SentRecord = {};
+  const fresh: SentRecord = Object.create(null); // no prototype; not idRecord(), so the #420 closure guard still sees it
   // #28 — loaded entries a `sent` replaced, kept in memory until `settle`:
   // `echoes` matches one only for an echo whose note has a stale change in
   // flight (one the server rejects), never as a plain loaded entry.
-  const superseded: SentRecord = {};
+  const superseded: SentRecord = Object.create(null); // as `fresh`
 
   const current = (): SentRecord => ({ ...loaded, ...fresh });
 

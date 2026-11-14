@@ -1,4 +1,4 @@
-import { scopeBlocks } from './eslint.scope.mjs';
+import { scopeBlocks, SELECTOR_RULE } from './eslint.scope.mjs';
 import { FS_WRITE_EXTENSIONS } from './eslint.fs-write.mjs';
 
 // #219 (security build rule R1): the `websocket` package and node:child_process are imported in
@@ -6,7 +6,7 @@ import { FS_WRITE_EXTENSIONS } from './eslint.fs-write.mjs';
 //
 // Why a rule of our own: no-restricted-syntax is already set for src/ and vendor/ by the fs write
 // ban (eslint.fs-write.mjs) and a later block replaces an earlier one, and no-restricted-imports
-// cannot see a dynamic import. SELECTOR_RULE below is no-restricted-syntax under another name, so
+// cannot see a dynamic import. SELECTOR_RULE (eslint.scope.mjs) is no-restricted-syntax under another name, so
 // this guard adds to the others and never replaces them. Each exception turns off ONE of the
 // three rules for ONE file, and a test fails when the file is gone or no longer needs it.
 //
@@ -24,17 +24,6 @@ import { FS_WRITE_EXTENSIONS } from './eslint.fs-write.mjs';
 // or promisified execFile, a timeout or maxBuffer found anywhere inside the call rather than in its
 // own options, non-literal caps (shifts, Number.MAX_SAFE_INTEGER, +Infinity), a timeout whose value
 // is undefined or NaN, and editor.ts being exempt file-wide.
-
-const SELECTOR_RULE = {
-  meta: { type: 'problem', schema: { type: 'array', items: { type: 'object' } } },
-  create(context) {
-    const listeners = {};
-    for (const { selector, message } of context.options) {
-      listeners[selector] = (node) => context.report({ node, message });
-    }
-    return listeners;
-  },
-};
 
 export const R1_PLUGIN_NAME = 'snote-r1';
 export const R1_PLUGIN = { rules: { 'child-process-import': SELECTOR_RULE, 'websocket-import': SELECTOR_RULE, 'spawn-limits': SELECTOR_RULE } };
@@ -67,7 +56,7 @@ const CAPPED_SPAWN = calls('execFile|execFileSync|exec|execSync|spawnSync', 'exe
 /** The R1 rules, each with the module or call shape it guards. */
 export const R1_RULES = {
   'child-process-import': moduleSelectors('^(node:)?child_process$', 'R1 (#219): node:child_process is imported only in the files listed in eslint.process-scope.mjs; use their helpers'),
-  'websocket-import': moduleSelectors('^websocket', 'R1 (#219): the websocket package is imported only in src/core/websocket-provider.ts'),
+  'websocket-import': moduleSelectors('^(websocket|ws($|[^a-zA-Z0-9_.-]))', 'R1 (#219, #615): no source file imports the websocket or ws package; the sync socket is SnoteSocket in src/core/websocket-provider.ts'),
   'spawn-limits': [
     { selector: `:matches(${ANY_SPAWN}):not(:has(ObjectExpression > Property[key.name='timeout']))`, message: LIMIT_MSG },
     { selector: `:matches(${CAPPED_SPAWN}):not(:has(ObjectExpression > Property[key.name='maxBuffer']))`, message: LIMIT_MSG },
@@ -80,14 +69,15 @@ export const R1_RULES = {
 /** Files that may import child_process, with the reason and the issue that removes the entry. */
 export const CHILD_PROCESS_ALLOWED = [
   { path: 'src/core/update-check.ts', reason: 'runs git for the update check, with a timeout and an output cap', issue: 219 },
-  { path: 'src/core/clipboard.ts', reason: 'pipes text into wl-copy, with a timeout and an output cap', issue: 219 },
+  { path: 'src/core/clipboard.ts', reason: 'pipes text into wl-copy (on macOS /usr/bin/pbcopy, #447), with a timeout and an output cap', issue: 219 },
   { path: 'src/core/editor.ts', reason: 'starts the interactive editor', issue: 219 },
-  { path: 'src/core/instance-lock.ts', reason: 'runs /usr/bin/flock once at start on the data dir fd, with a timeout and an output cap', issue: 316 },
+  { path: 'src/core/instance-lock.ts', reason: 'runs flockBin() (a fixed absolute path per platform: /usr/bin/flock, macOS /opt/homebrew/opt/flock/bin/flock, Intel macOS /usr/local/opt/flock/bin/flock, #446): flock once at start and darwin /bin/ps for a live foreign lock pid (#953, processStartMs()), env LC_ALL=C and TZ=UTC, with a timeout and an output cap', issue: 316 },
   { path: 'src/core/release-verify.ts', reason: 'runs git and /usr/bin/ssh-keygen to verify a fetched release, with a timeout and an output cap', issue: 68 },
+  { path: 'src/core/update-handoff.ts', reason: 'starts the update terminal once after a confirmed y, detached, with a timeout and no output', issue: 30 },
+  { path: 'src/core/star-prompt.ts', reason: 'runs the user\'s own gh (a fixed absolute path, constant argv, no shell) to star the repo after two keys, and opens the repo page, each with a timeout and no output', issue: 971 },
 ];
-export const WEBSOCKET_ALLOWED = [
-  { path: 'src/core/websocket-provider.ts', reason: 'the one websocket client: handshake timeout, bounded frames', issue: 196 },
-];
+/** #615: empty. The Apache-2.0 websocket package is not shipped, and ws is a test-only dependency (the fake server). */
+export const WEBSOCKET_ALLOWED = [];
 /** Interactive by design: the user's editor runs until the user closes it, so it has no time limit and its output is the terminal. Proved by test/structure/network-process-lint.test.ts test 5. */
 export const SPAWN_LIMITS_EXEMPT = [
   { path: 'src/core/editor.ts', reason: 'interactive by design: the editor runs until the user closes it', issue: 219 },

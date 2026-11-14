@@ -19,13 +19,22 @@ export function splitNewFlag(argv: string[]): {
   };
 }
 
+export function starPromptFlag(argv: string[]): { args: string[]; noStarPrompt: boolean } {
+  return {
+    args: argv.filter((a) => a !== '--no-star-prompt'),
+    noStarPrompt: argv.includes('--no-star-prompt'),
+  };
+}
+
 export function splitNotifyFlag(argv: string[]): {
   args: string[];
   notifyNew: boolean;
+  askUpdate: boolean;
 } {
   return {
-    args: argv.filter((a) => a !== '--notify-new'),
+    args: argv.filter((a) => a !== '--notify-new' && a !== '--ask-update'),
     notifyNew: argv.includes('--notify-new'),
+    askUpdate: argv.includes('--ask-update'), // #30 L5b: the bar's update click; not in USAGE (the bar's own flag)
   };
 }
 
@@ -83,4 +92,5 @@ export const USAGE: string = [
   '  --notify-new     Ask a running snote to open a new note, then exit',
   '  --screen-reader      Screen-reader mode: one linear column, no colour; Help and the editor hand-off work (or SNOTE_SCREEN_READER=1)',
   '  --no-screen-reader   Leave it off even when SNOTE_SCREEN_READER=1 is set',
+  '  --no-star-prompt     Never show the one-time request to star snote on GitHub',
 ].join('\n');

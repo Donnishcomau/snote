@@ -14,6 +14,7 @@ const WRITERS: Record<string, { sites: number; names: string[]; root?: boolean; 
   'src/core/account-id.ts': { sites: 1, names: ['account.json'], tmp: 'logout' },
   'src/core/blog-config.ts': { sites: 1, names: ['blog.json'], root: true, tmp: 'logout' },
   'src/core/blog-sent.ts': { sites: 1, names: ['blog-sent.json'], root: true, tmp: 'logout' },
+  'src/core/direct-download.ts': { sites: 1, names: ['direct-release-check.json'], tmp: 'logout' },
   'src/core/editor-drafts.ts': { sites: 1, names: [], tmp: 'drafts folder' },
   'src/core/editor.ts': { sites: 1, names: [], tmp: 'drafts folder' },
   'src/core/ghost-store.ts': {
@@ -24,6 +25,7 @@ const WRITERS: Record<string, { sites: number; names: string[]; root?: boolean; 
   'src/core/new-request.ts': { sites: 1, names: ['new-note.request'], tmp: 'logout' },
   'src/core/persistence.ts': { sites: 1, names: ['state.json'], tmp: 'logout' },
   'src/core/sent-changes.ts': { sites: 1, names: ['sent-changes.json'], tmp: 'logout' },
+  'src/core/star-prompt.ts': { sites: 1, names: [], tmp: 'out of scope: star-prompt.json is per machine and kept on logout by design (#971 D2), no secret' },
   'src/core/status-file.ts': { sites: 1, names: [], tmp: 'status file' },
   'src/core/tombstones.ts': { sites: 1, names: ['tombstones.json'], tmp: 'logout' },
   'src/core/token.ts': { sites: 1, names: ['auth.json'], root: true, tmp: 'logout' },

@@ -1,6 +1,6 @@
 /**
  * Issue #316 (closes the #299 residuals S2 and R2,): a start holds a
- * kernel lock (flock(2) through /usr/bin/flock on the data dir fd it keeps)
+ * kernel lock (flock(2) through flockBin(), /usr/bin/flock on Linux, on the data dir fd it keeps)
  * before any takeover step, so a takeover that is stopped part way, or a
  * leftover marker judged old by one start and removed under another, can no
  * longer let two snotes hold the instance lock. The children are real node
@@ -14,13 +14,16 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { acquireInstanceLock } from '../../src/core/instance-lock';
+import { acquireInstanceLock, flockBin } from '../../src/core/instance-lock';
 
 const ROOT = process.cwd();
 const LOCK_TS = join(ROOT, 'src', 'core', 'instance-lock.ts');
 const T_MS = 60000;
 const HELD = 'it holds the instance lock';
 const DEAD = '999999999';
+// #446: the program the lock code spawns on this host; the children's fakes match it, since a parent setPlatform never
+// reaches a child process
+const FLOCK = flockBin();
 const tmps: string[] = [];
 const kids: ChildProcess[] = [];
 afterAll(() => {
@@ -41,13 +44,14 @@ function tmp(): string {
 }
 
 // One start: optional SIGSTOP of itself just before the first unlinkSync of <dir>/<stopAt>,
-// optional /usr/bin/flock made unrunnable, up to `calls` acquire calls; it reports one line and
+// optional flock program (FLOCK) made unrunnable, up to `calls` acquire calls; it reports one line and
 // stays alive (holding what it won) until its stdin closes.
 const START_CHILD = `
 import fs from 'node:fs';
 import cp from 'node:child_process';
 import { syncBuiltinESMExports } from 'node:module';
 const [dir, stopAt, calls, noFlock] = [process.argv[2], process.argv[3], Number(process.argv[4]), process.argv[5] === '1'];
+const FLOCK = ${JSON.stringify(FLOCK)};
 const { unlinkSync } = fs;
 let armed = stopAt !== '-';
 fs.unlinkSync = (p, ...a) => { if (armed && p === dir + '/' + stopAt) { armed = false; process.kill(process.pid, 'SIGSTOP'); } return unlinkSync(p, ...a); };
@@ -55,7 +59,7 @@ let flockRuns = 0;
 if (noFlock) {
   const { spawnSync } = cp;
   cp.spawnSync = (file, ...a) => {
-    if (file === '/usr/bin/flock') { flockRuns++; const error = Object.assign(new Error('spawnSync /usr/bin/flock ENOENT'), { code: 'ENOENT' }); return { pid: 0, output: [], stdout: null, stderr: null, status: null, signal: null, error }; }
+    if (file === FLOCK) { flockRuns++; const error = Object.assign(new Error('spawnSync ' + FLOCK + ' ENOENT'), { code: 'ENOENT' }); return { pid: 0, output: [], stdout: null, stderr: null, status: null, signal: null, error }; }
     return spawnSync(file, ...a);
   };
 }
@@ -71,13 +75,14 @@ process.stdin.resume();
 process.stdin.on('end', () => process.exit(0));
 `;
 
-// Hook child (test 9, the fallback): /usr/bin/flock is unrunnable; just as it takes the takeover marker it removes the
+// Hook child (test 9, the fallback): the flock program (FLOCK) is unrunnable; just as it takes the takeover marker it removes the
 // stale lock itself (another start's sweep having finished) and SIGSTOPs, so a second start can create its fresh lock
 // before this one re-checks. It reports one line and stays alive until its stdin closes.
 const HOOK_CHILD = `
 import fs from 'node:fs';
 import cp from 'node:child_process';
 import { syncBuiltinESMExports } from 'node:module';
+const FLOCK = ${JSON.stringify(FLOCK)};
 const dir = process.argv[2];
 const lock = dir + '/instance.lock';
 const sweep = lock + '.sweep';
@@ -87,7 +92,7 @@ let first = true;
 let flockRuns = 0;
 fs.openSync = (p, ...a) => { if (p === sweep && first) { first = false; unlinkSync(lock); process.kill(process.pid, 'SIGSTOP'); } return openSync(p, ...a); };
 cp.spawnSync = (file, ...a) => {
-  if (file === '/usr/bin/flock') { flockRuns++; return { pid: 0, output: [], stdout: null, stderr: null, status: null, signal: null, error: Object.assign(new Error('ENOENT'), { code: 'ENOENT' }) }; }
+  if (file === FLOCK) { flockRuns++; return { pid: 0, output: [], stdout: null, stderr: null, status: null, signal: null, error: Object.assign(new Error('ENOENT'), { code: 'ENOENT' }) }; }
   return spawnSync(file, ...a);
 };
 syncBuiltinESMExports();
@@ -103,10 +108,11 @@ process.stdin.on('end', () => process.exit(0));
 const RACE_CHILD = `
 import cp from 'node:child_process';
 import { syncBuiltinESMExports } from 'node:module';
+const FLOCK = ${JSON.stringify(FLOCK)};
 const [base, rounds, noFlock] = [process.argv[2], Number(process.argv[3]), process.argv[4] === '1'];
 if (noFlock) {
   const { spawnSync } = cp;
-  cp.spawnSync = (file, ...a) => (file === '/usr/bin/flock' ? { pid: 0, output: [], stdout: null, stderr: null, status: null, signal: null, error: Object.assign(new Error('ENOENT'), { code: 'ENOENT' }) } : spawnSync(file, ...a));
+  cp.spawnSync = (file, ...a) => (file === FLOCK ? { pid: 0, output: [], stdout: null, stderr: null, status: null, signal: null, error: Object.assign(new Error('ENOENT'), { code: 'ENOENT' }) } : spawnSync(file, ...a));
   syncBuiltinESMExports();
 }
 const { acquireInstanceLock } = await import(${JSON.stringify(LOCK_TS)});

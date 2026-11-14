@@ -26,6 +26,12 @@ export interface BoundedOpts {
   maxBytes?: number;
   /** Replaces the global fetch (a test seam; the global is looked up at call time). */
   fetch?: typeof fetch;
+  /**
+   * #556 L3: `manual` returns a 3xx reply as it is (status and `location`, body read under the cap), not
+   * followed, so the caller checks every hop (src/core/direct-download.ts). Default: a redirect fails.
+   * proof: test/core/direct-download.test.ts
+   */
+  redirect?: 'manual';
 }
 
 export interface BoundedReply {
@@ -73,7 +79,7 @@ async function exchange(
   signal: AbortSignal,
   host: string,
 ): Promise<BoundedReply> {
-  const res = await (opts.fetch ?? fetch)(url, { ...init, signal, redirect: 'error' });
+  const res = await (opts.fetch ?? fetch)(url, { ...init, signal, redirect: opts.redirect ?? 'error' });
   const bytes = await readCapped(res, opts.maxBytes ?? MAX_REPLY_BYTES, host);
   return {
     status: res.status,

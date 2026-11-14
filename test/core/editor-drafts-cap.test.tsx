@@ -40,6 +40,7 @@ import { buildStore } from '../../src/cli/main';
 import { onProblem, publishInfo, publishProblem, resetProblemSignal } from '../../src/core/problem-signal';
 import { App } from '../../src/tui/App';
 import { waitForFrame, waitForInput } from '../helpers/ink-waits';
+import { stopSyncWriters } from '../helpers/sync-writers';
 import { FakeSimperiumServer } from '../fake-simperium/server';
 import { hostileText } from '../fixtures/hostile';
 
@@ -59,6 +60,8 @@ const waitFor = async (cond: () => boolean, timeoutMs = 2500) => {
 
 const cleanup: string[] = [];
 const stops: Array<() => void> = [];
+const servers: FakeSimperiumServer[] = [];
+const builtStores: Array<ReturnType<typeof buildStore>> = [];
 let account = '';
 beforeEach(() => {
   resetProblemSignal();
@@ -66,12 +69,17 @@ beforeEach(() => {
   cleanup.push(account);
   setDraftsDir(join(account, 'drafts'));
 });
-afterEach(() => {
+afterEach(async () => {
   for (const stop of stops.splice(0)) stop();
-  for (const d of cleanup.splice(0)) rmSync(d, { recursive: true, force: true });
-  setDraftsDir(null);
-  resetProblemSignal();
-  inkChalk.level = chalkLevel;
+  try {
+    // #319: a started store's client writes ghosts-*.json (and makes the folder) until its connection has closed
+    await stopSyncWriters(builtStores.splice(0), servers.splice(0));
+  } finally {
+    for (const d of cleanup.splice(0)) rmSync(d, { recursive: true, force: true });
+    setDraftsDir(null);
+    resetProblemSignal();
+    inkChalk.level = chalkLevel;
+  }
 });
 
 const scratch = (prefix: string): string => {
@@ -99,7 +107,7 @@ const mode = (p: string): number => statSync(p).mode & 0o777;
 async function fakeServer(): Promise<FakeSimperiumServer> {
   const server = new FakeSimperiumServer();
   await server.start();
-  stops.push(() => setTimeout(() => server.stop(), 100));
+  servers.push(server);
   server.seedBucket('test-app', 'note', []);
   return server;
 }
@@ -169,7 +177,7 @@ describe('#89 draft size cap, info notice, one descriptor', () => {
       { email: 'test@example.com', token: 'test-token' },
       () => {},
     );
-    stops.unshift(built.stopSaving);
+    builtStores.push(built);
     await waitFor(() => notices.length > 0);
     expect(notices).toEqual([[text, true]]);
 
@@ -245,7 +253,7 @@ describe('#89 draft size cap, info notice, one descriptor', () => {
       { email: 'test@example.com', token: 'test-token' },
       () => {},
     );
-    stops.unshift(built.stopSaving);
+    builtStores.push(built);
     const { stdin, lastFrame } = render(React.createElement(App, { store: built.store, width: 240, height: 24 }));
     await waitForInput(stdin);
     const frame = await waitForFrame(
@@ -276,7 +284,7 @@ describe('#89 draft size cap, info notice, one descriptor', () => {
       { email: 'test@example.com', token: 'test-token' },
       () => {},
     );
-    stops.unshift(built.stopSaving);
+    builtStores.push(built);
     // timers of one delay run in the order they were set: this one runs after the recovery timer
     await new Promise((r) => setTimeout(r, 0));
     expect(noteContents(built.store)).toEqual([]);

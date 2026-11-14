@@ -28,6 +28,15 @@ src_dir="$(cd "$here/../.." && pwd)"
 
 log() { printf '==> %s\n' "$1"; }
 fail() { printf 'snote setup: %s\n' "$1" >&2; exit 1; }
+# os_quiet LABEL CMD...: run CMD with its error text held back; when CMD fails, stop with LABEL and that text cut to
+# printable ASCII (#486). An OS error can quote a file name from the downloaded tree, and a name can hold an escape sequence.
+# proof: test/packaging/omarchy-setup-os-errors.test.ts
+os_quiet() {
+  local label=$1 err
+  shift
+  err="$("$@" 2>&1 >/dev/null)" && return 0
+  fail "$label: $(printf '%s' "$err" | LC_ALL=C tr -cd ' -~' | cut -c1-300)"
+}
 # #200: a version read from a file is printed only after this check, which is
 # bar-update's with a stricter length (three or four parts; bar-update takes
 # two to four); anything else is not printed.
@@ -354,6 +363,22 @@ if [ "${1:-}" = "--check" ]; then
   exit $?
 fi
 
+# --verify-release <commit> <tag> (#68): bar-update asks this before it moves the clone. The INSTALLED build checks the
+# fetched commit's signed SHA256SUMS with its own allowed_signers (src/core/release-check-cli.ts); nothing here reads the
+# fetched files or writes anything. No NODE_OPTIONS; bounded at 60 s (SNOTE_SETUP_PROBE_SECS lowers it, the tests).
+# Exit 0 only when the installed build says the release verified.
+# proof: test/packaging/bar-update-verify.test.ts
+if [ "${1:-}" = "--verify-release" ]; then
+  [ $# -eq 3 ] || fail "usage: setup --verify-release <commit> <tag>"
+  { [ -f "$app_dir/cli.js" ] && [ ! -L "$app_dir/cli.js" ]; } || fail "no installed snote to check the release with"
+  node_bin="$(find_node)" || fail "$node_message"
+  case "${SNOTE_SETUP_PROBE_SECS:-}" in [1-9]|0.[1-9]) ;; *) probe_secs=60 ;; esac
+  unset NODE_OPTIONS
+  export SNOTE_UPDATE_CHECK=off
+  bounded "$node_bin" "$app_dir/cli.js" --verify-release "$src_dir" "$2" "$3" || exit 1
+  exit 0
+fi
+
 # --rollback (#67): bring the previous build back. It refuses while snote runs
 # (the same lock and the same message as an install). app.prev becomes app and
 # the build it replaces is removed, so there is no second previous build.
@@ -454,7 +479,7 @@ trap 'rm -rf "$stage_tmp"' EXIT
 
 # cp -R of the plugin-dist payload only (no sync tool, and no --delete in
 # any form: stage_tmp is always empty when we write into it).
-cp -R "$dist_dir"/. "$stage_tmp"/
+os_quiet "could not copy plugin-dist into place; nothing was installed" cp -R "$dist_dir"/. "$stage_tmp"/
 
 # #411: cp -R keeps a symlink in plugin-dist as a symlink, so every later
 # write, chmod and move into the stage would follow it to a file outside the
@@ -485,9 +510,9 @@ fi
 printf '%s\n' "$source_version" > "$stage_tmp/VERSION"
 
 # The staged copy must be exactly the files the release lists (#68, MUST 10).
-# Setup does not check the signature of SHA256SUMS: nothing in this version
-# verifies it before setup runs (the update path that will verify the release
-# and then call setup with --verified-update is not built yet). What setup does
+# Setup itself does not check the signature of SHA256SUMS: bar-update has the
+# installed build check it (setup --verify-release) and passes --verified-update
+# only after that check passed and HEAD is the checked commit. What setup does
 # is hash the copy it just made, because that is what gets installed and the
 # clone's files could have changed since the clone was fetched (CWE-367).
 # proof: test/packaging/omarchy-setup-sums-text.test.ts
@@ -503,7 +528,7 @@ refuse_unverified() {
 verify_stage_against_manifest() {
   local sums="$src_dir/SHA256SUMS"
   if [ ! -e "$sums" ] && [ ! -L "$sums" ]; then
-    # With --verified-update (a caller that vouches for the clone; none passes it yet) a missing SHA256SUMS is refused.
+    # With --verified-update (bar-update passes it only after the release check passed) a missing SHA256SUMS is refused.
     if [ "${1:-}" = "--verified-update" ]; then refuse_unverified; fi
     log "No SHA256SUMS in $src_dir: installing without a manifest check (a development checkout or an older release)."
     return 0
@@ -524,8 +549,8 @@ verify_stage_against_manifest "${1:-}"
 # 0755, every other file 0644 (so allowed_signers is 0644 and nothing is group-
 # or world-writable, whatever the clone or the umask said).
 # proof: test/packaging/omarchy-setup-verify.test.ts
-find "$stage_tmp" -type d -exec chmod 700 {} +
-find "$stage_tmp" -type f -exec chmod 644 {} +
+os_quiet "could not set the folder modes; nothing was installed" find "$stage_tmp" -type d -exec chmod 700 {} +
+os_quiet "could not set the file modes; nothing was installed" find "$stage_tmp" -type f -exec chmod 644 {} +
 if [ -f "$stage_tmp/cli.js" ]; then chmod 755 "$stage_tmp/cli.js"; fi
 
 # The shim (#67): written BEFORE the two renames when a build is already

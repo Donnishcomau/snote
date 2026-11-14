@@ -21,7 +21,7 @@ import { join } from 'node:path';
 const REAL_SETUP = join(process.cwd(), 'packaging', 'omarchy', 'setup');
 const REAL_UNINSTALL = join(process.cwd(), 'packaging', 'omarchy', 'uninstall');
 // 2.5 s on a normal machine; SNOTE_TEST_SPAWN_MS lets a heavily loaded runner wait longer.
-const SPAWN_TIMEOUT_MS = Number(process.env.SNOTE_TEST_SPAWN_MS ?? 2500);
+export const SPAWN_TIMEOUT_MS = Number(process.env.SNOTE_TEST_SPAWN_MS ?? 2500);
 
 export interface Sandbox {
   root: string;

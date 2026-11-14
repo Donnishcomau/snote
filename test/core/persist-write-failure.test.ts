@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 import { makeStore } from '../../src/core/store';
 import { persistOnChange, loadState } from '../../src/core/persistence';
@@ -55,10 +55,17 @@ describe('persist-write-failure', () => {
   });
 
   afterEach(() => {
+    // #319: stop() does not cancel a save timer it leaves pending, and a failed save keeps its state, so tests 1 and 3
+    // run on fake timers and that timer's save runs here, while the folder is still there, before it is removed
+    if (vi.isFakeTimers()) {
+      vi.runOnlyPendingTimers();
+      vi.useRealTimers();
+    }
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
   it("1: WHEN `state.json.tmp` is a directory, a note is created and the stop function of `persistOnChange(store, dir, 50)` is called THEN it does not throw and `currentProblem()` is `could not save notes: EISDIR`", () => {
+    vi.useFakeTimers();
     fs.mkdirSync(path.join(tmpDir, 'state.json.tmp'));
     const store = makeStore({ stubClient: {} });
 
@@ -103,6 +110,7 @@ describe('persist-write-failure', () => {
   });
 
   it("3: WHEN a save failed as in line 1, the `state.json.tmp` directory is then removed and a new `persistOnChange(store, dir, 50)` is stopped THEN `loadState(dir).data.notes.size` is `1`", () => {
+    vi.useFakeTimers();
     const blocker = path.join(tmpDir, 'state.json.tmp');
     fs.mkdirSync(blocker);
     const store = makeStore({ stubClient: {} });

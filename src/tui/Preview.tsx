@@ -4,14 +4,14 @@ import React from 'react';
 import type { Note } from '@vendor/types';
 import noteTitleAndPreview from '@vendor/utils/note-utils';
 import { wrapLines } from '../core/wrap';
-import { markdownBodyLine, bodyRowSpans } from '../core/md-inline';
+import { markdownBodyLine, bodyRowSpans, headingLevel } from '../core/md-inline';
 import type { BodyLine, InlineSpan } from '../core/md-inline';
 import { sanitizeForTerminal } from '../core/sanitize';
 import { Divider } from './Divider';
 import { PaneHeading } from './PaneHeading';
 import { MdRowText } from './md-row';
 import isEmailTag from '@vendor/utils/is-email-tag';
-import { theme } from './theme';
+import { theme, headingStyle } from './theme';
 
 export function previewColWidth(width: number): number {
   return Math.min(Math.floor(width * 0.6) - 1, 100);
@@ -30,7 +30,7 @@ interface PreviewProps {
 /**
  * Check if a note has the markdown tag.
  */
-function isMarkdownNote(note: Note): boolean {
+export function isMarkdownNote(note: Note): boolean {
   return note.systemTags.includes('markdown');
 }
 
@@ -66,10 +66,14 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
   // When cursorLine is provided, use raw content with gutter; otherwise use rendered or raw as before
   let displayContent: string;
   let processedLines: BodyLine[] = [];
+  // #721: the heading level of each raw line, alongside processedLines
+  let levels: number[] = [];
   if (typeof cursorLine === 'number') {
     displayContent = content;
   } else if (rendered && isMarkdownNote(note)) {
-    processedLines = content.split('\n').map(markdownBodyLine);
+    const raw = content.split('\n');
+    processedLines = raw.map(markdownBodyLine);
+    levels = raw.map(headingLevel);
     displayContent = processedLines.map(p => p.text).join('\n');
   } else {
     displayContent = content;
@@ -86,6 +90,7 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
     if (firstLine === title) {
       bodyContent = nl === -1 ? '' : displayContent.slice(nl + 1);
       bodyLines = processedLines.length > 1 ? processedLines.slice(1) : [];
+      levels = levels.slice(1);
     } else {
       bodyContent = displayContent;
       bodyLines = processedLines;
@@ -162,15 +167,16 @@ export function Preview({ note, width, height, rendered = false, cursorLine, foc
             const gutter = gutterRows[start + idx] ?? '';
             const rowText = row.text || ' ';
             const isHeading = bodyHeadingFlags[row.line] ?? false;
+            const level = levels[row.line] ?? 0;
             // Render every body row through MdRowText, which
             // colours the checklist glyph and any link/code spans. Heading
-            // rows keep the accent styling here and get an empty span set.
+            // rows take their level's colour (#721) and get an empty span set.
             const spans = rowSpansByRow[start + idx] ?? [];
             return (
               <Text
                 key={idx}
                 bold={isHeading}
-                {...(isHeading ? theme.accent : {})}
+                {...(isHeading ? headingStyle(level) : {})}
                 wrap="truncate"
               >
                 {gutter}

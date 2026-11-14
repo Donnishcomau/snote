@@ -11,16 +11,17 @@ describe('pkgbuild namcap', () => {
     expect(pkgbuild()).toContain("depends=('nodejs>=22' 'hicolor-icon-theme')");
   });
 
-  it('2: WHEN packaging/aur/PKGBUILD is read THEN it contains source=("$pkgname-$pkgver.tar.gz::https://github.com/donnishcomau/snote/archive/refs/tags/v$pkgver.tar.gz")', () => {
-    expect(pkgbuild()).toContain(
-      'source=("$pkgname-$pkgver.tar.gz::https://github.com/donnishcomau/snote/archive/refs/tags/v$pkgver.tar.gz")'
-    );
+  it('2: WHEN packaging/aur/PKGBUILD is read THEN it contains the line source=() and no line that sets source to anything else (#876)', () => {
+    const lines = pkgbuild().split('\n');
+    expect(lines).toContain('source=()');
+    expect(lines.filter((l) => /^\s*source(_\w+)?\+?=/.test(l))).toEqual(['source=()']);
   });
 
-  it('3: WHEN packaging/aur/PKGBUILD is read THEN it still contains pkgver=0.2.11, sha256sums=(\'SKIP\') and cd "$srcdir/snote-$pkgver"', () => {
+  it('3: WHEN packaging/aur/PKGBUILD is read THEN it still contains pkgver=0.2.12, sha256sums=() and cd "$srcdir/snote-$pkgver", and no SKIP (#876)', () => {
     const content = pkgbuild();
-    expect(content).toContain('pkgver=0.2.11');
-    expect(content).toContain("sha256sums=('SKIP')");
+    expect(content).toContain('pkgver=0.2.12');
+    expect(content).toContain('sha256sums=()');
+    expect(content).not.toContain('SKIP');
     expect(content).toContain('cd "$srcdir/snote-$pkgver"');
   });
 });

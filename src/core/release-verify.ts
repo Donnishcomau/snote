@@ -109,8 +109,42 @@ function parseBatch(buf: Buffer, ids: string[]): Map<string, Buffer> | null {
 
 const no = (reason: string): VerifyResult => ({ ok: false, reason });
 
-export async function verifyReleaseCommit(opts: VerifyOpts): Promise<VerifyResult> {
+/** SG-5 and SG-2 (#556 L3: shared with src/core/direct-download.ts): null when ssh-keygen and the INSTALLED allowed_signers are usable, else the reason. */
+export function signerPreflight(sshKeygen: string, allowedSignersPath: string): string | null {
+  if (!sshKeygenUsable(sshKeygen)) return NEEDS_OPENSSH;
+  if (!path.isAbsolute(allowedSignersPath)) return 'The installed allowed_signers path is not absolute.';
+  const signers = checkInstalledAllowedSigners(allowedSignersPath);
+  return signers.ok === false ? signers.reason : null;
+}
+
+/** The one ssh-keygen verify call (#68b2; #556 L3 reuses it): `sig` over `data` (on stdin) by a key of the INSTALLED allowed_signers. Never throws. */
+export async function verifySignature(o: { run: ProcRunner; sshKeygen: string; allowedSignersPath: string; data: Buffer; sig: Buffer }): Promise<boolean> {
+  const { run, sshKeygen, allowedSignersPath, data, sig } = o;
   let tmp: string | null = null;
+  try {
+    tmp = secureMkdtemp(path.join(os.tmpdir(), 'snote-verify-'));
+    const sigFile = path.join(tmp, SIG);
+    secureExclusiveCreate(sigFile, sig.toString('utf8'), 0o600); // an armored signature is ASCII; other bytes cannot verify
+    const v = await run(
+      sshKeygen,
+      ['-Y', 'verify', '-f', allowedSignersPath, '-I', NAMESPACE, '-n', NAMESPACE, '-s', sigFile],
+      { cwd: tmp, timeoutMs: TIMEOUT_MS, env: { PATH: '/usr/bin:/bin', LC_ALL: 'C' }, input: data }
+    );
+    return v.code === 0 && v.stdout.toString('utf8').startsWith(GOOD_PREFIX);
+  } catch {
+    return false;
+  } finally {
+    if (tmp !== null) {
+      try {
+        secureRemoveTree(tmp);
+      } catch {
+        // EACCES, EPERM or EBUSY on a private temp dir: it holds one signature file, and the verdict stands (V465-02)
+      }
+    }
+  }
+}
+
+export async function verifyReleaseCommit(opts: VerifyOpts): Promise<VerifyResult> {
   try {
     if (!VERSION_RE.test(opts.runningVersion)) return no(BAD_RUNNING_VERSION);
     const run = opts.run ?? defaultProcRunner;
@@ -118,10 +152,8 @@ export async function verifyReleaseCommit(opts: VerifyOpts): Promise<VerifyResul
     const git = (args: string[], input?: Buffer): ReturnType<ProcRunner> =>
       run('git', [...REMOTE_GIT_FLAGS, ...args], { cwd: opts.cloneDir, timeoutMs: TIMEOUT_MS, env, input });
     const sshKeygen = opts.sshKeygenPath ?? SSH_KEYGEN;
-    if (!sshKeygenUsable(sshKeygen)) return no(NEEDS_OPENSSH);
-    if (!path.isAbsolute(opts.allowedSignersPath)) return no('The installed allowed_signers path is not absolute.');
-    const signers = checkInstalledAllowedSigners(opts.allowedSignersPath);
-    if (signers.ok === false) return no(signers.reason);
+    const pre = signerPreflight(sshKeygen, opts.allowedSignersPath);
+    if (pre !== null) return no(pre);
     if (!/^[0-9a-f]{40}$/.test(opts.commit)) return no('The release commit is not a full commit id.');
     const tagVersion = /^v(.+)$/.exec(opts.tag)?.[1];
     if (tagVersion === undefined || !VERSION_RE.test(tagVersion)) return no('The release tag is not a version.');
@@ -170,15 +202,9 @@ export async function verifyReleaseCommit(opts: VerifyOpts): Promise<VerifyResul
     if (manifest === null || sig === null) return no('The signed manifest could not be read.');
 
     // 2. The signature, against the installed allowed_signers only.
-    tmp = secureMkdtemp(path.join(os.tmpdir(), 'snote-verify-'));
-    const sigFile = path.join(tmp, SIG);
-    secureExclusiveCreate(sigFile, sig.toString('utf8'), 0o600); // an armored signature is ASCII; other bytes cannot verify
-    const v = await run(
-      sshKeygen,
-      ['-Y', 'verify', '-f', opts.allowedSignersPath, '-I', NAMESPACE, '-n', NAMESPACE, '-s', sigFile],
-      { cwd: tmp, timeoutMs: TIMEOUT_MS, env: { PATH: '/usr/bin:/bin', LC_ALL: 'C' }, input: manifest }
-    );
-    if (v.code !== 0 || !v.stdout.toString('utf8').startsWith(GOOD_PREFIX)) return no('The release signature did not verify.');
+    if (!(await verifySignature({ run, sshKeygen, allowedSignersPath: opts.allowedSignersPath, data: manifest, sig }))) {
+      return no('The release signature did not verify.');
+    }
 
     // 3. The manifest: version line, then one sha256 per file.
     const lines = manifest.toString('utf8').split('\n');
@@ -208,13 +234,5 @@ export async function verifyReleaseCommit(opts: VerifyOpts): Promise<VerifyResul
     return { ok: true, version };
   } catch {
     return no('The release could not be verified.');
-  } finally {
-    if (tmp !== null) {
-      try {
-        secureRemoveTree(tmp);
-      } catch {
-        // EACCES, EPERM or EBUSY on a private temp dir: it holds one signature file, and the verdict stands
-      }
-    }
   }
 }

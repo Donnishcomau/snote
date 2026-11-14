@@ -28,7 +28,7 @@ function socketBypasses(dir: string, root: string = dir): string[] {
     const path = join(dir, name);
     if (statSync(path).isDirectory()) { hits.push(...socketBypasses(path, root)); continue; }
     if (!/\.tsx?$/.test(name) || path.endsWith(join('core', 'websocket-provider.ts'))) continue;
-    if (/new\s+(W3CWebSocket|w3cwebsocket|WebSocket)\s*\(|from\s+'websocket'|require\('websocket'\)/.test(readFileSync(path, 'utf8'))) hits.push(path.slice(root.length + 1));
+    if (/new\s+(W3CWebSocket|w3cwebsocket|WebSocket|SnoteSocket)\s*\(|from\s+'(websocket|ws)'|require\('(websocket|ws)'\)/.test(readFileSync(path, 'utf8'))) hits.push(path.slice(root.length + 1));
   }
   return hits;
 }

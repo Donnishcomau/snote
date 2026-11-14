@@ -179,10 +179,45 @@ export function removeDrafts(folders: string[]): void {
 }
 
 /**
+ * #842 one read of a draft folder's `.md` files. *sig* holds each text draft's name, file time and text, so a
+ * second read gives the same *sig* only while no draft changed; *big* holds the sizes of the drafts too large to load.
+ */
+function readFolder(folder: string): { texts: string[]; kept: number; at: number; sig: string; big: number[] } {
+  const r = { texts: [] as string[], kept: 0, at: 0, sig: '', big: [] as number[] };
+  for (const f of readdirSync(folder).filter((n) => n.endsWith('.md'))) {
+    const draft = readDraft(join(folder, f));
+    if (draft === null) continue;
+    r.at = lstatSync(join(folder, f)).mtimeMs; // #97 the draft's file time
+    if ('text' in draft) {
+      r.texts.push(draft.text);
+      r.sig += JSON.stringify([f, r.at, draft.text]);
+    } else {
+      r.kept++; // removal is folder-wide: a draft left unread keeps its folder
+      if ('tooLarge' in draft) r.big.push(draft.tooLarge);
+    }
+  }
+  return r;
+}
+
+/**
+ * #842 true while folder *folder* still reads as *sig* with every draft loaded; a folder whose read fails, or
+ * that now holds a draft too large or unreadable to load, counts as changed (kept).
+ */
+function unchanged(folder: string, sig: string): boolean {
+  try {
+    const r = readFolder(folder);
+    return r.kept === 0 && r.sig === sig;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * At start-up: every draft whose text no note holds becomes a new note, except
  * in the #97 case below, where the note it came from still holds the text the
  * edit began with and gets the draft as its text; its folder is removed after the next
- * save to disk. A draft that is empty or equal to a note is removed at once.
+ * save to disk, unless a draft in it changed since this read (#842: then it stays for the next start).
+ * A draft that is empty or equal to a note is removed at once.
  * Only regular `.md` files are read (the editor's own swap or backup files
  * are not drafts): a file over MAX_DRAFT_BYTES
  * is not loaded and its folder is never removed; it is added to *tooLarge*
@@ -205,28 +240,19 @@ export function recoverDrafts(
   } catch {
     return 0;
   }
-  const restored: string[] = [];
+  const restored: Array<[string, string]> = [];
   let count = 0;
   for (const name of folders) {
     const folder = join(dir, name);
-    const texts: string[] = [];
-    let kept = 0;
-    let at = 0;
+    let read: ReturnType<typeof readFolder>;
     try {
       if (!isRealDir(folder)) continue;
-      for (const f of readdirSync(folder).filter((n) => n.endsWith('.md'))) {
-        const draft = readDraft(join(folder, f));
-        if (draft === null) continue;
-        at = lstatSync(join(folder, f)).mtimeMs; // #97 the draft's file time
-        if ('text' in draft) texts.push(draft.text);
-        else {
-          kept++; // removal is folder-wide: a draft left unread keeps its folder
-          if ('tooLarge' in draft) tooLarge?.push({ folder, bytes: draft.tooLarge });
-        }
-      }
+      read = readFolder(folder);
     } catch {
       continue;
     }
+    const { texts, kept, at, sig } = read;
+    for (const bytes of read.big) tooLarge?.push({ folder, bytes });
     const notes = [...store.getState().data.notes.values()].map((n) => n.content);
     const fresh = texts.filter((t) => t.trim() !== '' && !notes.includes(t));
     const source = fresh.length === 1 && texts.length === 1 && kept === 0 ? readSource(folder) : null;
@@ -249,10 +275,11 @@ export function recoverDrafts(
     }
     count += fresh.length;
     // a folder holding an oversized or unreadable draft is never queued for removal: removal is folder-wide
-    if (fresh.length > 0 && kept === 0) restored.push(folder);
+    if (fresh.length > 0 && kept === 0) restored.push([folder, sig]);
     else if (texts.length > 0 && kept === 0) removeDrafts([folder]);
   }
-  if (restored.length > 0) afterNextSave(() => removeDrafts(restored));
+  // #842 an editor that outlived a kill may write after the read above; a folder whose drafts changed is kept
+  if (restored.length > 0) afterNextSave(() => removeDrafts(restored.filter(([f, s]) => unchanged(f, s)).map(([f]) => f)));
   return count;
 }
 

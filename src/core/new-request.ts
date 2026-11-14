@@ -1,7 +1,7 @@
 import { watch, lstatSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { secureUnlink, secureWriteFileSync } from './secure-fs';
+import { secureExclusiveCreate, secureUnlink, secureWriteFileSync } from './secure-fs';
 import { readRegularText } from './secure-fs';
 
 /**
@@ -19,6 +19,8 @@ import { readRegularText } from './secure-fs';
  */
 
 const REQUEST_FILE = 'new-note.request';
+// #30 L5b: the bar's update ask (`snote --ask-update`), made by secureExclusiveCreate (O_EXCL, 0600); the watcher reads only its lstat (proof: test/cli/ask-update.test.ts)
+export const UPDATE_ASK_FILE = 'update-ask.request';
 const LOCK_FILE = 'instance.lock';
 
 const DEFAULT_STALE_MS = 10_000;
@@ -49,7 +51,7 @@ function isPidAlive(pid: number): boolean {
  * proof: test/core/new-request.test.ts
  * proof: test/core/secure-fs-symlink.test.ts
  */
-export function requestNewNote(dir: string): 'sent' | 'no-instance' {
+export function requestNewNote(dir: string, file: string = REQUEST_FILE): 'sent' | 'no-instance' {
   const lockPath = join(dir, LOCK_FILE);
   const owner = (readRegularText(lockPath) ?? '').trim(); // #676: a FIFO or link there is no owner; the read returns at once
   if (!/^\d+$/.test(owner)) {
@@ -61,8 +63,9 @@ export function requestNewNote(dir: string): 'sent' | 'no-instance' {
     return 'no-instance';
   }
 
-  const requestPath = join(dir, REQUEST_FILE);
-  secureWriteFileSync(requestPath, JSON.stringify({ v: 1, t: Date.now() }));
+  const requestPath = join(dir, file);
+  if (file === REQUEST_FILE) secureWriteFileSync(requestPath, JSON.stringify({ v: 1, t: Date.now() }), { durable: false }); // #682: read and removed at once
+  else try { secureExclusiveCreate(requestPath, '1'); } catch { return 'no-instance'; } // #30 L5b: a file or link already there is refused
   return 'sent';
 }
 
@@ -80,15 +83,19 @@ export function requestNewNote(dir: string): 'sent' | 'no-instance' {
 export function watchNewRequests(
   dir: string,
   onRequest: () => void,
-  opts?: { pollMs?: number; staleMs?: number }
+  opts?: { pollMs?: number; staleMs?: number; file?: string }
 ): () => void {
   const pollMs = opts?.pollMs ?? DEFAULT_POLL_MS;
   const staleMs = opts?.staleMs ?? DEFAULT_STALE_MS;
-  const requestPath = join(dir, REQUEST_FILE);
+  const file = opts?.file ?? REQUEST_FILE;
+  const ask = file !== REQUEST_FILE; // #30 L5b: an update ask counts only as a regular file made during this session
+  const since = Date.now();
+  const requestPath = join(dir, file);
 
   const mtimeMs = (): number | null => {
     try {
-      return lstatSync(requestPath).mtimeMs;
+      const st = lstatSync(requestPath);
+      return ask && !st.isFile() ? 0 : st.mtimeMs;
     } catch {
       return null;
     }
@@ -106,7 +113,7 @@ export function watchNewRequests(
 
   // Sweep a request left over from a dead sender before we start listening.
   const born = mtimeMs();
-  if (born !== null && Date.now() - born > staleMs) {
+  if (born !== null && (ask || Date.now() - born > staleMs)) {
     claim();
   }
 
@@ -118,7 +125,7 @@ export function watchNewRequests(
     if (!claim()) {
       return;
     }
-    if (Date.now() - when > staleMs) {
+    if (Date.now() - when > staleMs || (ask && when < since)) {
       return;
     }
     onRequest();
@@ -127,7 +134,7 @@ export function watchNewRequests(
   let watcher: ReturnType<typeof watch> | undefined;
   try {
     watcher = watch(dir, (_event, filename) => {
-      if (filename === REQUEST_FILE || filename === `${REQUEST_FILE}.tmp`) {
+      if (filename === file || filename === `${file}.tmp`) {
         consume();
       }
     });

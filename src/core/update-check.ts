@@ -371,7 +371,8 @@ export async function checkRemoteUpdate(o: {
       ensureDir(o.stateDir);
       secureWriteFileSync(
         cacheFile,
-        JSON.stringify({ checkedAt: o.now, remoteHead: sha }) + '\n'
+        JSON.stringify({ checkedAt: o.now, remoteHead: sha }) + '\n',
+        { durable: false } // #682: rebuilt by the next check (HEAD)
       );
     } catch {
       // a cache we cannot write is simply no cache next time
@@ -506,7 +507,8 @@ export async function checkRemoteVersion(o: {
         ensureDir(o.stateDir as string);
         secureWriteFileSync(
           cacheFile,
-          JSON.stringify({ checkedAt: startedAt, version: newest.version, commit: newest.commit }) + '\n'
+          JSON.stringify({ checkedAt: startedAt, version: newest.version, commit: newest.commit }) + '\n',
+          { durable: false } // #682: rebuilt by the next check (tags)
         );
       } catch {
         // a cache we cannot write is simply no cache next time

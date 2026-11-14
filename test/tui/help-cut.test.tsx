@@ -49,17 +49,17 @@ describe('help cut', () => {
     expect(frame).not.toContain('markdown pre /');
   });
 
-  it('3: WHEN Help renders at 60x40 THEN the frame contains `Toggle rendered…` and `Close overlay /…` and each of the 36 keymap entries shows its key padded to 8 followed by two spaces', () => {
+  it('3: WHEN Help renders at 60x40 THEN the frame contains `Toggle rendered…` and `Close overlay /…` and each of the 37 keymap entries shows its key padded to 8 followed by two spaces', () => {
     const frame = frameAt(60, 40);
     expect(frame).toContain('Toggle rendered…');
     expect(frame).toContain('Close overlay /…');
-    expect(keymap.length).toBe(36);
+    expect(keymap.length).toBe(37);
     for (const e of keymap) {
       expect(frame, e.action).toContain(e.key.padEnd(8) + '  ');
     }
   });
 
-  it('4: WHEN Help renders at 99x40 and at 100x40 THEN each frame contains all 36 entries whole (key padded to 8, two spaces, full description) and does not contain `…`', () => {
+  it('4: WHEN Help renders at 99x40 and at 100x40 THEN each frame contains all 37 entries whole (key padded to 8, two spaces, full description) and does not contain `…`', () => {
     for (const [w, h] of [[99, 40], [100, 40]] as const) {
       const frame = frameAt(w, h);
       expect(frame).not.toContain('…');

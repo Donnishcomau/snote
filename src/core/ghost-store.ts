@@ -36,6 +36,12 @@ interface GhostFile {
 // into one file write; 100 ms window after the last write on disk.
 const COALESCE_WINDOW_MS = 100;
 
+// #895: each sign-out (token.ts logoutNow and forcedSignOut) ends the writes of every ghost store made before it
+let logoutSweeps = 0;
+export function endGhostWrites(): void {
+  logoutSweeps += 1;
+}
+
 export class FileGhostStore<U> implements GhostStore<U> {
   private readonly dir: string;
   private readonly filePath: string;
@@ -45,13 +51,15 @@ export class FileGhostStore<U> implements GhostStore<U> {
   private lastWrite = 0;
   private timer: NodeJS.Timeout | null = null;
   private _dirExists = false; // OMARCHY: boundary cast
+  private readonly sweepsAtStart = logoutSweeps;
 
   constructor(dir: string, bucketName: string) {
     this.dir = dir;
     this.filePath = join(dir, `ghosts-${bucketName}.json`);
     this.cv = '';
     this.ghosts = new Map();
-    this._dirExists = existsSync(this.filePath); // OMARCHY: boundary cast
+    // #895: a folder that exists now stays removed once a sign-out removes it, also for a bucket with no ghost file yet
+    this._dirExists = existsSync(this.dir); // OMARCHY: boundary cast
 
     if (existsSync(this.filePath)) {
       try {
@@ -75,6 +83,7 @@ export class FileGhostStore<U> implements GhostStore<U> {
   }
 
   private persist(): void {
+    if (this.sweepsAtStart !== logoutSweeps) return; // #895: signed out by a logout sweep
     // OMARCHY: boundary cast
     if (!existsSync(this.dir)) {
       if (this._dirExists) {

@@ -41,8 +41,17 @@ export function releaseDraftsAfterSave(): void {
 export const NVIM_HINT = 'snote · i insert · Esc done · :w save & sync · :wq save & return · :q! discard';
 // #618: after a :w of the note the winbar is NVIM_SAVED with nvim's HH:MM in
 // place of TIME (snote stores each write, #97; the sync itself is not shown).
+// #718: it leads with `last saved TIME` in its own colour (DiagnosticOk).
 // proof: test/core/nvim-saved.test.ts
-export const NVIM_SAVED = 'snote · saved TIME · :w save & sync · :wq save & return · :q! keep last save';
+export const NVIM_SAVED = 'last saved TIME · :w save & sync · :wq save & return · :q! keep last save';
+// #719: an edit not written for UNSAVED_WARN_MS, or UNSAVED_WARN_TYPED
+// characters typed since the last write, turns the whole winbar
+// DiagnosticWarn (orange in most themes); UNSAVED_ALERT_MS turns it
+// DiagnosticError (red). Highlight groups of the user's own theme, not a
+// colour value. proof: test/core/nvim-unsaved.test.ts
+export const UNSAVED_WARN_MS = 30_000;
+export const UNSAVED_WARN_TYPED = 200;
+export const UNSAVED_ALERT_MS = 120_000;
 
 // The hint as a Lua long-bracket string: a ' in the text could never break
 // the chunk, and % is doubled so a stray one can never break the statusline
@@ -51,6 +60,13 @@ function nvimHintLuaString(text: string): string {
   const level = text.includes(']') ? '=' : '';
   const safe = text.replaceAll('%', '%%');
   return '[' + level + '[' + safe + ']' + level + ']';
+}
+
+// #718: the part before the first ` · ` (vim.g.snote_lead) and the rest
+// (vim.g.snote_rest), each as a Lua string.
+function leadAndRest(text: string): [string, string] {
+  const at = text.indexOf(' · ');
+  return [nvimHintLuaString(text.slice(0, at)), nvimHintLuaString(text.slice(at))];
 }
 
 // Startup -c arguments for nvim: show the cheat-sheet in the note window's
@@ -74,30 +90,52 @@ function nvimHintLuaString(text: string): string {
 // the single-quoted form cannot be written inside the double-quoted Ex line
 // unescaped.
 // (The test suite calls nvimHintArgs() directly to pin this shape.)
-// #618: vim.g.snote_hint holds the winbar text; a BufWritePost of the note
-// buffer swaps it for NVIM_SAVED with the time (os.date, digits only) and
-// sets it, so the guard's re-apply keeps the saved time. Only a write of the
-// note's own file counts: <afile>:p must equal vim.g.snote_file, the buffer
-// name recorded at start, so `:w other` or a write after `:saveas` keeps it.
-// proof: test/core/nvim-saved.test.ts
+// #618: a BufWritePost of the note buffer swaps the text for NVIM_SAVED with
+// the time (os.date, digits only); only a write of the note's own file
+// counts: <afile>:p must equal vim.g.snote_file, the buffer name recorded at
+// start, so `:w other` or a write after `:saveas` keeps it.
+// #718 #719: _G.snote_bar() draws the winbar from vim.g (lead in
+// vim.g.snote_hl, rest in Comment; the whole line in vim.g.snote_alert when
+// set) on every non-floating window showing the note buffer, so a :split
+// of the note, or a :wa from another window, repaints them all and leaves a
+// window showing another buffer alone. _G.snote_tick, every second, sets
+// vim.g.snote_alert from how long the note buffer has been modified and
+// vim.g.snote_typed (InsertCharPre on the note buffer); a write or an undo
+// back to the written text clears both.
+// The timer and the InsertCharPre autocmd are made inside the first -c, so
+// snote still takes 3 of nvim's 10 -c arguments.
+// proof: test/core/nvim-saved.test.ts, test/core/nvim-unsaved.test.ts
 export function nvimHintArgs(): string[] {
-  const hint = "'%#Comment#' .. vim.g.snote_hint";
-  const setWinbar = 'vim.api.nvim_set_option_value("winbar", ' + hint + ', { win = 0 })';
-  const saved = '(' + nvimHintLuaString(NVIM_SAVED) + '):gsub("TIME", os.date("%H:%M"))';
+  const [hintLead, hintRest] = leadAndRest(NVIM_HINT);
+  const [savedLead, savedRest] = leadAndRest(NVIM_SAVED);
+  const isNote = 'vim.api.nvim_get_current_buf() == vim.g.snote_buf';
+  const bar =
+    '_G.snote_bar = function() local a = vim.g.snote_alert ' +
+    'local s = a and ("%#" .. a .. "#" .. vim.g.snote_lead .. vim.g.snote_rest) ' +
+    'or ("%#" .. vim.g.snote_hl .. "#" .. vim.g.snote_lead .. "%#Comment#" .. vim.g.snote_rest) ' +
+    'for _, w in ipairs(vim.fn.win_findbuf(vim.g.snote_buf)) do ' +
+    'if vim.api.nvim_win_get_config(w).relative == "" then vim.api.nvim_set_option_value("winbar", s, { win = w }) end end end';
+  const tick =
+    '_G.snote_tick = function() local b = vim.g.snote_buf if not vim.api.nvim_buf_is_valid(b) then return end local a = nil ' +
+    'if vim.bo[b].modified then local now = vim.fn.localtime() if vim.g.snote_dirty == nil then vim.g.snote_dirty = now end ' +
+    'local age = (now - vim.g.snote_dirty) * 1000 ' +
+    'if age >= ' + UNSAVED_ALERT_MS + ' then a = "DiagnosticError" ' +
+    'elseif age >= ' + UNSAVED_WARN_MS + ' or vim.g.snote_typed >= ' + UNSAVED_WARN_TYPED + ' then a = "DiagnosticWarn" end ' +
+    'else vim.g.snote_dirty = nil vim.g.snote_typed = 0 end ' +
+    'if a ~= vim.g.snote_alert then vim.g.snote_alert = a _G.snote_bar() end end';
   const recordBuf =
-    'vim.g.snote_buf = vim.api.nvim_get_current_buf() vim.g.snote_file = vim.api.nvim_buf_get_name(0) vim.g.snote_hint = ' +
-    nvimHintLuaString(NVIM_HINT);
+    'vim.g.snote_buf = vim.api.nvim_get_current_buf() vim.g.snote_file = vim.api.nvim_buf_get_name(0) ' +
+    'vim.g.snote_lead = ' + hintLead + ' vim.g.snote_rest = ' + hintRest + ' vim.g.snote_hl = "Comment" vim.g.snote_typed = 0 ' +
+    bar + ' ' + tick + ' _G.snote_bar() vim.fn.timer_start(1000, function() _G.snote_tick() end, { ["repeat"] = -1 }) ' +
+    'vim.api.nvim_create_autocmd("InsertCharPre", { callback = function() if ' + isNote + ' then vim.g.snote_typed = vim.g.snote_typed + 1 end end })';
   const onWrite =
     'if tonumber(vim.fn.expand("<abuf>")) == vim.g.snote_buf and vim.fn.expand("<afile>:p") == vim.g.snote_file then ' +
-    'vim.g.snote_hint = (' + saved + ') ' + setWinbar + ' end';
-  const guard =
-    'if vim.api.nvim_win_get_config(0).relative == "" ' +
-    'and vim.api.nvim_get_current_buf() == vim.g.snote_buf then ' +
-    setWinbar +
-    ' end';
+    'vim.g.snote_lead = ((' + savedLead + '):gsub("TIME", os.date("%H:%M"))) vim.g.snote_rest = ' + savedRest +
+    ' vim.g.snote_hl = "DiagnosticOk" vim.g.snote_dirty = nil vim.g.snote_typed = 0 vim.g.snote_alert = nil _G.snote_bar() end';
+  const guard = 'if vim.api.nvim_win_get_config(0).relative == "" and ' + isNote + ' then _G.snote_bar() end';
   return [
     '-c',
-    'lua ' + recordBuf + ' ' + setWinbar,
+    'lua ' + recordBuf,
     '-c',
     'autocmd BufWinEnter,WinEnter * lua ' + guard,
     '-c',

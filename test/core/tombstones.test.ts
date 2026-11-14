@@ -17,8 +17,11 @@ import type { EntityId } from '@vendor/types';
 import type { State } from '../../src/core/store';
 import type * as A from '@vendor/state/action-types';
 
+const made: string[] = [];
 function makeTempDir(): string {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'snote-tomb-'));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'snote-tomb-'));
+  made.push(d);
+  return d;
 }
 
 function eid(id: string): EntityId {
@@ -30,7 +33,8 @@ const note2 = makeNote('n2', 'Second');
 
 describe('tombstones', () => {
   afterEach(() => {
-    // cleanup handled per-test with rmSync
+    // #319: every folder makeTempDir made is removed (the writes above are synchronous, so nothing writes after this)
+    for (const d of made.splice(0)) fs.rmSync(d, { recursive: true, force: true });
   });
 
   it('1: WHEN loadTombstones(dir) is called on an empty dir, then with tombstones.json holding "not json", then holding {"a":1} THEN each call returns [] and the empty dir still has 0 entries', () => {

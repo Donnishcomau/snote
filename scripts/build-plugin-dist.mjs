@@ -19,49 +19,12 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { BANNER, lazyIcu, noDevtools, refuseOddOutput, simperiumInterop, simperiumNoHttp, websocketClientOnly, writeLauncher } from './build.mjs';
+import { BANNER, debugNodeOnly, dedupeIdentical, lazyIcu, noDevtools, refuseOddOutput, simperiumInterop, simperiumNoHttp, uuidNodeCrypto, vendoredIdentical, websocketClientOnly, writeLauncher } from './build.mjs';
 import { checkAllowedSigners } from './check-allowed-signers.mjs';
+import { NOTICES_FILE, thirdPartyNotices } from './third-party-notices.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..');
-
-/**
- * The websocket package's lib/BufferUtil.js and lib/Validation.js try their
- * native addons first and print "Run npm install." on stderr when an addon is
- * missing (the addons are never built here). esbuild keeps that string even
- * though it rewrites the fallback requires, and the marketplace scanner
- * reports it as a package-manager capability. Resolve the ./BufferUtil and
- * ./Validation requires (importer inside the package's lib folder) to the
- * package's own fallback files, and answer the addon requires the loaders
- * still make with an empty stub so the catch chains never fire.
- * @returns {import('esbuild').Plugin}
- */
-function websocketFallback() {
-  const inWsLib = (args) =>
-    args.importer.includes(path.join('node_modules', 'websocket', 'lib'));
-  /** @type {Record<string, string>} */
-  const FALLBACKS = {
-    './BufferUtil': 'BufferUtil.fallback.js',
-    './Validation': 'Validation.fallback.js',
-  };
-  return {
-    name: 'websocket-fallback',
-    setup(pluginBuild) {
-      pluginBuild.onResolve({ filter: /^\.\/(BufferUtil|Validation)$/ }, (args) =>
-        inWsLib(args)
-          ? { path: path.join(repoRoot, 'node_modules', 'websocket', 'lib', FALLBACKS[args.path]) }
-          : undefined
-      );
-      pluginBuild.onResolve({ filter: /^\.\.\/build\/(Release|default)\/(bufferutil|validation)$/ }, (args) =>
-        inWsLib(args) ? { path: args.path, namespace: 'websocket-addon-stub' } : undefined
-      );
-      pluginBuild.onLoad({ filter: /.*/, namespace: 'websocket-addon-stub' }, () => ({
-        contents: 'module.exports = {}',
-        loader: 'js',
-      }));
-    },
-  };
-}
 
 /**
  * Refuse an outDir that is itself a symlink or not a folder, or that holds, at
@@ -119,7 +82,6 @@ async function buildPluginDist(outDir, opts = {}) {
   if (!signers.ok) throw new Error('allowed_signers is not valid: ' + signers.errors.join('; '));
   refuseOddOutDir(outDir);
   fs.rmSync(path.join(outDir, 'SHA256SUMS'), { force: true });
-  const wsLib = path.join(repoRoot, 'node_modules', 'websocket', 'lib', 'W3CWebSocket.js'); // #572: the client class only, no server side
   /** @type {Record<string, string>} */
   const entryPoints = {
     'snote-main': path.join(repoRoot, 'src', 'cli', 'index.ts'),
@@ -127,7 +89,6 @@ async function buildPluginDist(outDir, opts = {}) {
     'yoga-layout': 'yoga-layout',
     ink: 'ink',
     simperium: 'simperium',
-    websocket: wsLib,
   };
 
   /** @type {import('esbuild').BuildOptions} */
@@ -141,20 +102,26 @@ async function buildPluginDist(outDir, opts = {}) {
     entryNames: '[name]',
     chunkNames: 'chunks/[name]-[hash]',
     logLevel: 'silent',
+    metafile: true, // #615: the bundled packages, for THIRD-PARTY-NOTICES
     banner: { js: BANNER },
     define: { 'process.env.NODE_ENV': '"production"' },
     entryPoints,
     absWorkingDir: repoRoot, // #572: the bare entries (ink, react-reconciler, yoga-layout, simperium) resolve from this repo, never from the cwd
-    plugins: [noDevtools(), simperiumInterop(), simperiumNoHttp(), lazyIcu(), websocketFallback(), websocketClientOnly()],
+    plugins: [noDevtools(), simperiumInterop(), simperiumNoHttp(), lazyIcu(), websocketClientOnly(), vendoredIdentical(), dedupeIdentical(), debugNodeOnly(), uuidNodeCrypto()],
   };
 
-  await build(buildOpts);
+  const result = await build(buildOpts);
+  fs.writeFileSync(path.join(outDir, NOTICES_FILE), thirdPartyNotices(result.metafile, repoRoot)); // #615 item 4
 
   writeLauncher(path.join(outDir, 'cli.js'), 'snote-main.js');
 
   const pkg = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
   fs.writeFileSync(path.join(outDir, 'VERSION'), pkg.version + '\n');
   fs.copyFileSync(signersPath, path.join(outDir, 'allowed_signers'));
+  // #441: the GPL-2.0-only licence and the attribution notice travel with every copy of the build (the plugin and the release tarball)
+  for (const name of ['LICENSE', 'NOTICE']) fs.copyFileSync(path.join(repoRoot, name), path.join(outDir, name));
+  // #30 L5c: the direct installer travels in the build as update-helper, which a direct install's snote runs with --from-stdin
+  fs.copyFileSync(path.join(repoRoot, 'packaging', 'direct', 'install'), path.join(outDir, 'update-helper'));
 
   writeSha256Sums(outDir);
 }

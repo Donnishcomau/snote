@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 // pasted email/code drawn through sanitizeForTerminal (display only)
 // proof: test/tui/login-paste-sanitised.test.tsx
 import { theme } from './theme'; import { sanitizeForTerminal } from '../core/sanitize';
+import { signupLink } from '../core/hyperlink';
 
 interface LoginProps {
   width: number;
@@ -137,6 +138,8 @@ export function Login({
     }
   });
 
+  // #600: the constant sign-up URL, as an OSC 8 link on a terminal (src/core/hyperlink.ts)
+  const signup = signupLink(process.stdout.isTTY === true);
   return (
     <Box flexDirection="column" height={height} width={width} paddingX={2}>
       <Text bold>Simplenote login</Text>
@@ -146,7 +149,7 @@ export function Login({
           {passwordLogin !== undefined ? ( // T70
             <Text>Tab: log in with a password</Text>
           ) : null}
-          <Text {...theme.muted}>No account? Sign up at https://app.simplenote.com/signup/</Text>
+          <Text {...theme.muted}>No account? Sign up at {signup}</Text>
         </>
       ) : step === 'password' ? ( // T70
         <>

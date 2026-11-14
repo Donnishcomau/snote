@@ -43,11 +43,15 @@ function deriveCalls(): Call[] {
   for (const f of walk('src')) {
     const lines = code(f).join('\n');
     if (f !== 'src/core/bounded-request.ts' && /from '\.\/bounded-request'/.test(lines)) calls.push({ file: f, command: 'https' });
-    if (/from 'websocket'/.test(lines)) calls.push({ file: f, command: 'wss' });
+    if (/new SnoteSocket\(/.test(lines)) calls.push({ file: f, command: 'wss' });
     if (/'ls-remote',\s*url,\s*'HEAD'/.test(lines)) calls.push({ file: f, command: 'git ls-remote HEAD' });
     if (/'ls-remote',\s*'--tags'/.test(lines)) calls.push({ file: f, command: 'git ls-remote --tags' });
+    // star prompt: the two gh argv declarations, and REPO_URL handed to the child starter
+    if (/const AUTH_ARGV = \[/.test(lines)) calls.push({ file: f, command: 'gh auth status' });
+    if (/const STAR_ARGV = \[/.test(lines)) calls.push({ file: f, command: 'gh api' });
+    if (/startChild\([^()\n]*,\s*\[REPO_URL\]/.test(lines)) calls.push({ file: f, command: 'your default browser' });
     // any other way to reach the network is a call this test does not know yet: it must be listed on purpose
-    const other = /from '(node:)?(http|https|net|tls|dgram|dns|undici)'/.test(lines) && !/from 'websocket'/.test(lines);
+    const other = /from '(node:)?(http|https|net|tls|dgram|dns|undici)'/.test(lines) && !/new SnoteSocket\(/.test(lines);
     if (other || (f !== 'src/core/bounded-request.ts' && /\bfetch\(/.test(lines))) calls.push({ file: f, command: 'a new kind of network call' });
   }
   for (const name of readdirSync(join(process.cwd(), 'packaging/omarchy')).sort()) {
@@ -108,7 +112,7 @@ describe('SECURITY.md lists every network call, derived from the code (#201, R7)
   it('1: WHEN the calls are derived from `src`, `packaging/omarchy` and `BarWidget.qml` THEN every call has a bullet naming its file and command, and every bullet names a file with a call', () => {
     expect(CALLS.map((c) => c.file)).toEqual(expect.arrayContaining([
       'src/core/auth.ts', 'src/core/blog-client.ts', 'src/core/websocket-provider.ts', 'src/core/update-check.ts',
-      'packaging/omarchy/bar-update', 'BarWidget.qml',
+      'packaging/omarchy/bar-update', 'BarWidget.qml', 'src/core/star-prompt.ts',
     ]));
     expect(CALLS.length).toBeGreaterThanOrEqual(8);
     expect(drift(CALLS, BULLETS)).toEqual([]);
@@ -203,18 +207,59 @@ describe('SECURITY.md lists every network call, derived from the code (#201, R7)
     expect(existsSync(join(process.cwd(), 'packaging/omarchy/uninstall'))).toBe(true);
   });
 
-  it('6: WHEN SECURITY.md and README.md are read THEN each says the bar update click fetches a release tag from github.com over https, that the maintainer signs the SHA256SUMS list, that snote does not check that signature yet and that setup checks the installed files against the list, and neither claims a verified or signature-checked update, and README.md is at most `199` lines', () => {
+  it('6: WHEN SECURITY.md and README.md are read THEN each says the bar update click fetches a release tag from github.com over https, that the maintainer signs the SHA256SUMS list, that the installed snote checks that signature with its keys before the plugin folder moves and that setup checks the installed files against the list, neither says the signature is not checked or claims tamper-proof, and README.md is at most `199` lines', () => {
     for (const text of [security.replace(/\s+/g, ' '), readme.replace(/\s+/g, ' ')]) {
       expect(text).toMatch(/bar update click fetches a release tag from `?github\.com`? over https\./);
       expect(text).toContain('SHA256SUMS');
       expect(text).toMatch(/signed by the maintainer|the maintainer signs with a hardware key/);
-      expect(text).toContain('does not check that signature yet');
+      expect(text).toMatch(/the (snote you already run|installed snote) checks that signature with (the keys it installed|its own keys)/);
       expect(text).toMatch(/setup (then )?checks the files it installs against/);
+      expect(text).not.toContain('does not check that signature yet');
       expect(text).not.toContain('no signature or checksum');
-      expect(text).not.toMatch(/tamper-proof|authenticated|verified updates|snote checks the signature|checks the signature before/i);
+      expect(text).not.toMatch(/tamper-proof|authenticated|verified updates/i);
     }
     expect(readme.split('\n').length).toBeLessThanOrEqual(199);
     expect(readme).not.toContain('Once a day at start-up');
     expect(security).not.toContain('Once a day at start-up');
+  });
+
+  it('7: WHEN the star-prompt bullet is read THEN its derived calls are the auth check, the star PUT and the browser open, and the bullet carries both argv word lists, the repo URL, api.github.com, the AUTH_MS and STAR_MS figures in seconds, both opt-outs, with the auth check before its limit and the star call before its limit', () => {
+    const src = read('src/core/star-prompt.ts');
+    const words = (name: string): string => {
+      const m = new RegExp(`const ${name} = \\[([^\\]]+)\\]`).exec(src);
+      expect(m, `${name} not found`).not.toBeNull();
+      return (m as RegExpExecArray)[1].split(',').map((part) => {
+        const q = part.trim().match(/^'([^']*)'$/);
+        expect(q, `${name} word ${part.trim()}`).not.toBeNull();
+        return (q as RegExpMatchArray)[1];
+      }).join(' ');
+    };
+    const repo = /const REPO_URL = '([^']+)';/.exec(src);
+    expect(repo, 'REPO_URL not found').not.toBeNull();
+    const authPhrase = `gh ${words('AUTH_ARGV')}`;
+    const starPhrase = `gh ${words('STAR_ARGV')}`;
+    const authSecs = secs(num(src, /const AUTH_MS = ([\d]+);/));
+    const starSecs = secs(num(src, /const STAR_MS = ([\d]+);/));
+    expect(CALLS.filter((c) => c.file === 'src/core/star-prompt.ts').map((c) => c.command)).toEqual([
+      'gh auth status', 'gh api', 'your default browser',
+    ]);
+    const bullet = BULLETS.find((b) => named(b).includes('src/core/star-prompt.ts')) ?? '';
+    expect(bullet).not.toBe('');
+    expect(bullet).toContain(authPhrase);
+    expect(bullet).toContain(starPhrase);
+    expect(bullet).toContain((repo as RegExpExecArray)[1]);
+    expect(bullet).toContain('api.github.com');
+    expect(bullet).toContain(authSecs);
+    expect(bullet).toContain(starSecs);
+    expect(bullet).toContain('--no-star-prompt');
+    expect(bullet).toContain('SNOTE_STAR_PROMPT=off');
+    const iAuth = bullet.indexOf(authPhrase);
+    const iAuthSecs = bullet.indexOf(authSecs);
+    const iStar = bullet.indexOf(starPhrase);
+    const iStarSecs = bullet.indexOf(starSecs);
+    expect(iAuth, 'auth argv').toBeGreaterThanOrEqual(0);
+    expect(iAuthSecs, 'auth seconds').toBeGreaterThan(iAuth);
+    expect(iStar, 'star argv').toBeGreaterThan(iAuthSecs);
+    expect(iStarSecs, 'star seconds').toBeGreaterThan(iStar);
   });
 });

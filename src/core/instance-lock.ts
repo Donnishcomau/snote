@@ -25,6 +25,15 @@ import { fileId, readRegularText, secureExclusiveCreate, secureOpenForRead, secu
 
 const LOCK_FILE = 'instance.lock';
 
+/**
+ * #446: the flock(1) program by platform, absolute paths only, not a PATH lookup: util-linux on Linux, the
+ * Homebrew `flock` formula's opt link on macOS (the tap formula depends on it there): Apple silicon under /opt/homebrew,
+ * Intel (x64) under /usr/local, Homebrew's prefix for that arch. Any other platform keeps the Linux path, so a missing
+ * program stays the `missing` notice. Growth by data: a platform, or a platform-arch pair, is a row.
+ */
+const FLOCK_BIN: Readonly<Record<string, string>> = { linux: '/usr/bin/flock', darwin: '/opt/homebrew/opt/flock/bin/flock', 'darwin-x64': '/usr/local/opt/flock/bin/flock' };
+export const flockBin = (platform: NodeJS.Platform = process.platform, arch: string = process.arch): string => FLOCK_BIN[`${platform}-${arch}`] ?? FLOCK_BIN[platform] ?? '/usr/bin/flock';
+
 /** #385: why a start runs without the kernel lock, and the notice line for each. */
 export type Unlocked = 'missing' | 'refused' | 'timeout';
 export const UNLOCKED_NOTICE: Record<Unlocked, string> = {
@@ -96,8 +105,13 @@ function readBootTimeMs(): number | null {
  * cannot be read (no /proc, EACCES, parse failure). Linux: field 22 of
  * `/proc/<pid>/stat` counts clock ticks since boot; fields are counted from
  * after the `)` that closes the command name, which may itself hold spaces.
+ * Darwin: /bin/ps -o lstart= for a foreign pid, LC_ALL=C and TZ=UTC, then Date.UTC
+ * of the five fields of one strict form. Any other answer is null and the lock stays.
  */
 function processStartMs(pid: number): number | null {
+  if (process.platform === 'darwin') {
+    return darwinStartMs(pid);
+  }
   try {
     const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
     const close = stat.lastIndexOf(')');
@@ -118,17 +132,67 @@ function processStartMs(pid: number): number | null {
   }
 }
 
+/** BSD `lstart` under LC_ALL=C and TZ=UTC. A single-digit day is space-padded. Anything else is null. */
+const LSTART_RE = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) +([0-9]{1,2}) ([0-9]{2}):([0-9]{2}):([0-9]{2}) ([0-9]{4})$/;
+const LSTART_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function parseLstart(text: string): number | null {
+  const m = LSTART_RE.exec(text.trim());
+  if (!m) {
+    return null;
+  }
+  const month = LSTART_MONTHS.indexOf(m[2] ?? '');
+  const day = Number(m[3]);
+  const hour = Number(m[4]);
+  const minute = Number(m[5]);
+  const second = Number(m[6]);
+  const year = Number(m[7]);
+  if (month < 0 || day < 1 || hour > 23 || minute > 59 || second > 59) {
+    return null;
+  }
+  // The second is epoch ms at that second, truncated down (no Date.parse on the line).
+  const started = Date.UTC(year, month, day, hour, minute, second);
+  const back = new Date(started);
+  if (back.getUTCFullYear() !== year || back.getUTCMonth() !== month || back.getUTCDate() !== day) {
+    return null;
+  }
+  return started;
+}
+
+/** #953: on darwin, this process's own pid answers the time the process began, with no ps. A bad pid or an odd line is null and does not run ps. */
+function darwinStartMs(n: number): number | null {
+  if (!Number.isSafeInteger(n) || n <= 0) {
+    return null;
+  }
+  if (n === process.pid) {
+    return Date.now() - process.uptime() * 1000;
+  }
+  try {
+    const r = spawnSync('/bin/ps', ['-o', 'lstart=', '-p', String(n)], { encoding: 'utf8', env: { LC_ALL: 'C', TZ: 'UTC' }, timeout: 1000, killSignal: 'SIGKILL', maxBuffer: 1048576, shell: false });
+    if (r.status !== 0 || typeof r.stdout !== 'string') {
+      return null;
+    }
+    return parseLstart(r.stdout);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * True when the lock file cannot have been written by its still-alive pid
  * owner: that process started clearly after the last write, so the OS gave
  * a dead owner's pid to an unrelated process. Unknown start times and mtimes
  * keep the caller's answer (alive).
  */
-function startedAfterLockWrite(pid: number, lockMtimeMs: number | null): boolean {
+function startedAfterLockWrite(
+  pid: number,
+  lockMtimeMs: number | null,
+  readStart: (n: number) => number | null = processStartMs,
+): boolean {
   if (lockMtimeMs === null) {
     return false;
   }
-  const started = processStartMs(pid);
+  const started = readStart(pid);
   return started !== null && started - lockMtimeMs > START_MARGIN_MS;
 }
 
@@ -163,10 +227,22 @@ export function acquireInstanceLock(dir: string): { release: () => void; unlocke
   };
 
   const sweep = `${lockPath}.sweep`;
+  // One start read per pid for this call. A later acquire reads again. 0 means empty: startOf is only asked for a pid above 0.
+  let memoPid = 0;
+  let memoStart: number | null = null;
+  const startOf = (p: number): number | null => {
+    if (memoPid === p) {
+      return memoStart;
+    }
+    const v = processStartMs(p);
+    memoPid = p;
+    memoStart = v;
+    return v;
+  };
   const live = (): string => {
     const owner = readLockPid(lockPath);
     const pid = Number.parseInt(owner, 10);
-    return heldByProcess.has(lockPath) ? String(process.pid) : isPidAlive(pid) && !startedAfterLockWrite(pid, lockMtimeMs(lockPath)) ? String(pid) : !owner && young(lockPath) ? '?' : '';
+    return heldByProcess.has(lockPath) ? String(process.pid) : isPidAlive(pid) && !startedAfterLockWrite(pid, lockMtimeMs(lockPath), startOf) ? String(pid) : !owner && young(lockPath) ? '?' : '';
   };
   const young = (path: string): boolean => Math.abs(Date.now() - (lockMtimeMs(path) ?? Date.now())) < 2000;
   const rm = (path: string): void => {
@@ -192,9 +268,12 @@ export function acquireInstanceLock(dir: string): { release: () => void; unlocke
     }
     if (st?.isFile() && id === fileId(st)) rm(path);
   };
+  let heldByKernel = false;
   const refuse = (pid: string): never => {
     closeSync(fd);
-    throw new Error(`another snote is already using ${dir}${pid ? ` (pid ${pid})` : ''} — it holds the instance lock`);
+    const n = Number(pid);
+    const clause = !heldByKernel && Number.isSafeInteger(n) && n > 0 && n !== process.pid && startOf(n) === null ? `. If that process is not snote, remove ${lockPath}` : '';
+    throw new Error(`another snote is already using ${dir}${pid ? ` (pid ${pid})` : ''} — it holds the instance lock${clause}`);
   };
   // #316: flock(1) locks the open file description of this dir fd, which we keep, so the lock is the kernel's and dies with us
   const fd = secureOpenForRead(`${dir}/.`);
@@ -203,9 +282,10 @@ export function acquireInstanceLock(dir: string): { release: () => void; unlocke
   // proof: test/core/instance-lock-unlocked.test.ts
   let unlocked: Unlocked | undefined;
   for (let retry = 0; ; retry++) {
-    const r = spawnSync('/usr/bin/flock', ['-n', '0'], { stdio: [fd, 'ignore', 'ignore'], timeout: retry ? 5000 : 1000, killSignal: 'SIGKILL', maxBuffer: 1048576 });
+    const r = spawnSync(flockBin(), ['-n', '0'], { stdio: [fd, 'ignore', 'ignore'], timeout: retry ? 5000 : 1000, killSignal: 'SIGKILL', maxBuffer: 1048576 });
     const code = (r.error as { code?: string } | undefined)?.code;
     if (r.status === 1) {
+      heldByKernel = true;
       refuse(live());
     }
     unlocked = r.status === 0 ? undefined : code === 'ENOENT' ? 'missing' : !code && typeof r.status === 'number' ? 'refused' : 'timeout';

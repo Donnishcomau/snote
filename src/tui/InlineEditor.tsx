@@ -2,14 +2,17 @@ import { Box, Text, useInput } from 'ink';
 import type { Key } from 'ink';
 import React, { useRef, useState } from 'react';
 import { TextArea } from 'react-ink-textarea';
-import type { TextAreaHandle } from 'react-ink-textarea';
+import type { TextAreaHandle, TLabels, TStyles } from 'react-ink-textarea';
 
 import type { Note } from '@vendor/types';
 import { caretMove } from './caretMoves';
 import { Divider } from './Divider';
-import { previewColWidth } from './Preview';
+import { isMarkdownNote, previewColWidth } from './Preview';
 import { remapEdit, standInText } from './standin';
 import { useInlineAutosave } from './inline-autosave';
+import { clockTime } from '../core/last-sync';
+import { headingLevel } from '../core/md-inline';
+import { headingTheme } from './theme';
 
 interface InlineEditorProps {
   note: Note | null;
@@ -88,6 +91,15 @@ function KeyHook({ active, onKey }: { active: boolean; onKey: (input: string, ke
 //.6 (director addition B): static footer hint, always shown while the
 // editor is open. #387: the text saves itself; Esc closes and keeps it.
 const FOOTER_HINT = 'Autosaves · Esc close · Ctrl+S save now';
+// #720: after the first autosave the footer names its time (HH:MM, local).
+const savedHint = (at: number): string => 'Autosaved at ' + clockTime(at) + ' · Esc close · Ctrl+S save';
+
+// #721: markdown heading lines in their level's colour, as in the Preview
+// (the label names a theme key; the TextArea draws the stand-in text, whose
+// offsets match the real text); markdown notes only, as in the Preview.
+// [ \t], not \s: over the whole text, \s lets a bare `#` take the next line.
+const HEADING_LABELS: TLabels = [{ pattern: /^#{1,6}[ \t].*$/gm, label: (m) => 'heading' + Math.min(headingLevel(m[0]), 3) }];
+const HEADING_STYLES: TStyles = headingTheme;
 
 /**
  *.2/.3/.4: mounts `react-ink-textarea` in the Preview pane's
@@ -112,7 +124,7 @@ const FOOTER_HINT = 'Autosaves · Esc close · Ctrl+S save now';
  */
 // #387: the discard prompt above is gone: the text is stored as it is typed
 // (src/tui/inline-autosave.ts), Esc and Ctrl+S store the rest and close.
-export function InlineEditor({ width, height, base, onClose, onSave }: InlineEditorProps): React.JSX.Element {
+export function InlineEditor({ note, width, height, base, onClose, onSave }: InlineEditorProps): React.JSX.Element {
   //.5: match Preview.tsx's own width scale-down (previewColWidth) so
   // the narrow-terminal "reading" layout (which pre-inflates the width prop
   // for Preview's 0.6 factor, src/core/layout.ts) wraps the editor's text
@@ -122,7 +134,9 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
   const colWidth = previewColWidth(width);
   // the same rows as the Preview it replaces (height - 2) and its divider
   const rows = Math.max(1, height - 2);
-  const footerRows = Math.max(1, Math.ceil(FOOTER_HINT.length / Math.max(1, colWidth)));
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const footer = savedAt === null ? FOOTER_HINT : savedHint(savedAt);
+  const footerRows = Math.max(1, Math.ceil(footer.length / Math.max(1, colWidth)));
   const [cursorPosition, setCursorPosition] = useState<[number, number]>(() => endPosition(base));
   const ref = useRef<TextAreaHandle>(null);
 
@@ -132,7 +146,10 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
   // drawn; `shownRef` is the exact string the TextArea was last given, so
   // an edit's changed middle can be remapped back onto the real text.
   const realRef = useRef(base);
-  const autosave = useInlineAutosave(realRef, onSave);
+  const autosave = useInlineAutosave(realRef, (text) => {
+    onSave(text);
+    setSavedAt(Date.now());
+  });
   const shownRef = useRef(standInText(base));
   const [value, setValueState] = useState(shownRef.current);
   // the caret offset into shownRef.current after the latest key; the
@@ -261,6 +278,8 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
         focus
         viewportLines={Math.max(1, rows - footerRows)}
         onSubmit={() => ref.current?.insert('\n')}
+        labels={note !== null && isMarkdownNote(note) ? HEADING_LABELS : undefined}
+        styles={HEADING_STYLES}
         value={value}
         cursorPosition={cursorPosition}
         onChange={setValue}
@@ -270,7 +289,7 @@ export function InlineEditor({ width, height, base, onClose, onSave }: InlineEdi
         }}
       />
       <KeyHook active onKey={afterTextArea} />
-      <Text>{FOOTER_HINT}</Text>
+      <Text>{footer}</Text>
       </Box>
     </Box>
   );

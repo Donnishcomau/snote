@@ -53,7 +53,7 @@ export function takeHandedOff(getState: object, type: string, id: string, conten
 export function unsentCount(store: { getState(): { simperium: { pendingNotes: Record<string, unknown> } } }): number {
   const pending = store.getState().simperium.pendingNotes;
   let n = Object.keys(pending).length;
-  for (const id of [...(held.get(store) ?? []), ...(unsent.get(store) ?? [])]) if (!(id in pending)) n++;
+  for (const id of [...(held.get(store) ?? []), ...(unsent.get(store) ?? [])]) if (!Object.hasOwn(pending, id)) n++;
   return n;
 }
 
@@ -72,7 +72,7 @@ export function keepUnsent(store: KeepStore, ids: string[]): void {
   unsent.set(store, ids);
   const stop = store.subscribe(() => {
     const { simperium, data } = store.getState();
-    const left = (unsent.get(store) ?? []).filter((id) => !(id in simperium.pendingNotes) && data.notes.has(id));
+    const left = (unsent.get(store) ?? []).filter((id) => !Object.hasOwn(simperium.pendingNotes, id) && data.notes.has(id));
     unsent.set(store, left);
     if (left.length === 0) stop();
   });

@@ -10,10 +10,16 @@ export const DAY_MS = 86_400_000;
 
 const two = (n: number): string => String(n).padStart(2, '0');
 
+/** #720: `HH:MM` of `at` in local time (also the inline editor's autosave time). */
+export function clockTime(at: number): string {
+  const d = new Date(at);
+  return two(d.getHours()) + ':' + two(d.getMinutes());
+}
+
 export function syncedText(at: number | null, now: number): string | undefined {
   if (at === null) return undefined;
   const d = new Date(at);
-  const time = two(d.getHours()) + ':' + two(d.getMinutes());
+  const time = clockTime(at);
   return now - at > DAY_MS ? `synced ${d.getDate()} ${MONTHS[d.getMonth()]} ${time}` : `synced ${time}`;
 }
 

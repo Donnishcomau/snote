@@ -4,10 +4,10 @@
  * processes running the real src/core/instance-lock.ts through tsx; a round
  * is one data dir per child pair, and both children call acquireInstanceLock
  * on it at the same millisecond (an absolute start time the parent sends once
- * both children report ready, never a sleep). Linux only (setsid, /proc).
+ * both children report ready, never a sleep).
  */
 import { afterAll, describe, it, expect } from 'vitest';
-import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -186,10 +186,17 @@ function takeWithin2(dir: string): boolean {
   return false;
 }
 
+const liveChildren: ChildProcess[] = [];
 function spawnLivePid(): number {
-  const out = spawnSync('sh', ['-c', 'setsid sleep 60 < /dev/null > /dev/null 2>&1 & echo $!'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).stdout.trim();
-  const pid = Number(out);
+  const child = spawn('/bin/sleep', ['60'], { detached: true, stdio: 'ignore' });
+  liveChildren.push(child);
+  const pid = child.pid ?? 0;
   if (!Number.isInteger(pid) || pid <= 0) throw new Error('could not spawn a live pid');
+  try {
+    process.kill(pid, 0);
+  } catch {
+    throw new Error('sleeper is not alive for signal 0');
+  }
   return pid;
 }
 
@@ -225,6 +232,11 @@ describe('two snotes starting together on a stale instance lock (#299)', () => {
     const live = spawnLivePid();
     try {
       const rows = await race(50, (d) => writeFileSync(join(d, 'instance.lock'), String(live)));
+      try {
+        process.kill(live, 0);
+      } catch {
+        throw new Error('sleeper is not alive for signal 0');
+      }
       const bad = rows.filter((x) => x.a !== 'L' || x.b !== 'L' || readFileSync(join(x.dir, 'instance.lock'), 'utf8').trim() !== String(live) || readdirSync(x.dir).join() !== 'instance.lock');
       expect(rows).toHaveLength(50);
       expect(bad).toEqual([]);

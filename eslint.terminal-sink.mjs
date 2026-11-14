@@ -1,4 +1,4 @@
-import { scopeBlocks } from './eslint.scope.mjs';
+import { scopeBlocks, SELECTOR_RULE } from './eslint.scope.mjs';
 import { FS_WRITE_EXTENSIONS } from './eslint.fs-write.mjs';
 
 // #221 (security build rule R4): every byte snote puts on the terminal passes the output guard
@@ -8,7 +8,7 @@ import { FS_WRITE_EXTENSIONS } from './eslint.fs-write.mjs';
 //
 // Why a rule of our own: no-restricted-syntax is already set for src/ and vendor/ by the fs write
 // ban (eslint.fs-write.mjs), no-restricted-properties and no-restricted-globals by the network
-// guard (eslint.config.mjs), and a later block replaces an earlier one. SELECTOR_RULE below is
+// guard (eslint.config.mjs), and a later block replaces an earlier one. SELECTOR_RULE (eslint.scope.mjs) is
 // no-restricted-syntax under another name, so this guard adds to the others and never replaces
 // them. Each exception turns off ONE of the three rules for ONE file, and a test fails when the
 // file is gone or no longer needs it.
@@ -29,17 +29,6 @@ import { FS_WRITE_EXTENSIONS } from './eslint.fs-write.mjs';
 // default parameter, a conditional), string-key destructuring of process, a variable or template
 // key on process, tty.WriteStream, and the exceptions covering whole files (test 2 pins each
 // excepted site by its source line instead).
-
-const SELECTOR_RULE = {
-  meta: { type: 'problem', schema: { type: 'array', items: { type: 'object' } } },
-  create(context) {
-    const listeners = {};
-    for (const { selector, message } of context.options) {
-      listeners[selector] = (node) => context.report({ node, message });
-    }
-    return listeners;
-  },
-};
 
 export const R4_PLUGIN_NAME = 'snote-r4';
 export const R4_PLUGIN = { rules: { console: SELECTOR_RULE, 'stdout-write': SELECTOR_RULE, 'stderr-write': SELECTOR_RULE } };

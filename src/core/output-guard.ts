@@ -1,6 +1,7 @@
 import { StringDecoder } from 'node:string_decoder';
 
 import { isShownInvisible, keptFlagAt } from './invisible';
+import { SIGNUP_LINK } from './hyperlink';
 
 /**
  * Output guard: note text fetched over the network must never be able to
@@ -26,6 +27,12 @@ import { isShownInvisible, keptFlagAt } from './invisible';
  *   (U+0018) or SUB (U+001A); an ESC followed by anything but `\` also ends
  *   the string, and that ESC starts a new sequence which is filtered as usual;
  * - every other C0 control, DEL and every other C1 control.
+ *
+ * #600: one exception to the string rule: the exact sign-up link of
+ * src/core/hyperlink.ts (OSC 8 open, its URL, OSC 8 close), whole within one
+ * chunk, and not in plain output. Any other OSC 8 (another target, a lone
+ * open or close, BEL-ended, split across writes) is dropped as before.
+ * proof: test/core/hyperlink.test.tsx
  *
  * `guardOutputStream` keeps this state per wrapped stream: an unfinished
  * sequence at the end of a write (at most 64 characters, longer is dropped)
@@ -99,6 +106,11 @@ function createFilter(): (input: string) => string {
           break;
         }
         const next = s[i + 1]!;
+        if (!plain && next === ']' && s.startsWith(SIGNUP_LINK, i)) { // #600: the one kept link, whole
+          out += SIGNUP_LINK;
+          i += SIGNUP_LINK.length;
+          continue;
+        }
         if (STRING_INTRODUCERS.has(next)) {
           inString = true;
           i += 2;

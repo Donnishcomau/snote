@@ -5,6 +5,7 @@ import * as path from 'node:path';
 import { secureMkdir, secureRemoveTree, secureRename, secureRmdir, secureUnlink, secureWriteFileSync } from './secure-fs';
 import { sanitizeForTerminal } from './sanitize';
 import { problemText } from './problem-signal';
+import { endGhostWrites } from './ghost-store';
 
 /**
  * Resolve the application data directory.
@@ -97,6 +98,10 @@ const SNOTE_FILES = [
   'ghosts-preferences.json',
   'ghosts-tag.json',
   'new-note.request',
+  // #30 L5b - the bar's update ask: logout removes it with the others.
+  'update-ask.request',
+  // #30 L5c - a direct install's release check cache (a time and a version).
+  'direct-release-check.json',
   'unsynced.json',
   // #336a — the notes behind the record.
   'unsynced-notes.json',
@@ -153,6 +158,7 @@ export function logoutShown(dir: string, show: (text: string) => void): void {
 
 /** The logout steps, synchronous, so signOutByServer returns their error as its notice. */
 function logoutNow(dir: string): void {
+  endGhostWrites(); // #895: no ghost store of the signed-out account writes after the sweep, also into a folder it keeps
   if (fs.existsSync(dir)) {
     for (const name of ['auth.json', 'auth.json.tmp', 'blog.json', 'blog.json.tmp', 'blog-sent.json', 'blog-sent.json.tmp']) {
       removeIfFile(path.join(dir, name));
@@ -208,6 +214,7 @@ function logoutNow(dir: string): void {
  * the same account signs in again. The user's own logout is `logout`.
  */
 export function forcedSignOut(dir: string): void {
+  endGhostWrites(); // #895: the signed-out account's ghost stores write nothing more, also into the folder this keeps
   for (const name of ['auth.json', 'auth.json.tmp', 'blog.json', 'blog.json.tmp']) {
     removeIfFile(path.join(dir, name));
   }

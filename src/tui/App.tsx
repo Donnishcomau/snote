@@ -11,7 +11,7 @@ import { MainPanes } from './MainPanes';
 import { shouldAutoOpenTags } from '../core/layout';
 import { emptyTrashActions } from '../core/note-keys';
 import { checklistItems } from '../core/checklist';
-import { useAppState, noteKeyOrNotice } from './useAppState'; import { useNotice, noticeColor } from './notice'; import { BannerRow, dismissOnEscape } from './banner';
+import { useAppState, noteKeyOrNotice } from './useAppState'; import { useNotice, noticeColor } from './notice'; import { dismissOnEscape } from './banner'; import { UpdateAsk, updateAskOpen, openUpdateAskOnU, starKeyHeld, useStarHost } from './update-ask';
 import { handleSearchKey, handleSearchClearKey, handleTagsKey, handleHistoryKey, handleIdleKey, useAppEffects, recordKeyEvent, openHistory, EXTERNAL_KEY } from './app-keys';
 import { handleNoteKey } from './note-focus'; import { handlePaneArrow } from './pane-arrows';
 import { useReselect } from './use-reselect'; import { useReadGate, SEVERAL_KEYS } from './read-gate';
@@ -37,7 +37,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   const { exit, suspendTerminal } = useApp();
   const { setRawMode } = useStdin();
   const view = useAppState(store);
-  const { noteEntries, selectedIndex, setSelectedIndex, connected, pending, allTagNames, query, setQuery, tagNames, collection, inTrash, sortLabelStr } = view;
+  const { noteEntries, selectedIndex, setSelectedIndex, pending, word, allTagNames, query, setQuery, tagNames, collection, inTrash, sortLabelStr } = view;
   const [rendered, setRendered] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [tagEditorOpen, setTagEditorOpen] = useState(false);
@@ -67,7 +67,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   const handleKey = (input: string, key: import('ink').Key) => {
     // with a text prompt open the ring stores '<text>', never the typed char
     recordKeyEvent(input, key, Boolean(searchOpen || tagEditorOpen || tagDialog?.kind === 'rename' || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen || inlineEditOpen));
-    if (notice) clearNotice();
+    if (starKeyHeld(input, key.escape === true)) return; if (notice) clearNotice(); if (updateAskOpen()) return;
     const keyName = keyNameFromEvent(key);
 
     // If help is open, only handle Escape and ?
@@ -138,7 +138,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
       if (handleNoteKey(input, keyName, noteKeyCtx)) return;
     }
 
-    const action = dismissOnEscape(keyName) ? null : noteKeyOrNotice(input, selectedEntry?.id ?? null, store.getState(), setNotice);
+    const action = dismissOnEscape(keyName) || openUpdateAskOnU(input) ? null : noteKeyOrNotice(input, selectedEntry?.id ?? null, store.getState(), setNotice);
     if (action) {
       store.dispatch(action);
       // keep the tags-pane marker in sync when `T` toggles the trash
@@ -195,7 +195,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
   const remember = useReselect({ store, setExternalSelect: view.setExternalSelect });
 
   // the per-read rule; the text-entry mode on screen and its closing key
-  useReadGate({ entry: () => (inlineEditOpen ? '\x13' : searchOpen || tagDialog || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen ? '\r' : tagEditorOpen ? 'whole' : null), onDropped: () => setNotice(SEVERAL_KEYS) });
+  const entry = (): string | null => (inlineEditOpen ? '\x13' : searchOpen || tagDialog || emptyAsk || logoutAsk || useItemAsk().itemAsk || useExportAsk().exportAsk || useBlogSendAsk().blogOpen ? '\r' : tagEditorOpen ? 'whole' : null); useReadGate({ entry, onDropped: () => setNotice(SEVERAL_KEYS) }); const starPane = useStarHost(() => import('./StarPrompt'), () => ({ message: notice?.message, pending, word, busy: entry() !== null || helpOpen || historyOpen, setNotice }));
   useInput((input, key) => { for (const ch of splitPastedInput(input) ?? [input]) handleKey(ch, key); }, { isActive: emptyAsk === 0 });
 
   // View-order count of the list for the status bar (see app-model).
@@ -220,7 +220,7 @@ export function App({ store, width, height, onQuit, onLogout, runEditor, onForce
         <Help width={width} height={height} editor={selectEditor(process.env)} />
       ) : (
         <>
-          <BannerRow /><MainPanes store={store} view={view} width={width} height={height} tagsOpen={tagsOpen} tagsFocused={tagsFocused}
+          <UpdateAsk entry={entry} quit={() => (onQuit ? onQuit() : exit())} />{starPane}<MainPanes store={store} view={view} width={width} height={height} tagsOpen={tagsOpen} tagsFocused={tagsFocused}
             tagIndex={tagIndex} rendered={rendered} searchOpen={searchOpen} selectedNote={selectedNote}
             historyOpen={historyOpen} historyIndex={historyIndex} reading={reading}
             noteFocused={noteFocused} cursorLine={cursorLine} inlineEditOpen={inlineEditOpen} onCloseEdit={() => { closeInlineEdit(); finishInlineNew({ store, session: inlineSession, setNotice, setNoticeError }); }} inlineEditBase={inlineEditBase} onSaveEdit={(value: string) => saveInlineSession({ store, session: inlineSession, local: value, onEditorError: setNoticeError, onNotice: setNotice })} />

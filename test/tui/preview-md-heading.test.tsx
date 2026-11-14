@@ -37,7 +37,7 @@ async function forceInkChalk(): Promise<{ inkChalk: typeof import('chalk'); rest
 }
 
 describe('Preview markdown heading color', () => {
-  it('1: WHEN the content is "Grocery Notes\\n\\n# Produce\\n## Dairy" (markdown, rendered, chalk forced) THEN the frame contains \\u001b[1m\\u001b[34mProduce\\u001b[39m\\u001b[22m and \\u001b[1m\\u001b[34mDairy\\u001b[39m\\u001b[22m', async () => {
+  it('1: WHEN the content is "Grocery Notes\\n\\n# Produce\\n## Dairy" (markdown, rendered, chalk forced) THEN the frame contains \\u001b[1m\\u001b[34mProduce\\u001b[39m\\u001b[22m and (#721: level 2 magenta) \\u001b[1m\\u001b[35mDairy\\u001b[39m\\u001b[22m', async () => {
     const { restore } = await forceInkChalk();
     try {
       const note = makeNote('g', 'Grocery Notes\n\n# Produce\n## Dairy', {
@@ -49,7 +49,7 @@ describe('Preview markdown heading color', () => {
       await delay(50);
       const frameText = lines(lastFrame()).join('\n');
       expect(frameText).toContain('\u001b[1m\u001b[34mProduce\u001b[39m\u001b[22m');
-      expect(frameText).toContain('\u001b[1m\u001b[34mDairy\u001b[39m\u001b[22m');
+      expect(frameText).toContain('\u001b[1m\u001b[35mDairy\u001b[39m\u001b[22m');
     } finally {
       restore();
     }

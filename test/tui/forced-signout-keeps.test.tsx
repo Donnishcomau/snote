@@ -18,6 +18,7 @@ import { resetProblemSignal } from '../../src/core/problem-signal';
 import { Root } from '../../src/tui/Root';
 import type { Auth } from '../../src/tui/Root';
 import { waitForFrame, waitForInput } from '../helpers/ink-waits';
+import { stopSyncWriters } from '../helpers/sync-writers';
 
 // 3 kept changes: note n1 (unsynced.json and sent-changes.json name it once), the tombstone `gone` and one draft.
 const KEPT_TEXT = 'Signed out by the server. 3 unsynced changes are kept in test@example.com. Log in again to sync them, or log out to remove them.';
@@ -34,14 +35,26 @@ describe('a forced sign-out keeps unsynced changes', () => {
   let dir = '';
   let shown: ReturnType<typeof render> | null = null;
   let built: ReturnType<typeof accountStore> | null = null;
+  // #319: every folder, store and server a test started; a folder is removed only once its stores and servers are done
+  const dirs: string[] = [];
+  const builtStores: Array<ReturnType<typeof accountStore>> = [];
+  const servers: FakeSimperiumServer[] = [];
 
-  afterEach(() => {
+  /** Unmount, then stop every store and server started so far and wait until no connection to them is open. */
+  async function stopAll() {
     shown?.unmount();
     shown = null;
-    server?.stop();
+    await stopSyncWriters(builtStores.splice(0), servers.splice(0));
     server = null;
-    resetProblemSignal();
-    fs.rmSync(dir, { recursive: true, force: true });
+  }
+
+  afterEach(async () => {
+    try {
+      await stopAll();
+    } finally {
+      resetProblemSignal();
+      for (const d of dirs.splice(0)) fs.rmSync(d, { recursive: true, force: true });
+    }
   });
 
   /** Every file under `root` (relative path -> bytes as hex), skipping the instance lock. */
@@ -62,8 +75,10 @@ describe('a forced sign-out keeps unsynced changes', () => {
   async function start(saved: boolean, ignore = 1000) {
     server = new FakeSimperiumServer();
     await server.start();
+    servers.push(server);
     server.ignoreInitConnections = ignore;
     dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snote-f237-'));
+    dirs.push(dir);
     if (saved) await saveToken(dir, { email: EMAIL, token: 'test-token', server: server.url });
     return mount();
   }
@@ -71,6 +86,7 @@ describe('a forced sign-out keeps unsynced changes', () => {
   function mount() {
     const makeStoreFor = vi.fn((auth: Auth, onLogout: () => void) => {
       built = accountStore({ dataDir: dir, appId: 'test-app', server: server!.url, authWatchdogMs: 60000 }, auth, onLogout);
+      builtStores.push(built);
       return built.store as never;
     });
     shown = render(
@@ -170,11 +186,7 @@ describe('a forced sign-out keeps unsynced changes', () => {
     }, { timeout: 5000, interval: 10 });
     expect(fs.readdirSync(dir)).toEqual([]);
     }
-    shown?.unmount();
-    shown = null;
-    server?.stop();
-    server = null;
-    fs.rmSync(dir, { recursive: true, force: true });
+    await stopAll();
   }
 
   async function keptFilesCase(saved: boolean) {
@@ -249,11 +261,7 @@ describe('a forced sign-out keeps unsynced changes', () => {
     expect(server!.received.filter((m) => m.includes('"id":"n1"')).length).toBe(0);
     expect(server!.getObject('test-app', 'note', 'n1')).toBeUndefined();
     // #109: two emails that map to one folder name are two accounts: sign in as the second one and the first one's folder is named.
-    shown?.unmount();
-    shown = null;
-    server?.stop();
-    server = null;
-    fs.rmSync(dir, { recursive: true, force: true });
+    await stopAll();
     const r2 = await start(false);
     await signIn(r2, COLLIDE_A);
     await addWork(r2, COLLIDE_A, false);
@@ -273,6 +281,7 @@ describe('a forced sign-out keeps unsynced changes', () => {
     fs.mkdirSync(path.join(dir, hostile));
     fs.writeFileSync(path.join(dir, hostile, 'unsynced.json'), '{"x":1}');
     const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'snote-f237-out-'));
+    dirs.push(outside);
     fs.writeFileSync(path.join(outside, 'unsynced.json'), '{"y":2}');
     fs.symlinkSync(outside, path.join(dir, 'linked@example.com'));
     expect(keptChangesNotice(dir, OTHER)).toBe(`Unsynced changes from the previous account are kept on disk: ${shownName}, test@example.com`);

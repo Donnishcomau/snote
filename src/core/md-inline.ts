@@ -86,6 +86,14 @@ export type BodyLine = { text: string; isHeading: boolean; spans: InlineSpan[] }
  * prefix plus text, bullets become • plus text, everything else is the
  * stripped line. Spans point into the returned text.
  */
+/**
+ * #721: the heading level of one raw markdown line: 1 to 6 for `#` to
+ * `######` followed by white space, 0 for any other line.
+ */
+export function headingLevel(raw: string): number {
+  return /^(#{1,6})\s/.exec(raw.replace(OWN_SENTINELS, ''))?.[1].length ?? 0;
+}
+
 export function markdownBodyLine(raw: string): BodyLine {
   const clean = raw.replace(OWN_SENTINELS, '');
   const masked = clean
@@ -100,7 +108,7 @@ export function markdownBodyLine(raw: string): BodyLine {
 
   const stripped = removeMarkdown(masked);
 
-  const isHeading = /^#{1,6}\s/.test(clean);
+  const isHeading = headingLevel(clean) > 0;
   const markerPrefix = stripped.startsWith(CHECK_EMPTY)
     ? '☐ '
     : stripped.startsWith(CHECK_DONE)

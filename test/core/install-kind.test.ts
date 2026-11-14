@@ -171,7 +171,7 @@ describe('issue #69 install kind per install', () => {
     expect(src.length).toBeGreaterThan(0);
     expect(src).toContain("await import('../core/install-kind')");
     expect(src).toContain('if (!updateChecksFor(runningInstallKind())) return;');
-    expect(src).toContain('startUpdateWatch({ version: VERSION, home: os.homedir(), env: process.env, stateDir: statusDir(process.env), run: homepageGuard() });');
-    expect(src).toContain('void runUpdateChecks({ version: VERSION, home: os.homedir(), env: process.env, stateDir: statusDir(process.env), run: homepageGuard() }).catch');
+    expect(src).toContain('startUpdateWatch({ version: VERSION, home: os.homedir(), env: process.env, stateDir, run: homepageGuard() });');
+    expect(src).toContain("void runUpdateChecks({ version: VERSION, home: os.homedir(), env: process.env, stateDir, offPlugin: kind !== 'plugin', run: homepageGuard() }).catch");
   });
 });

@@ -210,6 +210,8 @@ describe('#244 two y reads send the draft once', () => {
       expect(blog.hits()).toBe(1);
       expect(strip(frame)).toContain(BUSY);
       blog.release();
+      // #319: the released send writes blog-sent.json before it shows SENT, so the folder is removed only after that write
+      await a.seen(SENT);
       a.unmount();
     });
   });

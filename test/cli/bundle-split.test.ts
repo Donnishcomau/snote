@@ -25,15 +25,15 @@ afterAll(() => {
 });
 
 describe('#30cap split bundle caps', () => {
-  it('1: WHEN the split plugin-dist is built THEN its start set (cli.js, snote-main.js and their static imports) is above `1000000` and below `STARTUP_CAP` (`1586000`) bytes', () => {
+  it('1: WHEN the split plugin-dist is built THEN its start set (cli.js, snote-main.js and their static imports) is above `1000000` and below `STARTUP_CAP` (`1571700`) bytes', () => {
     expect(graph.start.has('snote-main.js')).toBe(true);
     expect(graph.startBytes).toBeGreaterThan(1000000);
     expect(graph.startBytes).toBeLessThan(STARTUP_CAP);
-    expect(STARTUP_CAP).toBe(1586000);
+    expect(STARTUP_CAP).toBe(1571700);
   });
 
-  it('2: WHEN the split plugin-dist is built THEN the lazy set holds one chunk each for `update-check`, `update-run`, `update-watch` and `install-kind` (plus what only they import) and totals above `3000` and below `LAZY_CAP` (`30000`) bytes', () => {
-    expect(UPDATER_ENTRIES).toEqual(['update-check', 'update-run', 'update-watch', 'install-kind']);
+  it('2: WHEN the split plugin-dist is built THEN the lazy set holds one chunk each for `update-check`, `update-run`, `update-watch`, `install-kind` and `release-check-cli` (plus what only they import) and totals above `3000` and below `LAZY_CAP` (`30000`) bytes', () => {
+    expect(UPDATER_ENTRIES).toEqual(['update-check', 'update-run', 'update-watch', 'install-kind', 'release-check-cli']);
     const lazyNames = [...graph.lazy.keys()].map((f) => path.basename(f));
     for (const m of UPDATER_ENTRIES) expect({ m, lazy: lazyNames.some((f) => f.startsWith(`${m}-`)) }).toEqual({ m, lazy: true });
     expect(graph.lazyBytes).toBeGreaterThan(3000);
@@ -41,7 +41,7 @@ describe('#30cap split bundle caps', () => {
     expect(LAZY_CAP).toBe(30000);
   });
 
-  it('3: WHEN the start set is read THEN no file in it is named `update-check`, `update-run`, `update-watch`, `install-kind`, `release-verify` or `allowed-signers`, and `update-check`, `update-run`, `update-watch` and `install-kind`, where they exist under src/core, are lazy chunks of their own', () => {
+  it('3: WHEN the start set is read THEN no file in it is named `update-check`, `update-run`, `update-watch`, `install-kind`, `release-verify`, `allowed-signers` or `release-check-cli`, and `update-check`, `update-run`, `update-watch`, `install-kind` and `release-check-cli`, where they exist under src/core, are lazy chunks of their own', () => {
     expect(graph.start.size).toBeGreaterThan(3);
     const named = [...graph.start.keys()].filter((f) => UPDATER_MODULES.some((m) => path.basename(f).startsWith(`${m}-`)));
     expect(named).toEqual([]);

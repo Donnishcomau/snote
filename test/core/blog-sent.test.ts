@@ -83,4 +83,17 @@ describe('blog-sent', () => {
     expect(result).not.toBeNull();
     expect(result!.postId).toBe('p1');
   });
+
+  it('5: WHEN recordBlogSend stores `__proto__` first in an empty directory, then every other Object.prototype name and note-1, each with postId p-<id>, THEN loadBlogSend returns postId p-<id> for every one of them and blog-sent.json holds every id', () => {
+    const names = ['__proto__', ...Object.getOwnPropertyNames(Object.prototype).filter((n) => n !== '__proto__'), 'note-1'];
+    for (const id of names) recordBlogSend(tmpDir, id, { postId: `p-${id}`, url: 'https://blog.example/write/p', sentAt: '2026-11-07T00:00:00.000Z' });
+    const saved = Object.keys(JSON.parse(fs.readFileSync(path.join(tmpDir, 'blog-sent.json'), 'utf8'))).sort();
+    expect({ postIds: names.map((id) => loadBlogSend(tmpDir, id)?.postId), saved }).toEqual({ postIds: names.map((id) => `p-${id}`), saved: [...names].sort() });
+  });
+
+  it('6: WHEN blog-sent.json already holds note-1 and recordBlogSend then stores `__proto__` with postId p9 THEN loadBlogSend returns p9 for `__proto__` and p1 for note-1, and loadBlogSend for `constructor` (never sent) returns null', () => {
+    recordBlogSend(tmpDir, 'note-1', { postId: 'p1', url: 'https://blog.example/write/p1', sentAt: '2026-11-07T00:00:00.000Z' });
+    recordBlogSend(tmpDir, '__proto__', { postId: 'p9', url: 'https://blog.example/write/p9', sentAt: '2026-11-07T00:00:01.000Z' });
+    expect([loadBlogSend(tmpDir, '__proto__')?.postId, loadBlogSend(tmpDir, 'note-1')?.postId, loadBlogSend(tmpDir, 'constructor')]).toEqual(['p9', 'p1', null]);
+  });
 });

@@ -12,13 +12,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, '..', '..');
 
 describe('send to blog key', () => {
-  it('1: WHEN src/core/keymap.ts is read THEN it contains key b, action send_blog, description Send to blog as draft, and keymap.length is 36', () => {
+  it('1: WHEN src/core/keymap.ts is read THEN it contains key b, action send_blog, description Send to blog as draft, and keymap.length is 37', () => {
     const source = readFileSync(join(repoRoot, 'src/core/keymap.ts'), 'utf8');
     expect(source).toContain(`key: 'b'`);
     expect(source).toContain(`action: 'send_blog'`);
     expect(source).toContain('Send to blog as draft');
     //.2: keymap grew from 35 to 36 with `i` / edit_note_inline.
-    expect(keymap.length).toBe(36);
+    expect(keymap.length).toBe(37);
   });
 
   it('2: WHEN layoutHelp(118, 34, "omawrite") is called THEN it returns 30 lines and line 0 is "Help - Keyboard Shortcuts"', () => {

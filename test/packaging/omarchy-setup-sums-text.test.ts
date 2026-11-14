@@ -41,11 +41,15 @@ describe('omarchy-setup-sums-text', () => {
     }
   }, 30000);
 
-  it('2: WHEN the setup file`s comments are read THEN none says the signature or the sums were verified before setup, or that a helper passes --verified-update, and they say nothing verifies the signature yet', () => {
+  it('2: WHEN the setup file`s comments are read THEN none says setup itself verified the signature or the sums, that nothing verifies the signature or that no caller passes --verified-update yet, and they say bar-update passes --verified-update only after the release check passed and HEAD is the checked commit', () => {
     expect(SETUP).not.toMatch(/was verified \(signature/);
     expect(SETUP).not.toMatch(/so setup does not check the\s+# signature again/);
     expect(SETUP).not.toMatch(/the helper\) passes --verified-update/);
-    expect(SETUP).toContain('nothing in this version');
-    expect(SETUP).toContain('none passes it yet');
+    expect(SETUP).not.toContain('nothing in this version');
+    expect(SETUP).not.toContain('none passes it yet');
+    expect(SETUP).not.toContain('is not built yet');
+    expect(SETUP).toContain('# Setup itself does not check the signature of SHA256SUMS: bar-update has the');
+    expect(SETUP).toContain('passes --verified-update\n# only after that check passed and HEAD is the checked commit.');
+    expect(SETUP).toContain('(bar-update passes it only after the release check passed)');
   });
 });

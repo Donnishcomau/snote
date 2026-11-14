@@ -62,7 +62,8 @@ export function KeyHints({ context, width, pin }: KeyHintsProps): React.JSX.Elem
   const base = hintsForContext(context);
   const withPin = context === 'list' && pin ? [...base.slice(0, -1), { key: 'p', label: pin }, ...base.slice(-1)] : base;
   // #74: name the pane keys last, so they are the first to go when the line is short
-  const extra = context === 'list' ? [{ key: '←→', label: 'Panes' }] : context === 'tags' ? [{ key: 'Tab/→', label: 'Notes' }] : [];
+  // #717: the list moves with j/k; it gives way before the list keys, after the pane keys
+  const extra = context === 'list' ? [{ key: 'j/k', label: 'Move' }, { key: '←→', label: 'Panes' }] : context === 'tags' ? [{ key: 'Tab/→', label: 'Notes' }] : [];
   const hints = visibleHints([...withPin, ...extra], width);
   return (
     <Box>

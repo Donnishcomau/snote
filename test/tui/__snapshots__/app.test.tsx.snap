@@ -22,7 +22,7 @@ Pinned                          │g add tag
                                 │
                                 │
                                 │
-? Help  n New  e Edit  g Add tag  / Search  q Quit  p Unpin  Tab Tags  ←→ Panes
+? Help  n New  e Edit  g Add tag  / Search  q Quit  p Unpin  Tab Tags  j/k Move
 [connecting] 4 notes
 "
 `;
@@ -65,7 +65,7 @@ Pinned                                  │g add tag
                                         │
                                         │
                                         │
-? Help  n New  e Edit  g Add tag  / Search  q Quit  p Unpin  Tab Tags  ←→ Panes
+? Help  n New  e Edit  g Add tag  / Search  q Quit  p Unpin  Tab Tags  j/k Move  ←→ Panes
 [connecting] 4 notes
 "
 `;

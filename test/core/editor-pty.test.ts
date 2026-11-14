@@ -6,7 +6,7 @@
  * runs the real src/core/editor.ts, bundled with esbuild, on a pty driven by
  * test/helpers/pty-stdin-drive.py.
  */
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { build } from 'esbuild';
 import { spawnSync } from 'node:child_process';
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -15,11 +15,11 @@ import { join } from 'node:path';
 
 const python = spawnSync('python3', ['-I', '-c', 'import pty'], { stdio: 'ignore' }).status === 0;
 const enabled = process.platform === 'linux' && python;
-const dir = mkdtempSync(join(tmpdir(), 'editor-pty-'));
-afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
 describe.skipIf(!enabled)('#97 a terminal editor on a real pty keeps its keys', () => {
   it('1: WHEN 40 keys are typed on a pty while the editor `vi` reads them THEN the editor receives all 40 in order and snote\'s own reader receives none', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'editor-pty-'));
+    try {
     const bundle = join(dir, 'editor.mjs');
     await build({
       entryPoints: [join(process.cwd(), 'src/core/editor.ts')],
@@ -45,5 +45,6 @@ describe.skipIf(!enabled)('#97 a terminal editor on a real pty keeps its keys', 
     const shown = r.stdout.replace(/\s+/g, '');
     expect(shown).not.toContain('[snotegot');
     expect(shown).toContain('abcdefghijklmnopqrstuvwxyz0123456789ABCD');
+    } finally { rmSync(dir, { recursive: true, force: true }); }
   }, 40000);
 });

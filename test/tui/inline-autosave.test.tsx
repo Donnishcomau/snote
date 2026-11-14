@@ -17,6 +17,8 @@ import type { EntityId } from '@vendor/types';
 
 const eid = (id: string): EntityId => id as unknown as EntityId;
 const FOOTER = 'Autosaves · Esc close · Ctrl+S save now';
+// #720: after an autosave the footer is `Autosaved at HH:MM · Esc close · Ctrl+S save`; both forms hold this
+const OPEN = 'Esc close · Ctrl+S save';
 const CONFLICT = '--- conflicting change from another device ---';
 const LONE = /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/;
 
@@ -77,7 +79,7 @@ describe('#387 inline autosave', () => {
     for (const u of unmounts.splice(0)) u();
   });
 
-  it('1: WHEN note t1 `hello world` is opened with `i` at width `80` and `Z` is written THEN the frame that first shows `hello worldZ` comes while t1 still holds `hello world`, and within 3000 ms t1 holds `hello worldZ` while the frame still shows `Autosaves · Esc close · Ctrl+S save now`', async () => {
+  it('1: WHEN note t1 `hello world` is opened with `i` at width `80` and `Z` is written THEN the frame that first shows `hello worldZ` comes while t1 still holds `hello world`, and within 3000 ms t1 holds `hello worldZ` while the frame shows (#720) `Autosaved at HH:MM · Esc close · Ctrl+S save`', async () => {
     const { stdin, lastFrame, store } = await openT1('hello world');
     let atFirst: string | undefined;
     stdin.write('Z');
@@ -87,9 +89,9 @@ describe('#387 inline autosave', () => {
       return atFirst === 'hello world';
     });
     expect(atFirst).toBe('hello world');
-    const frame = await waitForFrame(lastFrame, (f) => contentOf(store, 't1') === 'hello worldZ' && f.includes(FOOTER), 3000);
+    const frame = await waitForFrame(lastFrame, (f) => contentOf(store, 't1') === 'hello worldZ' && f.includes('Autosaved at '), 3000);
     expect(contentOf(store, 't1')).toBe('hello worldZ');
-    expect(frame).toContain('Autosaves · Esc close · Ctrl+S save now');
+    expect(frame).toMatch(/Autosaved at \d\d:\d\d · Esc close · Ctrl\+S save/);
   }, 10000);
 
   it('2: WHEN t1 `hello world` is open and the 16 keys `a` to `p` are written one every 400 ms THEN t1 is still `hello world` after the third key is shown, t1 changes at least once before `p` is written, and 2000 ms after `p` t1 is `hello worldabcdefghijklmnop`, having changed at least `2` and at most `3` times', async () => {
@@ -145,7 +147,7 @@ describe('#387 inline autosave', () => {
   it('4: WHEN t1 `hello world` is open, `Z` is written and stored by the timer, then `Y` is written and Ctrl+S (`\\x13`) pressed THEN the frame shows `Preview:` and t1 is exactly `hello worldZY` (no `--- conflicting change from another device ---` block)', async () => {
     const { stdin, lastFrame, store } = await openT1('hello world');
     stdin.write('Z');
-    await waitForFrame(lastFrame, (f) => f.includes('hello worldZ') && f.includes(FOOTER) && contentOf(store, 't1') === 'hello worldZ', 3000);
+    await waitForFrame(lastFrame, (f) => f.includes('hello worldZ') && f.includes(OPEN) && contentOf(store, 't1') === 'hello worldZ', 3000);
     stdin.write('Y');
     await waitForFrame(lastFrame, 'hello worldZY');
     stdin.write('\x13');
@@ -209,7 +211,7 @@ describe('#387 inline autosave', () => {
 
     const timed = await openT1('hello world');
     timed.stdin.write(paste);
-    await waitForFrame(timed.lastFrame, (f) => f.includes(FOOTER) && contentOf(timed.store, 't1') === saved, 3000);
+    await waitForFrame(timed.lastFrame, (f) => f.includes(OPEN) && contentOf(timed.store, 't1') === saved, 3000);
     const stored = contentOf(timed.store, 't1') ?? '';
     expect(stored).toBe(saved);
     expect(stored).toContain('�');

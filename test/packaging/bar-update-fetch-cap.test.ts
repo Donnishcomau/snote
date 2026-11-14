@@ -20,6 +20,7 @@ const CAP = '1048576';
 
 const SETUP_STUB = `#!/bin/bash
 if [ "\${1:-}" = "--check" ]; then exit 1; fi
+if [ "\${1:-}" = "--verify-release" ]; then exit 0; fi # #68: the installed build's release check passes
 d="$(cd "$(dirname "$0")/../.." && pwd)"
 echo "SETUP-RAN $(cat "$d/plugin-dist/VERSION")" >> "$STUB_LOG"
 mkdir -p "$XDG_DATA_HOME/omarchy-snote-plugin/app"

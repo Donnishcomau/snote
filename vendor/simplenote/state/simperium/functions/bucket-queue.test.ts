@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
+// OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-11-07).
+// OMARCHY: jest replaced by vitest's `vi` (snote runs vitest); each changed line below is marked
+import { beforeEach, describe, expect, it, vi } from 'vitest'; // OMARCHY: vitest import
 import { BucketQueue } from './bucket-queue';
 
 import type { Bucket } from 'simperium';
@@ -7,8 +8,8 @@ import type { Bucket } from 'simperium';
 type MockBucket = {
   name: string;
   isIndexing: boolean;
-  on: ReturnType<typeof vi.fn>;
-  touch: ReturnType<typeof vi.fn>;
+  on: ReturnType<typeof vi.fn>; // OMARCHY: jest -> vi
+  touch: ReturnType<typeof vi.fn>; // OMARCHY: jest -> vi
   emit: (event: string) => void;
 };
 
@@ -17,10 +18,10 @@ const makeBucket = (): MockBucket => {
   return {
     name: 'note',
     isIndexing: false,
-    on: vi.fn((event: string, handler: () => void) => {
+    on: vi.fn((event: string, handler: () => void) => { // OMARCHY: jest -> vi
       handlers.set(event, [...(handlers.get(event) ?? []), handler]);
     }),
-    touch: vi.fn().mockResolvedValue(undefined),
+    touch: vi.fn().mockResolvedValue(undefined), // OMARCHY: jest -> vi
     emit: (event: string) => handlers.get(event)?.forEach((cb) => cb()),
   };
 };
@@ -36,19 +37,19 @@ const setOnline = (onLine: boolean) =>
 
 describe('BucketQueue', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    vi.useFakeTimers(); // OMARCHY: jest -> vi
     setOnline(true);
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    vi.useRealTimers(); // OMARCHY: jest -> vi
   });
 
   it('syncs nothing while the queue is empty', () => {
     const bucket = makeBucket();
     makeQueue(bucket);
 
-    vi.advanceTimersByTime(60000);
+    vi.advanceTimersByTime(60000); // OMARCHY: jest -> vi
     expect(bucket.touch).not.toHaveBeenCalled();
   });
 
@@ -59,10 +60,10 @@ describe('BucketQueue', () => {
     queue.add('note-1', Date.now() + 100);
     expect(queue.has('note-1')).toBe(true);
 
-    vi.advanceTimersByTime(99);
+    vi.advanceTimersByTime(99); // OMARCHY: jest -> vi
     expect(bucket.touch).not.toHaveBeenCalled();
 
-    vi.advanceTimersByTime(1);
+    vi.advanceTimersByTime(1); // OMARCHY: jest -> vi
     expect(bucket.touch).toHaveBeenCalledTimes(1);
     expect(bucket.touch).toHaveBeenCalledWith('note-1');
     expect(queue.has('note-1')).toBe(false);
@@ -75,7 +76,7 @@ describe('BucketQueue', () => {
     queue.add('note-1', Date.now() + 1000);
     queue.add('note-1', Date.now() + 5000);
 
-    vi.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000); // OMARCHY: jest -> vi
     expect(bucket.touch).toHaveBeenCalledTimes(1);
     expect(bucket.touch).toHaveBeenCalledWith('note-1');
   });
@@ -87,7 +88,7 @@ describe('BucketQueue', () => {
     queue.add('note-1', Date.now() + 10);
     queue.add('note-2', Date.now() + 10);
 
-    vi.advanceTimersByTime(50);
+    vi.advanceTimersByTime(50); // OMARCHY: jest -> vi
     expect(bucket.touch).toHaveBeenCalledTimes(2);
     expect(bucket.touch).toHaveBeenCalledWith('note-1');
     expect(bucket.touch).toHaveBeenCalledWith('note-2');
@@ -100,11 +101,11 @@ describe('BucketQueue', () => {
 
     queue.add('note-1', Date.now());
 
-    vi.advanceTimersByTime(9999);
+    vi.advanceTimersByTime(9999); // OMARCHY: jest -> vi
     expect(bucket.touch).not.toHaveBeenCalled();
 
     bucket.isIndexing = false;
-    vi.advanceTimersByTime(1);
+    vi.advanceTimersByTime(1); // OMARCHY: jest -> vi
     expect(bucket.touch).toHaveBeenCalledWith('note-1');
   });
 
@@ -115,13 +116,13 @@ describe('BucketQueue', () => {
 
     queue.add('note-1', Date.now());
 
-    vi.advanceTimersByTime(9999);
+    vi.advanceTimersByTime(9999); // OMARCHY: jest -> vi
     expect(bucket.touch).not.toHaveBeenCalled();
 
     bucket.isIndexing = false;
     bucket.emit('index');
 
-    vi.advanceTimersByTime(0);
+    vi.advanceTimersByTime(0); // OMARCHY: jest -> vi
     expect(bucket.touch).toHaveBeenCalledWith('note-1');
   });
 
@@ -132,14 +133,14 @@ describe('BucketQueue', () => {
     setOnline(false);
     queue.add('note-1', Date.now());
 
-    vi.advanceTimersByTime(30000);
+    vi.advanceTimersByTime(30000); // OMARCHY: jest -> vi
     expect(bucket.touch).not.toHaveBeenCalled();
     expect(queue.has('note-1')).toBe(true);
 
     setOnline(true);
     window.dispatchEvent(new Event('online'));
 
-    vi.advanceTimersByTime(0);
+    vi.advanceTimersByTime(0); // OMARCHY: jest -> vi
     expect(bucket.touch).toHaveBeenCalledWith('note-1');
   });
 });

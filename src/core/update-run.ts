@@ -18,12 +18,15 @@ export async function runUpdateChecks(o: {
   stateDir: string;
   now?: number;
   run?: GitRunner;
+  /** #443: true when this install is not the Omarchy plugin (the notice then names no plugin command). */
+  offPlugin?: boolean;
 }): Promise<void> {
   try {
     const cloneDir = pluginCloneDir(o.home);
     const local = checkLocalUpdate(o.version, cloneDir);
     if (local.state === 'restart') {
-      publishUpdate({ kind: 'restart', available: local.available });
+      // #443: restarting an install that is not the plugin does not run the clone's build, so it gets the off-plugin notice.
+      publishUpdate(o.offPlugin ? { kind: 'available', offPlugin: true } : { kind: 'restart', available: local.available });
       return;
     }
     const remote = await checkRemoteUpdate({
@@ -34,7 +37,7 @@ export async function runUpdateChecks(o: {
       run: o.run,
     });
     if (remote.state === 'available') {
-      publishUpdate({ kind: 'available' });
+      publishUpdate(o.offPlugin ? { kind: 'available', offPlugin: true } : { kind: 'available' });
     }
   } catch {
     // the update notice never breaks the app

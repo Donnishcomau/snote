@@ -7,6 +7,7 @@
  *   node scripts/check-allowed-signers.mjs <file> [--min N] [--types a,b]
  *     exit 0 when the file is valid (prints one line), exit 1 with one reason per line on stderr.
  *     --min N: at least N keys. --types: the allowed key types (default: the two hardware-key types); tests only.
+ * proof: test/packaging/release-manifest.test.ts (tests 3 and 9)
  */
 import fs from 'node:fs';
 import path from 'node:path';

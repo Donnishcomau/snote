@@ -68,6 +68,7 @@ export const SECTIONS = [
     actions: [
       'quit',
       'logout',
+      'update_snote',
     ],
   },
 ];

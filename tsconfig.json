@@ -6,5 +6,5 @@
     "types": ["node", "vitest/globals"],
     "baseUrl": ".", "paths": { "@vendor/*": ["vendor/simplenote/*"] }
   },
-  "include": ["src", "test", "scripts/*.ts"]
+  "include": ["src", "test", "scripts/*.ts", "e2e/*.ts"]
 }

@@ -14,7 +14,7 @@
 // install: SNOTE_NODE is the test-only Node override and
 // SNOTE_DEV_ENV_INSTALLER the test-only installer override — honoured
 // only in test mode (SNOTE_NODE set), exactly like SNOTE_NODE itself.
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterAll, afterEach } from 'vitest';
 import {
   mkdtempSync,
   rmSync,
@@ -41,11 +41,18 @@ afterEach(() => {
   }
 });
 
+// #319: every clone this file makes is removed when the file ends, passed or failed.
+const clones: string[] = [];
+afterAll(() => {
+  for (const c of clones.splice(0)) rmSync(c, { recursive: true, force: true });
+});
+
 // Build a throwaway clone: <dir>/packaging/omarchy/{setup,uninstall} and
 // <dir>/plugin-dist/{cli.js,VERSION}. The fake cli.js prints
 // "fake snote <VERSION>" so a completed install is observable.
 function makeClone(version: string): string {
   const clone = mkdtempSync(join(tmpdir(), 'snote-autoinstall-clone-'));
+  clones.push(clone);
   mkdirSync(join(clone, 'packaging', 'omarchy'), { recursive: true });
   copyFileSync(REAL_SETUP, join(clone, 'packaging', 'omarchy', 'setup'));
   copyFileSync(REAL_UNINSTALL, join(clone, 'packaging', 'omarchy', 'uninstall'));

@@ -58,6 +58,10 @@ function updateMessage(u: UpdateSignal): string {
   if (u.kind === 'restart') {
     return `snote ${u.available} is downloaded: restart snote / the bar to use the update`;
   }
+  // #443: an install that is not the Omarchy plugin is not told to run `omarchy plugin update`.
+  if (u.offPlugin) {
+    return 'update available: a newer snote is out, see github.com/donnishcomau/snote/releases';
+  }
   return (
     'update available: omarchy plugin update io.github.donnishcomau.snote-simplenote\n' +
     'then click the bar button, then run omarchy-restart-shell'

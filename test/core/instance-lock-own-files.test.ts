@@ -8,7 +8,7 @@
  * holding the pid `424242` onto the path, the way its exclusive create would
  * land there. The files are real, on disk.
  */
-import { spawn, spawnSync } from 'node:child_process';
+import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -44,12 +44,31 @@ const OTHER = '424242';
 const LOCK_TS = path.join(process.cwd(), 'src', 'core', 'instance-lock.ts');
 
 /** The number of descriptors this process has open (Linux /proc). */
-const openFds = (): number => fs.readdirSync('/proc/self/fd').length;
+const openFds = (): number => fs.readdirSync(process.platform === 'darwin' ? '/dev/fd' : '/proc/self/fd').length;
 
 /** Put a file holding OTHER at `p`, as another start would. */
 function other(p: string): void {
   fs.writeFileSync(`${p}.other`, OTHER);
   fs.renameSync(`${p}.other`, p);
+}
+
+/**
+ * #825: resolve true once `child` has printed `word`. The end is read on 'close', which comes after the child's output
+ * is all read; 'exit' can come before the last output is read (Node: "stdio streams might still be open"), so a check
+ * at 'exit' missed a `released` the child had printed (seen once in CI).
+ */
+function heard(child: ChildProcess, seen: string[], word: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const check = (): void => {
+      if (seen.join('').includes(word)) resolve(true);
+    };
+    child.stdout?.on('data', (b: Buffer) => {
+      seen.push(String(b));
+      check();
+    });
+    child.once('close', () => resolve(seen.join('').includes(word)));
+    check();
+  });
 }
 
 describe('#634 a start removes only its own lock and marker', () => {
@@ -147,30 +166,27 @@ describe('#634 a start removes only its own lock and marker', () => {
   it('9: WHEN a child start holds the lock, a FIFO then takes the lock\'s place and the child releases THEN the child reports `released` within 2000 ms and the FIFO is still there', async () => {
     const child = spawn(process.execPath, ['--import', 'tsx', '-e', `const { acquireInstanceLock } = await import(${JSON.stringify(LOCK_TS)}); const l = acquireInstanceLock(${JSON.stringify(dir)}); console.log('held'); process.stdin.once('data', () => { l.release(); console.log('released'); process.exit(0); });`], { stdio: ['pipe', 'pipe', 'inherit'] });
     const seen: string[] = [];
-    const heard = (word: string): Promise<boolean> =>
-      new Promise((resolve) => {
-        const check = (): void => {
-          if (seen.join('').includes(word)) resolve(true);
-        };
-        child.stdout?.on('data', (b: Buffer) => {
-          seen.push(String(b));
-          check();
-        });
-        child.once('exit', () => resolve(seen.join('').includes(word)));
-        check();
-      });
     try {
-      expect(await heard('held')).toBe(true);
+      expect(await heard(child, seen, 'held')).toBe(true);
       fs.rmSync(path.join(dir, 'instance.lock'));
       expect(spawnSync('mkfifo', [path.join(dir, 'instance.lock')]).status).toBe(0);
       child.stdin?.write('go\n');
-      const released = await Promise.race([heard('released'), new Promise<boolean>((r) => setTimeout(() => r(false), 2000))]);
+      const released = await Promise.race([heard(child, seen, 'released'), new Promise<boolean>((r) => setTimeout(() => r(false), 2000))]);
       expect(released).toBe(true);
       expect(fs.lstatSync(path.join(dir, 'instance.lock')).isFIFO()).toBe(true);
     } finally {
       child.kill('SIGKILL');
     }
   }, 20000);
+
+  it('12: (#825) WHEN a child prints `released` and exits before this process has read that output THEN heard still reports `released`', async () => {
+    const child = spawn(process.execPath, ['-e', "console.log('released')"], { stdio: ['ignore', 'pipe', 'inherit'] });
+    child.stdout?.pause();
+    const result = heard(child, [], 'released');
+    await new Promise((r) => child.once('exit', r));
+    child.stdout?.resume();
+    expect(await result).toBe(true);
+  });
 
   it('10: WHEN this start holds the lock and lstat of `instance.lock` fails with EACCES, then EIO, then ENOTDIR at release() THEN release() does not throw, `instance.lock` still holds this pid, and the open descriptor count is back to its count before the acquire', () => {
     for (const code of ['EACCES', 'EIO', 'ENOTDIR']) {

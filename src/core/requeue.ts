@@ -385,7 +385,7 @@ export async function requeueUnsynced(
         const inStore = store.getState().data.notes.get(h.id);
         // #657b — a store copy the hook above wrote is the held offline copy for this merge
         const now = h.mine && same(inStore, h.mine) ? h.local : inStore;
-        const note = handOff(h, current, now, loadedNotes?.get(h.id), Boolean(store.getState().simperium.pendingNotes[h.id]));
+        const note = handOff(h, current, now, loadedNotes?.get(h.id), Object.hasOwn(store.getState().simperium.pendingNotes, h.id));
         if (note) store.dispatch({ type: 'IMPORT_NOTE_WITH_ID', noteId: h.id, note } as A.ActionType);
         done++;
       }

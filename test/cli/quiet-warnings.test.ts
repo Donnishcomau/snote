@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { bundle } from '../../scripts/build.mjs';
@@ -32,8 +32,9 @@ describe('quiet warnings', () => {
   }, 20000);
 
   afterAll(() => {
-    if (quietOutfile) rmSync(quietOutfile, { force: true });
-    if (loudOutfile) rmSync(loudOutfile, { force: true });
+    // #319: the mkdtemp folders, not only the files
+    if (quietOutfile) rmSync(dirname(quietOutfile), { recursive: true, force: true });
+    if (loudOutfile) rmSync(dirname(loudOutfile), { recursive: true, force: true });
   });
 
   it('1: WHEN the bundled warn-quiet-entry is run THEN the exit status is 0, stdout contains done, and stderr does not contain snote-test-warning and does not contain Warning', async () => {

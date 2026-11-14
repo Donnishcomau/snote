@@ -7,6 +7,7 @@
 # (newline included, and the C1 controls U+0080-U+009F), a bidi character (U+202A-U+202E, U+2066-U+2069), a backslash or a leading
 # slash are refused, and nothing is written. A file that cannot be hashed (sha256sum fails or prints no 64-hex hash) is refused the same way.
 # Writing deletes SHA256SUMS.sig FIRST, before anything can fail: ssh-keygen -Y sign leaves an existing .sig in place and exits 0.
+# proof: test/packaging/release-manifest.test.ts (tests 2, 6, 7 and 8)
 set -euo pipefail
 export LC_ALL=C
 die() { echo "release-manifest: $*" >&2; exit 1; }

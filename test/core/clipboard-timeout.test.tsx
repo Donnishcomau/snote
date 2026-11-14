@@ -5,17 +5,21 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { render } from 'ink-testing-library';
 import React from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { copyToClipboard } from '../../src/core/clipboard';
 import { makeStore } from '../../src/core/store';
 import { App } from '../../src/tui/App';
 import { waitForFrame, waitForInput } from '../helpers/ink-waits';
+import { restorePlatform, setPlatform } from '../helpers/platform';
 import type { EntityId } from '@vendor/types';
 
 const savedPath = process.env.PATH;
 const dirs: string[] = [];
+// #447: pinned to linux: test 9's fake wl-copy is the copy command only on Linux; on macOS `y` would run the real /usr/bin/pbcopy.
+beforeEach(() => setPlatform('linux'));
 afterEach(() => {
+  restorePlatform();
   process.env.PATH = savedPath;
   while (dirs.length) rmSync(dirs.pop() as string, { recursive: true, force: true });
 });

@@ -26,6 +26,7 @@ import type { ActionType } from '@vendor/state/action-types';
 import { App } from '../../src/tui/App';
 import { resetKeyLog } from '../../src/tui/key-ring';
 import { waitForFrame, waitForInput } from '../helpers/ink-waits';
+import { restorePlatform, setPlatform } from '../helpers/platform';
 import type { EntityId } from '@vendor/types';
 
 const eid = (id: string): EntityId => id as unknown as EntityId;
@@ -288,7 +289,10 @@ describe('y through the real clipboard writer (fake wl-copy first on PATH)', () 
     return store;
   }
 
+  // #447: pinned to linux: the fake wl-copy is the copy command only on Linux; on macOS `y` would run the real /usr/bin/pbcopy.
+  beforeEach(() => setPlatform('linux'));
   afterEach(() => {
+    restorePlatform();
     process.env.PATH = savedPath;
   });
 

@@ -6,7 +6,7 @@
 import { spawn } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { bundle } from '../../scripts/build.mjs';
@@ -72,7 +72,7 @@ describe('bundled sync', () => {
     for (const dir of dirs) {
       rmSync(dir, { recursive: true, force: true });
     }
-    if (outfile) rmSync(outfile, { force: true });
+    if (outfile) rmSync(dirname(outfile), { recursive: true, force: true }); // #319: the mkdtemp folder, not only the file
   });
 
   it('1: WHEN the entry file is bundled with bundle({ entry: "test/fixtures/bundle-sync-entry.ts", outfile }) and run against the fake server THEN the exit status is 0 and stdout contains notes=2', async () => {

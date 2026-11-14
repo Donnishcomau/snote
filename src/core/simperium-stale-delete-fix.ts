@@ -142,7 +142,7 @@ function installOnChannel(
     const { notes } = store.getState().data;
     const { pendingNotes } = store.getState().simperium;
     for (const id of notes.keys()) {
-      if (seenDuringIndex.has(id) || id in pendingNotes || isHeld(store, id) || isUnsent(store, id)) {
+      if (seenDuringIndex.has(id) || Object.hasOwn(pendingNotes, id) || isHeld(store, id) || isUnsent(store, id)) {
         continue;
       }
       store.dispatch({

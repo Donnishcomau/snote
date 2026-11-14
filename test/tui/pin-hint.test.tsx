@@ -14,7 +14,8 @@ import type { EntityId } from '@vendor/types';
 const eid = (id: string): EntityId => id as unknown as EntityId;
 const strip = (s: string | undefined): string => (s ?? '').replace(/\u001b\[[0-9;]*m/g, '');
 const lines = (s: string | undefined): string[] => strip(s).split('\n');
-const footer = (label: string): string => `? Help  n New  e Edit  g Add tag  / Search  q Quit  ${label}  Tab Tags  ←→ Panes`;
+// #717: at 80 columns `j/k Move` takes the place of `←→ Panes` (the pane keys go first when the line is short)
+const footer = (label: string): string => `? Help  n New  e Edit  g Add tag  / Search  q Quit  ${label}  Tab Tags  j/k Move`;
 
 function renderWith(pinned: boolean, deleted = false): ReturnType<typeof render> {
   const store = makeStore({ stubClient: {} });

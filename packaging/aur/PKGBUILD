@@ -1,6 +1,6 @@
 # Maintainer: qteamdon <201689496+qteamdon@users.noreply.github.com>
 pkgname=snote
-pkgver=0.2.11
+pkgver=0.2.12
 pkgrel=1
 pkgdesc="Simplenote client for Omarchy (terminal UI)"
 arch=('any')
@@ -9,9 +9,25 @@ license=('GPL-2.0-only')
 depends=('nodejs>=22' 'hicolor-icon-theme')
 makedepends=('npm' 'git')
 optdepends=('wl-clipboard: copy the public link')
-source=("$pkgname-$pkgver.tar.gz::https://github.com/donnishcomau/snote/archive/refs/tags/v$pkgver.tar.gz")
-# sha256 stays SKIP until the release checksum is pinned for the AUR upload
-sha256sums=('SKIP')
+# No download (#876): prepare() takes the files of the commit checked out in the git clone this file sits in, the
+# same clone the PKGBUILD came from, so there is no second archive to check. The AUR copy will be a separate file.
+source=()
+sha256sums=()
+
+prepare() {
+  # A tree left by an earlier build may still hold files this commit deleted (#876 review): build only into an empty folder.
+  if [[ -e $srcdir/snote-$pkgver ]]; then
+    echo "PKGBUILD: src/snote-$pkgver is left from an earlier build; run makepkg -Cfsi to build from an empty folder" >&2
+    return 1
+  fi
+  local top
+  top=$(git -C "$startdir" rev-parse --show-toplevel) || return 1
+  git -C "$top" archive --format=tar --prefix="snote-$pkgver/" -o "$srcdir/snote-$pkgver.tar" HEAD || return 1
+  tar -xf "$srcdir/snote-$pkgver.tar" -C "$srcdir" || return 1
+  local v
+  v=$(node -p 'require(process.argv[1]).version' "$srcdir/snote-$pkgver/package.json") || return 1
+  [[ $v == "$pkgver" ]] || { echo "PKGBUILD: pkgver is $pkgver, but the checked-out commit is snote $v" >&2; return 1; }
+}
 
 build() {
   cd "$srcdir/snote-$pkgver"

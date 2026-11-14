@@ -23,7 +23,7 @@ exports[`Golden frames: search, tags, help > 1: WHEN at 80x24 / then normal are 
                                 │
                                 │
 search: normal
-? Help  n New  e Edit  g Add tag  / Search  q Quit  p Pin  Tab Tags  ←→ Panes
+? Help  n New  e Edit  g Add tag  / Search  q Quit  p Pin  Tab Tags  j/k Move
 [connecting] 2 notes"
 `;
 
@@ -65,7 +65,7 @@ exports[`Golden frames: search, tags, help > 2: WHEN at 120x40 / then normal are
                    │                                │
                    │                                │
 search: normal
-? Help  n New  e Edit  g Add tag  / Search  q Quit  p Pin  Tab Tags  ←→ Panes
+? Help  n New  e Edit  g Add tag  / Search  q Quit  p Pin  Tab Tags  j/k Move  ←→ Panes
 [connecting] 2 notes
 "
 `;
@@ -143,27 +143,27 @@ j/k Move  Enter Select  R Rename  x Delete  Escape Back  Tab/→ Notes
 exports[`Golden frames: search, tags, help > 5: WHEN at 80x24 ? is written THEN the frame contains Help - Keyboard Shortcuts, Move down, Search notes and Show / focus the tags pane, not Pinned note, and has at most 24 lines; snapshot help-80x24 > help-80x24 1`] = `
 "┌──────────────────────────────────────────────────────────────────────────────┐
 │  Help - Keyboard Shortcuts                                                   │
-│  j       Move down                    E       Empty the trash (trash view)   │
-│  k       Move up                      p       Pin / unpin                    │
-│  Enter   Open note                    m       Markdown on / off              │
-│  Tab     Next pane                    s       Sort: modified, created, a-z   │
-│  q       Quit                         S       Reverse the sort order         │
-│  v       Toggle rendered markdown pr… /       Search notes                   │
-│  ?       Show this help               t       Show / focus the tags pane     │
-│  Escape  Close overlay / back         J       Move tag down (tags pane)      │
-│  e       Edit in $EDITOR              K       Move tag up (tags pane)        │
-│  n       New note                     R       Rename tag (tags pane)         │
-│  g       Edit tags of the selected n… x       Delete tag (tags pane)         │
-│  w       Export note to .md           r       Sync now                       │
-│  b       Send to blog as draft        P       Publish / unpublish            │
-│  L       Log out (asks first)         y       Copy the public link           │
-│  d       Move to trash                h       Note history (Enter restore…   │
-│  u       Restore from trash (trash v… c       Tick / untick item (note)      │
-│  D       Delete forever (trash view)  a       Add checklist item (note)      │
+│  j       Move down                    p       Pin / unpin                    │
+│  k       Move up                      m       Markdown on / off              │
+│  Enter   Open note                    s       Sort: modified, created, a-z   │
+│  Tab     Next pane                    S       Reverse the sort order         │
+│  q       Quit                         /       Search notes                   │
+│  v       Toggle rendered markdown pr… t       Show / focus the tags pane     │
+│  ?       Show this help               J       Move tag down (tags pane)      │
+│  Escape  Close overlay / back         K       Move tag up (tags pane)        │
+│  e       Edit in $EDITOR              R       Rename tag (tags pane)         │
+│  n       New note                     x       Delete tag (tags pane)         │
+│  g       Edit tags of the selected n… r       Sync now                       │
+│  w       Export note to .md           P       Publish / unpublish            │
+│  b       Send to blog as draft        y       Copy the public link           │
+│  L       Log out (asks first)         h       Note history (Enter restore…   │
+│  d       Move to trash                c       Tick / untick item (note)      │
+│  u       Restore from trash (trash v… a       Add checklist item (note)      │
+│  D       Delete forever (trash view)  U       Update snote (when offered)    │
 │  T       Show trash / all notes       i       Edit inline (built-in edito…   │
+│  E       Empty the trash (trash view)                                        │
 │  Found a bug? Run snote --report to save a report bundle.                    │
 │  Editing: save with Ctrl+S and close the window to return                    │
-│                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘"
 `;
 
@@ -185,7 +185,7 @@ exports[`Golden frames: search, tags, help > 6: WHEN at 120x40 ? is written THEN
 │w         Export note to .md                              App                                      │
 │b         Send to blog as draft                           q         Quit                           │
 │p         Pin / unpin                                     L         Log out (asks first)           │
-│m         Markdown on / off                                                                        │
+│m         Markdown on / off                               U         Update snote (when offered)    │
 │h         Note history (Enter restores)                                                            │
 │c         Tick / untick item (note)                                                                │
 │a         Add checklist item (note)                                                                │

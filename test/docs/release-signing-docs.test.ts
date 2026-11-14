@@ -77,12 +77,14 @@ describe('issue #68: release signing docs', () => {
     expect(each).toContain('SNOTE_RELEASE_TREE');
   });
 
-  it('3: WHEN SECURITY.md is read THEN its `## How releases are signed` section says `From 0.2.9`, `snote does not check this signature yet`, the setup checksum refusal text, that touch and PIN are enforced by the key when it signs and a check of the signature `cannot see them`, that a manual `omarchy plugin update` replaces `allowed_signers` `without snote verifying`, and does not say that snote verifies a signature, that updates are verified, or that verification enforces touch or PIN', () => {
+  it('3: WHEN SECURITY.md is read THEN its `## How releases are signed` section says `From 0.2.9`, that from `0.2.12` the bar update checks this signature with the keys of the installed snote and a first install does not, the setup checksum refusal text, that touch and PIN are enforced by the key when it signs and a check of the signature `cannot see them`, that a manual `omarchy plugin update` replaces `allowed_signers` `without snote verifying`, no longer says `snote does not check this signature yet`, and holds no unqualified claim that snote checks or verifies the signature, no `verified update`, `verified before installing`, `authenticated` or `tamper-proof`, and nothing saying verification enforces touch or PIN', () => {
     const s = section(security, '## How releases are signed', '## Screen-reader output');
     expect(s.length).toBeGreaterThan(300);
     const flat = s.replace(/\s+/g, ' ');
     expect(flat).toContain('From 0.2.9');
-    expect(flat).toContain('snote does not check this signature yet, on install or on update');
+    expect(flat).toContain('From 0.2.12, the bar update checks this signature with the keys of the installed snote before it moves to a release');
+    expect(flat).toContain('A first install does not check it');
+    expect(flat).not.toContain('snote does not check this signature yet');
     expect(flat).toContain('update refused: the download could not be verified');
     expect(flat).toContain('Touch and PIN are enforced by the key when it signs');
     expect(flat).toContain('cannot see them');
@@ -119,5 +121,21 @@ describe('issue #68: release signing docs', () => {
     expect(step).toContain('never copy them from that line');
     expect(step).toContain('right before tagging');
     expect(step).toContain('tag only if its output does NOT contain `signature check skipped`');
+  });
+
+  it('6: WHEN the Notes section of docs/RELEASE-SIGNING.md is read THEN it says what SECURITY.md says, in the same words: from `0.2.12` the bar update checks this signature with the keys of the installed snote, a snote older than 0.2.12 has no such check, a first install does not check it, and a manual `omarchy plugin update` replaces `allowed_signers` without snote verifying them, and it no longer says `snote does not check the signature itself yet` (#344 review)', () => {
+    const notes = runbook.slice(runbook.indexOf('## Notes')).replace(/\s+/g, ' ');
+    const flatSecurity = security.replace(/\s+/g, ' ');
+    expect(notes.length).toBeGreaterThan(200);
+    for (const said of [
+      'From 0.2.12, the bar update checks this signature with the keys of the installed snote before it moves to a release',
+      'a snote older than 0.2.12 has no such check, so its update to 0.2.12 is not verified.',
+      'A first install does not check it.',
+      "A manual `omarchy plugin update` follows Omarchy's own trust model: it replaces the plugin files, including `allowed_signers`, without snote verifying them.",
+    ]) {
+      expect({ said, inNotes: notes.includes(said), inSecurity: flatSecurity.includes(said.replace(/\.$/, '')) }).toEqual({ said, inNotes: true, inSecurity: true });
+    }
+    expect(notes).not.toContain('does not check the signature itself');
+    expect(notes).not.toMatch(/snote does not check (the|this) signature/);
   });
 });

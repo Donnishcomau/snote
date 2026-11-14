@@ -72,21 +72,27 @@ export function secureMkdir(dir: string): void {
  * written through), is fsynced, and is then renamed over `path`. A rename
  * replaces a symlink at `path` itself and never writes into its target.
  * Callers pass the FINAL path; they do not make a temp name or rename.
+ * #682: `durable: false` skips the fsync (the rename stays atomic, so a reader
+ * only sees a whole file, but a crash or power cut can lose the last write).
+ * Only for files whose loss costs nothing: status.json (rewritten by the heartbeat),
+ * new-note.request (read and removed at once) and the update-check caches (re-fetched).
+ * Note data and every sync record keep the fsync: a save is on disk before it counts.
  * proof: test/core/secure-fs-symlink.test.ts
+ * proof: test/core/fsync-scope.test.ts
  */
-export function secureWriteFileSync(path: string, data: string): void {
+export function secureWriteFileSync(path: string, data: string, opts: { durable?: boolean } = {}): void {
   const tmpPath = path + '.tmp';
   try {
     unlinkSync(tmpPath);
   } catch (e) {
-    if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e;
+    if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw folderCode(e, tmpPath);
   }
   const flags =
     constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | (constants.O_NOFOLLOW ?? 0);
   const fd = openSync(tmpPath, flags, 0o600);
   try {
     writeFileSync(fd, data);
-    fsyncSync(fd);
+    if (opts.durable !== false) fsyncSync(fd);
   } catch (e) {
     closeSync(fd);
     try {
@@ -216,11 +222,29 @@ export function secureMkdtemp(prefix: string): string {
 /**
  * Remove one file or symlink (a link is removed, never followed). Throws as
  * unlinkSync does (ENOENT for a missing path, EISDIR or EPERM for a folder);
- * callers decide which codes they ignore. The one place a plain unlink lives.
+ * except that (#871) a folder's EPERM, which macOS gives, is thrown as EISDIR:
+ * a folder is EISDIR on every platform and any other EPERM stays EPERM.
+ * Callers decide which codes they ignore. The one place a plain unlink lives.
  * proof: test/structure/fs-delete-ban.test.ts
+ * proof: test/core/unlink-folder-eperm.test.ts
  */
 export function secureUnlink(path: string): void {
-  unlinkSync(path);
+  try {
+    unlinkSync(path);
+  } catch (e) {
+    throw folderCode(e, path);
+  }
+}
+
+/** #871: the error of a failed unlink of `path`, with code EISDIR when it is EPERM and `path` is a folder (not a link). */
+function folderCode(e: unknown, path: string): unknown {
+  const err = e as NodeJS.ErrnoException;
+  try {
+    if (err.code === 'EPERM' && lstatSync(path).isDirectory()) err.code = 'EISDIR';
+  } catch {
+    // lstat failed: keep the error as it is
+  }
+  return e;
 }
 
 /**

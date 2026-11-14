@@ -3,6 +3,7 @@ import * as path from 'node:path';
 
 import type { EntityId } from '@vendor/types';
 
+import { idRecord } from './id-record';
 import { saveState } from './persistence';
 import { secureMkdir, secureWriteFileSync } from './secure-fs';
 import type { State } from './store';
@@ -29,32 +30,32 @@ export type UnsyncedRecord = Record<string, number>;
 export function loadUnsynced(dir: string): UnsyncedRecord {
   const filePath = path.join(dir, UNSYNCED_FILE);
   if (!fs.existsSync(filePath)) {
-    return {};
+    return idRecord();
   }
   try {
     const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8')) as unknown;
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return {};
+      return idRecord();
     }
-    const record: UnsyncedRecord = {};
+    const record: UnsyncedRecord = idRecord();
     for (const [id, date] of Object.entries(parsed as Record<string, unknown>)) {
       if (typeof date !== 'number' || !Number.isFinite(date)) {
-        return {};
+        return idRecord();
       }
       record[id] = date;
     }
     return record;
   } catch {
-    return {};
+    return idRecord();
   }
 }
 
 export function loadUnsyncedNotes(dir: string): UnsyncedNotes {
   try {
     const parsed = JSON.parse(fs.readFileSync(path.join(dir, UNSYNCED_NOTES_FILE), 'utf8')) as unknown;
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (Object.fromEntries(Object.entries(parsed).filter(([, v]) => typeof (v as { content?: unknown } | null)?.content === 'string' && Number.isFinite(Number((v as { modificationDate?: unknown }).modificationDate)) && (v as { modificationDate?: unknown }).modificationDate !== '' && (v as { modificationDate?: unknown }).modificationDate !== null)) as UnsyncedNotes) : {}; // only entries with string content and a finite date
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? Object.assign(idRecord<{ modificationDate?: number | string }>(), Object.fromEntries(Object.entries(parsed).filter(([, v]) => typeof (v as { content?: unknown } | null)?.content === 'string' && Number.isFinite(Number((v as { modificationDate?: unknown }).modificationDate)) && (v as { modificationDate?: unknown }).modificationDate !== '' && (v as { modificationDate?: unknown }).modificationDate !== null))) : idRecord(); // only entries with string content and a finite date
   } catch {
-    return {};
+    return idRecord();
   }
 }
 
@@ -155,7 +156,7 @@ export function trackUnsynced(
   const seenPending = new Set<string>();
 
   const build = (snap: Map<string, number | undefined>): UnsyncedRecord => {
-    const next: UnsyncedRecord = {};
+    const next: UnsyncedRecord = idRecord();
     for (const [id, date] of Object.entries(carried)) {
       if (snap.has(id)) {
         seenPending.add(id);
@@ -187,7 +188,7 @@ export function trackUnsynced(
     written = next;
     //, #336a: the pending notes go to unsynced-notes.json before the record (a kill inside the 500 ms save window keeps them). proof: test/core/unsynced-notes.test.ts
     const notesNow = store.getState().data.notes;
-    const keep: UnsyncedNotes = {};
+    const keep: UnsyncedNotes = idRecord();
     for (const [id, date] of Object.entries(written)) {
       const note = notesNow.get(id as EntityId);
       if (note !== undefined && Number(note.modificationDate) === date) {

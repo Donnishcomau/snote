@@ -65,7 +65,7 @@ jobs:
       # gate all still run here and must pass. Perf regressions are still
       # caught locally, where `make check` runs the bench unskipped.
       # The suite takes ~585 s on 2 vCPU, so the vitest time limit is raised to 900 s (stopgap).
-      - run: make check-ci VITEST_TIMEOUT=900 SHARD_REPORT="$RUNNER_TEMP/vitest-report.json"
+      - run: make check-ci SPLIT_SUITE=1 VITEST_TIMEOUT=900 SHARD_REPORT="$RUNNER_TEMP/vitest-report.json"
 
       # R4: the hostile corpus (test/fixtures/hostile.ts) through the BUILT dist/snote-main.js on a real
       # pty, in normal mode and with INK_SCREEN_READER=true. SNOTE_PTY_REQUIRED makes a runner that cannot open

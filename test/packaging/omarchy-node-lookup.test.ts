@@ -10,7 +10,7 @@
 // clone directory (containing packaging/omarchy/setup, the real
 // uninstall, and a small fake plugin-dist whose cli.js prints a fixed
 // line). No network, no real Node install.
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterAll, afterEach } from 'vitest';
 import {
   mkdtempSync,
   rmSync,
@@ -36,11 +36,18 @@ afterEach(() => {
   }
 });
 
+// #319: every clone this file makes is removed when the file ends, passed or failed.
+const clones: string[] = [];
+afterAll(() => {
+  for (const c of clones.splice(0)) rmSync(c, { recursive: true, force: true });
+});
+
 // Build a throwaway clone: <dir>/packaging/omarchy/{setup,uninstall} and
 // <dir>/plugin-dist/{cli.js,VERSION}. The fake cli.js prints
 // "fake snote <VERSION>" so the shim can be run end-to-end.
 function makeClone(version: string): string {
   const clone = mkdtempSync(join(tmpdir(), 'snote-nodelookup-clone-'));
+  clones.push(clone);
   mkdirSync(join(clone, 'packaging', 'omarchy'), { recursive: true });
   copyFileSync(REAL_SETUP, join(clone, 'packaging', 'omarchy', 'setup'));
   copyFileSync(REAL_UNINSTALL, join(clone, 'packaging', 'omarchy', 'uninstall'));

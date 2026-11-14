@@ -49,6 +49,7 @@ read_version() {
 }
 
 installed="$(read_version "$app_version_file")"
+verified=""
 clone_version="$(read_version "$dist_version_file")"
 
 if [ "${1:-}" = "--check" ]; then
@@ -138,7 +139,7 @@ dl_cleanup() {
 }
 
 update_clone() {
-  local url norm dirty tags sha ref v peeled best best_sha target prev re lsrc=0
+  local url norm dirty tags sha ref v peeled best best_sha target re lsrc=0
   local LC_ALL=C
   case "${SNOTE_UPDATE_CHECK:-}" in
     off|0) refuse "updates are switched off (SNOTE_UPDATE_CHECK)." ;;
@@ -155,6 +156,8 @@ update_clone() {
   dirty="$(git "${gf[@]}" -C "$src_dir" status --porcelain --untracked-files=no 2>/dev/null)" \
     || refuse "the plugin folder could not be read."
   [ -z "$dirty" ] || refuse "the plugin folder has local changes."
+  prev="$(git "${gf[@]}" -C "$src_dir" rev-parse HEAD)" # #68: until the checked move, every exit (HUP, INT, TERM too; not SIGKILL) resets to it
+  trap 'git "${gf[@]}" -C "$src_dir" reset --hard --quiet "$prev" >/dev/null 2>&1 || true' EXIT; trap "exit 1" HUP INT TERM
 
   # #197: reading stops at the cap (head -c closes the pipe, git gets SIGPIPE),
   # so no more than cap+1 bytes are ever held; a cut-off list is "too large".
@@ -188,14 +191,24 @@ update_clone() {
   target="$(git "${gf[@]}" --git-dir="$src_dir/.git" rev-parse --verify --quiet "refs/snote-update/target^{commit}" || true)"
   git "${gf[@]}" --git-dir="$src_dir/.git" update-ref -d refs/snote-update/target >/dev/null 2>&1 || true
   [ -n "$target" ] && [ "$target" = "$best_sha" ] || refuse "the downloaded release did not match its tag."
-  prev="$(git "${gf[@]}" -C "$src_dir" rev-parse HEAD)"
+  # #68: before the clone moves, the INSTALLED snote checks the fetched commit's signed SHA256SUMS with its own keys
+  # (setup --verify-release). Any failure (no install, no Node, no keys, an older build, a time-out) refuses, and the
+  # download is removed. No variable, flag or origin skips this. proof: test/packaging/bar-update-verify.test.ts
+  if ! why="$("$setup" --verify-release "$target" "v$best" 2>&1)"; then
+    dl_cleanup # the unverified download goes too
+    why="$(printf '%s' "$why" | tail -n 1 | LC_ALL=C tr -cd ' -~' | head -c 300)"
+    printf '%s\n' 'update refused: the download could not be verified' >&2
+    refuse "${why:-the release could not be checked.}"
+  fi
   git "${gf[@]}" -C "$src_dir" merge --ff-only --quiet "$target" >/dev/null 2>&1 \
     || refuse "the plugin folder cannot be fast-forwarded to $best."
   if ! git "${gf[@]}" -C "$src_dir" merge-base --is-ancestor "$target" HEAD >/dev/null 2>&1 \
      || [ "$(read_version "$dist_version_file")" != "$best" ]; then
-    git "${gf[@]}" -C "$src_dir" reset --hard --quiet "$prev" >/dev/null 2>&1 || true
     refuse "release $best did not match its version."
   fi
+  [ "$(git "${gf[@]}" -C "$src_dir" rev-parse HEAD)" = "$target" ] || refuse "the plugin folder is not at the checked release $best."
+  verified=1
+  trap - EXIT HUP INT TERM # a checked move stays; proof: test/packaging/bar-update-verify.test.ts and #135 test 2
   say "the plugin folder is now at release $best."
 }
 
@@ -207,6 +220,7 @@ if [ -z "$installed" ] || ! ver_gt "$clone_version" "$installed"; then
 fi
 
 if [ -z "$installed" ] || ver_gt "$clone_version" "$installed"; then
+  if [ -n "$verified" ]; then exec "$setup" --verified-update; fi
   exec "$setup"
 fi
 if [ "$clone_version" = "$installed" ]; then

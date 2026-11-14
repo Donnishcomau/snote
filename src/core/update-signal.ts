@@ -6,7 +6,8 @@
  * async and no timers.
  */
 
-export type UpdateSignal = { kind: 'available' } | { kind: 'restart'; available: string };
+/** #443: `offPlugin` marks an install that is not the Omarchy plugin, so the notice names no plugin command; status.json keeps only `kind`. */
+export type UpdateSignal = { kind: 'available'; offPlugin?: true } | { kind: 'restart'; available: string };
 
 let current: UpdateSignal | null = null;
 const listeners = new Set<(u: UpdateSignal) => void>();

@@ -4,6 +4,7 @@ import { main } from '../../src/cli/main';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import { restorePlatform, setPlatform } from '../helpers/platform';
 
 function only(...files: string[]): (file: string) => boolean {
   const set = new Set(files);
@@ -15,9 +16,11 @@ describe('env-check', () => {
 
   beforeEach(() => {
     originalPath = process.env.PATH;
+    setPlatform('linux'); // #447: these tests assert the Linux rows (wl-copy, omarchy-launch-tui), on any host
   });
 
   afterEach(() => {
+    restorePlatform();
     if (originalPath === undefined) {
       delete process.env.PATH;
     } else {
@@ -46,29 +49,29 @@ describe('env-check', () => {
     expect(findOnPath('/opt/x/gone', '/a', only('/a/opt/x/gone'))).toBeNull();
   });
 
-  it('4: WHEN envReport({ EDITOR: \'code -w\', PATH: \'/a\' }, only(\'/a/code\')) is called THEN it returns exactly `ok       code: /a/code\\nmissing  wl-copy\\nmissing  omarchy-launch-tui`', () => {
-    const result = envReport({ EDITOR: 'code -w', PATH: '/a' }, only('/a/code'));
+  it('4: WHEN envReport({ EDITOR: \'code -w\', PATH: \'/a:/o/omarchy/bin\' }, only(\'/a/code\')) is called THEN it returns exactly `ok       code: /a/code\\nmissing  wl-copy\\nmissing  omarchy-launch-tui`', () => {
+    const result = envReport({ EDITOR: 'code -w', PATH: '/a:/o/omarchy/bin' }, only('/a/code'));
     expect(result).toBe(
       'ok       code: /a/code\nmissing  wl-copy\nmissing  omarchy-launch-tui'
     );
   });
 
-  it('5: WHEN envReport({ PATH: \'/a\' }, only(\'/a/nvim\', \'/a/wl-copy\')) is called, and again with EDITOR: \'   \' THEN each returns 3 lines, the first `ok       nvim: /a/nvim`, the second `ok       wl-copy: /a/wl-copy`, the third `missing  omarchy-launch-tui`', () => {
-    const r1 = envReport({ PATH: '/a' }, only('/a/nvim', '/a/wl-copy'));
+  it('5: WHEN envReport({ PATH: \'/a:/o/omarchy/bin\' }, only(\'/a/nvim\', \'/a/wl-copy\')) is called, and again with EDITOR: \'   \' THEN each returns 3 lines, the first `ok       nvim: /a/nvim`, the second `ok       wl-copy: /a/wl-copy`, the third `missing  omarchy-launch-tui`', () => {
+    const r1 = envReport({ PATH: '/a:/o/omarchy/bin' }, only('/a/nvim', '/a/wl-copy'));
     expect(r1).toContain('ok       nvim: /a/nvim');
     expect(r1).toContain('ok       wl-copy: /a/wl-copy');
     expect(r1).toContain('missing  omarchy-launch-tui');
     expect(r1.split('\n')).toHaveLength(3);
 
-    const r2 = envReport({ EDITOR: '   ', PATH: '/a' }, only('/a/nvim', '/a/wl-copy'));
+    const r2 = envReport({ EDITOR: '   ', PATH: '/a:/o/omarchy/bin' }, only('/a/nvim', '/a/wl-copy'));
     expect(r2).toContain('ok       wl-copy: /a/wl-copy');
     expect(r2.split('\n')).toHaveLength(3);
   });
 
-  it("6: WHEN process.env.PATH is /nonexistent-snote and main(['--check', '--data-dir', dir], io) runs THEN it resolves 0 and the logged text contains `missing  wl-copy` and `missing  omarchy-launch-tui`, both after the `terminal: ` line", async () => {
+  it("6: WHEN process.env.PATH is /nonexistent-snote:/nonexistent-snote/omarchy/bin (an Omarchy PATH) and main(['--check', '--data-dir', dir], io) runs THEN it resolves 0 and the logged text contains `missing  wl-copy` and `missing  omarchy-launch-tui`, both after the `terminal: ` line", async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'snote-t60-'));
     try {
-      process.env.PATH = '/nonexistent-snote';
+      process.env.PATH = '/nonexistent-snote:/nonexistent-snote/omarchy/bin';
       const logged: string[] = [];
       const io = { log: (text: string) => logged.push(text) };
       const code = await main(['--check', '--data-dir', dir], io);

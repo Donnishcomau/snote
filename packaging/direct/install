@@ -1,0 +1,307 @@
+#!/usr/bin/env bash
+# snote direct installer (issues #60, #339, #340; proof: test/packaging/direct-install.test.ts). Installs snote from the newest GitHub
+# release under your home folder. It ships as the release asset snote-install: download it to a file, then run it with bash.
+# It writes only ~/.local/share/snote-app and ~/.local/bin/snote, needs no administrator rights, and never touches ~/.local/share/snote
+# (your notes). It downloads ASSETS.SHA256SUMS, then the tarball that list names, and installs only when the tarball's SHA-256 equals the
+# one on its line. That catches a broken or cut-off download; it does not catch a tampered release, because it does not check a signature
+# (the installer never checks the signature). To remove snote: delete ~/.local/bin/snote and ~/.local/share/snote-app.
+# #30 L5c (#340 #342): shipped in the build as update-helper, run by snote as `update-helper --from-stdin` after a confirmed update.
+# Then it downloads nothing and reads no SNOTE_INSTALL_BASE: stdin is a pipe carrying one header line `<sha256> <version>` and
+# then the release tarball snote has verified with its signature; the helper hashes the file it wrote, before and after
+# unpacking, against that header, and runs the same steps 3 to 5 as a download (proof: test/packaging/direct-update-helper.test.ts).
+set -euo pipefail
+umask 077
+
+fail() { echo "snote install: $*" >&2; exit 1; }
+from_stdin=0
+if [ "$#" = 1 ] && [ "$1" = --from-stdin ]; then
+  from_stdin=1
+  # a pipe, or the socket pair Node gives a child's stdin: never a file, a terminal or /dev/null (proof: test/packaging/direct-update-helper.test.ts)
+  [ -p /dev/stdin ] || [ -S /dev/stdin ] || fail "--from-stdin needs snote's pipe on stdin; nothing was installed"
+fi
+
+# --- who and where -----------------------------------------------------------------------------------------------------
+[ "$(id -u)" != 0 ] || fail "do not run this as root: it installs under your own home folder"
+[ -n "${HOME:-}" ] && [ "${HOME#/}" != "$HOME" ] && [ -d "$HOME" ] && [ -O "$HOME" ] || fail "HOME must be an absolute folder you own"
+data_home="$HOME/.local/share"
+bin_dir="$HOME/.local/bin"
+app_root="$data_home/snote-app"
+app_dir="$app_root/app"
+prev_dir="$app_root/app.prev"
+run_lock="$app_root/run.lock"
+shim="$bin_dir/snote"
+shim_marker="# snote-direct-shim v1 (packaging/direct/install) — safe to remove"
+
+# --- where the release comes from: constants; the test seam accepts only a loopback address ------------------------------
+BASE_DEFAULT="https://github.com/Donnishcomau/snote/releases"
+base="$BASE_DEFAULT"
+[ "$from_stdin" = 1 ] || base="${SNOTE_INSTALL_BASE:-$BASE_DEFAULT}"
+seam_host=""
+if [ "$base" != "$BASE_DEFAULT" ]; then
+  [[ $base =~ ^http://(127\.0\.0\.1:[0-9]{1,5})$ ]] || fail "SNOTE_INSTALL_BASE is not allowed: $base"
+  seam_host="${BASH_REMATCH[1]}"
+fi
+if [ -n "$seam_host" ]; then proto_args=(--proto '=http' --proto-redir '=http'); else proto_args=(--proto '=https' --proto-redir '=https'); fi
+MAX_SUMS=4096
+MAX_TARBALL=8388608
+MAX_UNPACKED=67108864
+MAX_ENTRIES=2000
+# The start check's time bound in seconds; the test seam accepts 1 to 9 or 0.1 to 0.9 only (the plugin setup's SNOTE_SETUP_PROBE_SECS shape).
+start_secs=10
+case "${SNOTE_INSTALL_START_SECS:-}" in [1-9]|0.[1-9]) start_secs=$SNOTE_INSTALL_START_SECS ;; esac
+
+# --- refuse before changing anything: another tool's shim (the plugin's), or a symlink where we write (proof: test/packaging/direct-install.test.ts)
+if [ -L "$shim" ] || { [ -e "$shim" ] && { [ ! -f "$shim" ] || ! grep -qxF -- "$shim_marker" "$shim"; }; }; then
+  fail "snote is already installed by the plugin: remove it first ($shim)"
+fi
+for p in "$app_root" "$app_dir" "$prev_dir" "$run_lock"; do
+  [ ! -L "$p" ] || fail "$p is a symlink; refusing to use it"
+done
+
+# --- folders and the run lock ---------------------------------------------------------------------------------------------
+( umask 022; mkdir -p "$data_home" "$bin_dir" )
+[ -d "$app_root" ] || mkdir -m 700 "$app_root"
+[ ! -L "$app_root" ] && [ -d "$app_root" ] && [ -O "$app_root" ] || fail "$app_root must be a folder you own, not a symlink"
+chmod 700 "$app_root"
+[ ! -L "$run_lock" ] || fail "$run_lock is a symlink; refusing to use it"
+for t in tar flock sha256sum mktemp cmp head; do command -v "$t" >/dev/null 2>&1 || fail "$t is needed and was not found"; done
+[ "$from_stdin" = 1 ] || command -v curl >/dev/null 2>&1 || fail "curl is needed and was not found"
+: >> "$run_lock"
+exec 9>> "$run_lock"
+
+# One scratch folder (0700, inside the app folder, never /tmp) holds the downloads and the unpacked files; every way out removes it,
+# and the shim's temp file in ~/.local/bin too (proof: test/packaging/direct-install.test.ts). It is made before the lock is taken,
+# so --from-stdin can read snote's bytes into it first; this run's sweep below skips it, but another run's sweep can remove it
+# while this run waits, so step 0 checks it is still there once the lock is held (proof: test/packaging/direct-update-helper.test.ts).
+work="$(mktemp -d "$app_root/app.XXXXXX")"
+cpid=""
+bpid=""
+bwd=""
+shim_tmp=""
+# Every way out also kills the start check's process group and its watchdog (bpid, bwd: set while bounded runs), so an interrupt
+# during the check leaves no build running (proof: test/packaging/direct-install.test.ts).
+cleanup() {
+  [ -z "$cpid" ] || kill "$cpid" 2>/dev/null || true
+  [ -z "$bpid" ] || kill -9 -- "-$bpid" 2>/dev/null || true
+  [ -z "$bwd" ] || kill "$bwd" 2>/dev/null || true
+  rm -rf -- "$work"; [ -z "$shim_tmp" ] || rm -f -- "$shim_tmp"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+trap 'exit 129' HUP
+
+if [ "$from_stdin" = 1 ]; then
+  # --- 0. the update from snote: read ALL of stdin first (a header of at most 128 characters, then at most 8 MiB, one more
+  # refuses), into a file created exclusively in the scratch folder, and only then wait for snote's exit to free the run lock
+  # (proof: test/packaging/direct-update-helper.test.ts).
+  IFS= read -r -n 128 header || fail "the update from snote has no header line; nothing was installed"
+  [[ $header =~ ^([0-9a-f]{64})\ ([0-9]{1,6}(\.[0-9]{1,6}){2,3})$ ]] || fail "the update from snote has a bad header line; nothing was installed"
+  want_hash="${BASH_REMATCH[1]}"; ver="${BASH_REMATCH[2]}"; tarball="snote-$ver.tar.gz"
+  ( set -C; head -c "$((MAX_TARBALL + 1))" > "$work/$tarball" ) || fail "the update from snote could not be written; nothing was installed"
+  flock -x -w 10 9 || fail "snote is still running: quit it and press U again"
+  # a sweep runs only under the run lock, so a file still here now stays until this run ends
+  [ -f "$work/$tarball" ] || fail "another install run removed the update from snote while waiting; nothing was installed"
+  n="$(wc -c < "$work/$tarball")"
+  [ "$n" -gt 0 ] && [ "$n" -le "$MAX_TARBALL" ] || fail "the update from snote is empty or too large; nothing was installed"
+else
+  flock -n -x 9 || fail "snote is running: quit it and run the installer again"
+fi
+
+# Leftovers of a killed run: app.XXXXXX (six letters or digits) directly in the app folder, real directories only (same shape as the plugin's setup).
+for d in "$app_root"/app.[A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9][A-Za-z0-9]; do
+  [ "$d" != "$work" ] && [ -d "$d" ] && [ ! -L "$d" ] && rm -rf -- "$d"
+done
+
+# fetch <url> <outfile> <max-bytes>: https only (including redirects), at most 3 redirects, a size cap, and the final host must be GitHub's.
+fetch() {
+  local url="$1" out="$2" max="$3" eff rest host rc=0
+  curl -q "${proto_args[@]}" --tlsv1.2 -fsSL --max-redirs 3 --max-time 120 --max-filesize "$max" -o "$out" -w '%{url_effective}' "$url" > "$work/eff" 2>/dev/null &
+  cpid=$!
+  wait "$cpid" || rc=$?
+  cpid=""
+  [ "$rc" = 0 ] || fail "download failed"
+  eff="$(cat "$work/eff")"
+  if [ -n "$seam_host" ]; then
+    rest="${eff#http://}"; [ "$rest" != "$eff" ] || fail "download refused: not the test server"
+  else
+    rest="${eff#https://}"; [ "$rest" != "$eff" ] || fail "download refused: not https"
+  fi
+  host="${rest%%[/?#]*}"
+  case "$host" in *@*) fail "download refused: unexpected host in $eff" ;; esac
+  if [ -n "$seam_host" ]; then
+    [ "$host" = "$seam_host" ] || fail "download refused: unexpected host $host"
+  else
+    case "$host" in github.com|release-assets.githubusercontent.com|objects.githubusercontent.com) ;; *) fail "download refused: unexpected host $host" ;; esac
+  fi
+}
+
+# --- 1. the checksum list: strict form, exactly three LF lines (a download only; --from-stdin has the header of step 0) --------
+if [ "$from_stdin" = 0 ]; then
+fetch "$base/latest/download/ASSETS.SHA256SUMS" "$work/sums" "$MAX_SUMS"
+sums_bad() { fail "the checksum list is not valid ($1)"; }
+LC_ALL=C tr -d '\0' < "$work/sums" | cmp -s - "$work/sums" || sums_bad "NUL byte"
+[ "$(wc -c < "$work/sums")" -gt 0 ] && [ -z "$(tail -c 1 "$work/sums")" ] || sums_bad "no final newline"
+mapfile -t L < "$work/sums"
+[ "${#L[@]}" -eq 3 ] && [ "$(wc -l < "$work/sums")" -eq 3 ] || sums_bad "not 3 lines"
+[[ ${L[0]} =~ ^snote-assets\ ([0-9]{1,6}(\.[0-9]{1,6}){2,3})\ ([0-9a-f]{40})$ ]] || sums_bad "line 1"
+ver="${BASH_REMATCH[1]}"
+[[ ${L[1]} =~ ^([0-9a-f]{64})\ \ ([A-Za-z0-9._-]+)$ ]] || sums_bad "line 2"
+want_hash="${BASH_REMATCH[1]}"; want_name="${BASH_REMATCH[2]}"
+[[ ${L[2]} =~ ^[0-9a-f]{64}\ \ snote-install$ ]] || sums_bad "line 3"
+tarball="snote-$ver.tar.gz"
+[ "$want_name" = "$tarball" ] || fail "checksum mismatch: the list names $want_name, not $tarball"
+fi
+
+# --- 2. the tarball, and the exact compare (never sha256sum -c on a remote file) ----------------------------------------------
+[ "$from_stdin" = 1 ] || fetch "$base/download/v$ver/$tarball" "$work/$tarball" "$MAX_TARBALL"
+got_hash="$(sha256sum < "$work/$tarball")"; got_hash="${got_hash%% *}"
+[ "$got_hash" = "$want_hash" ] || fail "checksum mismatch: the download is not the release it should be; nothing was installed"
+
+# --- 3. list before extracting: regular files and folders only, sane names, size and count caps -----------------------------
+tar -tvzf "$work/$tarball" --numeric-owner --quoting-style=escape > "$work/listing" 2> "$work/err" || fail "the download is not a valid archive"
+entries=0; total=0
+entry_re='^([-d])[rwx-]{9} [0-9]+/[0-9]+ +([0-9]+) [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2} (.+)$'
+while IFS= read -r line; do
+  [[ $line =~ $entry_re ]] || fail "the archive holds an entry that is not a plain file or folder; nothing was installed"
+  size="${BASH_REMATCH[2]}"; name="${BASH_REMATCH[3]}"
+  [[ $name != *\\* ]] || fail "the archive holds a name with a control character or a backslash; nothing was installed"
+  [ "${name#/}" = "$name" ] || fail "the archive holds an absolute path; nothing was installed"
+  case "/$name/" in */../*|*//*) fail "the archive holds a '..' path; nothing was installed" ;; esac
+  entries=$((entries + 1)); total=$((total + size))
+  [ "$entries" -le "$MAX_ENTRIES" ] && [ "$total" -le "$MAX_UNPACKED" ] || fail "the archive is too large; nothing was installed"
+done < "$work/listing"
+[ "$entries" -gt 0 ] || fail "the archive is empty; nothing was installed"
+
+# --- 4. extract into the empty stage, then scan it and set modes from a fixed list ---------------------------------------------
+mkdir -m 700 "$work/x"
+tar -xzf "$work/$tarball" -C "$work/x" --no-same-owner --no-same-permissions 2> "$work/err" || fail "the archive could not be unpacked; nothing was installed"
+[ -z "$(find "$work/x" ! -type f ! -type d -print -quit)" ] || fail "the archive holds a link or special file; nothing was installed"
+[ -f "$work/x/cli.js" ] && [ -f "$work/x/VERSION" ] || fail "the archive is not a snote build; nothing was installed"
+[ "$(cat "$work/x/VERSION")" = "$ver" ] || fail "the archive holds another version than $ver; nothing was installed"
+# the file unpacked is still the one hashed in step 2 (a change to it while tar read it is caught here, before the swap)
+got_hash="$(sha256sum < "$work/$tarball")"; got_hash="${got_hash%% *}"
+[ "$got_hash" = "$want_hash" ] || fail "checksum mismatch: the download changed while it was unpacked; nothing was installed"
+find "$work/x" -type d -exec chmod 700 {} +
+find "$work/x" -type f -exec chmod 600 {} +
+for f in cli.js update-helper; do [ ! -f "$work/x/$f" ] || chmod 700 "$work/x/$f"; done
+
+# --- 5. Node, the shim, the swap, the start check ------------------------------------------------------------------------------
+# mv_dir SRC DEST: the one way this installer moves a folder or a file into place (scripts/shell-gate.sh R3). DEST must not be a
+# symlink, checked right before the move, and GNU `mv -T` treats DEST as the entry itself, so a symlink that appears after the check
+# makes mv fail instead of moving SRC into the link's target (the plugin setup's rule, #199; proof: test/packaging/direct-install.test.ts).
+mv_dir() {
+  [ ! -L "$2" ] || fail "$2 is a symlink; refusing to use it"
+  mv -T -- "$1" "$2"
+}
+mv_file() { mv_dir "$1" "$2"; }
+# bounded CMD...: runs CMD in its own process group with fd 9 (the run lock) closed, and kills the whole group after $start_secs
+# seconds (the plugin setup's bounded, #484), so a build that hangs cannot hold the installer, or the lock, for ever
+# (proof: test/packaging/direct-install.test.ts).
+bounded() {
+  local rc=0
+  set -m
+  "$@" 9>&- & bpid=$!
+  set +m
+  ( sleep "$start_secs"; kill -9 "$bpid" ) >/dev/null 2>&1 9>&- & bwd=$!
+  wait "$bpid" 2>/dev/null || rc=$?
+  kill -9 -- "-$bpid" 2>/dev/null || :
+  kill "$bwd" 2>/dev/null || true
+  bpid=""; bwd=""
+  return "$rc"
+}
+# The start check (#67): the new build, still in the stage, must print exactly `snote <ver>` on stdout and exit 0, within the bound,
+# with nothing from the caller: env -i, a temp HOME and temp XDG_* folders inside the stage (no token, no notes folder), no update
+# check, no stdin, no fd 9 (the plugin setup's start_check_passes; proof: test/packaging/direct-install.test.ts).
+start_check_passes() {
+  local chk="$work/check"
+  mkdir -m 700 "$chk" "$chk/home" "$chk/data" "$chk/config" "$chk/state" "$chk/cache"
+  bounded /usr/bin/env -i PATH=/usr/bin:/bin HOME="$chk/home" XDG_DATA_HOME="$chk/data" XDG_CONFIG_HOME="$chk/config" \
+    XDG_STATE_HOME="$chk/state" XDG_CACHE_HOME="$chk/cache" SNOTE_UPDATE_CHECK=off "$node_bin" "$work/x/cli.js" --version \
+    < /dev/null > "$work/start.out" 2>/dev/null || return 1
+  printf 'snote %s\n' "$ver" | cmp -s - "$work/start.out"
+}
+find_node() {
+  local c m v
+  for c in "${SNOTE_NODE:-}" /usr/bin/node; do
+    [ -n "$c" ] && [ -f "$c" ] && [ -x "$c" ] || continue
+    v="$(env -u NODE_OPTIONS "$c" --version 2>/dev/null | sed -n 's/^v\([0-9][0-9]*\).*/\1/p' | head -n1)" || true
+    if [ -n "$v" ] && [ "$v" -ge 22 ] 2>/dev/null; then printf '%s\n' "$c"; return 0; fi
+  done
+  if [ -x /usr/bin/mise ]; then
+    m="$(env -i PATH=/usr/bin:/bin HOME="$HOME" /usr/bin/mise which node 2>/dev/null)" || m=""
+    if [ -n "$m" ] && [ -f "$m" ] && [ -x "$m" ]; then
+      v="$(env -u NODE_OPTIONS "$m" --version 2>/dev/null | sed -n 's/^v\([0-9][0-9]*\).*/\1/p' | head -n1)" || true
+      if [ -n "$v" ] && [ "$v" -ge 22 ] 2>/dev/null; then printf '%s\n' "$m"; return 0; fi
+    fi
+  fi
+  return 1
+}
+node_bin="$(find_node)" || fail "snote needs Node 22 or newer (/usr/bin/node or mise); install it and run the installer again"
+
+write_shim() {
+  local tmp q_app q_lock
+  shim_tmp="$(mktemp "$bin_dir/.snote-shim.XXXXXX")"
+  tmp="$shim_tmp"
+  q_app="'$(printf '%s' "$app_dir" | sed "s/'/'\\\\''/g")'"
+  q_lock="'$(printf '%s' "$run_lock" | sed "s/'/'\\\\''/g")'"
+  cat > "$tmp" <<EOF
+#!/bin/sh
+$shim_marker
+# Resolve Node at run time from a fixed list; never from PATH.
+node=""
+for candidate in "\${SNOTE_NODE:-}" /usr/bin/node; do
+  [ -n "\$candidate" ] || continue
+  if [ -f "\$candidate" ] && [ -x "\$candidate" ]; then
+    major="\$(env -u NODE_OPTIONS "\$candidate" --version 2>/dev/null | sed -n 's/^v\([0-9][0-9]*\).*/\1/p' | head -n1)"
+    if [ -n "\$major" ] && [ "\$major" -ge 22 ] 2>/dev/null; then node="\$candidate"; break; fi
+  fi
+done
+if [ -z "\$node" ] && [ -x /usr/bin/mise ]; then
+  candidate="\$(env -i PATH=/usr/bin:/bin HOME="\$HOME" /usr/bin/mise which node 2>/dev/null)" || candidate=""
+  if [ -n "\$candidate" ] && [ -f "\$candidate" ] && [ -x "\$candidate" ]; then
+    major="\$(env -u NODE_OPTIONS "\$candidate" --version 2>/dev/null | sed -n 's/^v\([0-9][0-9]*\).*/\1/p' | head -n1)"
+    if [ -n "\$major" ] && [ "\$major" -ge 22 ] 2>/dev/null; then node="\$candidate"; fi
+  fi
+fi
+if [ -z "\$node" ]; then
+  echo "snote needs Node 22 or newer (/usr/bin/node or mise)." >&2
+  exit 1
+fi
+run_lock=$q_lock
+# A shared lock for snote's whole life (fd 9 stays open across exec): the installer's exclusive lock fails while snote runs.
+if [ -x /usr/bin/flock ] && [ -f "\$run_lock" ] && [ ! -L "\$run_lock" ] && [ -w "\$run_lock" ]; then
+  exec 9>>"\$run_lock" && /usr/bin/flock -s 9
+fi
+# Between the installer's two renames there is no app/cli.js: run the kept build.
+if [ ! -f $q_app/cli.js ] && [ -f $q_app.prev/cli.js ]; then
+  exec env -u NODE_OPTIONS "\$node" $q_app.prev/cli.js "\$@"
+fi
+exec env -u NODE_OPTIONS "\$node" $q_app/cli.js "\$@"
+EOF
+  chmod 755 "$tmp"
+  mv_file "$tmp" "$shim"
+  shim_tmp=""
+}
+
+# The home changes only after the new build passed its start check in the stage: a failed or interrupted check leaves app, app.prev
+# and the shim as they were. Then INT, TERM and HUP are ignored for the few local renames and the shim, so no signal leaves half a
+# swap; the older app.prev goes into the scratch folder (removed on exit) and one app.prev is kept (proof: test/packaging/direct-install.test.ts).
+[ ! -L "$app_dir" ] && [ ! -L "$prev_dir" ] || fail "refusing to replace a symlink"
+if ! start_check_passes; then
+  [ -e "$app_dir" ] && fail "update failed: the new build did not start, so the old one was kept"
+  fail "install failed: the new build did not start, so nothing was installed"
+fi
+trap '' INT TERM HUP
+if [ -e "$app_dir" ]; then
+  [ ! -e "$prev_dir" ] || mv_dir "$prev_dir" "$work/old-prev"
+  mv_dir "$app_dir" "$prev_dir"
+fi
+mv_dir "$work/x" "$app_dir"
+write_shim
+
+echo "snote $ver is installed: run snote"
+case ":$PATH:" in
+  *":$bin_dir:"*) ;;
+  *) echo "Note: $bin_dir is not on PATH in this shell. Add it in your shell's own rc file, e.g.: export PATH=\"$bin_dir:\$PATH\"" ;;
+esac

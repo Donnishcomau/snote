@@ -1,6 +1,6 @@
 // OMARCHY: modified for snote from Automattic's simplenote-electron (GPLv2); see NOTICE (2026-09-23).
 import removeMarkdown from 'remove-markdown';
-import escapeRegExp from 'lodash/escapeRegExp'; // OMARCHY: one function, not all of lodash (start-up time)
+const escapeRegExp = (s: string): string => s.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&'); // OMARCHY: lodash's escapeRegExp for a string, without lodash
 import { getTerms } from './filter-notes';
 
 import * as T from '../types';

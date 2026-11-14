@@ -23,7 +23,7 @@ import type { SessionSnapshot } from '../core/crash-ring';
 import { getKeyLog } from '../tui/app-keys';
 import { makeStore } from '../core/store';
 // loadState for the live `--report` bundle.
-import { loadState, persistOnChange, saveState } from '../core/persistence';
+import { loadState, persistOnChange, saveState, SET_ASIDE_NOTICE } from '../core/persistence';
 import { FileGhostStore } from '../core/ghost-store';
 // #689: SIGHUP/SIGTERM write state.json before the signal ends snote.
 import { flushOnSignal } from '../core/signal-flush';
@@ -47,7 +47,7 @@ import { trackOwnEchoes } from '../core/own-echoes';
 import { dropTombstonedNotes, resendDeletions, trackDeletions } from '../core/tombstones';
 import { installTombstoneIndexFix } from '../core/simperium-tombstone-index-fix';
 import { installStaleChangeFix } from '../core/simperium-stale-change-fix';
-import { parseCli, checkReport, splitNewFlag, splitNotifyFlag, USAGE } from './args';
+import { parseCli, checkReport, splitNewFlag, splitNotifyFlag, starPromptFlag, USAGE } from './args';
 // #17 — opt-in screen-reader mode: `--screen-reader` or SNOTE_SCREEN_READER=1.
 import { screenReaderMode } from './screen-reader';
 // a fire-and-forget failure that cannot reach the screen shows on the notice line.
@@ -64,11 +64,12 @@ import {
   requestNewNote,
   watchNewRequests,
   emitNewRequest,
+  UPDATE_ASK_FILE,
 } from '../core/new-request';
 // `--version`/`-v` prints `snote <version>` from package.json.
 import { VERSION } from './version'; import { setShownVersion } from '../core/shown-version';
 import { sanitizeForTerminal } from '../core/sanitize';
-import { envReport } from './env-check';
+import { envReport, installLines } from './env-check';
 import { checkEndpoints } from '../core/endpoint-check';
 // one data folder per account: accountDir + prepareDataDir.
 import {
@@ -83,10 +84,11 @@ import { recordAccountId, recordSavedAccountId, resolveAccountDir } from '../cor
 // start-up update checks (local first, then the daily remote one).
 // one snote process per account dir: stale locks reclaimed, live ones refuse.
 import { acquireInstanceLock, UNLOCKED_NOTICE } from '../core/instance-lock';
+import { allowUpdateOffer, handOffRequested } from '../core/update-offer'; // #30 L5a1: the offer and the y request
 // T73 — login calls now come from ./login-calls, not direct auth imports.
 import { loginCalls } from './login-calls';
 import { APP_ID } from '../core/config';
-import { Root } from '../tui/Root';
+import { Root } from '../tui/Root'; import { openUpdateAskFromBar } from '../tui/update-ask'; // #30 L5b: the bar's ask opens the U question
 import type { Auth } from '../tui/Root';
 // the output guard. process.stdout meets
 // the guard's MinimalOutputStream (write(chunk, ...args)) structurally.
@@ -108,18 +110,25 @@ export function buildStore(
   opts: BuildStoreOptions,
   auth: { email: string; token: string },
   onLogout: () => void
-): { store: ReturnType<typeof makeStore>; stopSaving: () => void } {
+): { store: ReturnType<typeof makeStore>; stopSaving: () => boolean } {
   // claim the dir before anything reads or writes it. A live
   // process's lock throws synchronously, naming its pid; a stale one
   // (crash, kill -9) is reclaimed. Released by `stopSaving` below, and on
   // logout — both run the same closure, and release is synchronous so no
   // debounced save can land after the dir is gone.
+  // #563: the start-up notices share the one notice slot, so each one publishes them all, most important first
+  // (state.json set aside, drafts restored, no kernel lock), and none replaces another
+  const startNotices = { aside: '', drafts: '', lock: '' };
+  const startNotice = (kind: 'aside' | 'drafts' | 'lock', text: string): void => {
+    startNotices[kind] = text;
+    publishInfo([startNotices.aside, startNotices.drafts, startNotices.lock].filter((t) => t !== '').join('. ').replaceAll('.. ', '. '));
+  };
   const instanceLock = acquireInstanceLock(opts.dataDir);
-  if (instanceLock.unlocked) publishInfo(UNLOCKED_NOTICE[instanceLock.unlocked]); // #385
+  if (instanceLock.unlocked) startNotice('lock', UNLOCKED_NOTICE[instanceLock.unlocked]); // #385
   sweepStaleTemps(opts.dataDir);
   // T73 — stop the saver before onLogout wipes the data dir,
   // so no debounced timer can rewrite state.json after a logout.
-  let stopSaving = instanceLock.release;
+  let stopSaving = (): boolean => { instanceLock.release(); return true; };
   // T85 — keep the note bucket's ghost store so start-up can
   // re-queue notes whose local copy is newer than the last sync.
   let noteGhosts: FileGhostStore<unknown> | undefined;
@@ -175,13 +184,18 @@ export function buildStore(
     const tooLarge: TooLargeDraft[] = [];
     const report = { changed: 0 };
     const notice = recoveryNotice(recoverDrafts(store, draftsDir(), tooLarge, report), tooLarge, report.changed);
-    if (notice !== null) publishInfo(notice); // #89: not a failure, so not the error style
+    if (notice !== null) startNotice('drafts', notice); // #89: not a failure, so not the error style
   }, 0);
   // keep the unsynced record fresh: written at once whenever the
   // pending set changes, never by the debounced state.json save.
   const unsyncedTracker = trackUnsynced(store, opts.dataDir, loadedState === undefined && fs.existsSync(path.join(opts.dataDir, 'state.json')));
   // #545: an unloadable state.json is kept as state.json.corrupt before the first full save replaces it
-  if (loadedState === undefined) { try { secureRename(path.join(opts.dataDir, 'state.json'), path.join(opts.dataDir, 'state.json.corrupt')); } catch { /* missing: nothing to keep */ } }
+  if (loadedState === undefined) {
+    try {
+      secureRename(path.join(opts.dataDir, 'state.json'), path.join(opts.dataDir, 'state.json.corrupt'));
+      startNotice('aside', SET_ASIDE_NOTICE); // #563: said on screen; the slot holds it until the notice line reads it
+    } catch { /* missing: nothing to keep */ }
+  }
   const stopUnsynced = unsyncedTracker.stop;
   // with a status dir (the bar plugin's), keep status.json fresh;
   // stopStatus flushes any pending write at shutdown.
@@ -193,12 +207,13 @@ export function buildStore(
   const stopNewRequests = watchNewRequests(opts.dataDir, emitNewRequest, {
     pollMs: opts.newRequestPollMs,
   });
+  const stopUpdateAsks = watchNewRequests(opts.dataDir, openUpdateAskFromBar, { pollMs: opts.newRequestPollMs, file: UPDATE_ASK_FILE }); // #30 L5b
   // the returned stopSaving also releases the instance lock. The
   // marker line below is the OMARCHY: boundary cast one structure.test counts.
   let saving = true; // #657b: the start-up hand-off writes state.json only until a quit or logout
   stopSaving = () => {
     saving = false;
-    startSaving();
+    const saved = startSaving(); // #30 L5a1: the update hand-off reads it
     stopUnsynced();
     // quit and logout both stop the owed-ack tracker here: the
     // library keeps sending until client.end(), and a late write would
@@ -211,7 +226,9 @@ export function buildStore(
     // no later heartbeat can overwrite the mark.
     if (opts.statusDir) clearUpdateStatusFile(opts.statusDir);
     stopNewRequests();
+    stopUpdateAsks();
     instanceLock.release();
+    return saved;
   };
   // T85 — re-queue notes newer than their ghost on start-up (FR-5).
   // OMARCHY: boundary cast — FileGhostStore structurally satisfies GhostReader.
@@ -289,7 +306,7 @@ export function accountStore(
   },
   auth: { email: string; token: string },
   onLogout: () => void
-): { store: ReturnType<typeof makeStore>; stopSaving: () => void } {
+): { store: ReturnType<typeof makeStore>; stopSaving: () => boolean } {
   // the account folder must exist before the ghost store and
   // persistence write into it; create it (root migration is done by the
   // caller's prepareDataDir, which only moves files when a token is present).
@@ -383,6 +400,8 @@ export async function main(
 ): Promise<number> {
   const rawLog = io?.log ?? console.log;
   const log = (text: string): void => rawLog(sanitizeForTerminal(text)); // #200: every pre-start line
+  // #68: the bar update's release check (packaging/omarchy/setup --verify-release), loaded only when asked for
+  if (argv[0] === '--verify-release') return (await import('../core/release-check-cli')).releaseCheck(argv.slice(1), VERSION, process.argv[1], log);
 
   // `--report` is stripped before parseCli: CliOptions's shape is
   // fixed (strict parseArgs would reject it), and the report runs instead
@@ -390,11 +409,12 @@ export async function main(
   const reportOnly = argv.includes('--report');
   // `--notify-new` is stripped here too (same strict-parser reason);
   // it sends a request to a running instance instead of rendering.
-  const { args: argsWithoutReport, notifyNew } = splitNotifyFlag(
+  const { args: argsWithoutReport, notifyNew, askUpdate } = splitNotifyFlag(
     argv.filter((a) => a !== '--report')
   );
   const { args: argsWithoutNew, startNew } = splitNewFlag(argsWithoutReport);
   const { args, on: screenReader } = screenReaderMode(argsWithoutNew, process.env);
+  const { args: cliArgs, noStarPrompt } = starPromptFlag(args);
 
   // `--version`/`-v` is stripped before parseCli too: CliOptions's
   // shape is fixed, so the strict parser would reject it. Print the
@@ -406,7 +426,7 @@ export async function main(
 
   let o;
   try {
-    o = parseCli(args);
+    o = parseCli(cliArgs);
   } catch (e) {
     log(`error: ${(e as Error).message}`);
     log(USAGE);
@@ -455,6 +475,7 @@ export async function main(
       })
     );
     log(envReport(process.env));
+    log(await installLines());
     return 0;
   }
 
@@ -469,12 +490,14 @@ export async function main(
   // request was sent, 3 when there is no auth.json or no running instance.
   // Prints nothing either way; runs before prepareDataDir so it never
   // creates or migrates anything.
-  if (notifyNew) {
+  if (notifyNew || askUpdate) {
+    // #30 L5b: `--ask-update` (the bar's update click) asks the running snote to show the U question; that snote opens it only
+    // while it offers an update (update-offer.ts currentOffer: check on, an install canOfferUpdate accepts), so it is the one gate.
     const saved = await loadToken(dataDir);
     if (!saved) {
       return 3;
     }
-    return requestNewNote(resolveAccountDir(dataDir, saved.email, saved.server)) === 'sent' ? 0 : 3;
+    return requestNewNote(resolveAccountDir(dataDir, saved.email, saved.server), askUpdate ? UPDATE_ASK_FILE : undefined) === 'sent' ? 0 : 3;
   }
 
   // move an old single-folder install into the saved
@@ -488,7 +511,8 @@ export async function main(
 
   // T73 — keep the stopSaving of the latest buildStore call and
   // flush it after waitUntilExit (T33 dropped it, losing the last 500ms on quit).
-  let stopSaving = () => {};
+  let stopSaving = (): boolean => true;
+  let saved = true; // #30 L5a1: the last quit save left nothing unsaved (the update hand-off reads it)
   // keep the latest store too, so the crash handler can snapshot it.
   let lastStore: ReturnType<typeof accountStore>['store'] | undefined;
   // #428 — the quit step's store: the account signed in now (lastStore stays the crash snapshot's).
@@ -503,7 +527,7 @@ export async function main(
       auth,
       tracked.onLogout
     );
-    stopSaving = built.stopSaving;
+    stopSaving = () => (saved = built.stopSaving());
     lastStore = built.store;
     tracked.bind(built.store);
     // start checks only when the opt-out switch allows it, so no test path spawns git.
@@ -513,15 +537,21 @@ export async function main(
       void (async () => {
         const { updateCheckEnabled } = await import('../core/update-check');
         if (!updateCheckEnabled(process.env)) return;
-        const { homepageGuard, runningInstallKind, updateChecksFor } = await import('../core/install-kind');
+        const { canOfferUpdate, homepageGuard, runningInstallKind, updateChecksFor, updateStateDir } = await import('../core/install-kind');
         if (!updateChecksFor(runningInstallKind())) return;
+        if (canOfferUpdate(runningInstallKind())) allowUpdateOffer(runningInstallKind()); // #30 L5a1
         const { runUpdateChecks } = await import('../core/update-run');
         const { startUpdateWatch } = await import('../core/update-watch');
-        void runUpdateChecks({ version: VERSION, home: os.homedir(), env: process.env, stateDir: statusDir(process.env), run: homepageGuard() }).catch(() => {});
+        // #443: off the plugin install the cache lives in snote's data folder and the notice names no plugin command.
+        const kind = runningInstallKind();
+        const stateDir = updateStateDir(kind, statusDir(process.env), dataDir);
+        void runUpdateChecks({ version: VERSION, home: os.homedir(), env: process.env, stateDir, offPlugin: kind !== 'plugin', run: homepageGuard() }).catch(() => {});
         // #66 — keep checking every 24 h while snote stays open; the banner shows a newer release.
-        startUpdateWatch({ version: VERSION, home: os.homedir(), env: process.env, stateDir: statusDir(process.env), run: homepageGuard() });
+        if (kind === 'direct') return (await import('../core/direct-download')).startDirectWatch(dataDir, os.homedir(), startUpdateWatch); // #30 L5c
+        startUpdateWatch({ version: VERSION, home: os.homedir(), env: process.env, stateDir, run: homepageGuard() });
       })().catch(() => {});
     }
+    if (!noStarPrompt && process.env.SNOTE_STAR_PROMPT !== 'off' && process.env.SNOTE_STAR_PROMPT !== '0') void import('../core/star-prompt').then((m) => m.armStar(dataDir)).catch(() => {});
     return built.store;
   };
 
@@ -767,5 +797,10 @@ export async function main(
   stopSignalFlush();
   stopSaving();
   if (locked) return 1;
-  return 0;
+  // #30 L5a1: a confirmed update starts only now, after the quit save and the lock release
+  const handOff = handOffRequested();
+  if (handOff === null) return 0;
+  const started = await (await import('../core/update-handoff')).startHandOff({ kind: handOff, saved, log });
+  if (started.line !== '') log(started.line);
+  return started.code;
 }

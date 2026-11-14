@@ -54,9 +54,16 @@ const PASS_VARS = [
   'MISE_GLOBAL_CONFIG_FILE',
 ];
 
+// #319: every clone this file makes is removed when the file ends, passed or failed.
+const clones: string[] = [];
+afterAll(() => {
+  for (const c of clones.splice(0)) rmSync(c, { recursive: true, force: true });
+});
+
 // Build a throwaway clone whose cli.js prints a fixed line.
 function makeClone(): string {
   const clone = mkdtempSync(join(tmpdir(), 'snote-shimmiseenv-clone-'));
+  clones.push(clone);
   mkdirSync(join(clone, 'packaging', 'omarchy'), { recursive: true });
   copyFileSync(REAL_SETUP, join(clone, 'packaging', 'omarchy', 'setup'));
   copyFileSync(REAL_UNINSTALL, join(clone, 'packaging', 'omarchy', 'uninstall'));

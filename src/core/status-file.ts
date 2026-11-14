@@ -120,7 +120,7 @@ export function buildStatus(
 export function writeStatusFile(dir: string, status: Status): void {
   ensureDir(dir);
   const filePath = path.join(dir, 'status.json');
-  secureWriteFileSync(filePath, JSON.stringify(status) + '\n');
+  secureWriteFileSync(filePath, JSON.stringify(status) + '\n', { durable: false }); // #682: the heartbeat rewrites it
 }
 
 /**
